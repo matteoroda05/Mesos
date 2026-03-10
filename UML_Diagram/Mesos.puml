@@ -1,0 +1,391 @@
+@startuml
+
+package "Model" {
+
+  class GameContext {
+    - game_id: UUID
+    - round_number: int '1-10
+    - current_era: Era 'enum
+    - game_table: GameTable
+    - players: List<Player>
+    - current_player_index: int
+    - tribe_deck: TribeDeck
+    - building_decks: Map<Era, BuildingDeck>
+
+    + setupGame(player_count: int): void
+    + computeFinalScores(): ScoreBoard
+  }
+
+  class GameTable {
+    - offer_track: OfferTrack
+    - turn_order_tile: TurnOrderTile
+    - top_row: MarketRow
+    - bottom_row: MarketRow
+
+    + getTopRow(): MarketRow
+    + getBottomRow(): MarketRow
+    + placeTotem(player: Player, offer_tile: OfferTile): void
+    + discardBottomRowTribeCards(): void
+    + moveTopToBottomTribeCards(): void
+    + restoreTopRow(tribe_deck: TribeDeck, players_count: int): void
+    + beginNewEra(building_decks: BuildingDecks): void
+    + visibleEvents(include_top_row: boolean): List<EventCard>
+  }
+
+  class MarketRow {
+    - tribe_market: List<TribeCard>
+    - building_market: List<BuildingCard>
+
+    + getCards(): List<Card>
+    + getTakeableCards(player_food: int, builders_discount: int): List<Card>  'no Events or expensive buildings
+    + takeCard(index: int, is_building: boolean): Card
+    + placeCard(c: Card): void
+    + removeTribeCards(): List<TribeCard>
+    + removeBuildingCards(): List<BuildingCard>
+  }
+
+  class Player {
+    - id: UUID
+    - nickname: String
+    - color: PlayerColor
+    - tribe: Tribe
+    - food: int
+    - prestige: int
+
+    
+    + getFood(): int
+    + getPrestige(): int
+    + gainFood(amount: int): void
+    + payFood(amount: int): boolean
+    + gainPrestige(pp: int): void
+    + losePrestige(pp: int): void
+  }
+
+  class Tribe {
+    - characters: Dictionary<CharacterType, List<CharacterCard>>
+    - buildings: List<BuildingCard>
+
+    + addCharacter(c: CharacterCard): void
+    + addBuilding(b: BuildingCard): void
+    + countCharactersFromType(t: CharacterType): int
+    + shamanIcons(): int
+    + buildersDiscount(): int
+    + gatherersDiscount(): int
+    + inventorsIcons(): Set<InventionIcon>
+    + buildingPrestige(): int
+    + buildersEndGamePrestige(): int
+    + inventorsEndGamePrestige(): int
+    + artistsEndGamePrestige(): int
+    + tribeEndGamePrestige(): int
+  }
+
+  class ScoreBoard {
+    - finalPrestige: Map<Player, Integer>
+    - finalFood: Map<Player, Integer>
+
+    + winner(): Player
+  }
+  enum GameStatus { 
+    LOBBY
+    IN_GAME
+    ENDED
+  }
+
+  enum Era { 
+    FIRST
+    SECOND
+    THIRD
+  }
+
+  enum PlayerColor { 
+    BLUE
+    YELLOW
+    ORANGE
+    WHITE
+    BLACK
+  }
+
+  enum InventionIcon {
+    BOAT
+    ARROW
+    HOOK
+    NECKLACE
+    BOWL
+    ROPE
+    DOLL
+    STICK
+    LEATHER
+    BREAD
+  }
+
+  enum CharacterType {
+    INVENTOR
+    GATHERER
+    SHAMAN
+    BUILDER
+    ARTIST
+    HUNTER
+  }
+
+  abstract class Card {
+    - card_id: UUID
+    - era: Era
+    - card_image: Image
+    - min_players: int
+  }
+
+  abstract class TribeCard extends Card
+
+  abstract class CharacterCard extends TribeCard 
+
+  class HunterCard extends CharacterCard {
+    - active_hunter: boolean
+
+    + isActiveHunter(): boolean 
+  }
+
+  class ShamanCard extends CharacterCard {
+    - icons_value: int
+
+    + getIcons(): int
+  }
+
+  class BuilderCard extends CharacterCard {
+    - discount_value: int
+    - end_game_prestige_value: int
+
+    + getBuilderDiscount(): int
+    + getBuilderPrestige(): int
+  }
+
+  class GathererCard extends CharacterCard {
+    - discount_value: int
+
+    + getGathererDiscount(): int
+  }
+
+  class ArtistCard extends CharacterCard
+
+  class InventorCard extends CharacterCard {
+    - invention_icon: InventionIcon
+
+    + getInventionIcon(): InventionIcon
+  }
+
+  abstract class EventCard extends TribeCard {
+    + Abstract calculateOutcome(player_tribes: List<Tribe>): List<int>
+    + Abstract asTrigger(): BuildingTrigger
+  }
+
+  class SustainanceEvent extends EventCard {
+    - points_convertion: int
+
+    + getPointsConvertion(): int
+  }
+
+  class ShamanicRitualEvent extends EventCard {
+    - winner_bonus: int
+    - loser_penalty: int
+  }
+
+  class CavePaintingEvent extends EventCard {
+    - treshold: int
+    - points_per_artist: int
+    - penalty: int
+  }
+
+  class HuntEvent extends EventCard {
+    - prestige_gain_per_hunter: int
+  }
+
+  class BuildingCard extends Card {
+  - foodCost: int
+  - prestigePoints: int
+  - owner: Player
+  - trigger: BuildingTrigger
+  - buildingEffect: BuildingEffect
+
+  + canBeBoughtBy(p: Player): boolean
+  + effectiveCostFor(p: Player): int
+  + onAcquired(p: Player): void
+  + effect(): boolean
+}
+
+
+interface BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class CompleteSetOfSixFoodEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class SustainanceDiscountPerCharacterTypeEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class IgnoreShamanicMinorityPenaltyEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class ExtraFoodOnTurnOrderBonusPlacementEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class EqualInventorPairFoodEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class ExtraShamanIconsEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class DoubleAndTieWinShamanicRewardEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class ExtraHuntRewardPerHunterEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class DoubleBuildersEndGamePrestigeEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class FoodPerArtistOnCavePaintingEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class EndGamePrestigePerDistinctTypeSetEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class EndGamePrestigePerCharacterTypeEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+class ExtraTopRowPickBeforeEndRoundEffect implements BuildingEffect { 
+   ‘ricordiamoci che questa deve ricevere marketrow
+  + effect(source: BuildingCard): boolean
+}
+
+class FlatEndGamePrestigeEffect implements BuildingEffect {
+  + effect(source: BuildingCard): boolean
+}
+
+
+  class TribeDeck {
+    - cards: List<TribeCard>
+
+    + drawAll(n_players: int): List<TribeCard>
+    + isEmpty(): boolean
+  }
+ 
+  class BuildingDeck {
+    - era: Era
+    - cards: List<BuildingCard>
+
+    + drawAll(): List<BuildingCard>
+    + isEmpty(): boolean
+  }
+
+  enum BuildingTrigger {
+    ON_END_TURN
+    ON_END_ROUND
+    ON_END_GAME
+    ON_EVENT_SUSTAINANCE
+    ON_EVENT_SHAMANIC_RITUAL
+    ON_EVENT_HUNT
+    ON_EVENT_CAVE_PAINTING
+    ON_ACQUIRE_BUILDING
+    ON_ACQUIRE_CHARACTER
+  }
+
+  class OfferTrack {
+    -  tiles: List<OfferTile>
+
+    + getAvailableTiles(): List<OfferTile> 
+    + tile(String id):OfferTile 
+    + getOccupiedTiles(): List<OfferTile>
+  }
+
+  class OfferTile {
+    - offer_tile_id: char  ‘A…G
+    - pick_top_row: int
+    - pick_bottom_row: int
+    - occupant: PlayerColor
+
+    + isAvailable(): boolean
+    + occupy(player_color: PlayerColor): void
+    + clear(): void
+    + getTopPicks(): int
+    + getBottomPicks(): int
+  }
+
+  class TurnOrderTile {
+    - spaces: List<TurnOrderSpace>
+
+    + placeTotem(player_color: PlayerColor): void
+    + currentOrderTopToBottom(): List<PlayerColor>
+  }
+
+  class TurnOrderSpace {
+    - int: foodBonus
+    - occupant: PlayerColor
+
+    + getBonus(): int
+    + getOccupant(): PlayerColor
+    + setOccupant(player: PlayerColor)
+  }
+
+}
+
+
+
+' Associations
+GameContext "1" o-- "1" GameStatus
+GameContext "1" o-- "1" Era
+GameContext "1" o-- "1" GameTable
+GameContext "1" o-- "*" Player
+GameContext "1" o-- "1" TribeDeck
+GameContext "1" o-- "3" BuildingDeck
+
+GameTable "1" o-- "1" OfferTrack
+GameTable "1" o-- "1" TurnOrderTile
+GameTable "1" o-- "1" MarketRow
+GameTable "1" o-- "1" MarketRow
+
+Tribe "1" o-- "*" CharacterCard
+Tribe "1" o-- "*" BuildingCard
+Tribe "1" o-- "*" CharacterType
+
+ScoreBoard "1" o-- "*" Player
+
+MarketRow "1" o-- "*" TribeCard
+MarketRow "1" o-- "*" BuildingCard
+
+Player "1" o-- "1" PlayerColor
+Player "1" o-- "1" Tribe
+
+OfferTrack "1" o-- "*" OfferTile
+
+OfferTile "1" o-- "0..1" PlayerColor
+
+TurnOrderTile "1" o-- "*" TurnOrderSpace
+
+TurnOrderSpace "1" o-- "1" PlayerColor
+
+Card "1" o-- "1" Era
+
+BuildingCard "1" o-- "1" BuildingTrigger
+BuildingCard "1" o-- "0..1" Player
+BuildingCard "1" o-- "1" BuildingEffect
+
+InventorCard "1" o-- "1" InventionIcon
+
+TribeDeck "1" o-- "*" TribeCard
+
+BuildingDeck "1" o-- "*" BuildingCard
+BuildingDeck "1" o-- "1" Era
+
+@enduml
