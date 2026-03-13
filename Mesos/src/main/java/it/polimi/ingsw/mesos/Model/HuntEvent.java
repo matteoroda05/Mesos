@@ -1,0 +1,45 @@
+package it.polimi.ingsw.mesos.Model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
+import it.polimi.ingsw.mesos.Model.Enums.Era;
+
+public class HuntEvent extends EventCard {
+    private final int prestige_per_hunter;
+    private final int food_per_hunter;
+
+    public HuntEvent(Era era, int prestige_per_hunter, int food_per_hunter) {
+        super(era);
+
+        if (prestige_per_hunter <= 0) throw new IllegalArgumentException("Prestige per hunter must be positive.");
+        if (food_per_hunter <= 0) throw new IllegalArgumentException("Food per hunter must be positive.");
+        
+        this.prestige_per_hunter = prestige_per_hunter;
+        this.food_per_hunter = food_per_hunter;
+    }
+
+    // Hunt event always gives 1 food for hunter, this method exists to support possible future extensions of the game
+    public float getMultiplier() {
+        return food_per_hunter / prestige_per_hunter;
+    }
+
+    @Override
+    public List<Integer> calculateOutcome(List<Tribe> players_tribes) {
+        List<Integer> player_outcomes = new ArrayList<>();
+
+        for (Tribe tribe : players_tribes) {
+            int hunters = tribe.getNumCharcaterOfType(CharacterType.HUNTER);
+            player_outcomes.add(hunters * prestige_per_hunter);
+        }
+
+        return player_outcomes;
+    }
+
+    @Override
+    public BuildingTrigger asTrigger() {
+        return BuildingTrigger.ON_EVENT_CAVE_PAINTINGS;
+    }
+}

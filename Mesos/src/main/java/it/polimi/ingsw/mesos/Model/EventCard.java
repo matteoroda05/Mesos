@@ -1,0 +1,16 @@
+package it.polimi.ingsw.mesos.Model;
+
+import java.util.List;
+
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Era;
+
+abstract public class EventCard extends TribeCard {
+    public EventCard(Era era) {
+        super(era, 0);
+    }
+
+    abstract public List<Integer> calculateOutcome(List<Tribe> player_tribes);
+
+    abstract public BuildingTrigger asTrigger();
+}
