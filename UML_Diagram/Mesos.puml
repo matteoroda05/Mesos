@@ -7,7 +7,7 @@ package "Model" {
     - round_number: int '1-10
     - current_era: Era 'enum
     - game_table: GameTable
-    - players: List<Player>
+    - players: Map<Color, Player>
     - current_player_index: int
     - tribe_deck: TribeDeck
     - building_decks: Map<Era, BuildingDeck>
@@ -47,7 +47,7 @@ package "Model" {
   class Player {
     - id: UUID
     - nickname: String
-    - color: PlayerColor
+    - color: Color
     - tribe: Tribe
     - food: int
     - prestige: int
@@ -85,11 +85,6 @@ package "Model" {
 
     + winner(): Player
   }
-  enum GameStatus { 
-    LOBBY
-    IN_GAME
-    ENDED
-  }
 
   enum Era { 
     FIRST
@@ -97,7 +92,7 @@ package "Model" {
     THIRD
   }
 
-  enum PlayerColor { 
+  enum Color { 
     BLUE
     YELLOW
     ORANGE
@@ -273,7 +268,6 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
   + effect(source: BuildingCard): boolean
 }
 
-
   class TribeDeck {
     - cards: List<TribeCard>
 
@@ -293,11 +287,7 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
     ON_END_TURN
     ON_END_ROUND
     ON_END_GAME
-    ON_EVENT_SUSTAINANCE
-    ON_EVENT_SHAMANIC_RITUAL
-    ON_EVENT_HUNT
-    ON_EVENT_CAVE_PAINTING
-    ON_ACQUIRE_BUILDING
+    ON_EVENT
     ON_ACQUIRE_CHARACTER
   }
 
@@ -313,29 +303,32 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
     - offer_tile_id: char  ‘A…G
     - pick_top_row: int
     - pick_bottom_row: int
-    - occupant: PlayerColor
+    - occupant: Color
+    - foodGain: int
+    - min_num_players: int
 
     + isAvailable(): boolean
-    + occupy(player_color: PlayerColor): void
+    + occupy(player_color: Color): void
     + clear(): void
     + getTopPicks(): int
     + getBottomPicks(): int
+    + getFoodGain(): int
   }
 
   class TurnOrderTile {
     - spaces: List<TurnOrderSpace>
 
-    + placeTotem(player_color: PlayerColor): void
-    + currentOrderTopToBottom(): List<PlayerColor>
+    + placeTotem(player_color: Color): void
+    + currentOrderTopToBottom(): List<Color>
   }
 
   class TurnOrderSpace {
     - int: foodBonus
-    - occupant: PlayerColor
+    - occupant: Color
 
     + getBonus(): int
-    + getOccupant(): PlayerColor
-    + setOccupant(player: PlayerColor)
+    + getOccupant(): Color
+    + setOccupant(player: Color)
   }
 
 }
@@ -343,49 +336,49 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
 
 
 ' Associations
-GameContext "1" o-- "1" GameStatus
-GameContext "1" o-- "1" Era
-GameContext "1" o-- "1" GameTable
-GameContext "1" o-- "*" Player
-GameContext "1" o-- "1" TribeDeck
-GameContext "1" o-- "3" BuildingDeck
+GameContext o-- Color
+GameContext o-- Era
+GameContext o-- GameTable
+GameContext o– Player
+GameContext o-- TribeDeck
+GameContext o-- BuildingDeck
 
-GameTable "1" o-- "1" OfferTrack
-GameTable "1" o-- "1" TurnOrderTile
-GameTable "1" o-- "1" MarketRow
-GameTable "1" o-- "1" MarketRow
+GameTable o-- OfferTrack
+GameTable o-- TurnOrderTile
+GameTable o-- MarketRow
+GameTable o-- MarketRow
 
-Tribe "1" o-- "*" CharacterCard
-Tribe "1" o-- "*" BuildingCard
-Tribe "1" o-- "*" CharacterType
+Tribe o-- CharacterCard
+Tribe o-- BuildingCard
+Tribe o-- CharacterType
 
-ScoreBoard "1" o-- "*" Player
+ScoreBoard o– Player
 
-MarketRow "1" o-- "*" TribeCard
-MarketRow "1" o-- "*" BuildingCard
+MarketRow o-- TribeCard
+MarketRow o-- BuildingCard
 
-Player "1" o-- "1" PlayerColor
-Player "1" o-- "1" Tribe
+Player o-- Color
+Player o-- Tribe
 
-OfferTrack "1" o-- "*" OfferTile
+OfferTrack o-- OfferTile
 
-OfferTile "1" o-- "0..1" PlayerColor
+OfferTile o-- Color
 
-TurnOrderTile "1" o-- "*" TurnOrderSpace
+TurnOrderTile o-- TurnOrderSpace
 
-TurnOrderSpace "1" o-- "1" PlayerColor
+TurnOrderSpace o-- Color
 
-Card "1" o-- "1" Era
+Card o-- Era
 
-BuildingCard "1" o-- "1" BuildingTrigger
-BuildingCard "1" o-- "0..1" Player
-BuildingCard "1" o-- "1" BuildingEffect
+BuildingCard o-- BuildingTrigger
+BuildingCard o-- Player
+BuildingCard  o-- BuildingEffect
 
-InventorCard "1" o-- "1" InventionIcon
+InventorCard o-- InventionIcon
 
-TribeDeck "1" o-- "*" TribeCard
+TribeDeck o-- TribeCard
 
-BuildingDeck "1" o-- "*" BuildingCard
-BuildingDeck "1" o-- "1" Era
+BuildingDeck o-- BuildingCard
+BuildingDeck o-- Era
 
 @enduml

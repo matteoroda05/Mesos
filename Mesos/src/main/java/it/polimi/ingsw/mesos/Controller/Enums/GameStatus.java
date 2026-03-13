@@ -1,0 +1,14 @@
+package it.polimi.ingsw.mesos.Controller.Enums;
+
+enum GameStatus{
+    LOADING,
+    LOGIN,
+    SETUP,
+    ROUND_OFFER,
+    ROUND_ACTIONS,
+    ROUND_EVENTS,
+    ROUND_END,
+    FINAL_EVENTS,
+    END_GAME,
+    END_SCREEN
+}

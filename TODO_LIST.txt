@@ -1,0 +1,3 @@
+- GameTable
+- Decide and manage what to do with creation of GameContext and setup function inside of it
+- Tests
