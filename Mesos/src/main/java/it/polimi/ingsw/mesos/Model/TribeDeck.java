@@ -1,5 +1,8 @@
 package it.polimi.ingsw.mesos.Model;
 
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
+import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+
 import java.util.ArrayList;
 import java.util.List;
 

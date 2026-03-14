@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public class BuildingDeck {

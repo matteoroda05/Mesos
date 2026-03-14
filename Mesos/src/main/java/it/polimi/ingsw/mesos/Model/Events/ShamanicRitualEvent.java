@@ -1,10 +1,12 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Events;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Tribe;
 
 public class ShamanicRitualEvent extends EventCard {
     private final int winner_bonus;
@@ -42,7 +44,7 @@ public class ShamanicRitualEvent extends EventCard {
             if (stars == highest_stars) {
                 player_outcomes.add(winner_bonus);
             } else if (stars == lowest_stars) {
-                player_outcomes.add(-loser_penalty);
+                player_outcomes.add(loser_penalty);
             } else {
                 player_outcomes.add(0);
             }
