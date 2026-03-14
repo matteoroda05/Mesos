@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import it.polimi.ingsw.mesos.Model.Cards.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
@@ -37,7 +38,7 @@ public class Tribe {
         return total;
     }
 
-    public int getNumCharcaterOfType(CharacterType type) {
+    public int getNumCharacterOfType(CharacterType type) {
         return this.characters.get(type).size();
     }
 
@@ -143,13 +144,13 @@ public class Tribe {
     }
 
     public int inventorsEndGamePrestige(){
-        int inventor_count = getNumCharcaterOfType(CharacterType.INVENTOR);
+        int inventor_count = getNumCharacterOfType(CharacterType.INVENTOR);
         int different_icons = inventionIcons().size();
         return inventor_count * different_icons;
     }
 
     public int artistsEndGamePrestige(){
-        int artist_count = getNumCharcaterOfType(CharacterType.ARTIST);
+        int artist_count = getNumCharacterOfType(CharacterType.ARTIST);
         return 10 * artist_count>>1;
     }
 

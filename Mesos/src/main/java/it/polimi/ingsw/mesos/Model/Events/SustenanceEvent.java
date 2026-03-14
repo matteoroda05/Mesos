@@ -1,10 +1,12 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Events;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Tribe;
 
 public final class SustenanceEvent extends EventCard {
     private final int food_per_character;

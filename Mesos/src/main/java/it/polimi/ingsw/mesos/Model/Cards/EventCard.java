@@ -1,9 +1,10 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Cards;
 
 import java.util.List;
 
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Tribe;
 
 abstract public class EventCard extends TribeCard {
     public EventCard(Era era) {
