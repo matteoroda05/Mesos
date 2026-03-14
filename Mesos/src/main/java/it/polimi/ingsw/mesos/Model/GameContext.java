@@ -1,23 +1,20 @@
 package it.polimi.ingsw.mesos.Model;
 
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 public class GameContext {
-    UUID game_id;
-    int round_number;
-    Era current_era;
-    GameTable game_table;
-    Map<Color, Player> players;
-    int current_player_index;
-    TribeDeck tribe_deck;
-    Map<Era, BuildingDeck> building_decks;
+    private UUID game_id;
+    private int round_number;
+    private Era current_era;
+    private GameTable game_table;
+    private Map<Color, Player> players;
+    private int current_player_index;
+    private TribeDeck tribe_deck;
+    private BuildingDeck building_deck;
 
     public GameContext() {
         this.game_id = UUID.randomUUID();
@@ -27,7 +24,7 @@ public class GameContext {
     }
 
     public void setupGame(Map<Color, Player> players) {
-        int size = players.size();
+        int num_players = players.size();
         
         if (num_players < 2 || num_players > 5) {
             throw new IllegalArgumentException("Number of players must be between 2 and 5");
@@ -36,11 +33,7 @@ public class GameContext {
         this.players = players;
         this.game_table = new GameTable(num_players);
         this.tribe_deck = new TribeDeck(num_players);
-        this.building_decks = Map.of(
-            Era.FIRST, new BuildingDeck(Era.FIRST, num_players),
-            Era.SECOND, new BuildingDeck(Era.SECOND, num_players),
-            Era.THIRD, new BuildingDeck(Era.THIRD, num_players)
-        );
+        this.building_deck = new BuildingDeck(num_players);
     }
 
     // TODO: computeFinalScores(), getters

@@ -18,4 +18,8 @@ abstract public class Card {
         this.era = era;
         this.min_players = min_players;
     }
+
+    public Era getEra(){
+        return this.era;
+    }
 }
