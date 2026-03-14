@@ -6,11 +6,11 @@ public class GameTable {
     private MarketRow top_row;
     private MarketRow bottom_row;
 
-    public GameTable(int num_players) {
+    public GameTable(int num_players, TribeDeck tribe_deck, BuildingDeck building_deck) {
         this.offer_track = new OfferTrack(num_players);
         this.turn_order_tile = new TurnOrderTile(num_players);
-        this.top_row = new MarketRow(true);
-        this.bottom_row = new MarketRow(false);
+        this.top_row = new MarketRow(true, tribe_deck, building_deck );
+        this.bottom_row = new MarketRow(false, tribe_deck, building_deck);
     }
 
     // TODO: getters AND methods
