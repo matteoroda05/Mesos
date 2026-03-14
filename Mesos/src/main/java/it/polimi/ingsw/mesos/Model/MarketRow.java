@@ -5,6 +5,7 @@ import java.util.List;
 
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public class MarketRow {
