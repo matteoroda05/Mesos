@@ -1,11 +1,13 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Events;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Tribe;
 
 public class CavePaintingEvent extends EventCard {
     private final int threshold;
@@ -29,11 +31,11 @@ public class CavePaintingEvent extends EventCard {
         List<Integer> player_outcomes = new ArrayList<>();
 
         for (Tribe tribe : players_tribes) {
-            int artists = tribe.getNumCharcaterOfType(CharacterType.ARTIST);
+            int artists = tribe.getNumCharacterOfType(CharacterType.ARTIST);
             if (artists >= threshold) {
                 player_outcomes.add(points_per_artist * artists);
             } else {
-                player_outcomes.add(-penalty);
+                player_outcomes.add(penalty);
             }
         }
 

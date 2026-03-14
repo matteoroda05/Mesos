@@ -1,10 +1,12 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Cards;
 
+import it.polimi.ingsw.mesos.Model.Card;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Player;
 
 
-public class BuildingCard extends Card{
+public class BuildingCard extends Card {
     private final int food_cost;
     private final int prestige_points;
     private Player owner;
