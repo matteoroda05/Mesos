@@ -6,6 +6,7 @@ import java.util.List;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public class GameTable {
     private final OfferTrack offer_track;
@@ -58,37 +59,37 @@ public class GameTable {
         offer_tile.occupy(player.getColor());
     }
 
-    private void moveTopToBottomTribeCards() {
-        
-    }
-
-    private void restoreTopRow(TribeDeck tribe_deck, int players_count) {
+    // Returns wether a new era has begun
+    private boolean restoreTopRow(Era curr_era) {
         if (tribe_deck == null) {
-            throw new IllegalArgumentException("tribeDeck cannot be null");
+            throw new IllegalArgumentException("Tribe deck null at start of new era.");
         }
 
         List<TribeCard> drawn_cards = tribe_deck.drawTopRow();
+        boolean new_era = false;
 
-        for (int i = 0; i < drawn_cards.size(); i++) {
-            top_row.placeCard(drawn_cards.get(i));
+        for (Card card : drawn_cards) {
+            top_row.placeCard(card);
+            if (card.era != curr_era) {
+                new_era = true;
+                beginNewEra();
+            }
         }
+
+        return new_era;
     }
 
-    public void beginNewEra(BuildingDeck new_era_building_deck) {
-        if (new_era_building_deck == null) {
-            throw new IllegalArgumentException("newEraBuildingDeck cannot be null");
-        }
-
+    public void beginNewEra() {
         bottom_row.removeBuildingCards();
 
         List<BuildingCard> buildings_from_top = top_row.removeBuildingCards();
-        for (int i = 0; i < buildings_from_top.size(); i++) {
-            bottom_row.placeCard(buildings_from_top.get(i));
+        for (BuildingCard card : buildings_from_top) {
+            bottom_row.placeCard(card);
         }
 
-        List<BuildingCard> new_buildings = new_era_building_deck.drawBuildingCards();
-        for (int i = 0; i < new_buildings.size(); i++) {
-            top_row.placeCard(new_buildings.get(i));
+        List<BuildingCard> new_buildings = building_deck.drawBuildingCards();
+        for (BuildingCard card : new_buildings) {
+            top_row.placeCard(card);
         }
     }
 
@@ -113,10 +114,15 @@ public class GameTable {
     }
 
     // Returns wether a new era has begun
-    // public boolean newRound() {
-    //     bottom_row.removeTribeCards();
-    //     List<TribeCard> top_row = top_row
+    public boolean newRound() {
+        bottom_row.removeTribeCards();
+        List<TribeCard> to_move = top_row.removeTribeCards();
+        Era curr_era = to_move.getFirst().era;
 
+        for (TribeCard card : to_move) {
+            bottom_row.placeCard(card);
+        }
 
-    // }
+        return restoreTopRow(curr_era);
+    }
 }

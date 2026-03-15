@@ -32,9 +32,7 @@ public class TurnOrderTile {
             throw new IllegalArgumentException("player cannot be null");
         }
 
-        for (int i = 0; i < spaces.size(); i++) {
-            TurnOrderSpace space = spaces.get(i);
-
+        for (TurnOrderSpace space : spaces) {
             if (space.isFree()) {
                 space.setOccupant(player.getColor());
 
@@ -44,7 +42,7 @@ public class TurnOrderTile {
                 } else if (bonus < 0 && player.getFood() >= bonus) {
                     player.loseFood(-bonus);
                 } else if (bonus < 0 && player.getFood() < bonus) {
-                    player.losePrestigePoints(2);
+                    player.changePrestigePoints(-2);
                 }
 
                 return;

@@ -5,7 +5,7 @@ import java.util.UUID;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 public final class Player {
-    private UUID player_id;
+    private final UUID player_id;
     private final String nickname;
     private final Color color;
     private final Tribe tribe;
@@ -54,25 +54,13 @@ public final class Player {
 
     public void loseFood(int amount) {
         if (this.food < amount) {
-            throw new IllegalArgumentException("Food lost must be non-negative");
+            throw new IllegalArgumentException("Food lost cannot be more than food available");
         }
 
         this.food -= amount;
     }
 
-    public void gainPrestigePoints(int points) {
-        if (points < 0) {
-            throw new IllegalArgumentException("Points must be non-negative");
-        }
-
+    public void changePrestigePoints(int points) {
         this.prestige_points += points;
-    }
-
-    public void losePrestigePoints(int points) {
-        if (points < 0) {
-            throw new IllegalArgumentException("Points must be non-negative");
-        }
-
-        this.prestige_points -= points;
     }
 }

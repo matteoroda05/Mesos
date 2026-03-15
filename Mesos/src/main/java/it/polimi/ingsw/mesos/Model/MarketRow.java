@@ -76,12 +76,6 @@ public class MarketRow {
         }
     }
 
-    public void placeCards(List<Card> cards) {
-        for (Card c : cards) {
-            placeCard(c);
-        }
-    }
-
     public List<TribeCard> removeTribeCards() {
         List<TribeCard> removed = new ArrayList<>(tribe_market);
         tribe_market.clear();

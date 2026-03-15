@@ -1,17 +1,21 @@
 package it.polimi.ingsw.mesos.Model;
 
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import it.polimi.ingsw.mesos.Globals;
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
+import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 
 public class TribeDeck {
     private List<TribeCard> deck;
     private int n_players;
 
     public TribeDeck(int n_players) {
-        if (n_players < 2 || n_players > 5) throw new IllegalArgumentException("Number of players must be between 2 and 4");
+        if (n_players < Globals.MIN_NUM_PLAYERS || n_players > Globals.MAX_NUM_PLAYERS) {
+            throw new IllegalArgumentException(
+                "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+        }
 
         this.n_players = n_players;
     }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
@@ -23,8 +24,9 @@ public class GameContext {
     public void setupGame(Map<Color, Player> players) {
         int num_players = players.size();
         
-        if (num_players < 2 || num_players > 5) {
-            throw new IllegalArgumentException("Number of players must be between 2 and 5");
+        if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
+            throw new IllegalArgumentException(
+                "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
 
         this.players = players;
@@ -65,6 +67,12 @@ public class GameContext {
         boolean new_era = this.game_table.newRound();
         if (new_era) {
             this.current_era = this.current_era.next();
+        }
+    }
+
+    public void computeFinalScores() {
+        for (Player p : players.values()) {
+            p.changePrestigePoints(p.getTribe().tribeEndGamePrestige());
         }
     }
 }

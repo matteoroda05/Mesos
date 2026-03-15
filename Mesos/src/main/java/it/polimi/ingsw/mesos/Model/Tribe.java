@@ -6,7 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import it.polimi.ingsw.mesos.Model.Cards.*;
+import it.polimi.ingsw.mesos.Model.Cards.BuilderCard;
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.GathererCard;
+import it.polimi.ingsw.mesos.Model.Cards.InventorCard;
+import it.polimi.ingsw.mesos.Model.Cards.ShamanCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
@@ -56,7 +61,7 @@ public class Tribe {
         return this.buildings.size();
     }
 
-    public int buildingsPrestige(){
+    public int buildingsPrestige() {
         int prestige = 0;
         for (BuildingCard building : this.buildings) {
             prestige += building.getPrestigePoints();
@@ -64,8 +69,7 @@ public class Tribe {
         return prestige;
     }
 
-    // TODO: considerare anche i punti dati da eventuali carte personaggio
-    public int buildingsEffectPrestige(){
+    public int buildingsEffectPrestige() {
         int prestige = 0;
         for (BuildingCard building : this.buildings) {
             if (building.getTrigger() == BuildingTrigger.ON_END_GAME) {
@@ -91,7 +95,7 @@ public class Tribe {
         return stars;
     }
 
-    public int buildersDiscount(){
+    public int buildersDiscount() {
         List<CharacterCard> builders = this.characters.get(CharacterType.BUILDER);
         if (builders.isEmpty()) {
             return 0;
@@ -105,7 +109,7 @@ public class Tribe {
         return discount;
     }
 
-    public int buildersEndGamePrestige(){
+    private int buildersEndGamePrestige() {
         List<CharacterCard> builders = this.characters.get(CharacterType.BUILDER);
         if (builders.isEmpty()) {
             return 0;
@@ -119,7 +123,7 @@ public class Tribe {
         return prestige;
     }
 
-    public int gatherersDiscount(){
+    public int gatherersDiscount() {
         List<CharacterCard> gatherers = this.characters.get(CharacterType.GATHERER);
         if (gatherers.isEmpty()) {
             return 0;
@@ -143,13 +147,13 @@ public class Tribe {
         return icons;
     }
 
-    public int inventorsEndGamePrestige(){
+    private int inventorsEndGamePrestige() {
         int inventor_count = getNumCharacterOfType(CharacterType.INVENTOR);
         int different_icons = inventionIcons().size();
         return inventor_count * different_icons;
     }
 
-    public int artistsEndGamePrestige(){
+    private int artistsEndGamePrestige() {
         int artist_count = getNumCharacterOfType(CharacterType.ARTIST);
         return 10 * artist_count>>1;
     }
