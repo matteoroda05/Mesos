@@ -1,32 +1,27 @@
 # Software engineering project – Polytechnic University of Milan, 2025/2026
 
 ### Question list:
-- BuildingEffect
+- `BuildingEffect`
     - decide wether or not to use an interface, if so decide how to implement it
-- TurnOrderTile and TurnOrderSpace
+- `TurnOrderTile` and `TurnOrderSpace`
+- `instanceOf` and `switch` for polymorfism:
+    - how often can we use them
+    - possible alternatives
+
 
 ### Todo list:
 - **Test classes**
-- GameTabele
-    - add getters and methods
-    - add tribe and building decks in class (from GameContext)
-    - fix MarketRow constructor call
-    - create TurnOrder class 
-- MarketRow
-    - add getters and methods
-- OfferTrack
+- Loader for every card/tile
+    - tool Jackson to load every card
+    - adjust constructors of `GameContext` and every other container to receive cards and tiles
+- `OfferTrack`
     - populate offer track with correct number of tiles
-    - finish methods
-- BuildingDeck
+- `BuildingDeck`
     - initialise deck with cards from json file
-- Tribe
+- `Tribe`
     - fix/implement function that computes points from building effects
     - downcast issue
-- Card
+- `Card`
     - use Integer/final int for id instead of UUID
-- GameContext
-    - take out decks and put them in GameTable
-    - add getters
-    - add computeFinalScores method
-- TribeDeck 
+- `TribeDeck`
     - use type enum instead of instanceof
