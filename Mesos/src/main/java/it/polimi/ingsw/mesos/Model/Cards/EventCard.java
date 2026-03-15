@@ -14,4 +14,9 @@ abstract public class EventCard extends TribeCard {
     abstract public List<Integer> calculateOutcome(List<Tribe> player_tribes);
 
     abstract public BuildingTrigger asTrigger();
+
+    @Override
+    public boolean isEvent() {
+        return true;
+    }
 }

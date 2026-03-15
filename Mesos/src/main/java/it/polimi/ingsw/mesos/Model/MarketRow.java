@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 
 public class MarketRow {
     private final List<TribeCard> tribe_market;
@@ -14,7 +13,7 @@ public class MarketRow {
 
     public MarketRow(boolean is_top_row, TribeDeck tribe_deck, BuildingDeck building_deck) {
         this.tribe_market = is_top_row ? tribe_deck.drawTopRow() : tribe_deck.drawInitialBottomRow();
-        this.building_market = is_top_row ? building_deck.getBuildingCards(Era.FIRST) : new ArrayList<>();
+        this.building_market = is_top_row ? building_deck.drawBuildingCards() : new ArrayList<>();
     }
 
     public List<TribeCard> getTribeCards() {
@@ -75,16 +74,19 @@ public class MarketRow {
             case TribeCard tribeCard -> tribe_market.add(tribeCard);
             default -> throw new IllegalArgumentException("Unsupported card type: " + c.getClass().getSimpleName());
         }
-
     }
 
+    public void placeCards(List<Card> cards) {
+        for (Card c : cards) {
+            placeCard(c);
+        }
+    }
 
     public List<TribeCard> removeTribeCards() {
         List<TribeCard> removed = new ArrayList<>(tribe_market);
         tribe_market.clear();
         return removed;
     }
-
 
     public List<BuildingCard> removeBuildingCards() {
         List<BuildingCard> removed = new ArrayList<>(building_market);
@@ -103,6 +105,5 @@ public class MarketRow {
             );
         }
     }
-
 
 }
