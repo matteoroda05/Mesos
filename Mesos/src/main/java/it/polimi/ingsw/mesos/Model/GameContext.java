@@ -1,25 +1,22 @@
 package it.polimi.ingsw.mesos.Model;
 
-import java.util.UUID;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public class GameContext {
-    private UUID game_id;
+    private final UUID game_id;
     private int round_number;
     private Era current_era;
     private GameTable game_table;
     private Map<Color, Player> players;
-    private int current_player_index;
-    private TribeDeck tribe_deck;
-    private BuildingDeck building_deck;
 
     public GameContext() {
         this.game_id = UUID.randomUUID();
         this.round_number = 0;
-        this.current_player_index = 0;
         this.current_era = Era.FIRST;
     }
 
@@ -32,9 +29,42 @@ public class GameContext {
 
         this.players = players;
         this.game_table = new GameTable(num_players);
-        this.tribe_deck = new TribeDeck(num_players);
-        this.building_deck = new BuildingDeck(num_players);
     }
 
-    // TODO: computeFinalScores(), getters
+    public UUID getGameId() {
+        return game_id;
+    }
+
+    public int getRoundNumber() {
+        return round_number;
+    }
+
+    public Era getCurrentEra() {
+        return current_era;
+    }
+
+    public GameTable getGameTable() {
+        return game_table;
+    }
+
+    public List<Player> getPlayers() {
+        if (this.players == null) throw new IllegalStateException("players cannot be null");
+
+        return List.copyOf(this.players.values());
+    }
+
+    public Player getPlayer(Color color) {
+        if (players == null) throw new IllegalStateException("players cannot be null");
+        if (players.get(color) == null) throw new IllegalArgumentException("color not present");
+
+        return players.get(color);
+    }
+
+    public void newRound(){
+        this.round_number += 1;
+        boolean new_era = this.game_table.newRound();
+        if (new_era) {
+            this.current_era = this.current_era.next();
+        }
+    }
 }

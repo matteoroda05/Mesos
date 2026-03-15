@@ -1,17 +1,19 @@
 package it.polimi.ingsw.mesos.Model;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import it.polimi.ingsw.mesos.Globals;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 public class TurnOrderTile {
 
     private final List<TurnOrderSpace> spaces;
 
-    public TurnOrderTile(int numPlayers) {
-        if (numPlayers < 2 || numPlayers > 5) {
-            throw new IllegalArgumentException("numPlayers must be between 2 and 5");
+    public TurnOrderTile(int num_players) {
+        if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
+            throw new IllegalArgumentException(
+                "numPlayers must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
 
         this.spaces = new ArrayList<>();
@@ -20,7 +22,7 @@ public class TurnOrderTile {
 
         spaces.add(new TurnOrderSpace(1));
 
-        for (int i = 2; i < numPlayers; i++) {
+        for (int i = 2; i < num_players; i++) {
             spaces.add(new TurnOrderSpace(0));
         }
     }
@@ -39,15 +41,10 @@ public class TurnOrderTile {
                 int bonus = space.getBonus();
                 if (bonus > 0) {
                     player.gainFood(bonus);
-                }
-
-                boolean isLastSpace = (i == spaces.size() - 1);
-                if (isLastSpace) {
-                    if (player.getFood() > 0) {
-                        player.loseFood(1);
-                    } else {
-                        player.losePrestigePoints(1);
-                    }
+                } else if (bonus < 0 && player.getFood() >= bonus) {
+                    player.loseFood(-bonus);
+                } else if (bonus < 0 && player.getFood() < bonus) {
+                    player.losePrestigePoints(2);
                 }
 
                 return;

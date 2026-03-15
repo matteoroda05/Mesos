@@ -22,4 +22,7 @@ abstract public class Card {
     public Era getEra(){
         return this.era;
     }
+    public boolean isEvent() {
+    return false;
+    }
 }
