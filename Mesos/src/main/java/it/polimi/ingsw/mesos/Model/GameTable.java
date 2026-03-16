@@ -70,7 +70,7 @@ public class GameTable {
 
         for (Card card : drawn_cards) {
             top_row.placeCard(card);
-            if (card.era != curr_era) {
+            if (card.getEra() != curr_era) {
                 new_era = true;
                 beginNewEra();
             }
@@ -117,7 +117,7 @@ public class GameTable {
     public boolean newRound() {
         bottom_row.removeTribeCards();
         List<TribeCard> to_move = top_row.removeTribeCards();
-        Era curr_era = to_move.getFirst().era;
+        Era curr_era = to_move.getFirst().getEra();
 
         for (TribeCard card : to_move) {
             bottom_row.placeCard(card);
