@@ -18,6 +18,6 @@ public class InventorCard extends CharacterCard {
 
     @Override
     public CharacterType getCharacterType() {
-        return CharacterType.ARTIST;
+        return CharacterType.INVENTOR;
     }
 }

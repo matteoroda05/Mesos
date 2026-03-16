@@ -20,6 +20,6 @@ public final class ShamanCard extends CharacterCard {
 
     @Override
     public CharacterType getCharacterType() {
-        return CharacterType.ARTIST;
+        return CharacterType.SHAMAN;
     }
 }

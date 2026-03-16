@@ -27,6 +27,6 @@ public final class BuilderCard extends CharacterCard {
 
     @Override
     public CharacterType getCharacterType() {
-        return CharacterType.ARTIST;
+        return CharacterType.BUILDER;
     }
 }
