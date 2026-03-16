@@ -17,7 +17,18 @@ public class TribeDeck {
                 "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
 
+        this.deck = new ArrayList<>();
         this.n_players = n_players;
+    }
+
+    public TribeDeck(int n_players, List<TribeCard> deck) {
+        if (n_players < Globals.MIN_NUM_PLAYERS || n_players > Globals.MAX_NUM_PLAYERS) {
+            throw new IllegalArgumentException(
+                    "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+        }
+
+        this.n_players = n_players;
+        this.deck = new ArrayList<>(deck);
     }
 
     public List<TribeCard> drawTopRow() {

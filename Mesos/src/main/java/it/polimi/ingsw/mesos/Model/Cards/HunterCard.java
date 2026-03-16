@@ -17,6 +17,6 @@ public final class HunterCard extends CharacterCard {
 
     @Override
     public CharacterType getCharacterType() {
-        return CharacterType.ARTIST;
+        return CharacterType.HUNTER;
     }
 }

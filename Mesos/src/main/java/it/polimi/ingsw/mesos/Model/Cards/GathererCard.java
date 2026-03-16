@@ -20,6 +20,6 @@ public final class GathererCard extends CharacterCard {
 
     @Override
     public CharacterType getCharacterType() {
-        return CharacterType.ARTIST;
+        return CharacterType.GATHERER;
     }
 }

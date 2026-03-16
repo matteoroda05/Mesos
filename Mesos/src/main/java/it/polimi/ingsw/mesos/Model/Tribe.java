@@ -155,7 +155,7 @@ public class Tribe {
 
     private int artistsEndGamePrestige() {
         int artist_count = getNumCharacterOfType(CharacterType.ARTIST);
-        return 10 * artist_count>>1;
+        return 10 * (artist_count / 2);
     }
 
     public int tribeEndGamePrestige() {
