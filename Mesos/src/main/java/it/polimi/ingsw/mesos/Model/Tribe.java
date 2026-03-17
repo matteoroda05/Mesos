@@ -9,9 +9,11 @@ import java.util.Set;
 import it.polimi.ingsw.mesos.Model.Cards.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.GathererCard;
 import it.polimi.ingsw.mesos.Model.Cards.InventorCard;
 import it.polimi.ingsw.mesos.Model.Cards.ShamanCard;
+import it.polimi.ingsw.mesos.Model.Cards.ArtistCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
@@ -44,10 +46,21 @@ public class Tribe {
     }
 
     public int getNumCharacterOfType(CharacterType type) {
-        return this.characters.get(type).size();
+        if (type == null) {
+            throw new IllegalArgumentException("type cannot be null");
+        }
+        List<CharacterCard> cards = this.characters.get(type);
+        if (cards == null) {
+            throw new IllegalStateException("No character list configured for type: " + type);
+        }
+        return cards.size();
     }
 
     public List<BuildingCard> getBuildingsWithTrigger(BuildingTrigger trigger) {
+        if (trigger == null) {
+            throw new IllegalArgumentException("trigger cannot be null");
+        }
+
         List<BuildingCard> triggered_buildings = new ArrayList<>();
         for (BuildingCard building : this.buildings) {
             if (building.getTrigger() == trigger) {
@@ -169,11 +182,37 @@ public class Tribe {
     }
 
     public void addCard(CharacterCard card) {
-        this.characters.get(card.getCharacterType()).add(card);
+        if (card == null) {
+            throw new IllegalArgumentException("card cannot be null");
+        }
+        CharacterType cardType = card.getCharacterType();
+        if (cardType == null) {
+            throw new IllegalArgumentException("character type cannot be null");
+        }
+
+        if (!isCardConsistentWithType(card, cardType)) {
+            throw new IllegalArgumentException("Character card class is inconsistent with its type: " + card.getClass().getSimpleName());
+        }
+
+        this.characters.get(cardType).add(card);
     }
 
     public void addCard(BuildingCard card) {
+        if (card == null) {
+            throw new IllegalArgumentException("card cannot be null");
+        }
         this.buildings.add(card);
+    }
+
+    private static boolean isCardConsistentWithType(CharacterCard card, CharacterType type) {
+        return switch (type) {
+            case SHAMAN -> card instanceof ShamanCard;
+            case BUILDER -> card instanceof BuilderCard;
+            case GATHERER -> card instanceof GathererCard;
+            case INVENTOR -> card instanceof InventorCard;
+            case ARTIST -> card instanceof ArtistCard;
+            case HUNTER -> card instanceof HunterCard;
+        };
     }
 
 }

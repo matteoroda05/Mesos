@@ -45,8 +45,8 @@ class TribeDeckTest {
         c4 = new ArtistCard(Era.FIRST,2);
         c5 = new InventorCard(Era.FIRST,2, InventionIcon.ARROW);
         c6 = new BuilderCard(Era.FIRST,2,3,3);
-        c7 = new GathererCard(Era.SECOND,2,3);
-        c8 = new GathererCard(Era.THIRD,2,3);
+        c7 = new GathererCard(Era.SECOND,2);
+        c8 = new GathererCard(Era.THIRD,2);
 
         e1 = new CavePaintingEvent(Era.FIRST,1,2,-2);
         e2 = new HuntEvent(Era.FIRST,3,1);

@@ -16,9 +16,7 @@ public final class GathererCard extends CharacterCard {
     ) {
         super(era, min_players);
 
-        if (food_discount <= 0) throw new IllegalArgumentException("Food discount must be positive");
-
-        this.food_discount = food_discount;
+        this.food_discount = 3;
     }
 
     public int getDiscount() {

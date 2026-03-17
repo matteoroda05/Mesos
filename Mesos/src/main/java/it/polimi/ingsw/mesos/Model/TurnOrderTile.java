@@ -18,12 +18,16 @@ public class TurnOrderTile {
 
         this.spaces = new ArrayList<>();
 
-        spaces.add(new TurnOrderSpace(3));
+        int[] bonuses = switch (num_players) {
+            case 2 -> new int[] {1, -1};
+            case 3 -> new int[] {2, 0, -1};
+            case 4 -> new int[] {2, 1, 0, -1};
+            case 5 -> new int[] {3, 1, 0, 0, -1};
+            default -> throw new IllegalStateException("Unexpected number of players: " + num_players);
+        };
 
-        spaces.add(new TurnOrderSpace(1));
-
-        for (int i = 2; i < num_players; i++) {
-            spaces.add(new TurnOrderSpace(0));
+        for (int bonus : bonuses) {
+            spaces.add(new TurnOrderSpace(bonus));
         }
     }
 
@@ -39,9 +43,9 @@ public class TurnOrderTile {
                 int bonus = space.getBonus();
                 if (bonus > 0) {
                     player.gainFood(bonus);
-                } else if (bonus < 0 && player.getFood() >= bonus) {
+                } else if (bonus < 0 && player.getFood() >= -bonus) {
                     player.loseFood(-bonus);
-                } else if (bonus < 0 && player.getFood() < bonus) {
+                } else if (bonus < 0) {
                     player.changePrestigePoints(-2);
                 }
 
