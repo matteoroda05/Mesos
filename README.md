@@ -15,13 +15,12 @@
     - tool Jackson to load every card
     - adjust constructors of `GameContext` and every other container to receive cards and tiles
 - `OfferTrack`
-    - populate offer track with correct number of tiles
+    - populate offer track with correct tiles–from json–and check correct number
 - `BuildingDeck`
     - initialise deck with cards from json file
 - `Tribe`
     - fix/implement function that computes points from building effects
     - downcast issue
-- `Card`
-    - use Integer/final int for id instead of UUID
 - `TribeDeck`
     - use type enum instead of instanceof
+    - initialise cards from json file
