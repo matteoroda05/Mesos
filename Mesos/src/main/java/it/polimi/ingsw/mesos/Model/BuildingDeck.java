@@ -20,6 +20,10 @@ public class BuildingDeck {
     }
 
     public List<BuildingCard> drawBuildingCards() {
+        if (deck == null) {
+            throw new IllegalStateException("Building deck is not initialized");
+        }
+
         List<BuildingCard> output = null;
 
         for (Era era : Era.values()) {
@@ -38,6 +42,9 @@ public class BuildingDeck {
     }
 
     public boolean isEmpty() {
+        if (deck == null) {
+            throw new IllegalStateException("Building deck is not initialized");
+        }
         return deck.isEmpty();
     }
 }

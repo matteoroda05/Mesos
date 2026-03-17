@@ -22,8 +22,8 @@ public final class SustenanceEvent extends EventCard {
     ) {
         super(era);
 
-        if (points_penalty >= 0) throw new IllegalArgumentException("Points penalty must be negative.");
-        if (food_per_character <= 0) throw new IllegalArgumentException("Food per character must be positive.");
+        if (points_penalty < -3 || points_penalty > -1) throw new IllegalArgumentException("Points penalty must be negative.");
+        if (food_per_character != 1) throw new IllegalArgumentException("Food per character must be positive.");
 
         this.points_penalty = points_penalty;
         this.food_per_character = food_per_character;

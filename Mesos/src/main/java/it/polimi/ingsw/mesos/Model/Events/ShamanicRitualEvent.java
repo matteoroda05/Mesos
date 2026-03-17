@@ -22,8 +22,8 @@ public class ShamanicRitualEvent extends EventCard {
     ) {
         super(era);
 
-        if (winner_bonus <= 0) throw new IllegalArgumentException("Winner bonus must be positive");
-        if (loser_penalty >= 0) throw new IllegalArgumentException("Loser penalty must be negative");
+        if (winner_bonus < 5 || winner_bonus > 15) throw new IllegalArgumentException("Winner bonus must be positive");
+        if (loser_penalty < -7 || loser_penalty > -3) throw new IllegalArgumentException("Loser penalty must be negative");
 
         this.winner_bonus = winner_bonus;
         this.loser_penalty = loser_penalty;
