@@ -37,7 +37,7 @@ class TribeTest {
         hunter1 = new HunterCard(Era.FIRST,2,true);
         builder1 = new BuilderCard(Era.SECOND,2,3,3);
         artist1 = new ArtistCard(Era.THIRD,2);
-        gatherer1 = new GathererCard(Era.FIRST,2,3);
+        gatherer1 = new GathererCard(Era.FIRST,2);
         inventor1 = new InventorCard(Era.SECOND,2, InventionIcon.ARROW);
         shaman1 = new ShamanCard(Era.FIRST,2,3);
         building1 = new BuildingCard(Era.FIRST,2,6,5,BuildingTrigger.ON_END_GAME);
@@ -129,7 +129,7 @@ class TribeTest {
 
     @Test
     void gatherersDiscount(){
-        GathererCard gatherer2 = new GathererCard(Era.FIRST,2,3);
+        GathererCard gatherer2 = new GathererCard(Era.FIRST,2);
 
         assertEquals(0, tribe.gatherersDiscount());
         tribe.addCard(gatherer1);

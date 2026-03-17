@@ -17,9 +17,9 @@ public class CavePaintingEvent extends EventCard {
     public CavePaintingEvent(Era era, int threshold, int points_per_artist, int penalty) {
         super(era);
 
-        if (threshold <= 0) throw new IllegalArgumentException("Threshold must be positive");
-        if (points_per_artist <= 0) throw new IllegalArgumentException("Points per artist must be positive");
-        if (penalty >= 0) throw new IllegalArgumentException("Penalty must be negative");
+        if (threshold < 1 || threshold > 3) throw new IllegalArgumentException("Threshold must be positive");
+        if (points_per_artist < 1 || points_per_artist > 3) throw new IllegalArgumentException("Points per artist must be positive");
+        if (penalty != -2) throw new IllegalArgumentException("Penalty must be negative");
 
         this.threshold = threshold;
         this.points_per_artist = points_per_artist;

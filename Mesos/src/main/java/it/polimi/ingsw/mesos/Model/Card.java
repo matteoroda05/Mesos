@@ -11,8 +11,7 @@ abstract public class Card {
     public final int min_players;
 
     public Card(Era era, int min_players) {
-        if (min_players < 0) throw new IllegalArgumentException("min_players must be non-negative");
-        
+        if (min_players < 0 || min_players > 5) throw new IllegalArgumentException("min_players must be non-negative");
         // TODO: use Integer or long for card_id instead of UUID
         this.card_id = UUID.randomUUID();
         this.era = era;

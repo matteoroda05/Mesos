@@ -9,6 +9,7 @@ public class InventorCard extends CharacterCard {
 
     public InventorCard(Era era, int min_players, InventionIcon inventionIcon) {
         super(era, min_players);
+        if (inventionIcon == null) throw new IllegalArgumentException("inventionIcon cannot be null");
         this.inventionIcon = inventionIcon;
     }
 

@@ -26,13 +26,16 @@ public class TribeDeck {
             throw new IllegalArgumentException(
                     "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
+        if (deck == null) {
+            throw new IllegalArgumentException("deck cannot be null");
+        }
 
         this.n_players = n_players;
         this.deck = new ArrayList<>(deck);
     }
 
     public List<TribeCard> drawTopRow() {
-        int num_cards = this.n_players + 4;
+        int num_cards = Math.min(this.n_players + 4, deck.size());
         List<TribeCard> output = new ArrayList<>();
         for (int i = 0; i < num_cards; i++) {
             output.add(deck.removeLast());
@@ -44,13 +47,12 @@ public class TribeDeck {
         int num_cards = this.n_players + 1;
         List<TribeCard> output = new ArrayList<>();
         List<TribeCard> events = new ArrayList<>();
-    
-        for (int i = 0; i < num_cards; i++) {
+
+        while (output.size() < num_cards && !deck.isEmpty()) {
             TribeCard card = deck.removeLast();
             // TODO: use type enum instead of instanceof
             if (card instanceof EventCard) {
                 events.add(card);
-                i--;
             } else {
                 output.add(card);
             }

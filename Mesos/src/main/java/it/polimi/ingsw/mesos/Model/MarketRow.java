@@ -12,6 +12,13 @@ public class MarketRow {
     private final List<BuildingCard> building_market;
 
     public MarketRow(boolean is_top_row, TribeDeck tribe_deck, BuildingDeck building_deck) {
+        if (tribe_deck == null) {
+            throw new IllegalArgumentException("tribe_deck cannot be null");
+        }
+        if (is_top_row && building_deck == null) {
+            throw new IllegalArgumentException("building_deck cannot be null for top row");
+        }
+        
         this.tribe_market = is_top_row ? tribe_deck.drawTopRow() : tribe_deck.drawInitialBottomRow();
         this.building_market = is_top_row ? building_deck.drawBuildingCards() : new ArrayList<>();
     }
