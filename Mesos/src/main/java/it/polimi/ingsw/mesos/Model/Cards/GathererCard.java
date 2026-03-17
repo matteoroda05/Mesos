@@ -1,17 +1,22 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public final class GathererCard extends CharacterCard {
     private final int food_discount;
 
-    public GathererCard(Era era, int min_players, int food_discount) {
+    @JsonCreator
+    public GathererCard(
+            @JsonProperty("era") Era era,
+            @JsonProperty("minPlayers") int min_players,
+            @JsonProperty("foodDiscount") int food_discount
+    ) {
         super(era, min_players);
 
-        if (food_discount <= 0) throw new IllegalArgumentException("Food discount must be positive");
-
-        this.food_discount = food_discount;
+        this.food_discount = 3;
     }
 
     public int getDiscount() {
@@ -20,6 +25,6 @@ public final class GathererCard extends CharacterCard {
 
     @Override
     public CharacterType getCharacterType() {
-        return CharacterType.ARTIST;
+        return CharacterType.GATHERER;
     }
 }

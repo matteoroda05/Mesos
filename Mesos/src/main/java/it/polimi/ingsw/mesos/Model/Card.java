@@ -10,7 +10,8 @@ abstract public class Card implements Comparable<Card> {
     private final int min_players;
 
     public Card(Era era, int min_players) {
-        if (min_players < 0) throw new IllegalArgumentException("min_players must be non-negative");
+        if (min_players < 0 || min_players > 5) throw new IllegalArgumentException("min_players must be between 0 and 5");
+
         this.card_id = Globals.generateUniqueCardId();
         this.era = era;
         this.min_players = min_players;

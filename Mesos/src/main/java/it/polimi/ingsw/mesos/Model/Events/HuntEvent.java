@@ -3,6 +3,8 @@ package it.polimi.ingsw.mesos.Model.Events;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
@@ -13,11 +15,16 @@ public class HuntEvent extends EventCard {
     private final int prestige_per_hunter;
     private final int food_per_hunter;
 
-    public HuntEvent(Era era, int prestige_per_hunter, int food_per_hunter) {
+    @JsonCreator
+    public HuntEvent(
+            @JsonProperty("era")               Era era,
+            @JsonProperty("prestigePerHunter") int prestige_per_hunter,
+            @JsonProperty("foodPerHunter")     int food_per_hunter
+    ) {
         super(era);
 
-        if (prestige_per_hunter <= 0) throw new IllegalArgumentException("Prestige per hunter must be positive.");
-        if (food_per_hunter <= 0) throw new IllegalArgumentException("Food per hunter must be positive.");
+        if (prestige_per_hunter < 1 || prestige_per_hunter > 3) throw new IllegalArgumentException("Prestige per hunter must be positive.");
+        if (food_per_hunter != 1) throw new IllegalArgumentException("Food per hunter must be positive.");
         
         this.prestige_per_hunter = prestige_per_hunter;
         this.food_per_hunter = food_per_hunter;
