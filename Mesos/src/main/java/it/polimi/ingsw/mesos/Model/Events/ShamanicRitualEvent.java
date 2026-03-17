@@ -3,6 +3,8 @@ package it.polimi.ingsw.mesos.Model.Events;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -12,7 +14,12 @@ public class ShamanicRitualEvent extends EventCard {
     private final int winner_bonus;
     private final int loser_penalty;
 
-    public ShamanicRitualEvent(Era era, int winner_bonus, int loser_penalty) {
+    @JsonCreator
+    public ShamanicRitualEvent(
+            @JsonProperty("era")          Era era,
+            @JsonProperty("winnerBonus")  int winner_bonus,
+            @JsonProperty("loserPenalty") int loser_penalty
+    ) {
         super(era);
 
         if (winner_bonus <= 0) throw new IllegalArgumentException("Winner bonus must be positive");

@@ -1,10 +1,17 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public final class ArtistCard extends CharacterCard {
-    public ArtistCard(Era era, int min_players) {
+
+    @JsonCreator
+    public ArtistCard(
+            @JsonProperty("era")        Era era,
+            @JsonProperty("minPlayers") int min_players
+    ) {
         super(era, min_players);
     }
 

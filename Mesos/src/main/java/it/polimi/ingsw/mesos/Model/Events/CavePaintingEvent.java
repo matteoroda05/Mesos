@@ -3,6 +3,8 @@ package it.polimi.ingsw.mesos.Model.Events;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
@@ -14,7 +16,13 @@ public class CavePaintingEvent extends EventCard {
     private final int points_per_artist;
     private final int penalty;
 
-    public CavePaintingEvent(Era era, int threshold, int points_per_artist, int penalty) {
+    @JsonCreator
+    public CavePaintingEvent(
+            @JsonProperty("era")             Era era,
+            @JsonProperty("threshold")       int threshold,
+            @JsonProperty("pointsPerArtist") int points_per_artist,
+            @JsonProperty("penalty")         int penalty
+    ) {
         super(era);
 
         if (threshold <= 0) throw new IllegalArgumentException("Threshold must be positive");
