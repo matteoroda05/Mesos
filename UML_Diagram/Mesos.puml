@@ -10,7 +10,7 @@ package "Model" {
     - players: Map<Color, Player>
     - current_player_index: int
     - tribe_deck: TribeDeck
-    - building_decks: Map<Era, BuildingDeck>
+    - building_decks: BuildingDeck
 
     + setupGame(player_count: int): void
     + computeFinalScores(): ScoreBoard
@@ -53,10 +53,13 @@ package "Model" {
     - prestige: int
 
     
+    + getNickname(): String
+    + getColor(): Color
+    + getTribe(): Tribe
     + getFood(): int
     + getPrestige(): int
     + gainFood(amount: int): void
-    + payFood(amount: int): boolean
+    + loseFood(amount: int): void
     + gainPrestige(pp: int): void
     + losePrestige(pp: int): void
   }
@@ -65,10 +68,11 @@ package "Model" {
     - characters: Dictionary<CharacterType, List<CharacterCard>>
     - buildings: List<BuildingCard>
 
-    + addCharacter(c: CharacterCard): void
-    + addBuilding(b: BuildingCard): void
-    + countCharactersFromType(t: CharacterType): int
-    + shamanIcons(): int
+    + addCard(c: CharacterCard): void
+    + addCard(b: BuildingCard): void
+    + getNumCharacters(): int
+    + getNumCharcaterOfType(t: CharacterType): int
+    + countShamanStars(): int
     + buildersDiscount(): int
     + gatherersDiscount(): int
     + inventorsIcons(): Set<InventionIcon>
@@ -140,23 +144,23 @@ package "Model" {
   }
 
   class ShamanCard extends CharacterCard {
-    - icons_value: int
+    - num_stars: int
 
-    + getIcons(): int
+    + getStars(): int
   }
 
   class BuilderCard extends CharacterCard {
-    - discount_value: int
-    - end_game_prestige_value: int
+    - food_discount: int
+    - prestige_points: int
 
-    + getBuilderDiscount(): int
-    + getBuilderPrestige(): int
+    + getBuildingDiscount(): int
+    + getPrestigePoints(): int
   }
 
   class GathererCard extends CharacterCard {
     - discount_value: int
 
-    + getGathererDiscount(): int
+    + getDiscount(): int
   }
 
   class ArtistCard extends CharacterCard
@@ -173,9 +177,10 @@ package "Model" {
   }
 
   class SustainanceEvent extends EventCard {
-    - points_convertion: int
+    - points_penalty: int
+    - food_per_character: int
 
-    + getPointsConvertion(): int
+    + getPointsPenalty(): int
   }
 
   class ShamanicRitualEvent extends EventCard {
@@ -184,94 +189,39 @@ package "Model" {
   }
 
   class CavePaintingEvent extends EventCard {
-    - treshold: int
+    - threshold: int
     - points_per_artist: int
     - penalty: int
   }
 
   class HuntEvent extends EventCard {
-    - prestige_gain_per_hunter: int
+    - prestige_per_hunter: int
+    - food_gain_per_hunter: int
   }
 
   class BuildingCard extends Card {
-  - foodCost: int
-  - prestigePoints: int
-  - owner: Player
-  - trigger: BuildingTrigger
-  - buildingEffect: BuildingEffect
+    - foodCost: int
+    - prestigePoints: int
+    - owner: Player
+    - trigger: BuildingTrigger
+    - buildingEffect: BuildingEffect
 
-  + canBeBoughtBy(p: Player): boolean
-  + effectiveCostFor(p: Player): int
-  + onAcquired(p: Player): void
-  + effect(): boolean
-}
+    + canBeBoughtBy(p: Player): boolean
+    + effectiveCostFor(p: Player): int
+    + onAcquired(p: Player): void
+    + effect(): boolean
+  }
 
 
-interface BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class CompleteSetOfSixFoodEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class SustainanceDiscountPerCharacterTypeEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class IgnoreShamanicMinorityPenaltyEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class ExtraFoodOnTurnOrderBonusPlacementEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class EqualInventorPairFoodEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class ExtraShamanIconsEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class DoubleAndTieWinShamanicRewardEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class ExtraHuntRewardPerHunterEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class DoubleBuildersEndGamePrestigeEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class FoodPerArtistOnCavePaintingEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class EndGamePrestigePerDistinctTypeSetEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class EndGamePrestigePerCharacterTypeEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
-
-class ExtraTopRowPickBeforeEndRoundEffect implements BuildingEffect { 
-   ‘ricordiamoci che questa deve ricevere marketrow
-  + effect(source: BuildingCard): boolean
-}
-
-class FlatEndGamePrestigeEffect implements BuildingEffect {
-  + effect(source: BuildingCard): boolean
-}
+  interface BuildingEffect {
+    + effect(source: BuildingCard): boolean
+  }
 
   class TribeDeck {
-    - cards: List<TribeCard>
+    - deck: List<TribeCard>
 
-    + drawAll(n_players: int): List<TribeCard>
+    + drawTopRow(n_players: int): List<TribeCard>
+    + drawInitialBottomRow(n_player: int): List<TribeCard>
     + isEmpty(): boolean
   }
  
@@ -279,7 +229,7 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
     - era: Era
     - cards: List<BuildingCard>
 
-    + drawAll(): List<BuildingCard>
+    + getBuildingCards(): List<BuildingCard>
     + isEmpty(): boolean
   }
 
@@ -287,7 +237,10 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
     ON_END_TURN
     ON_END_ROUND
     ON_END_GAME
-    ON_EVENT
+    ON_EVENT_SUSTENANCE
+    ON_EVENT_HUNT
+    ON_EVENT_SHAMANIC_RITUAL
+    ON_EVENT_CAVE_PAINTINGS
     ON_ACQUIRE_CHARACTER
   }
 
@@ -295,7 +248,7 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
     -  tiles: List<OfferTile>
 
     + getAvailableTiles(): List<OfferTile> 
-    + tile(String id):OfferTile 
+    + getTile(num: int):OfferTile 
     + getOccupiedTiles(): List<OfferTile>
   }
 
@@ -304,7 +257,7 @@ class FlatEndGamePrestigeEffect implements BuildingEffect {
     - pick_top_row: int
     - pick_bottom_row: int
     - occupant: Color
-    - foodGain: int
+    - food_gain: int
     - min_num_players: int
 
     + isAvailable(): boolean
@@ -380,5 +333,68 @@ TribeDeck o-- TribeCard
 
 BuildingDeck o-- BuildingCard
 BuildingDeck o-- Era
+
+package "Controller" {
+
+  class RequestController {
+    - game_view: GameView   ‘inside View
+    - gam_flow_controller: GameFlowController
+
+    + pickCard(card_pos: int, upper_row: boolean): void
+    + chooseOffer(tile_pos: int): void
+    + exitGame(): void
+    + viewScoreboard(): void
+  }
+
+  class GameFlowController {
+    - model_controller: ModelController
+    - phase: GamePhase
+    - components: Map<...>  ‘everything loaded from the json file
+
+    + GameFlowController(map_of_all: Map<...>): void
+    + play(): void
+    + round(): void
+    + doActions(): void  ‘building trigger: END_OF_TURN, ON_ACQUIRE_CHARACTER
+    + resolveEvents(): void  ‘building trigger: ON_EVENT 
+    + restoreMarket(): void  ‘building trigger: END_ROUND
+    + newEra(): void
+    + finalScoring(): void  ‘building trigger: ON_END_GAME
+    + endScreen(): void
+  }
+
+  enum GamePhase {
+    LOADING,
+    LOGIN,
+    SETUP,
+    ROUND_OFFER,
+    ROUND_ACTIONS,
+    ROUND_EVENTS,
+    ROUND_END,  ‘market sup -> inf, new market row
+    FINAL_EVENTS,
+    END_GAME,
+    END_SCREEN
+  }
+
+  class ModelController {
+    - game: GameContext
+
+    + createBoard(numPlayers: int, components: Map<...>): void
+    + playerChooseOffer(player: Color, offer: int): void
+    + playerChooseCard(player: Color, card: int): void
+    + playerChooseBuilding(player: Color, building: int): void
+    + activateBuildingEffect(player: Color, trigger: BuildingTrigger): void
+    + playerEndTurn(player: Color): void  ‘reward for position
+    + newEra(): void
+    + getEventsBottom(): List<EventCard>
+    + endRound(): void
+      ‘moves cards from upper to lower market row
+    + changePrestige(player: Color, prestige: int): void
+    + changeFood(player: Color, food: int): void
+  }
+}
+
+'Associazioni interpakcage
+
+Controller  o-- Model
 
 @enduml
