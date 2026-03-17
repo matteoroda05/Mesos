@@ -1,6 +1,7 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
 import it.polimi.ingsw.mesos.Controller.PlayerController;
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.*;
 
 import java.util.Arrays;

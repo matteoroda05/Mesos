@@ -1,10 +1,11 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
 import it.polimi.ingsw.mesos.Controller.PlayerController;
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.TurnOrderSpace;
-import it.polimi.ingsw.mesos.Model.TurnOrderTile;
+import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
+import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
 import java.util.List;
 

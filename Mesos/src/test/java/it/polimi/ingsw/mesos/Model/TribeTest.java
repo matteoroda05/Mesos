@@ -1,15 +1,10 @@
 package it.polimi.ingsw.mesos.Model;
 
-import it.polimi.ingsw.mesos.Model.Cards.*;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
-import it.polimi.ingsw.mesos.Model.Cards.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.ShamanCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

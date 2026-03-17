@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import it.polimi.ingsw.mesos.Globals;
+import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 
 public class OfferTrack {
     private List<OfferTile> tiles;

@@ -2,16 +2,16 @@ package it.polimi.ingsw.mesos.Model;
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.*;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
-import it.polimi.ingsw.mesos.Model.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Events.SustenanceEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 

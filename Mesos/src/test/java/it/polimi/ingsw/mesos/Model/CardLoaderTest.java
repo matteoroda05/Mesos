@@ -1,15 +1,16 @@
 package it.polimi.ingsw.mesos.Model;
 
 import it.polimi.ingsw.mesos.Model.Cards.*;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
+import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Events.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

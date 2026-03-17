@@ -5,9 +5,12 @@ import java.util.List;
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
+import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
 public class GameTable {
     private final OfferTrack offer_track;

@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Cards.Characters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Cards.HunterCard;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 

@@ -1,6 +1,9 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
 import it.polimi.ingsw.mesos.Controller.PlayerController;
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
