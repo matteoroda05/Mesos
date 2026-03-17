@@ -12,8 +12,7 @@ abstract public class Card implements Comparable<Card> {
     public Card(Era era, int min_players) {
         if (min_players < 0 || min_players > 5) throw new IllegalArgumentException("min_players must be between 0 and 5");
         
-        // TODO: use Integer or long for card_id instead of UUID
-        this.card_id = UUID.randomUUID();
+        this.card_id = Globals.generateUniqueCardId();
         this.era = era;
         this.min_players = min_players;
     }
