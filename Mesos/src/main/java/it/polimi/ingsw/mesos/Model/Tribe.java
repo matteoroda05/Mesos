@@ -109,7 +109,7 @@ public class Tribe {
         return discount;
     }
 
-    private int buildersEndGamePrestige() {
+    public int buildersEndGamePrestige() {
         List<CharacterCard> builders = this.characters.get(CharacterType.BUILDER);
         if (builders.isEmpty()) {
             return 0;
