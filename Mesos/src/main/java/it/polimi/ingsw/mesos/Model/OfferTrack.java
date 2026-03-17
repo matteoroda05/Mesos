@@ -23,10 +23,17 @@ public class OfferTrack {
         if (this.tiles.size() != num_players + 2){
             throw new IllegalStateException("There must be " + num_players +" + 2 tiles");
         }
+
+        if (this.tiles.stream().anyMatch(tile -> tile == null)) {
+            throw new IllegalStateException("Offer track contains null tile entries");
+        }
     }
 
     public List<OfferTile> getAvailableTiles() {
+        ensureTilesInitialized();
+
         List<OfferTile> output = this.tiles.stream()
+                .filter(tile -> tile != null)
                 .filter(tile -> tile.isAvailable())
                 .collect(Collectors.toList());
 
@@ -38,7 +45,10 @@ public class OfferTrack {
     }
 
     public List<OfferTile> getOccupiedTiles() {
+        ensureTilesInitialized();
+
         List<OfferTile> output = this.tiles.stream()
+                .filter(tile -> tile != null)
                 .filter(tile -> !tile.isAvailable())
                 .collect(Collectors.toList());
 
@@ -46,6 +56,23 @@ public class OfferTrack {
     }
 
     public OfferTile getTile(int index){
-        return tiles.get(index);
+        ensureTilesInitialized();
+
+        if (index < 0 || index >= tiles.size()) {
+            throw new IndexOutOfBoundsException("Index " + index + " out of bounds for offer track with size " + tiles.size());
+        }
+
+        OfferTile tile = tiles.get(index);
+        if (tile == null) {
+            throw new IllegalStateException("Offer tile at index " + index + " is null");
+        }
+
+        return tile;
+    }
+
+    private void ensureTilesInitialized() {
+        if (tiles == null) {
+            throw new IllegalStateException("Offer track tiles are not initialized");
+        }
     }
 }

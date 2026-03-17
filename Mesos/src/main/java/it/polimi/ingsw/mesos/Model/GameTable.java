@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
@@ -17,6 +18,10 @@ public class GameTable {
     private final TribeDeck tribe_deck;
  
     public GameTable(int num_players) {
+        if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
+            throw new IllegalArgumentException(
+                "numPlayers must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+        }
         this.offer_track = new OfferTrack(num_players);
         this.turn_order_tile = new TurnOrderTile(num_players);
         this.building_deck = new BuildingDeck(num_players);

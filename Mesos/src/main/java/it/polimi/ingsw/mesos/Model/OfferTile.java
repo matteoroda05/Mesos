@@ -17,17 +17,17 @@ public class OfferTile {
             throw new IllegalArgumentException(
                 "offerTileId must be between '" + Globals.FIRST_OFFER + "' and '" + Globals.LAST_OFFER);
         }
-        if (pick_top_row < 0) {
-            throw new IllegalArgumentException("pickTopRow cannot be negative");
+        if (pick_top_row < 0 || pick_top_row > 2) {
+            throw new IllegalArgumentException("pickTopRow must be between 0 and 2");
         }
-        if (pick_bottom_row < 0) {
-            throw new IllegalArgumentException("pickBottomRow cannot be negative");
+        if (pick_bottom_row < 0 || pick_bottom_row > 2) {
+            throw new IllegalArgumentException("pickBottomRow must be between 0 and 2");
         }
-        if (food_gain < 0) {
-            throw new IllegalArgumentException("foodGain cannot be negative");
+        if (food_gain < 0 || food_gain > 3) {
+            throw new IllegalArgumentException("foodGain cannot be negative or greater than 3");
         }
-        if (min_num_players < 0) {
-            throw new IllegalArgumentException("minNumPlayers must be positive");
+        if (min_num_players < 2 || min_num_players > 5) {
+            throw new IllegalArgumentException("minNumPlayers must be between 2 and 5");
         }
 
         this.id = offer_tile_id;
