@@ -13,4 +13,8 @@ module it.polimi.ingsw.mesos {
 
     opens it.polimi.ingsw.mesos to javafx.fxml;
     exports it.polimi.ingsw.mesos;
+    opens it.polimi.ingsw.mesos.Model.Cards.Events to com.fasterxml.jackson.databind;
+    opens it.polimi.ingsw.mesos.Model.Cards.Characters to com.fasterxml.jackson.databind;
+    opens it.polimi.ingsw.mesos.Model.Cards.Buildings to com.fasterxml.jackson.databind;
+    opens it.polimi.ingsw.mesos.Model.Tiles to com.fasterxml.jackson.databind;
 }
