@@ -14,7 +14,7 @@ public class GathererCardTest {
 
     @BeforeEach
     void setUp(){
-        this.gatherer = new GathererCard(Era.SECOND, 0, 3);
+        this.gatherer = new GathererCard(Era.SECOND, 0);
     }
 
     @Test
@@ -30,12 +30,12 @@ public class GathererCardTest {
     @Test
     void constructorTestThrowsExceptionForZeroDiscount(){
         assertThrows(IllegalArgumentException.class,
-                () -> new GathererCard(Era.FIRST, 0, 0));
+                () -> new GathererCard(Era.FIRST, 0));
     }
 
     @Test
     void constructorTestThrowsExceptionForNegativeDiscount(){
         assertThrows(IllegalArgumentException.class,
-                () -> new GathererCard(Era.SECOND, 2, -1));
+                () -> new GathererCard(Era.SECOND, 2));
     }
 }
