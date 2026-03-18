@@ -4,9 +4,6 @@
 - `BuildingEffect`
     - decide wether or not to use an interface, if so decide how to implement it
 - `TurnOrderTile` and `TurnOrderSpace`
-- `instanceOf` and `switch` for polymorfism:
-    - how often can we use them
-    - possible alternatives
 
 
 ### Todo list:
@@ -20,7 +17,10 @@
     - initialise deck with cards from json file
 - `Tribe`
     - fix/implement function that computes points from building effects
-    - downcast issue
 - `TribeDeck`
-    - use type enum instead of instanceof
     - initialise cards from json file
+- `BuildingCard`
+    - conclude building effects under `Buildings` package
+        * `BuildingEndRound`: add visitor that can allow extra card pick
+- `PlayerController`
+    - implement actual methods

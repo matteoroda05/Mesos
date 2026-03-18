@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 
 public class TribeDeck {
@@ -50,8 +49,7 @@ public class TribeDeck {
 
         while (output.size() < num_cards && !deck.isEmpty()) {
             TribeCard card = deck.removeLast();
-            // TODO: use type enum instead of instanceof
-            if (card instanceof EventCard) {
+            if (card.isEvent()) {
                 events.add(card);
             } else {
                 output.add(card);
