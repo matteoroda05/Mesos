@@ -1,15 +1,20 @@
 package it.polimi.ingsw.mesos.Model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
@@ -94,8 +99,6 @@ public class Tribe {
         }
         return prestige;
     }
-
-    // TODO: chiedere come downcastare in modo più elegante
 
     public int countShamanStars() {
         List<CharacterCard> shamans = this.characters.get(ShamanCard.class);
