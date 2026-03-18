@@ -5,7 +5,6 @@ import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -52,7 +51,7 @@ class CardLoaderTest {
                 .filter(c -> c instanceof HunterCard)
                 .map(c -> (HunterCard) c)
                 .forEach(h ->
-                        assertEquals(CharacterType.HUNTER, h.getCharacterType())
+                        assertEquals(HunterCard.class, h.getClass())
                 );
     }
 
@@ -207,12 +206,12 @@ class CardLoaderTest {
     @Test
     void allCardsHaveNonNegativeMinPlayers() {
         data.tribeCards().forEach(c ->
-                assertTrue(c.min_players >= 0,
-                        "min_players must be >= 0, got " + c.min_players + " for " + c)
+                assertTrue(c.getMinPlayers() >= 0,
+                        "min_players must be >= 0, got " + c.getMinPlayers() + " for " + c)
         );
         data.buildingCards().forEach(c ->
-                assertTrue(c.min_players >= 0,
-                        "min_players must be >= 0, got " + c.min_players + " for " + c)
+                assertTrue(c.getMinPlayers() >= 0,
+                        "min_players must be >= 0, got " + c.getMinPlayers() + " for " + c)
         );
     }
 }

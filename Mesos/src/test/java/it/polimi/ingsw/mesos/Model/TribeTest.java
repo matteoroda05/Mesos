@@ -1,7 +1,8 @@
 package it.polimi.ingsw.mesos.Model;
 
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
@@ -35,7 +36,7 @@ class TribeTest {
         gatherer1 = new GathererCard(Era.FIRST,2);
         inventor1 = new InventorCard(Era.SECOND,2, InventionIcon.ARROW);
         shaman1 = new ShamanCard(Era.FIRST,2,3);
-        building1 = new BuildingCard(Era.FIRST,2,6,5,BuildingTrigger.ON_END_GAME);
+        building1 = new BuildingEndGame(Era.FIRST,2,6,5, false, 0, 0, null, 25);
     }
 
     @Test
@@ -44,8 +45,8 @@ class TribeTest {
         assertEquals(0, tribe.getNumCharacters());
         assertEquals(0, tribe.getNumBuildings());
 
-        for (CharacterType type : CharacterType.values()) {
-            assertEquals(0, tribe.getNumCharacterOfType(type));
+        for (Integer num_characters : tribe.getNumCharactersOfEachType().values()) {
+            assertEquals(0, num_characters);
         }
 
         assertEquals(0, tribe.buildingsPrestige());
@@ -63,8 +64,8 @@ class TribeTest {
         tribe.addCard(hunter1);
 
         assertEquals(1, tribe.getNumCharacters());
-        assertEquals(1, tribe.getNumCharacterOfType(CharacterType.HUNTER));
-        assertEquals(0, tribe.getNumCharacterOfType(CharacterType.BUILDER));
+        assertEquals(1, tribe.getNumCharacterOfType(HunterCard.class));
+        assertEquals(0, tribe.getNumCharacterOfType(BuilderCard.class));
     }
 
     @Test
@@ -77,8 +78,8 @@ class TribeTest {
 
     @Test
     void getBuildingsSameTrigger() {
-        BuildingCard building2 = new BuildingCard(Era.FIRST,2,4,6,BuildingTrigger.ON_END_GAME);
-        BuildingCard building3 = new BuildingCard(Era.FIRST,2,4,6,BuildingTrigger.ON_ACQUIRE_CHARACTER);
+        BuildingCard building2 = new BuildingEndGame(Era.FIRST,2,4,6, true, 0, 0, null, 0);
+        BuildingCard building3 = new BuildingOnCard(Era.FIRST,2,4,6, 5, true, false);
 
         tribe.addCard(building1);
         tribe.addCard(building2);
@@ -94,7 +95,7 @@ class TribeTest {
 
     @Test
     void buildingsPrestigeSumsPrestigeOfAllBuildings() {
-        BuildingCard building2 = new BuildingCard(Era.FIRST,2,4,6,BuildingTrigger.ON_END_GAME);
+        BuildingCard building2 = new BuildingEndGame(Era.FIRST,2,4,6, false, 6, 0, null, 0);
 
         tribe.addCard(building1);
         tribe.addCard(building2);

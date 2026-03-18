@@ -5,10 +5,12 @@ import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class BuildingOnCard extends BuildingCard {
@@ -54,21 +56,22 @@ public class BuildingOnCard extends BuildingCard {
         }
 
         // ensure there's only one type with the least number of cards and that it is the one the player just received
+        Map<Class<? extends CharacterCard>, Integer> counts = owner.getTribe().getNumCharactersOfEachType();
         int min = Integer.MAX_VALUE;
-        int counter = 0;
-        CharacterType to_get_bonus = null;
-        for (CharacterType type : CharacterType.values()) {
-            final int amount = owner.getTribe().getNumCharacterOfType(type);
+        List<Class<? extends CharacterCard>> keys = new ArrayList<>();
+
+        for (Class<? extends CharacterCard> type : counts.keySet()) {
+            final int amount = counts.get(type);
             if (amount < min) {
                 min = amount;
-                counter = 1;
-                to_get_bonus = type;
+                keys.clear();
+                keys.add(type);
             } else if (amount == min) {
-                counter++;
+                keys.add(type);
             }
         }
 
-        if (counter == 1 && to_get_bonus == card.getCharacterType()) {
+        if (keys.size() == 1 && keys.getFirst() == card.getClass()) {
             visitor.addFood(food_bonus, owner.getColor());
         }
     }

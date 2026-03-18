@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 
@@ -39,7 +39,7 @@ public class CavePaintingEvent extends EventCard {
         List<Integer> player_outcomes = new ArrayList<>();
 
         for (Tribe tribe : players_tribes) {
-            int artists = tribe.getNumCharacterOfType(CharacterType.ARTIST);
+            int artists = tribe.getNumCharacterOfType(ArtistCard.class);
             if (artists >= threshold) {
                 player_outcomes.add(points_per_artist * artists);
             } else {
