@@ -1,35 +1,30 @@
 package it.polimi.ingsw.mesos.Model;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import it.polimi.ingsw.mesos.Model.Cards.BuilderCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Cards.ArtistCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
 public class Tribe {
-    private final Map<CharacterType, List<CharacterCard>> characters;
+    private final Map<Class<? extends CharacterCard>, List<CharacterCard>> characters;
     private final List<BuildingCard> buildings;
 
     public Tribe() {
         this.characters = Map.of(
-            CharacterType.INVENTOR, new ArrayList<>(),
-            CharacterType.GATHERER, new ArrayList<>(),
-            CharacterType.SHAMAN, new ArrayList<>(),
-            CharacterType.BUILDER, new ArrayList<>(),
-            CharacterType.ARTIST, new ArrayList<>(),
-            CharacterType.HUNTER, new ArrayList<>()
+            InventorCard.class, new ArrayList<>(),
+            GathererCard.class, new ArrayList<>(),
+            ShamanCard.class, new ArrayList<>(),
+            BuilderCard.class, new ArrayList<>(),
+            ArtistCard.class, new ArrayList<>(),
+            HunterCard.class, new ArrayList<>()
         );
 
         this.buildings = new ArrayList<>();
@@ -45,7 +40,7 @@ public class Tribe {
         return total;
     }
 
-    public int getNumCharacterOfType(CharacterType type) {
+    public int getNumCharacterOfType(Class<? extends CharacterCard> type) {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null");
         }
@@ -54,6 +49,14 @@ public class Tribe {
             throw new IllegalStateException("No character list configured for type: " + type);
         }
         return cards.size();
+    }
+
+    public Map<Class<? extends CharacterCard>, Integer> getNumCharactersOfEachType() {
+        Map<Class<? extends CharacterCard>, Integer> output = new HashMap<>();
+        characters.forEach((k, v) -> {
+            output.put(k, v.size());
+        });
+        return output;
     }
 
     public List<BuildingCard> getBuildingsWithTrigger(BuildingTrigger trigger) {
@@ -95,7 +98,7 @@ public class Tribe {
     // TODO: chiedere come downcastare in modo più elegante
 
     public int countShamanStars() {
-        List<CharacterCard> shamans = this.characters.get(CharacterType.SHAMAN);
+        List<CharacterCard> shamans = this.characters.get(ShamanCard.class);
         if (shamans.isEmpty()) {
             return 0;
         }
@@ -109,7 +112,7 @@ public class Tribe {
     }
 
     public int buildersDiscount() {
-        List<CharacterCard> builders = this.characters.get(CharacterType.BUILDER);
+        List<CharacterCard> builders = this.characters.get(BuilderCard.class);
         if (builders.isEmpty()) {
             return 0;
         }
@@ -122,8 +125,8 @@ public class Tribe {
         return discount;
     }
 
-    private int buildersEndGamePrestige() {
-        List<CharacterCard> builders = this.characters.get(CharacterType.BUILDER);
+    public int buildersEndGamePrestige() {
+        List<CharacterCard> builders = this.characters.get(BuilderCard.class);
         if (builders.isEmpty()) {
             return 0;
         }
@@ -137,7 +140,7 @@ public class Tribe {
     }
 
     public int gatherersDiscount() {
-        List<CharacterCard> gatherers = this.characters.get(CharacterType.GATHERER);
+        List<CharacterCard> gatherers = this.characters.get(GathererCard.class);
         if (gatherers.isEmpty()) {
             return 0;
         }
@@ -151,7 +154,7 @@ public class Tribe {
     }
 
     public Set<InventionIcon> inventionIcons() {
-        List<CharacterCard> inventors = this.characters.get(CharacterType.INVENTOR);
+        List<CharacterCard> inventors = this.characters.get(InventorCard.class);
         Set<InventionIcon> icons = new HashSet<>();
         for (CharacterCard inventor : inventors) {
             // DOWNCASTING
@@ -161,13 +164,13 @@ public class Tribe {
     }
 
     private int inventorsEndGamePrestige() {
-        int inventor_count = getNumCharacterOfType(CharacterType.INVENTOR);
+        int inventor_count = getNumCharacterOfType(InventorCard.class);
         int different_icons = inventionIcons().size();
         return inventor_count * different_icons;
     }
 
     private int artistsEndGamePrestige() {
-        int artist_count = getNumCharacterOfType(CharacterType.ARTIST);
+        int artist_count = getNumCharacterOfType(ArtistCard.class);
         return 10 * (artist_count / 2);
     }
 
@@ -185,14 +188,8 @@ public class Tribe {
         if (card == null) {
             throw new IllegalArgumentException("card cannot be null");
         }
-        CharacterType cardType = card.getCharacterType();
-        if (cardType == null) {
-            throw new IllegalArgumentException("character type cannot be null");
-        }
 
-        if (!isCardConsistentWithType(card, cardType)) {
-            throw new IllegalArgumentException("Character card class is inconsistent with its type: " + card.getClass().getSimpleName());
-        }
+        Class<? extends CharacterCard> cardType = card.getClass();
 
         this.characters.get(cardType).add(card);
     }
@@ -203,16 +200,4 @@ public class Tribe {
         }
         this.buildings.add(card);
     }
-
-    private static boolean isCardConsistentWithType(CharacterCard card, CharacterType type) {
-        return switch (type) {
-            case SHAMAN -> card instanceof ShamanCard;
-            case BUILDER -> card instanceof BuilderCard;
-            case GATHERER -> card instanceof GathererCard;
-            case INVENTOR -> card instanceof InventorCard;
-            case ARTIST -> card instanceof ArtistCard;
-            case HUNTER -> card instanceof HunterCard;
-        };
-    }
-
 }
