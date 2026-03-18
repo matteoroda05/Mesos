@@ -8,6 +8,7 @@
 
 ### Todo list:
 - **Test classes**
+- **FIX ISSUES WITH `CharacterCard`'S ACCESS IN OTHER CLASSES (e.g. `HuntEvent`, `CavePaintingEvent`)**
 - Loader for every card/tile
     - tool Jackson to load every card
     - adjust constructors of `GameContext` and every other container to receive cards and tiles
