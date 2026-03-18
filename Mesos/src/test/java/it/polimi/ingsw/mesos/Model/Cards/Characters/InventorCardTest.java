@@ -1,22 +1,14 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Cards.Characters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Cards.InventorCard;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
 public class InventorCardTest {
-
-    @Test
-    void getCharacterTypeReturnsInventor(){
-        InventorCard inventor = new InventorCard(Era.SECOND, 0, InventionIcon.BOAT);
-        assertEquals(CharacterType.INVENTOR, inventor.getCharacterType());
-    }
-
     @Test
     void constructorTestInventionIconBoat(){
         InventorCard inventorBoat = new InventorCard(Era.FIRST, 2, InventionIcon.BOAT);
@@ -77,4 +69,9 @@ public class InventorCardTest {
         assertEquals(InventionIcon.BREAD, inventorBread.getInventionIcon());
     }
 
+    @Test
+    void constructorTestThrowsOnNullIcon(){
+        assertThrows(IllegalArgumentException.class,
+                () -> new InventorCard(Era.SECOND, 4, null));
+    }
 }
