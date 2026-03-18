@@ -2,15 +2,17 @@ package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
 import it.polimi.ingsw.mesos.Controller.PlayerController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+
+import java.util.Collections;
 
 public class BuildingEndGame extends BuildingCard {
     private final boolean double_builders_pp;
     private final int character_set_bonus_prestige;
     private final int character_multiplier;
-    private final CharacterType character_type;
+    private final Class<? extends CharacterCard> character_type;
     private final int prestige_bonus;
 
     public BuildingEndGame(
@@ -21,7 +23,7 @@ public class BuildingEndGame extends BuildingCard {
             boolean double_builders_pp,
             int character_set_bonus_prestige,
             int character_multiplier,
-            CharacterType character_type,
+            Class<? extends CharacterCard> character_type,
             int prestige_bonus
     ) {
         super(era, min_players, food_cost, prestige_points, BuildingTrigger.ON_END_GAME);
@@ -66,10 +68,7 @@ public class BuildingEndGame extends BuildingCard {
         }
 
         // number of sets completed = min number of character cards of one type
-        int min = Integer.MAX_VALUE;
-        for (CharacterType type : CharacterType.values()) {
-            min = Math.min(min, owner.getTribe().getNumCharacterOfType(type));
-        }
+        final int min = Collections.min(owner.getTribe().getNumCharactersOfEachType().values());
         final int prestige_bonus = min * character_set_bonus_prestige;
         visitor.addPrestige(prestige_bonus, owner.getColor());
     }

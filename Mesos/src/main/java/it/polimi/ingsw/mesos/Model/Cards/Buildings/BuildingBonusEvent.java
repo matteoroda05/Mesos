@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
 import it.polimi.ingsw.mesos.Controller.PlayerController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.*;
 
 import java.util.Arrays;
@@ -11,7 +12,7 @@ import java.util.Map;
 public class BuildingBonusEvent extends BuildingCard {
     private final int food_bonus;
     private final int pp_bonus;
-    private final CharacterType character_type;
+    private final Class<? extends CharacterCard> character_type;
 
     public BuildingBonusEvent(
             Era era,
@@ -20,7 +21,7 @@ public class BuildingBonusEvent extends BuildingCard {
             int prestige_points,
             int food_bonus,
             int pp_bonus,
-            CharacterType character_type,
+            Class<? extends CharacterCard> character_type,
             BuildingTrigger trigger
     ) {
         super(era, min_players, food_cost, prestige_points, trigger);

@@ -3,7 +3,6 @@ package it.polimi.ingsw.mesos.Model.Cards.Characters;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public final class HunterCard extends CharacterCard {
@@ -21,10 +20,5 @@ public final class HunterCard extends CharacterCard {
 
     public boolean isactive_hunter() {
         return active_hunter;
-    }
-
-    @Override
-    public CharacterType getCharacterType() {
-        return CharacterType.HUNTER;
     }
 }
