@@ -18,7 +18,7 @@ public final class HunterCard extends CharacterCard {
         this.active_hunter = active_hunter;
     }
 
-    public boolean isactive_hunter() {
+    public boolean isActiveHunter() {
         return active_hunter;
     }
 }

@@ -33,9 +33,15 @@ public class CardTest {
     }
 
     @Test
-    void constructorTestThrowsException(){
+    void constructorTestThrowsException1(){
         assertThrows(IllegalArgumentException.class, 
                 () -> new TestCard(Era.FIRST, -1));
+    }
+
+    @Test
+    void constructorTestThrowsException2(){
+        assertThrows(IllegalArgumentException.class,
+                () -> new TestCard(Era.FIRST, 7));
     }
 
     @Test
