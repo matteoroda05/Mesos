@@ -18,8 +18,8 @@ public final class BuilderCard extends CharacterCard {
     ) {
         super(era, min_players);
 
-        if (prestige_points < 0 || prestige_points > 4) throw new IllegalArgumentException("Prestige points cannot be negative");
-        if (food_discount < 1 || food_discount > 2) throw new IllegalArgumentException("Food discount cannot be negative");
+        if (prestige_points < 0 || prestige_points > 5) throw new IllegalArgumentException("Prestige points cannot be negative or greater than 5");
+        if (food_discount < 1 || food_discount > 2) throw new IllegalArgumentException("Food discount has to be between 1 and 2");
 
         this.prestige_points = prestige_points;
         this.food_discount = food_discount;

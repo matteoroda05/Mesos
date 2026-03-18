@@ -8,7 +8,6 @@ module it.polimi.ingsw.mesos {
 
     opens it.polimi.ingsw.mesos.Model        to com.fasterxml.jackson.databind;
     opens it.polimi.ingsw.mesos.Model.Cards  to com.fasterxml.jackson.databind;
-    opens it.polimi.ingsw.mesos.Model.Events to com.fasterxml.jackson.databind;
     opens it.polimi.ingsw.mesos.Model.Enums  to com.fasterxml.jackson.databind;
 
     opens it.polimi.ingsw.mesos to javafx.fxml;

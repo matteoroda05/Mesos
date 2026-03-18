@@ -7,20 +7,20 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
 public final class InventorCard extends CharacterCard {
-    private final InventionIcon inventionIcon;
+    private final InventionIcon invention_icon;
 
     @JsonCreator
     public InventorCard(
             @JsonProperty("era")           Era era,
             @JsonProperty("minPlayers")    int min_players,
-            @JsonProperty("inventionIcon") InventionIcon inventionIcon
+            @JsonProperty("inventionIcon") InventionIcon invention_icon
     ) {
         super(era, min_players);
-        if (inventionIcon == null) throw new IllegalArgumentException("inventionIcon cannot be null");
-        this.inventionIcon = inventionIcon;
+        if (invention_icon == null) throw new IllegalArgumentException("Invention Icon cannot be null");
+        this.invention_icon = invention_icon;
     }
 
     public InventionIcon getInventionIcon() {
-        return inventionIcon;
+        return this.invention_icon;
     }
 }
