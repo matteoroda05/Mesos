@@ -2,12 +2,12 @@ package it.polimi.ingsw.mesos.Model.Cards;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import it.polimi.ingsw.mesos.Model.Card;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Events.SustenanceEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({

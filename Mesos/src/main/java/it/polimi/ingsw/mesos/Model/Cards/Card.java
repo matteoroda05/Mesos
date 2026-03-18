@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.Model.Cards;
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -11,7 +11,7 @@ abstract public class Card implements Comparable<Card> {
 
     public Card(Era era, int min_players) {
         if (min_players < 0 || min_players > 5) throw new IllegalArgumentException("min_players must be between 0 and 5");
-        
+
         this.card_id = Globals.generateUniqueCardId();
         this.era = era;
         this.min_players = min_players;

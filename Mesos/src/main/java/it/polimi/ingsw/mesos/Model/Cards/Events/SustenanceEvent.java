@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model.Events;
+package it.polimi.ingsw.mesos.Model.Cards.Events;
 
 import java.util.ArrayList;
 import java.util.List;

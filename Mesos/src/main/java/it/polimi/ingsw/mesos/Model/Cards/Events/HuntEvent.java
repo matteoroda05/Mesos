@@ -1,13 +1,13 @@
-package it.polimi.ingsw.mesos.Model.Events;
+package it.polimi.ingsw.mesos.Model.Cards.Events;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.CharacterType;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 
@@ -40,7 +40,7 @@ public class HuntEvent extends EventCard {
         List<Integer> player_outcomes = new ArrayList<>();
 
         for (Tribe tribe : players_tribes) {
-            int hunters = tribe.getNumCharacterOfType(CharacterType.HUNTER);
+            int hunters = tribe.getNumCharacterOfType(HunterCard.class);
             player_outcomes.add(hunters * prestige_per_hunter);
         }
 
