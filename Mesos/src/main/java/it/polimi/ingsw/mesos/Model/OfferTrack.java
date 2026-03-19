@@ -10,17 +10,14 @@ import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 public class OfferTrack {
     private List<OfferTile> tiles;
 
-    public OfferTrack(int num_players) {
+    public OfferTrack(List<OfferTile> offerTiles, int num_players) {
         if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
             throw new IllegalArgumentException(
-                "numPlayers must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+                "num_players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
 
         this.tiles = new ArrayList<>();
         
-        // TODO: Get offer tiles from loader 
-        {}
-
         if (this.tiles.size() != num_players + 2){
             throw new IllegalStateException("There must be " + num_players +" + 2 tiles");
         }

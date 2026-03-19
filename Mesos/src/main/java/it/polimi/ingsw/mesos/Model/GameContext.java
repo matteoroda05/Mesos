@@ -1,7 +1,9 @@
 package it.polimi.ingsw.mesos.Model;
 
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -15,17 +17,26 @@ public class GameContext {
     private final GameTable game_table;
     private Map<Color, Player> players;
 
-    public GameContext(String game_name, int game_size) {
+    public GameContext(String game_name, int game_size, GameTable game_table) {
+        if (game_name == null || game_name.isBlank()) {
+            throw new IllegalArgumentException("game_name cannot be null or blank");
+        }
         if (game_size < Globals.MIN_NUM_PLAYERS || game_size > Globals.MAX_NUM_PLAYERS) {
             throw new IllegalArgumentException(
                     "Game size must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
+        if (game_table == null) {
+            throw new IllegalArgumentException("game_table cannot be null");
+        }
+
         this.round_number = 0;
         this.current_era = Era.FIRST;
         this.game_name = game_name;
         this.game_size = game_size;
-        this.game_table = new GameTable(this.game_size);
+        this.game_table = game_table;
+        this.players = new EnumMap<>(Color.class);
     }
+
 
     public void setupGame(Map<Color, Player> players) {
         if (players == null) throw new IllegalArgumentException("players cannot be null");

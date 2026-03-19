@@ -12,8 +12,14 @@ module it.polimi.ingsw.mesos {
 
     opens it.polimi.ingsw.mesos to javafx.fxml;
     exports it.polimi.ingsw.mesos;
+    exports it.polimi.ingsw.mesos.Controller;
+    exports it.polimi.ingsw.mesos.Controller.Enums;
 
-    // Export subpackages for internal module access
+    exports it.polimi.ingsw.mesos.Model;
+    exports it.polimi.ingsw.mesos.Model.Enums;
+    exports it.polimi.ingsw.mesos.Model.Tiles;
+    exports it.polimi.ingsw.mesos.Model.Cards;
+
     exports it.polimi.ingsw.mesos.Model.Cards.Characters;
     exports it.polimi.ingsw.mesos.Model.Cards.Events;
     exports it.polimi.ingsw.mesos.Model.Cards.Buildings;

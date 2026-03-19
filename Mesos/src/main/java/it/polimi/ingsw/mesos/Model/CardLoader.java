@@ -5,20 +5,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-
 public class CardLoader {
 
     private static final String RESOURCE_PATH = "/Cards.json";
-
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private CardLoader() {}
-
 
     public static CardData load() throws IOException {
         try (InputStream in = CardLoader.class.getResourceAsStream(RESOURCE_PATH)) {
@@ -28,7 +26,6 @@ public class CardLoader {
             return load(in);
         }
     }
-
 
     public static CardData load(InputStream in) throws IOException {
         JsonNode root = MAPPER.readTree(in);
@@ -43,9 +40,17 @@ public class CardLoader {
                 new TypeReference<>() {}
         );
 
-        return new CardData(tribeCards, buildingCards);
+        List<OfferTile> offerTiles = MAPPER.convertValue(
+                root.get("offerTiles"),
+                new TypeReference<>() {}
+        );
+
+        return new CardData(tribeCards, buildingCards, offerTiles);
     }
 
-
-    public record CardData(List<TribeCard> tribeCards, List<BuildingCard> buildingCards) {}
+    public record CardData(
+            List<TribeCard> tribeCards,
+            List<BuildingCard> buildingCards,
+            List<OfferTile> offerTiles
+    ) {}
 }
