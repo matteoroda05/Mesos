@@ -1,5 +1,7 @@
 package it.polimi.ingsw.mesos.Model.Tiles;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
@@ -12,10 +14,17 @@ public class OfferTile {
     private final int food_gain;
     private final int min_num_players;
 
-    public OfferTile(char offer_tile_id, int pick_top_row, int pick_bottom_row, int food_gain, int min_num_players) {
+    @JsonCreator
+    public OfferTile(
+            @JsonProperty("offer_tile_id") char offer_tile_id,
+            @JsonProperty("pick_top_row") int pick_top_row,
+            @JsonProperty("pick_bottom_row") int pick_bottom_row,
+            @JsonProperty("food_gain") int food_gain,
+            @JsonProperty("min_num_players") int min_num_players
+    ) {
         if (offer_tile_id < Globals.FIRST_OFFER || offer_tile_id > Globals.LAST_OFFER) {
             throw new IllegalArgumentException(
-                "offerTileId must be between '" + Globals.FIRST_OFFER + "' and '" + Globals.LAST_OFFER);
+                "offerTileId must be between '" + Globals.FIRST_OFFER + "' and '" + Globals.LAST_OFFER + "'");
         }
         if (pick_top_row < 0 || pick_top_row > 2) {
             throw new IllegalArgumentException("pickTopRow must be between 0 and 2");
@@ -33,7 +42,7 @@ public class OfferTile {
         this.id = offer_tile_id;
         this.pick_top_row = pick_top_row;
         this.pick_bottom_row = pick_bottom_row;
-        this.occupant = null;
+        this.occupant = null; // sempre runtime
         this.food_gain = food_gain;
         this.min_num_players = min_num_players;
     }
@@ -73,12 +82,10 @@ public class OfferTile {
         if (!isAvailable()) {
             throw new IllegalStateException("Offer tile is already occupied");
         }
-
         this.occupant = player_color;
     }
 
     public void clear() {
         occupant = null;
     }
-
 }

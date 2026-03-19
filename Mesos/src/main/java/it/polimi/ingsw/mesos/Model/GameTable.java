@@ -3,7 +3,6 @@ package it.polimi.ingsw.mesos.Model;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
@@ -19,16 +18,29 @@ public class GameTable {
     private final MarketRow bottom_row;
     private final BuildingDeck building_deck;
     private final TribeDeck tribe_deck;
- 
-    public GameTable(int num_players) {
-        if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
-            throw new IllegalArgumentException(
-                "numPlayers must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+
+    public GameTable(OfferTrack offer_track,
+            TurnOrderTile turn_order_tile,
+            BuildingDeck building_deck,
+            TribeDeck tribe_deck) {
+
+        if (offer_track == null) {
+            throw new IllegalArgumentException("offerTrack cannot be null");
         }
-        this.offer_track = new OfferTrack(num_players);
-        this.turn_order_tile = new TurnOrderTile(num_players);
-        this.building_deck = new BuildingDeck(num_players);
-        this.tribe_deck = new TribeDeck(num_players);
+        if (turn_order_tile == null) {
+            throw new IllegalArgumentException("turnOrderTile cannot be null");
+        }
+        if (building_deck == null) {
+            throw new IllegalArgumentException("buildingDeck cannot be null");
+        }
+        if (tribe_deck == null) {
+            throw new IllegalArgumentException("tribeDeck cannot be null");
+        }
+
+        this.offer_track = offer_track;
+        this.turn_order_tile = turn_order_tile;
+        this.building_deck = building_deck;
+        this.tribe_deck = tribe_deck;
         this.top_row = new MarketRow(true, tribe_deck, building_deck);
         this.bottom_row = new MarketRow(false, tribe_deck, building_deck);
     }

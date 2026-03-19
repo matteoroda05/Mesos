@@ -10,7 +10,7 @@ public class TribeDeck {
     private List<TribeCard> deck;
     private int n_players;
 
-    public TribeDeck(int n_players) {
+    public TribeDeck(List<TribeCard> deck, int n_players) {
         if (n_players < Globals.MIN_NUM_PLAYERS || n_players > Globals.MAX_NUM_PLAYERS) {
             throw new IllegalArgumentException(
                 "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);

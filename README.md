@@ -9,19 +9,13 @@
 ### Todo list:
 - **Test classes**
 - **FIX ISSUES WITH `CharacterCard`'S ACCESS IN OTHER CLASSES (e.g. `HuntEvent`, `CavePaintingEvent`)**
-- Loader for every card/tile
-    - tool Jackson to load every card
-    - adjust constructors of `GameContext` and every other container to receive cards and tiles
-- `OfferTrack`
-    - populate offer track with correct tiles–from json–and check correct number
-- `BuildingDeck`
-    - initialise deck with cards from json file
+
 - `Tribe`
     - fix/implement function that computes points from building effects
-- `TribeDeck`
-    - initialise cards from json file
 - `BuildingCard`
     - conclude building effects under `Buildings` package
         * `BuildingEndRound`: add visitor that can allow extra card pick
 - `PlayerController`
     - implement actual methods
+- `GameSetup`
+    - for multy game support we should implement the copy constructor for all the model classes
