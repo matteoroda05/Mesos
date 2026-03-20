@@ -1,6 +1,6 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
-import it.polimi.ingsw.mesos.Controller.PlayerController;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
@@ -45,13 +45,13 @@ public class BuildingOnCard extends BuildingCard {
         }
     }
 
-    public void effect(CharacterCard card, PlayerController visitor) {
+    public void effect(CharacterCard card, ModelController visitor) {
         if (inventors_pair) {
             if (card.getClass() != InventorCard.class) return;
 
             final InventionIcon icon = ((InventorCard) card).getInventionIcon();
             final boolean not_in_set = inventor_icons.add(icon);
-            if (!not_in_set) visitor.addFood(food_bonus, owner.getColor());
+            if (!not_in_set) visitor.playerChangeFood(food_bonus, owner.getColor());
             return;
         }
 
@@ -72,7 +72,7 @@ public class BuildingOnCard extends BuildingCard {
         }
 
         if (keys.size() == 1 && keys.getFirst() == card.getClass()) {
-            visitor.addFood(food_bonus, owner.getColor());
+            visitor.playerChangeFood(food_bonus, owner.getColor());
         }
     }
 }

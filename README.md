@@ -1,14 +1,12 @@
 # Software engineering project – Polytechnic University of Milan, 2025/2026
 
 ### Question list:
-- `BuildingEffect`
-    - decide wether or not to use an interface, if so decide how to implement it
+- `newEra()` method only in model or in controller as well?
 - `TurnOrderTile` and `TurnOrderSpace`
 
 
 ### Todo list:
 - **Test classes**
-- **FIX ISSUES WITH `CharacterCard`'S ACCESS IN OTHER CLASSES (e.g. `HuntEvent`, `CavePaintingEvent`)**
 
 - `Tribe`
     - fix/implement function that computes points from building effects
@@ -17,3 +15,9 @@
         * `BuildingEndRound`: add visitor that can allow extra card pick
 - `PlayerController`
     - implement actual methods
+- `GameSetup`
+  - initialise first order of players in `TurnOrderTile`
+- `ModelController`
+    - add methods to get needed variables from `GameContext`and remove `getGameContext()`
+- `MarketRow`
+    - remove method `takeCard()` after fixing its tests

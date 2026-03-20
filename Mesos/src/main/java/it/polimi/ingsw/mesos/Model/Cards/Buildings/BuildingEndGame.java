@@ -1,6 +1,6 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
-import it.polimi.ingsw.mesos.Controller.PlayerController;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
@@ -49,27 +49,27 @@ public class BuildingEndGame extends BuildingCard {
         this.prestige_bonus = prestige_bonus;
     }
 
-    public void effect(PlayerController visitor) {
+    public void effect(ModelController visitor) {
         if (prestige_bonus != 0) {
-            visitor.addPrestige(prestige_bonus, owner.getColor());
+            visitor.playerChangePrestige(prestige_bonus, owner.getColor());
             return;
         }
 
         // add one more time the builders prestige: one time is done by default
         if (double_builders_pp) {
-            visitor.addPrestige(owner.getTribe().buildersEndGamePrestige(), owner.getColor());
+            visitor.playerChangePrestige(owner.getTribe().buildersEndGamePrestige(), owner.getColor());
             return;
         }
 
         if (character_multiplier != 0) {
             final int bonus_prestige = owner.getTribe().getNumCharacterOfType(character_type) * character_multiplier;
-            visitor.addPrestige(bonus_prestige, owner.getColor());
+            visitor.playerChangePrestige(bonus_prestige, owner.getColor());
             return;
         }
 
         // number of sets completed = min number of character cards of one type
         final int min = Collections.min(owner.getTribe().getNumCharactersOfEachType().values());
         final int prestige_bonus = min * character_set_bonus_prestige;
-        visitor.addPrestige(prestige_bonus, owner.getColor());
+        visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 }

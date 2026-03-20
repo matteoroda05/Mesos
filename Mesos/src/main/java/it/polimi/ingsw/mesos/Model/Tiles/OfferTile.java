@@ -85,7 +85,9 @@ public class OfferTile {
         this.occupant = player_color;
     }
 
-    public void clear() {
+    public Color clear() {
+        Color output = occupant;
         occupant = null;
+        return output;
     }
 }
