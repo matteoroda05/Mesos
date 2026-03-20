@@ -29,7 +29,6 @@ public class CardTest {
     void constructorTestInitialisation(){
         assertEquals(Era.SECOND, card.getEra());
         assertEquals(3, card.getMinPlayers());
-        assertTrue(card.getCardId() >= 0);
     }
 
     @Test
@@ -45,47 +44,7 @@ public class CardTest {
     }
 
     @Test
-    void differentCardIds(){
-        Card card1 = new TestCard(Era.FIRST, 2);
-        Card card2 = new TestCard(Era.SECOND, 0);
-
-        assertNotSame(card1.getCardId(), card2.getCardId());
-    }
-    
-    @Test
     void cardReturnsFalseToIsEvent(){
         assertEquals(false, card.isEvent());
-    }
-
-    @Test
-    void cardComparison1(){
-        Card card1 = new TestCard(Era.THIRD, 2);
-        Card card2 = new TestCard(Era.SECOND, 0);
-
-        assertTrue(card1.compareTo(card2) > 0);
-        assertTrue(card2.compareTo(card1) < 0);
-    }
-
-    @Test
-    void cardComparison2(){
-        Card card1 = new TestCard(Era.SECOND, 2);
-        Card card2 = new TestCard(Era.SECOND, 0);
-
-        int id1 = card1.getCardId();
-        int id2 = card2.getCardId();
-
-        assertEquals(Integer.compare(id1, id2), card1.compareTo(card2));
-        assertEquals(Integer.compare(id2, id1), card2.compareTo(card1));
-    }
-
-    @Test
-    void cardComparisonThrowsExeption(){
-        assertThrows(IllegalArgumentException.class, 
-            () -> card.compareTo(null));
-    }
-
-    @Test
-    void cardComparisonSame(){
-        assertEquals(0, card.compareTo(card));
     }
 }

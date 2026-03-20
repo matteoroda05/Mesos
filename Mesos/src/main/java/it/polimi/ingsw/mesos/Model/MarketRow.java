@@ -3,10 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.Card;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Cards.*;
 
 public class MarketRow {
     private final List<TribeCard> tribe_market;
@@ -65,6 +62,7 @@ public class MarketRow {
         return takeable;
     }
 
+    // TODO: remove this method after fixing tests
     public Card takeCard(int index, boolean isBuilding) {
         if (isBuilding) {
             checkIndex(index, building_market.size(), "building_market");
@@ -73,6 +71,23 @@ public class MarketRow {
             checkIndex(index, tribe_market.size(), "tribe_market");
             return tribe_market.remove(index);
         }
+    }
+
+    public BuildingCard takeBuildingCard(int index) {
+        checkIndex(index, building_market.size(), "building_market");
+        return building_market.remove(index);
+    }
+
+    public CharacterCard takeCharacterCard(int index) {
+        checkIndex(index, tribe_market.size(), "tribe_market");
+        if (tribe_market.get(index).isEvent()) throw new IllegalArgumentException("Cannot take event card");
+        // DOWN CASTING
+        return (CharacterCard) tribe_market.remove(index);
+    }
+
+    public int getBuildingCost(int index){
+        checkIndex(index, building_market.size(), "building_market");
+        return building_market.get(index).getFoodCost();
     }
 
     public void placeCard(Card c) {
