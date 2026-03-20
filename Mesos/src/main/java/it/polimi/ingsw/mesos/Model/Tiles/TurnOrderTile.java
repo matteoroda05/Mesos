@@ -62,6 +62,10 @@ public class TurnOrderTile {
         return spaces;
     }
 
+    public void clearFirst() {
+        spaces.getFirst().clear();
+    }
+
     public void clear() {
         for (TurnOrderSpace space : spaces) {
             space.clear();
