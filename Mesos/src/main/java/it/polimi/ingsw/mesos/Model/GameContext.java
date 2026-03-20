@@ -38,7 +38,7 @@ public class GameContext {
     }
 
 
-    public void setupGame(Map<Color, Player> players) {
+    public void setupPlayers(Map<Color, Player> players) {
         if (players == null) throw new IllegalArgumentException("players cannot be null");
 
         int num_players = players.size();

@@ -17,5 +17,3 @@
         * `BuildingEndRound`: add visitor that can allow extra card pick
 - `PlayerController`
     - implement actual methods
-- `GameSetup`
-    - for multy game support we should implement the copy constructor for all the model classes
