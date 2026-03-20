@@ -1,26 +1,23 @@
 # Software engineering project – Polytechnic University of Milan, 2025/2026
 
 ### Question list:
-- `BuildingEffect`
-    - decide wether or not to use an interface, if so decide how to implement it
+- `newEra()` method only in model or in controller as well?
 - `TurnOrderTile` and `TurnOrderSpace`
-- `instanceOf` and `switch` for polymorfism:
-    - how often can we use them
-    - possible alternatives
 
 
 ### Todo list:
 - **Test classes**
-- Loader for every card/tile
-    - tool Jackson to load every card
-    - adjust constructors of `GameContext` and every other container to receive cards and tiles
-- `OfferTrack`
-    - populate offer track with correct tiles–from json–and check correct number
-- `BuildingDeck`
-    - initialise deck with cards from json file
+
 - `Tribe`
     - fix/implement function that computes points from building effects
-    - downcast issue
-- `TribeDeck`
-    - use type enum instead of instanceof
-    - initialise cards from json file
+- `BuildingCard`
+    - conclude building effects under `Buildings` package
+        * `BuildingEndRound`: add visitor that can allow extra card pick
+- `PlayerController`
+    - implement actual methods
+- `GameSetup`
+  - initialise first order of players in `TurnOrderTile`
+- `ModelController`
+    - add methods to get needed variables from `GameContext`and remove `getGameContext()`
+- `MarketRow`
+    - remove method `takeCard()` after fixing its tests

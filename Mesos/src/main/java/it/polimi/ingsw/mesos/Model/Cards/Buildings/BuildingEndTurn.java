@@ -1,6 +1,6 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
-import it.polimi.ingsw.mesos.Controller.PlayerController;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -26,7 +26,7 @@ public class BuildingEndTurn extends BuildingCard {
         this.food_bonus = food_bonus;
     }
 
-    public void effect(TurnOrderTile order, PlayerController visitor) {
+    public void effect(TurnOrderTile order, ModelController visitor) {
         List<TurnOrderSpace> spaces = order.getSpaces();
 
         boolean found = false;
@@ -34,7 +34,7 @@ public class BuildingEndTurn extends BuildingCard {
             if (space.getOccupant() == owner.getColor()) {
                 found = true;
                 if (space.getBonus() > 0) {
-                    visitor.addFood(food_bonus, owner.getColor());
+                    visitor.playerChangeFood(food_bonus, owner.getColor());
                 }
             }
         }
