@@ -13,11 +13,14 @@ public class TribeDeck {
     public TribeDeck(List<TribeCard> deck, int n_players) {
         if (n_players < Globals.MIN_NUM_PLAYERS || n_players > Globals.MAX_NUM_PLAYERS) {
             throw new IllegalArgumentException(
-                "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+                    "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+        }
+        if (deck == null) {
+            throw new IllegalArgumentException("deck cannot be null");
         }
 
-        this.deck = new ArrayList<>();
         this.n_players = n_players;
+        this.deck = new ArrayList<>(deck);
     }
 
     public TribeDeck(int n_players, List<TribeCard> deck) {
@@ -38,7 +41,7 @@ public class TribeDeck {
         List<TribeCard> output = new ArrayList<>();
         for (int i = 0; i < num_cards; i++) {
             output.add(deck.removeLast());
-        } 
+        }
         return output;
     }
 
