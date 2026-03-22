@@ -6,8 +6,10 @@
 
 
 ### Todo list:
+- **Error handling**
 - **Test classes**
-
+- `CardLoader`
+    - fix issues with loading gatherer cards from JSON file
 - `Tribe`
     - fix/implement function that computes points from building effects
 - `BuildingCard`
