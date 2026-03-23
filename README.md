@@ -24,3 +24,5 @@
     - remove method `takeCard()` after fixing its tests
 - [ErrorStates](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Enums/ErrorStates.java)
   - Complete the enum
+- [OfferTrack](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/OfferTrack.java)
+  - method `getAvailableTiles()` could be removed
