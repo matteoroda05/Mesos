@@ -1,14 +1,12 @@
 package it.polimi.ingsw.mesos.Model;
 
 import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Cards.*;
+import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
+import it.polimi.ingsw.mesos.Model.Cards.Events.*;
+import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
-import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +38,7 @@ class TribeDeckTest {
         c3 = new ShamanCard(Era.FIRST, 2, 1);
         c4 = new ArtistCard(Era.FIRST, 2);
         c5 = new InventorCard(Era.FIRST, 2, InventionIcon.ARROW);
-        c6 = new BuilderCard(Era.FIRST, 2, 3, 3);
+        c6 = new BuilderCard(Era.FIRST, 2, 3, 2);
         c7 = new GathererCard(Era.SECOND, 2);
         c8 = new GathererCard(Era.THIRD, 2);
 

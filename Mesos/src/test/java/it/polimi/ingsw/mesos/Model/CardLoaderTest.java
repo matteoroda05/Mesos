@@ -36,7 +36,7 @@ class CardLoaderTest {
 
     @Test
     void tribeCardsTotalCountMatchesExpected() {
-        assertEquals(94, data.tribeCards().size());
+        assertEquals(95, data.tribeCards().size());
     }
 
     @Test
