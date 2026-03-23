@@ -10,6 +10,7 @@ import it.polimi.ingsw.mesos.Model.GameContext;
 import it.polimi.ingsw.mesos.Model.GameTable;
 import it.polimi.ingsw.mesos.Model.MarketRow;
 import it.polimi.ingsw.mesos.Model.Player;
+import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 
 public class ModelController {
     private final GameContext game_context;
@@ -74,9 +75,13 @@ public class ModelController {
 
     public void playerChoseOffer(Color player_color, int offer_tile){
         GameTable game_table = this.game_context.getGameTable();
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        if (offer_tile < 0) throw new IllegalArgumentException("offer_tile cannot be negative");
         if (! game_table.getTurnOrderTile().currentOrderTopToBottom().getFirst().equals(player_color)) {
             throw new IllegalStateException("Player " + player_color + " is not the first player in the turn order");
         }
+        OfferTile chosen = game_table.getOfferTrack().getTile(offer_tile);
+        if (!chosen.isAvailable()) throw new IllegalStateException("Offer tile " + offer_tile + " is not available");
         game_table.getTurnOrderTile().clearFirst();
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
