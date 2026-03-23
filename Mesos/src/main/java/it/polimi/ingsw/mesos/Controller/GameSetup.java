@@ -31,6 +31,7 @@ public class GameSetup {
             3, List.of(2, 0, -1),
             4, List.of(2, 1, 0, -1),
             5, List.of(3, 1, 0, 0, -1));
+    // TODO: initial food was already present in Globals
     private static final List<Integer> INITIAL_FOOD_BY_PLAYER_ORDER = List.of(2, 3, 3, 4, 5);
 
     public GameContext createGame(String game_name, int player_count, CardLoader.CardData cardData) {
