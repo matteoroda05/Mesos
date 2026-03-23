@@ -1,9 +1,5 @@
 package it.polimi.ingsw.mesos;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-
 public class Globals {
     public static final int MAX_NUM_PLAYERS = 5;
     public static final int MIN_NUM_PLAYERS = 2;
