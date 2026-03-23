@@ -48,10 +48,6 @@ public class OfferTile {
         this.min_num_players = min_num_players;
     }
 
-    public char getId() {
-        return id;
-    }
-
     public int getTopPicks() {
         return pick_top_row;
     }
