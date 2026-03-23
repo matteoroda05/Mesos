@@ -1,11 +1,8 @@
 package it.polimi.ingsw.mesos.Model;
 
-import java.util.UUID;
-
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 public final class Player {
-    private final UUID player_id;
     private final String nickname;
     private final Color color;
     private final Tribe tribe;
@@ -13,7 +10,6 @@ public final class Player {
     private int prestige_points;
 
     public Player(String name, Color color, int food) {
-        this.player_id = UUID.randomUUID();
         this.nickname = name;
         this.color = color;
         if (food < 0) {

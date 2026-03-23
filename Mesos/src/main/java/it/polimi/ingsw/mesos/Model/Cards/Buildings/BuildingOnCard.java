@@ -1,5 +1,7 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
@@ -19,14 +21,15 @@ public class BuildingOnCard extends BuildingCard {
     private final boolean inventors_pair;
     private Set<InventionIcon> inventor_icons;
 
-    public BuildingOnCard (
-            Era era,
-            int min_players,
-            int food_cost,
-            int prestige_points,
-            int food_bonus,
-            boolean set_completion,
-            boolean inventors_pair
+    @JsonCreator
+    public BuildingOnCard(
+            @JsonProperty("era")            Era era,
+            @JsonProperty("minPlayers")     int min_players,
+            @JsonProperty("foodCost")       int food_cost,
+            @JsonProperty("prestigePoints") int prestige_points,
+            @JsonProperty("foodBonus")      int food_bonus,
+            @JsonProperty("setCompletion")  boolean set_completion,
+            @JsonProperty("inventorsPair")  boolean inventors_pair
     ) {
         super(era, min_players, food_cost, prestige_points, BuildingTrigger.ON_ACQUIRE_CHARACTER);
 
