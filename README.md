@@ -26,3 +26,4 @@
   - Complete the enum
 - [OfferTrack](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/OfferTrack.java)
   - method `getAvailableTiles()` could be removed
+  - method `ensureTilesInitialized()` is useless
