@@ -18,12 +18,12 @@ public class BuildingDeck {
 
         this.deck = new EnumMap<>(Era.class);
 
-        for (Era era : Era.values()) {
-            deck.put(era, new ArrayList<>());
-        }
-
         for (BuildingCard card : buildingCards) {
-            deck.get(card.getEra()).add(card);
+            if (card == null) {
+                throw new IllegalArgumentException("buildingCards cannot contain null cards");
+            }
+
+            deck.computeIfAbsent(card.getEra(), era -> new ArrayList<>()).add(card);
         }
     }
 
@@ -35,8 +35,9 @@ public class BuildingDeck {
         List<BuildingCard> output = null;
 
         for (Era era : Era.values()) {
-            if (!deck.get(era).isEmpty()) {
-                output = deck.get(era);
+            List<BuildingCard> era_cards = deck.get(era);
+            if (era_cards != null && !era_cards.isEmpty()) {
+                output = era_cards;
                 deck.remove(era);        
                 break;
             }
