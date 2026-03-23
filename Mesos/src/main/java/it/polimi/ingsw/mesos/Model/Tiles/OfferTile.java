@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Model.Tiles;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
@@ -45,6 +46,10 @@ public class OfferTile {
         this.occupant = null; // sempre runtime
         this.food_gain = food_gain;
         this.min_num_players = min_num_players;
+    }
+
+    public char getId() {
+        return id;
     }
 
     public int getTopPicks() {
