@@ -152,20 +152,17 @@
     {
       "type": "GATHERER",
       "era": "FIRST",
-      "minPlayers": 2,
-      "foodDiscount": 3
+      "minPlayers": 2
     },
     {
       "type": "GATHERER",
       "era": "FIRST",
-      "minPlayers": 3,
-      "foodDiscount": 3
+      "minPlayers": 3
     },
     {
       "type": "GATHERER",
       "era": "FIRST",
-      "minPlayers": 4,
-      "foodDiscount": 3
+      "minPlayers": 4
     },
     {
       "type": "HUNTER",
@@ -319,20 +316,17 @@
     {
       "type": "GATHERER",
       "era": "SECOND",
-      "minPlayers": 2,
-      "foodDiscount": 3
+      "minPlayers": 2
     },
     {
       "type": "GATHERER",
       "era": "SECOND",
-      "minPlayers": 3,
-      "foodDiscount": 3
+      "minPlayers": 3
     },
     {
       "type": "GATHERER",
       "era": "SECOND",
-      "minPlayers": 5,
-      "foodDiscount": 3
+      "minPlayers": 5
     },
     {
       "type": "HUNTER",
@@ -486,20 +480,17 @@
     {
       "type": "GATHERER",
       "era": "THIRD",
-      "minPlayers": 2,
-      "foodDiscount": 3
+      "minPlayers": 2
     },
     {
       "type": "GATHERER",
       "era": "THIRD",
-      "minPlayers": 3,
-      "foodDiscount": 3
+      "minPlayers": 3
     },
     {
       "type": "GATHERER",
       "era": "THIRD",
-      "minPlayers": 4,
-      "foodDiscount": 3
+      "minPlayers": 4
     },
     {
       "type": "HUNT_EVENT",
@@ -522,19 +513,19 @@
     {
       "type": "SUSTENANCE_EVENT",
       "era": "FIRST",
-      "pointsPenalty": -2,
+      "pointsPenalty": -1,
       "foodPerCharacter": 1
     },
     {
       "type": "SUSTENANCE_EVENT",
       "era": "SECOND",
-      "pointsPenalty": -3,
+      "pointsPenalty": -2,
       "foodPerCharacter": 1
     },
     {
       "type": "SUSTENANCE_EVENT",
       "era": "THIRD",
-      "pointsPenalty": -4,
+      "pointsPenalty": -3,
       "foodPerCharacter": 1
     },
     {
@@ -552,211 +543,143 @@
     {
       "type": "CAVE_PAINTING_EVENT",
       "era": "FIRST",
+      "threshold": 1,
+      "pointsPerArtist": 1,
+      "penalty": -2
+    },
+    {
+      "type": "CAVE_PAINTING_EVENT",
+      "era": "SECOND",
       "threshold": 2,
       "pointsPerArtist": 2,
-      "penalty": -3
+      "penalty": -2
     },
     {
       "type": "CAVE_PAINTING_EVENT",
       "era": "THIRD",
-      "threshold": 2,
-      "pointsPerArtist": 4,
-      "penalty": -5
+      "threshold": 3,
+      "pointsPerArtist": 3,
+      "penalty": -2
     }
   ],
   "buildingCards": [
     {
-      "era": "FIRST",
-      "minPlayers": 2,
-      "foodCost": 3,
-      "prestigePoints": 0,
-      "trigger": "ON_ACQUIRE_CHARACTER",
-      "effectType": "COMPLETE_SET_FOOD",
-      "foodBonus": 5
+      "type": "BUILDING_ON_CARD",
+      "era": "FIRST", "minPlayers": 2, "foodCost": 3, "prestigePoints": 0,
+      "foodBonus": 5, "setCompletion": true, "inventorsPair": false
     },
     {
-      "era": "FIRST",
-      "minPlayers": 2,
-      "foodCost": 4,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_SUSTENANCE",
-      "effectType": "SUSTENANCE_DISCOUNT_PER_TYPE",
-      "characterType": "ARTIST",
-      "discountPerCharacter": 1
+      "type": "BUILDING_BONUS_EVENT",
+      "era": "FIRST", "minPlayers": 2, "foodCost": 4, "prestigePoints": 0,
+      "foodBonus": -1, "ppBonus": 0, "characterType": "ARTIST",
+      "trigger": "ON_EVENT_SUSTENANCE"
     },
     {
-      "era": "FIRST",
-      "minPlayers": 2,
-      "foodCost": 3,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_SHAMANIC_RITUAL",
-      "effectType": "SHAMANIC_NO_PENALTY"
+      "type": "BUILDING_SHAMANIC_RITUAL",
+      "era": "FIRST", "minPlayers": 2, "foodCost": 3, "prestigePoints": 0,
+      "starBonus": 0, "winMultiplier": 0
     },
     {
-      "era": "FIRST",
-      "minPlayers": 2,
-      "foodCost": 4,
-      "prestigePoints": 0,
-      "trigger": "ON_END_TURN",
-      "effectType": "END_TURN_EXTRA_FOOD",
-      "extraFood": 1
+      "type": "BUILDING_END_TURN",
+      "era": "FIRST", "minPlayers": 2, "foodCost": 4, "prestigePoints": 0,
+      "foodBonus": 1
     },
     {
-      "era": "FIRST",
-      "minPlayers": 2,
-      "foodCost": 3,
-      "prestigePoints": 0,
-      "trigger": "ON_ACQUIRE_CHARACTER",
-      "effectType": "INVENTOR_PAIR_FOOD",
-      "foodBonus": 3
+      "type": "BUILDING_ON_CARD",
+      "era": "FIRST", "minPlayers": 2, "foodCost": 3, "prestigePoints": 0,
+      "foodBonus": 3, "setCompletion": false, "inventorsPair": true
     },
     {
-      "era": "FIRST",
-      "minPlayers": 2,
-      "foodCost": 4,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_SHAMANIC_RITUAL",
-      "effectType": "SHAMANIC_EXTRA_STARS",
-      "extraStars": 3
+      "type": "BUILDING_SHAMANIC_RITUAL",
+      "era": "FIRST", "minPlayers": 2, "foodCost": 4, "prestigePoints": 0,
+      "starBonus": 3, "winMultiplier": 0
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 5,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_SHAMANIC_RITUAL",
-      "effectType": "SHAMANIC_DOUBLE_WINNER"
+      "type": "BUILDING_SHAMANIC_RITUAL",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 5, "prestigePoints": 0,
+      "starBonus": 0, "winMultiplier": 2
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 5,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_HUNT",
-      "effectType": "HUNT_EXTRA_BONUS",
-      "extraFood": 1,
-      "extraPrestigePoints": 1
+      "type": "BUILDING_BONUS_EVENT",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 5, "prestigePoints": 0,
+      "foodBonus": 1, "ppBonus": 1, "characterType": "HUNTER",
+      "trigger": "ON_EVENT_HUNT"
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 6,
-      "prestigePoints": 0,
-      "trigger": "ON_END_GAME",
-      "effectType": "BUILDER_DOUBLE_PP"
+      "type": "BUILDING_END_GAME",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 6, "prestigePoints": 0,
+      "doubleBuildersPp": true, "characterSetBonusPrestige": 0,
+      "characterMultiplier": 0, "characterType": null, "prestigeBonus": 0
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 4,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_CAVE_PAINTINGS",
-      "effectType": "CAVE_PAINTING_FOOD",
-      "foodPerArtist": 1
+      "type": "BUILDING_BONUS_EVENT",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 4, "prestigePoints": 0,
+      "foodBonus": 1, "ppBonus": 0, "characterType": "ARTIST",
+      "trigger": "ON_EVENT_CAVE_PAINTINGS"
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 5,
-      "prestigePoints": 0,
-      "trigger": "ON_END_GAME",
-      "effectType": "COMPLETE_SET_PP",
-      "ppPerSet": 6
+      "type": "BUILDING_END_GAME",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 5, "prestigePoints": 0,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 6,
+      "characterMultiplier": 0, "characterType": null, "prestigeBonus": 0
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 5,
-      "prestigePoints": 8,
-      "trigger": "ON_END_GAME",
-      "effectType": "CHARACTER_TYPE_PP",
-      "characterType": "HUNTER",
-      "ppPerCharacter": 3
+      "type": "BUILDING_END_GAME",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 5, "prestigePoints": 8,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 0,
+      "characterMultiplier": 3, "characterType": "HUNTER", "prestigeBonus": 0
     },
     {
-      "era": "SECOND",
-      "minPlayers": 2,
-      "foodCost": 5,
-      "prestigePoints": 2,
-      "trigger": "ON_END_ROUND",
-      "effectType": "EXTRA_BUY"
+      "type": "BUILDING_END_ROUND",
+      "era": "SECOND", "minPlayers": 2, "foodCost": 5, "prestigePoints": 2
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 6,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_SUSTENANCE",
-      "effectType": "SUSTENANCE_DISCOUNT_PER_TYPE",
-      "characterType": "INVENTOR",
-      "discountPerCharacter": 1
+      "type": "BUILDING_BONUS_EVENT",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 6, "prestigePoints": 0,
+      "foodBonus": -1, "ppBonus": 0, "characterType": "INVENTOR",
+      "trigger": "ON_EVENT_SUSTENANCE"
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 6,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_SUSTENANCE",
-      "effectType": "SUSTENANCE_DISCOUNT_PER_TYPE",
-      "characterType": "GATHERER",
-      "discountPerCharacter": 1
+      "type": "BUILDING_BONUS_EVENT",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 6, "prestigePoints": 0,
+      "foodBonus": -1, "ppBonus": 0, "characterType": "GATHERER",
+      "trigger": "ON_EVENT_SUSTENANCE"
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 7,
-      "prestigePoints": 0,
-      "trigger": "ON_END_GAME",
-      "effectType": "CHARACTER_TYPE_PP",
-      "characterType": "SHAMAN",
-      "ppPerCharacter": 4
+      "type": "BUILDING_END_GAME",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 7, "prestigePoints": 0,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 0,
+      "characterMultiplier": 4, "characterType": "SHAMAN", "prestigeBonus": 0
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 7,
-      "prestigePoints": 0,
-      "trigger": "ON_END_GAME",
-      "effectType": "CHARACTER_TYPE_PP",
-      "characterType": "ARTIST",
-      "ppPerCharacter": 4
+      "type": "BUILDING_END_GAME",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 7, "prestigePoints": 0,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 0,
+      "characterMultiplier": 4, "characterType": "ARTIST", "prestigeBonus": 0
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 6,
-      "prestigePoints": 0,
-      "trigger": "ON_END_GAME",
-      "effectType": "CHARACTER_TYPE_PP",
-      "characterType": "GATHERER",
-      "ppPerCharacter": 5
+      "type": "BUILDING_END_GAME",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 6, "prestigePoints": 0,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 0,
+      "characterMultiplier": 5, "characterType": "GATHERER", "prestigeBonus": 0
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 8,
-      "prestigePoints": 0,
-      "trigger": "ON_END_GAME",
-      "effectType": "COMPLETE_SET_PP",
-      "ppPerSet": 8
+      "type": "BUILDING_END_GAME",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 8, "prestigePoints": 0,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 8,
+      "characterMultiplier": 0, "characterType": null, "prestigeBonus": 0
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 7,
-      "prestigePoints": 0,
-      "trigger": "ON_EVENT_HUNT",
-      "effectType": "HUNT_EXTRA_BONUS",
-      "extraFood": 1,
-      "extraPrestigePoints": 2
+      "type": "BUILDING_BONUS_EVENT",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 7, "prestigePoints": 0,
+      "foodBonus": 1, "ppBonus": 1, "characterType": "HUNTER",
+      "trigger": "ON_EVENT_HUNT"
     },
     {
-      "era": "THIRD",
-      "minPlayers": 2,
-      "foodCost": 8,
-      "prestigePoints": 25,
-      "trigger": "ON_END_GAME",
-      "effectType": "FLAT_PP"
+      "type": "BUILDING_END_GAME",
+      "era": "THIRD", "minPlayers": 2, "foodCost": 8, "prestigePoints": 0,
+      "doubleBuildersPp": false, "characterSetBonusPrestige": 0,
+      "characterMultiplier": 0, "characterType": null, "prestigeBonus": 25
     }
   ],
   
