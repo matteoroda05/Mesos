@@ -27,7 +27,7 @@ public class OfferTrack {
             throw new IllegalArgumentException("Offer track contains null tile entries");
         }
 
-        if (offer_tiles.stream().map(tile -> tile.getId()).distinct().count() != offer_tiles.size()) {
+        if (offer_tiles.stream().map(tile -> tile.getOfferTileId()).distinct().count() != offer_tiles.size()) {
             throw new IllegalArgumentException("Offer track contains duplicate tiles");
         }
 
