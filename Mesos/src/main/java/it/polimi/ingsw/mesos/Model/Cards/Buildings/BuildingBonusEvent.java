@@ -1,8 +1,11 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.*;
 
 import java.util.Arrays;
@@ -13,6 +16,33 @@ public class BuildingBonusEvent extends BuildingCard {
     private final int food_bonus;
     private final int pp_bonus;
     private final Class<? extends CharacterCard> character_type;
+
+    //Map to import from character_type from JSON file
+    private static final Map<String, Class<? extends CharacterCard>> CHARACTER_MAP = Map.of(
+            "HUNTER",   HunterCard.class,
+            "SHAMAN",   ShamanCard.class,
+            "ARTIST",   ArtistCard.class,
+            "BUILDER",  BuilderCard.class,
+            "INVENTOR", InventorCard.class,
+            "GATHERER", GathererCard.class
+    );
+
+    @JsonCreator
+    private BuildingBonusEvent(
+            @JsonProperty("era")            Era era,
+            @JsonProperty("minPlayers")     int min_players,
+            @JsonProperty("foodCost")       int food_cost,
+            @JsonProperty("prestigePoints") int prestige_points,
+            @JsonProperty("foodBonus")      int food_bonus,
+            @JsonProperty("ppBonus")        int pp_bonus,
+            @JsonProperty("characterType")  String character_type_str,
+            @JsonProperty("trigger")        BuildingTrigger trigger
+    ) {
+        this(era, min_players, food_cost, prestige_points,
+                food_bonus, pp_bonus,
+                CHARACTER_MAP.get(character_type_str),
+                trigger);
+    }
 
     public BuildingBonusEvent(
             Era era,
