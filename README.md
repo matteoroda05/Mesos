@@ -15,6 +15,11 @@
     - fix issues with loading gatherer cards from JSON file
 - [Tribe](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Tribe.java)
     - fix/implement function that computes points from building effects
+    - downcast issue
+- `TribeDeck`
+    - use type enum instead of instanceof
+    - initialise cards from json file
+    -removed, we add those points in controller
 - [BuildingCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/BuildingCard.java)
     - conclude building effects under [Buildings](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings) package
         * [BuildingEndRound](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings/BuildingEndRound.java): add visitor that can allow extra card pick

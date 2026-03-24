@@ -50,7 +50,6 @@ class TribeTest {
         }
 
         assertEquals(0, tribe.buildingsPrestige());
-        assertEquals(0, tribe.buildingsEffectPrestige());
         assertEquals(0, tribe.countShamanStars());
         assertEquals(0, tribe.buildersDiscount());
         assertEquals(0, tribe.gatherersDiscount());

@@ -85,16 +85,6 @@ public class Tribe {
         return prestige;
     }
 
-    public int buildingsEffectPrestige() {
-        int prestige = 0;
-        for (BuildingCard building : this.buildings) {
-            if (building.getTrigger() == BuildingTrigger.ON_END_GAME) {
-                // prestige += building.effect();
-            }
-        }
-        return prestige;
-    }
-
     public int countShamanStars() {
         List<CharacterCard> shamans = this.characters.get(ShamanCard.class);
         if (shamans.isEmpty()) {
@@ -175,7 +165,6 @@ public class Tribe {
     public int tribeEndGamePrestige() {
         int prestige = 0;
         prestige += buildingsPrestige();
-        prestige += buildingsEffectPrestige();
         prestige += buildersEndGamePrestige();
         prestige += inventorsEndGamePrestige();
         prestige += artistsEndGamePrestige();
