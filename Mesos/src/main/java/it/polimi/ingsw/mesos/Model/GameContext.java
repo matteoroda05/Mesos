@@ -84,10 +84,6 @@ public class GameContext {
 
     public void newRound(){
         this.round_number += 1;
-        boolean new_era = this.game_table.newRound();
-        if (new_era) {
-            this.current_era = this.current_era.next();
-        }
     }
 
     public void computeFinalScores() {
