@@ -3,7 +3,7 @@ package it.polimi.ingsw.mesos.Model.Tiles;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Globals;
+
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
 
@@ -11,25 +11,13 @@ public class TurnOrderTile {
 
     private final List<TurnOrderSpace> spaces;
 
-    public TurnOrderTile(int num_players) {
-        if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
-            throw new IllegalArgumentException(
-                "numPlayers must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+    public TurnOrderTile(List<TurnOrderSpace> spaces) {
+        if (spaces == null) {
+            throw new IllegalArgumentException("spaces cannot be null");
         }
 
-        this.spaces = new ArrayList<>();
+        this.spaces = new ArrayList<>(spaces);
 
-        int[] bonuses = switch (num_players) {
-            case 2 -> new int[] {1, -1};
-            case 3 -> new int[] {2, 0, -1};
-            case 4 -> new int[] {2, 1, 0, -1};
-            case 5 -> new int[] {3, 1, 0, 0, -1};
-            default -> throw new IllegalStateException("Unexpected number of players: " + num_players);
-        };
-
-        for (int bonus : bonuses) {
-            spaces.add(new TurnOrderSpace(bonus));
-        }
     }
 
     public void placeTotem(Player player) {
@@ -72,6 +60,10 @@ public class TurnOrderTile {
 
     public List<TurnOrderSpace> getSpaces() {
         return spaces;
+    }
+
+    public void clearFirst() {
+        spaces.getFirst().clear();
     }
 
     public void clear() {

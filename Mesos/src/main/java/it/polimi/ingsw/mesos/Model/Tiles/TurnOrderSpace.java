@@ -8,7 +8,7 @@ public class TurnOrderSpace {
     private Color occupant;   // null se lo spazio è libero
 
     public TurnOrderSpace(int foodBonus) {
-        if (foodBonus < 0 || foodBonus > 3) { 
+        if (foodBonus < -1 || foodBonus > 3) {
             throw new IllegalArgumentException("foodBonus must be between 0 and 3");
         }
         this.foodBonus = foodBonus;

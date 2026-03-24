@@ -24,15 +24,15 @@ public class HuntEvent extends EventCard {
         super(era);
 
         if (prestige_per_hunter < 1 || prestige_per_hunter > 3) throw new IllegalArgumentException("Prestige per hunter must be positive.");
-        if (food_per_hunter != 1) throw new IllegalArgumentException("Food per hunter must be positive.");
+        if (food_per_hunter != 1) throw new IllegalArgumentException("Food per hunter must equal to 1.");
         
         this.prestige_per_hunter = prestige_per_hunter;
         this.food_per_hunter = food_per_hunter;
     }
 
-    // Hunt event always gives 1 food for hunter, this method exists to support possible future extensions of the game
+    // Hunt event always gives 1 food por hunter, this method exists to support possible future extensions of the game
     public float getMultiplier() {
-        return food_per_hunter / prestige_per_hunter;
+        return (float) food_per_hunter / prestige_per_hunter;
     }
 
     @Override
