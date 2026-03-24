@@ -92,7 +92,6 @@ public class GameTable {
             top_row.placeCard(card);
             if (card.getEra() != curr_era) {
                 new_era = true;
-                beginNewEra();
             }
         }
 
