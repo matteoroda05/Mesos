@@ -1,5 +1,7 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -13,13 +15,14 @@ public class BuildingShamanicRitual extends BuildingCard {
     private final int win_multiplier;
     private final EventPhase phase;
 
+    @JsonCreator
     public BuildingShamanicRitual(
-            Era era,
-            int min_players,
-            int food_cost,
-            int prestige_points,
-            int star_bonus,
-            int win_multiplier
+            @JsonProperty("era")            Era era,
+            @JsonProperty("minPlayers")     int min_players,
+            @JsonProperty("foodCost")       int food_cost,
+            @JsonProperty("prestigePoints") int prestige_points,
+            @JsonProperty("starBonus")      int star_bonus,
+            @JsonProperty("winMultiplier")  int win_multiplier
     ) {
         super(era, min_players, food_cost, prestige_points, BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL);
 

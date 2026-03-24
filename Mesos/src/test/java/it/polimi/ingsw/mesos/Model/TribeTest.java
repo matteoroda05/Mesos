@@ -31,7 +31,7 @@ class TribeTest {
     void setUp() {
         tribe = new Tribe();
         hunter1 = new HunterCard(Era.FIRST,2,true);
-        builder1 = new BuilderCard(Era.SECOND,2,3,3);
+        builder1 = new BuilderCard(Era.SECOND,2,3,2);
         artist1 = new ArtistCard(Era.THIRD,2);
         gatherer1 = new GathererCard(Era.FIRST,2);
         inventor1 = new InventorCard(Era.SECOND,2, InventionIcon.ARROW);
@@ -114,12 +114,12 @@ class TribeTest {
 
     @Test
     void buildersDiscount(){
-        BuilderCard builder2 = new BuilderCard(Era.FIRST,2,4,3);
+        BuilderCard builder2 = new BuilderCard(Era.FIRST,2,4,2);
 
         assertEquals(0, tribe.buildersDiscount());
         tribe.addCard(builder1);
         tribe.addCard(builder2);
-        assertEquals(6,tribe.buildersDiscount());
+        assertEquals(4,tribe.buildersDiscount());
     }
 
     @Test

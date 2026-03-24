@@ -1,12 +1,16 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
-import it.polimi.ingsw.mesos.Controller.PlayerController;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 import java.util.Collections;
+import java.util.Map;
 
 public class BuildingEndGame extends BuildingCard {
     private final boolean double_builders_pp;
@@ -14,6 +18,35 @@ public class BuildingEndGame extends BuildingCard {
     private final int character_multiplier;
     private final Class<? extends CharacterCard> character_type;
     private final int prestige_bonus;
+
+    private static final Map<String, Class<? extends CharacterCard>> CHARACTER_MAP = Map.of(
+            "HUNTER",   HunterCard.class,
+            "SHAMAN",   ShamanCard.class,
+            "ARTIST",   ArtistCard.class,
+            "BUILDER",  BuilderCard.class,
+            "INVENTOR", InventorCard.class,
+            "GATHERER", GathererCard.class
+    );
+
+    @JsonCreator
+    private BuildingEndGame(
+            @JsonProperty("era")                      Era era,
+            @JsonProperty("minPlayers")               int min_players,
+            @JsonProperty("foodCost")                 int food_cost,
+            @JsonProperty("prestigePoints")           int prestige_points,
+            @JsonProperty("doubleBuildersPp")         boolean double_builders_pp,
+            @JsonProperty("characterSetBonusPrestige")int character_set_bonus_prestige,
+            @JsonProperty("characterMultiplier")      int character_multiplier,
+            @JsonProperty("characterType")            String character_type_str,
+            @JsonProperty("prestigeBonus")            int prestige_bonus
+    ) {
+        this(era, min_players, food_cost, prestige_points,
+                double_builders_pp,
+                character_set_bonus_prestige,
+                character_multiplier,
+                character_type_str != null ? CHARACTER_MAP.get(character_type_str) : null,
+                prestige_bonus);
+    }
 
     public BuildingEndGame(
             Era era,
@@ -28,7 +61,7 @@ public class BuildingEndGame extends BuildingCard {
     ) {
         super(era, min_players, food_cost, prestige_points, BuildingTrigger.ON_END_GAME);
 
-        if (character_set_bonus_prestige < 0 || character_set_bonus_prestige > 6)
+        if (character_set_bonus_prestige < 0 || character_set_bonus_prestige > 8)
             throw new IllegalArgumentException("Invalid prestige bonus per character set: " + character_set_bonus_prestige);
         if (character_multiplier < 0 || character_multiplier > 5)
             throw new IllegalArgumentException("Invalid character multiplier: " + character_multiplier);
@@ -36,7 +69,7 @@ public class BuildingEndGame extends BuildingCard {
             throw new IllegalArgumentException("Invalid prestige points bonus: " + prestige_bonus);
 
         // ensure only one effect is active
-        int count = !double_builders_pp ? 1 : 0;
+        int count = double_builders_pp ? 1 : 0;
         count += character_set_bonus_prestige != 0 ? 1 : 0;
         count += character_multiplier != 0 ? 1 : 0;
         count += prestige_bonus != 0 ? 1 : 0;
@@ -49,27 +82,27 @@ public class BuildingEndGame extends BuildingCard {
         this.prestige_bonus = prestige_bonus;
     }
 
-    public void effect(PlayerController visitor) {
+    public void effect(ModelController visitor) {
         if (prestige_bonus != 0) {
-            visitor.addPrestige(prestige_bonus, owner.getColor());
+            visitor.playerChangePrestige(prestige_bonus, owner.getColor());
             return;
         }
 
         // add one more time the builders prestige: one time is done by default
         if (double_builders_pp) {
-            visitor.addPrestige(owner.getTribe().buildersEndGamePrestige(), owner.getColor());
+            visitor.playerChangePrestige(owner.getTribe().buildersEndGamePrestige(), owner.getColor());
             return;
         }
 
         if (character_multiplier != 0) {
             final int bonus_prestige = owner.getTribe().getNumCharacterOfType(character_type) * character_multiplier;
-            visitor.addPrestige(bonus_prestige, owner.getColor());
+            visitor.playerChangePrestige(bonus_prestige, owner.getColor());
             return;
         }
 
         // number of sets completed = min number of character cards of one type
         final int min = Collections.min(owner.getTribe().getNumCharactersOfEachType().values());
         final int prestige_bonus = min * character_set_bonus_prestige;
-        visitor.addPrestige(prestige_bonus, owner.getColor());
+        visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 }

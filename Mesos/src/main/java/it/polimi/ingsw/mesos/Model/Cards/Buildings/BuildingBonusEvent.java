@@ -1,8 +1,11 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
-import it.polimi.ingsw.mesos.Controller.PlayerController;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.*;
 
 import java.util.Arrays;
@@ -13,6 +16,33 @@ public class BuildingBonusEvent extends BuildingCard {
     private final int food_bonus;
     private final int pp_bonus;
     private final Class<? extends CharacterCard> character_type;
+
+    //Map to import from character_type from JSON file
+    private static final Map<String, Class<? extends CharacterCard>> CHARACTER_MAP = Map.of(
+            "HUNTER",   HunterCard.class,
+            "SHAMAN",   ShamanCard.class,
+            "ARTIST",   ArtistCard.class,
+            "BUILDER",  BuilderCard.class,
+            "INVENTOR", InventorCard.class,
+            "GATHERER", GathererCard.class
+    );
+
+    @JsonCreator
+    private BuildingBonusEvent(
+            @JsonProperty("era")            Era era,
+            @JsonProperty("minPlayers")     int min_players,
+            @JsonProperty("foodCost")       int food_cost,
+            @JsonProperty("prestigePoints") int prestige_points,
+            @JsonProperty("foodBonus")      int food_bonus,
+            @JsonProperty("ppBonus")        int pp_bonus,
+            @JsonProperty("characterType")  String character_type_str,
+            @JsonProperty("trigger")        BuildingTrigger trigger
+    ) {
+        this(era, min_players, food_cost, prestige_points,
+                food_bonus, pp_bonus,
+                CHARACTER_MAP.get(character_type_str),
+                trigger);
+    }
 
     public BuildingBonusEvent(
             Era era,
@@ -40,13 +70,13 @@ public class BuildingBonusEvent extends BuildingCard {
         this.character_type = character_type;
     }
 
-    public void effect(Map<Color, Integer> food_output, PlayerController visitor) {
+    public void effect(Map<Color, Integer> food_output, ModelController visitor) {
         final int multiplier = owner.getTribe().getNumCharacterOfType(character_type);
         final int prev_food = food_output.get(owner.getColor());
         final int food_change = multiplier * prev_food * food_bonus;
         final int prestige_bonus = multiplier * pp_bonus;
 
-        visitor.addFood(food_change, owner.getColor());
-        visitor.addPrestige(prestige_bonus, owner.getColor());
+        visitor.playerChangeFood(food_change, owner.getColor());
+        visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 }

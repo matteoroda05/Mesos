@@ -1,52 +1,72 @@
 package it.polimi.ingsw.mesos.Model;
 
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public class GameContext {
-    private final UUID game_id;
+    private final String game_name;
+    private final int game_size;
     private int round_number;
     private Era current_era;
-    private GameTable game_table;
+    private final GameTable game_table;
     private Map<Color, Player> players;
 
-    public GameContext() {
-        this.game_id = UUID.randomUUID();
-        this.round_number = 0;
-        this.current_era = Era.FIRST;
-    }
-
-    public void setupGame(Map<Color, Player> players) {
-        int num_players = players.size();
-        
-        if (num_players < Globals.MIN_NUM_PLAYERS || num_players > Globals.MAX_NUM_PLAYERS) {
+    public GameContext(String game_name, int game_size, GameTable game_table) {
+        if (game_name == null || game_name.isBlank()) {
+            throw new IllegalArgumentException("game_name cannot be null or blank");
+        }
+        if (game_size < Globals.MIN_NUM_PLAYERS || game_size > Globals.MAX_NUM_PLAYERS) {
             throw new IllegalArgumentException(
-                "Number of players must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+                    "Game size must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
+        }
+        if (game_table == null) {
+            throw new IllegalArgumentException("game_table cannot be null");
         }
 
-        this.players = players;
-        this.game_table = new GameTable(num_players);
+        this.round_number = 0;
+        this.current_era = Era.FIRST;
+        this.game_name = game_name;
+        this.game_size = game_size;
+        this.game_table = game_table;
+        this.players = new EnumMap<>(Color.class);
     }
 
-    public UUID getGameId() {
-        return game_id;
+
+    public void setupPlayers(Map<Color, Player> players) {
+        if (players == null) throw new IllegalArgumentException("players cannot be null");
+
+        int num_players = players.size();
+
+        if (num_players != this.game_size) {
+            throw new IllegalArgumentException(
+                "Number of players must be equal to " + this.game_name + ".");
+        }
+        this.players = players;
+    }
+
+    public String getGameName() {
+        return this.game_name;
+    }
+
+    public int getGameSize() {
+        return this.game_size;
     }
 
     public int getRoundNumber() {
-        return round_number;
+        return this.round_number;
     }
 
     public Era getCurrentEra() {
-        return current_era;
+        return this.current_era;
     }
 
     public GameTable getGameTable() {
-        return game_table;
+        return this.game_table;
     }
 
     public List<Player> getPlayers() {
