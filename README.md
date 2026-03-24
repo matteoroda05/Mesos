@@ -24,3 +24,19 @@
 - `TribeDeck`
     - use type enum instead of instanceof
     - initialise cards from json file
+    -removed, we add those points in controller
+- [BuildingCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/BuildingCard.java)
+    - conclude building effects under [Buildings](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings) package
+        * [BuildingEndRound](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings/BuildingEndRound.java): add visitor that can allow extra card pick
+- [GameSetup](Mesos/src/main/java/it/polimi/ingsw/mesos/Controller/GameSetup.java)
+  - initialise first order of players in `TurnOrderTile`
+  - initial food already present in [Globals](Mesos/src/main/java/it/polimi/ingsw/mesos/Globals.java)
+- [ModelController](Mesos/src/main/java/it/polimi/ingsw/mesos/Controller/ModelController.java)
+    - add methods to get needed variables from `GameContext`and remove `getGameContext()`
+- [MarketRow](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/MarketRow.java)
+    - remove method `takeCard()` after fixing its tests
+- [ErrorStates](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Enums/ErrorStates.java)
+  - Complete the enum
+- [OfferTrack](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/OfferTrack.java)
+  - method `getAvailableTiles()` could be removed
+  - method `ensureTilesInitialized()` is useless

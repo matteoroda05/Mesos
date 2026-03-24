@@ -1,15 +1,15 @@
 package it.polimi.ingsw.mesos.Model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
@@ -85,18 +85,6 @@ public class Tribe {
         return prestige;
     }
 
-    public int buildingsEffectPrestige() {
-        int prestige = 0;
-        for (BuildingCard building : this.buildings) {
-            if (building.getTrigger() == BuildingTrigger.ON_END_GAME) {
-                // prestige += building.effect();
-            }
-        }
-        return prestige;
-    }
-
-    // TODO: chiedere come downcastare in modo più elegante
-
     public int countShamanStars() {
         List<CharacterCard> shamans = this.characters.get(ShamanCard.class);
         if (shamans.isEmpty()) {
@@ -105,7 +93,7 @@ public class Tribe {
 
         int stars = 0;
         for (CharacterCard shaman : shamans) {
-            // DOWNCASTING
+            // DOWN CASTING
             stars += ((ShamanCard) shaman).getStars();
         }
         return stars;
@@ -119,7 +107,7 @@ public class Tribe {
 
         int discount = 0;
         for (CharacterCard builder : builders) {
-            // DOWNCASTING
+            // DOWN CASTING
             discount += ((BuilderCard) builder).getBuildingDiscount();
         }
         return discount;
@@ -133,7 +121,7 @@ public class Tribe {
 
         int prestige = 0;
         for (CharacterCard builder : builders) {
-            // DOWNCASTING
+            // DOWN CASTING
             prestige += ((BuilderCard) builder).getPrestigePoints();
         }
         return prestige;
@@ -147,7 +135,7 @@ public class Tribe {
 
         int discount = 0;
         for (CharacterCard gatherer : gatherers) {
-            // DOWNCASTING
+            // DOWN CASTING
             discount += ((GathererCard) gatherer).getDiscount();
         }
         return discount;
@@ -157,7 +145,7 @@ public class Tribe {
         List<CharacterCard> inventors = this.characters.get(InventorCard.class);
         Set<InventionIcon> icons = new HashSet<>();
         for (CharacterCard inventor : inventors) {
-            // DOWNCASTING
+            // DOWN CASTING
             icons.add(((InventorCard) inventor).getInventionIcon());
         }
         return icons;
@@ -177,7 +165,6 @@ public class Tribe {
     public int tribeEndGamePrestige() {
         int prestige = 0;
         prestige += buildingsPrestige();
-        prestige += buildingsEffectPrestige();
         prestige += buildersEndGamePrestige();
         prestige += inventorsEndGamePrestige();
         prestige += artistsEndGamePrestige();

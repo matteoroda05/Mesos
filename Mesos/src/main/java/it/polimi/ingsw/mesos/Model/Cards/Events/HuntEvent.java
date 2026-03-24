@@ -49,6 +49,6 @@ public class HuntEvent extends EventCard {
 
     @Override
     public BuildingTrigger asTrigger() {
-        return BuildingTrigger.ON_EVENT_CAVE_PAINTINGS;
+        return BuildingTrigger.ON_EVENT_HUNT;
     }
 }
