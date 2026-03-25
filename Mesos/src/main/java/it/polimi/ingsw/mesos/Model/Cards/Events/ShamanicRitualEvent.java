@@ -48,7 +48,8 @@ public class ShamanicRitualEvent extends EventCard {
 
             if (stars < lowest_stars) {
                 lowest_stars = stars;
-            } else if (stars > highest_stars) {
+            }
+            if (stars > highest_stars) {
                 highest_stars = stars;
             }
         }
