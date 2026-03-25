@@ -3,7 +3,6 @@ package it.polimi.ingsw.mesos.Model.Tiles;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
 
@@ -32,10 +31,12 @@ public class TurnOrderTile {
                 int bonus = space.getBonus();
                 if (bonus > 0) {
                     player.gainFood(bonus);
-                } else if (bonus < 0 && player.getFood() >= -bonus) {
-                    player.loseFood(-bonus);
-                } else if (bonus < 0) {
-                    player.changePrestigePoints(-2);
+                } else {
+                    int prestige_loss = player.loseFood(-bonus);
+                    if (prestige_loss > 0) {
+                        prestige_loss = prestige_loss << 1;
+                        player.changePrestigePoints(-prestige_loss);
+                    }
                 }
 
                 return;

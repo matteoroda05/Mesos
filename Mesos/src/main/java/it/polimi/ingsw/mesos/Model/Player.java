@@ -48,12 +48,14 @@ public final class Player {
         this.food += amount;
     }
 
-    public void loseFood(int amount) {
-        if (this.food < amount) {
-            throw new IllegalArgumentException("Food lost cannot be more than food available");
+    public int loseFood(int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Food lost must be non-negative");
         }
 
-        this.food -= amount;
+        int out = amount > this.food ? amount - this.food : 0;
+        this.food = amount >= this.food ? 0 : this.food - amount;
+        return out;
     }
 
     public void changePrestigePoints(int points) {

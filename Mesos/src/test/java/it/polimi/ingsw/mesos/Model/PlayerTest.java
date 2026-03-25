@@ -1,10 +1,14 @@
 package it.polimi.ingsw.mesos.Model;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 class PlayerTest {
 
@@ -52,14 +56,20 @@ class PlayerTest {
 
     @Test
     void loseFoodDecreasesFoodCorrectly() {
-        player.loseFood(2);
+        assertEquals(0, player.loseFood(2));
         assertEquals(1, player.getFood());
     }
 
     @Test
-    void loseFoodThrowsExceptionWhenAmountIsGreaterThanAvailableFood() {
+    void loseFoodThrowsExceptionWhenAmountIsNegative() {
         assertThrows(IllegalArgumentException.class,
-                () -> player.loseFood(4));
+                () -> player.loseFood(-2));
+    }
+
+    @Test
+    void loseFoodReturnsPrestigeLossCorrectly() {
+        assertEquals(3, player.loseFood(6));
+        assertEquals(0, player.getFood());
     }
 
     @Test
