@@ -25,6 +25,8 @@ import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import it.polimi.ingsw.mesos.Model.TribeDeck;
 
+import static it.polimi.ingsw.mesos.Globals.PLAYER_STARTING_FOOD;
+
 public class GameSetup {
 
     private static final Map<Integer, List<Integer>> FOOD_BONUS_BY_PLAYER_COUNT = Map.of(
@@ -32,8 +34,6 @@ public class GameSetup {
             3, List.of(2, 0, -1),
             4, List.of(2, 1, 0, -1),
             5, List.of(3, 1, 0, 0, -1));
-    // TODO: initial food was already present in Globals
-    private static final List<Integer> INITIAL_FOOD_BY_PLAYER_ORDER = List.of(2, 3, 3, 4, 5);
 
     public GameContext createGame(String game_name, int player_count, CardLoader.CardData card_data) {
         if (game_name == null || game_name.isBlank()) {
@@ -89,9 +89,10 @@ public class GameSetup {
         Collections.shuffle(shuffled_colors);
 
         Map<Color, Player> players_by_color = new LinkedHashMap<>();
+        int[] starting_food = PLAYER_STARTING_FOOD();
         for (int i = 0; i < nicknames.size(); i++) {
             Color random_color = shuffled_colors.get(i);
-            int initial_food = INITIAL_FOOD_BY_PLAYER_ORDER.get(i);
+            int initial_food = starting_food[i];
             Player player = new Player(nicknames.get(i), random_color, initial_food);
             players_by_color.put(random_color, player);
         }
