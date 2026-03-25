@@ -61,6 +61,17 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <argLine>
+                        --add-opens it.polimi.ingsw.mesos/it.polimi.ingsw.mesos.Model=ALL-UNNAMED
+                        --add-opens it.polimi.ingsw.mesos/it.polimi.ingsw.mesos.Controller=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>

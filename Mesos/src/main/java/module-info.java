@@ -6,9 +6,10 @@ module it.polimi.ingsw.mesos {
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
 
-    opens it.polimi.ingsw.mesos.Model        to com.fasterxml.jackson.databind;
+    opens it.polimi.ingsw.mesos.Model        to com.fasterxml.jackson.databind, org.junit.platform.commons;
     opens it.polimi.ingsw.mesos.Model.Cards  to com.fasterxml.jackson.databind;
     opens it.polimi.ingsw.mesos.Model.Enums  to com.fasterxml.jackson.databind;
+    opens it.polimi.ingsw.mesos.Controller   to org.junit.platform.commons;
 
     opens it.polimi.ingsw.mesos to javafx.fxml;
     exports it.polimi.ingsw.mesos;
