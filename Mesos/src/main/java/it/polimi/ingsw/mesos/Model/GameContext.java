@@ -7,6 +7,7 @@ import java.util.Map;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
 public class GameContext {
     private final String game_name;
@@ -36,17 +37,22 @@ public class GameContext {
         this.players = new EnumMap<>(Color.class);
     }
 
-
     public void setupPlayers(Map<Color, Player> players) {
-        if (players == null) throw new IllegalArgumentException("players cannot be null");
+        if (players == null)
+            throw new IllegalArgumentException("players cannot be null");
 
         int num_players = players.size();
 
         if (num_players != this.game_size) {
             throw new IllegalArgumentException(
-                "Number of players must be equal to " + this.game_name + ".");
+                    "Number of players must be equal to " + this.game_name + ".");
         }
         this.players = players;
+        // Place totems on turn order tile on casual order
+        TurnOrderTile tile = this.game_table.getTurnOrderTile();
+        for (Player p : players.values()) {
+            tile.placeTotem(p);
+        }
     }
 
     public String getGameName() {
@@ -70,25 +76,28 @@ public class GameContext {
     }
 
     public List<Player> getPlayers() {
-        if (this.players == null) throw new IllegalStateException("players cannot be null");
+        if (this.players == null)
+            throw new IllegalStateException("players cannot be null");
 
         return List.copyOf(this.players.values());
     }
 
     public Player getPlayer(Color color) {
-        if (players == null) throw new IllegalStateException("players cannot be null");
-        if (players.get(color) == null) throw new IllegalArgumentException("color not present");
+        if (players == null)
+            throw new IllegalStateException("players cannot be null");
+        if (players.get(color) == null)
+            throw new IllegalArgumentException("color not present");
 
         return players.get(color);
     }
 
-    public void newRound(){
+    public void newRound() {
         this.round_number += 1;
     }
 
     public void computeFinalScores() {
-        for (Player p : players.values()) {
-            p.changePrestigePoints(p.getTribe().tribeEndGamePrestige());
+        for (Player player : players.values()) {
+            player.changePrestigePoints(player.getTribe().tribeEndGamePrestige());
         }
     }
 }
