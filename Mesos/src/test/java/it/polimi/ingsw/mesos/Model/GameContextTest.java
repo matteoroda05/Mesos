@@ -11,13 +11,14 @@ import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -92,6 +93,42 @@ class GameContextTest {
     }
 
     @Test
+    void setupPlayersPlacesTotemsOnTurnOrderTile() {
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
+
+        context_game.setupPlayers(players_map);
+
+        assertIterableEquals(
+                List.of(Color.BLUE, Color.YELLOW),
+                context_game.getGameTable().getTurnOrderTile().currentOrderTopToBottom());
+    }
+
+    @Test
+    void setupPlayersUsesInputMapIterationOrderForTurnOrderPlacement() {
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = new LinkedHashMap<>();
+        players_map.put(Color.YELLOW, new Player("Bob", Color.YELLOW, 3));
+        players_map.put(Color.BLUE, new Player("Alice", Color.BLUE, 3));
+
+        context_game.setupPlayers(players_map);
+
+        assertIterableEquals(
+                List.of(Color.YELLOW, Color.BLUE),
+                context_game.getGameTable().getTurnOrderTile().currentOrderTopToBottom());
+    }
+
+    @Test
+    void setupPlayersThrowsWhenCalledTwiceOnSameContext() {
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
+
+        context_game.setupPlayers(players_map);
+
+        assertThrows(IllegalStateException.class, () -> context_game.setupPlayers(players_map));
+    }
+
+    @Test
     void getPlayersReturnsImmutableListSnapshot() {
         GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
         Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
@@ -113,19 +150,16 @@ class GameContextTest {
 
     @Test
     void newRoundAlwaysIncrementsRoundNumber() {
-        StubGameTable table_stub = new StubGameTable(false);
-        GameContext context_game = new GameContext("MyGame", 2, table_stub);
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
 
         context_game.newRound();
 
         assertEquals(1, context_game.getRoundNumber());
-        assertEquals(1, table_stub.getNewRoundCalls());
     }
 
     @Test
-    void newRoundKeepsEraWhenTableDoesNotOpenNewEra() {
-        StubGameTable table_stub = new StubGameTable(false);
-        GameContext context_game = new GameContext("MyGame", 2, table_stub);
+    void newRoundKeepsEraAsFirstEra() {
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
 
         context_game.newRound();
 
@@ -133,13 +167,14 @@ class GameContextTest {
     }
 
     @Test
-    void newRoundAdvancesEraWhenTableOpensNewEra() {
-        StubGameTable table_stub = new StubGameTable(true);
-        GameContext context_game = new GameContext("MyGame", 2, table_stub);
+    void newRoundDoesNotAdvanceEraAfterMultipleCalls() {
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
 
         context_game.newRound();
+        context_game.newRound();
 
-        assertEquals(Era.SECOND, context_game.getCurrentEra());
+        assertEquals(2, context_game.getRoundNumber());
+        assertEquals(Era.FIRST, context_game.getCurrentEra());
     }
 
     @Test
@@ -197,27 +232,4 @@ class GameContextTest {
         return new TribeDeck(tribes, 2);
     }
 
-    private static final class StubGameTable extends GameTable {
-        private final ArrayDeque<Boolean> new_round_results;
-        private int new_round_calls;
-
-        private StubGameTable(boolean... new_round_results_input) {
-            super(createOfferTrack(), createTurnOrderTile(), createBuildingDeck(), createTribeDeck());
-            this.new_round_results = new ArrayDeque<>();
-            for (boolean result_item : new_round_results_input) {
-                this.new_round_results.addLast(result_item);
-            }
-            this.new_round_calls = 0;
-        }
-
-        @Override
-        public boolean newRound() {
-            new_round_calls += 1;
-            return new_round_results.isEmpty() ? false : new_round_results.removeFirst();
-        }
-
-        private int getNewRoundCalls() {
-            return new_round_calls;
-        }
-    }
 }
