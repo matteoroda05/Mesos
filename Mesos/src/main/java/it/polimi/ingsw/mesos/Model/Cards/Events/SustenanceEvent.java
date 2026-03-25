@@ -1,12 +1,13 @@
 package it.polimi.ingsw.mesos.Model.Cards.Events;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 
@@ -34,13 +35,13 @@ public final class SustenanceEvent extends EventCard {
     }
 
     @Override
-    public List<Integer> calculateOutcome(List<Tribe> players_tribes) {
-        List<Integer> food_requirements = new ArrayList<>();
+    public Map<Color, Integer> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, Integer> food_requirements = new HashMap<>();
 
-        for (Tribe tribe : players_tribes) {
-            int food_needed = tribe.getNumCharacters() * food_per_character;
-            int discount = tribe.gatherersDiscount();
-            food_requirements.add(Math.max(0, food_needed - discount));
+        for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
+            int food_needed = tribe.getValue().getNumCharacters() * food_per_character;
+            int discount = tribe.getValue().gatherersDiscount();
+            food_requirements.put(tribe.getKey(), Math.max(0, food_needed - discount));
         }
 
         return food_requirements;
