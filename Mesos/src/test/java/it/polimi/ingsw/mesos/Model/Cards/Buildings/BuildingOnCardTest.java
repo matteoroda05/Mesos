@@ -1,0 +1,116 @@
+package it.polimi.ingsw.mesos.Model.Cards.Buildings;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
+import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
+import it.polimi.ingsw.mesos.Model.Tribe;
+
+class BuildingOnCardTest extends BuildingTestSupport {
+
+    @Test
+    void constructorInitializesAcquireCharacterTrigger() {
+        BuildingOnCard building = new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, true, false);
+
+        assertEquals(BuildingTrigger.ON_ACQUIRE_CHARACTER, building.getTrigger());
+        assertEquals(3, building.getFoodCost());
+        assertEquals(4, building.getPrestigePoints());
+    }
+
+    @Test
+    void constructorRejectsInvalidConfigurations() {
+        assertThrows(IllegalArgumentException.class, () -> new BuildingOnCard(Era.FIRST, 2, 3, 4, 0, true, false));
+        assertThrows(IllegalArgumentException.class, () -> new BuildingOnCard(Era.FIRST, 2, 3, 4, 6, true, false));
+        assertThrows(IllegalArgumentException.class, () -> new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, true, true));
+        assertThrows(IllegalArgumentException.class, () -> new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, false, false));
+    }
+
+    @Test
+    void setCompletionEffectRewardsTheNewUniqueMinorityType() {
+        Fixture fixture = createFixture();
+        BuildingOnCard building = new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, true, false);
+        Tribe tribe = fixture.owner().getTribe();
+
+        addTwoCardsOfEachNonHunterType(tribe);
+        building.setOwner(fixture.owner());
+
+        CharacterCard acquired = new HunterCard(Era.FIRST, 2, true);
+        tribe.addCard(acquired);
+        int foodBefore = fixture.owner().getFood();
+
+        building.effect(acquired, fixture.controller());
+
+        assertEquals(foodBefore + 5, fixture.owner().getFood());
+    }
+
+    @Test
+    void setCompletionEffectDoesNotRewardWhenLeastRepresentedTypesAreTied() {
+        Fixture fixture = createFixture();
+        BuildingOnCard building = new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, true, false);
+        Tribe tribe = fixture.owner().getTribe();
+
+        tribe.addCard(new ArtistCard(Era.FIRST, 2));
+        tribe.addCard(new BuilderCard(Era.FIRST, 2, 2, 1));
+        tribe.addCard(new GathererCard(Era.FIRST, 2));
+        tribe.addCard(new InventorCard(Era.FIRST, 2, InventionIcon.BOAT));
+        tribe.addCard(new ShamanCard(Era.FIRST, 2, 2));
+        building.setOwner(fixture.owner());
+
+        CharacterCard acquired = new HunterCard(Era.FIRST, 2, false);
+        tribe.addCard(acquired);
+        int foodBefore = fixture.owner().getFood();
+
+        building.effect(acquired, fixture.controller());
+
+        assertEquals(foodBefore, fixture.owner().getFood());
+    }
+
+    @Test
+    void inventorPairEffectRewardsDuplicateIconsOnly() {
+        Fixture fixture = createFixture();
+        BuildingOnCard building = new BuildingOnCard(Era.FIRST, 2, 3, 4, 3, false, true);
+        Tribe tribe = fixture.owner().getTribe();
+
+        tribe.addCard(new InventorCard(Era.FIRST, 2, InventionIcon.BOAT));
+        building.setOwner(fixture.owner());
+        int foodBefore = fixture.owner().getFood();
+
+        building.effect(new InventorCard(Era.FIRST, 2, InventionIcon.BOAT), fixture.controller());
+
+        assertEquals(foodBefore + 3, fixture.owner().getFood());
+    }
+
+    @Test
+    void inventorPairEffectIgnoresNonInventors() {
+        Fixture fixture = createFixture();
+        BuildingOnCard building = new BuildingOnCard(Era.FIRST, 2, 3, 4, 3, false, true);
+        building.setOwner(fixture.owner());
+        int foodBefore = fixture.owner().getFood();
+
+        building.effect(new ArtistCard(Era.FIRST, 2), fixture.controller());
+
+        assertEquals(foodBefore, fixture.owner().getFood());
+    }
+
+    private void addTwoCardsOfEachNonHunterType(Tribe tribe) {
+        for (int i = 0; i < 2; i++) {
+            tribe.addCard(new ArtistCard(Era.FIRST, 2));
+            tribe.addCard(new BuilderCard(Era.FIRST, 2, 2, 1));
+            tribe.addCard(new GathererCard(Era.FIRST, 2));
+            tribe.addCard(new ShamanCard(Era.FIRST, 2, 2));
+        }
+        tribe.addCard(new InventorCard(Era.FIRST, 2, InventionIcon.BOAT));
+        tribe.addCard(new InventorCard(Era.FIRST, 2, InventionIcon.ARROW));
+    }
+}
