@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public class GameSetup {
     // TODO: initial food was already present in Globals
     private static final List<Integer> INITIAL_FOOD_BY_PLAYER_ORDER = List.of(2, 3, 3, 4, 5);
 
-    public GameContext createGame(String game_name, int player_count, CardLoader.CardData cardData) {
+    public GameContext createGame(String game_name, int player_count, CardLoader.CardData card_data) {
         if (game_name == null || game_name.isBlank()) {
             throw new IllegalArgumentException("game_name cannot be null or blank");
         }
@@ -42,28 +43,28 @@ public class GameSetup {
             throw new IllegalArgumentException(
                     "player_count must be between " + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS);
         }
-        if (cardData == null) {
+        if (card_data == null) {
             throw new IllegalArgumentException("cardData cannot be null");
         }
         // reverseEraOrder is true for tribe cards and false for building cards, because 
         // the way the card are taken from tribeDeck is : removeLast.
-        List<TribeCard> tribeCards = randomizeCardsWithinEra(
-            selectTribeCards(cardData.tribeCards(), player_count),
+        List<TribeCard> tribe_cards = randomizeCardsWithinEra(
+            selectTribeCards(card_data.tribeCards(), player_count),
             true);
-        List<BuildingCard> buildingCards = randomizeCardsWithinEra(
-            selectBuildingCards(cardData.buildingCards(), player_count),
+        List<BuildingCard> building_cards = randomizeCardsWithinEra(
+            selectBuildingCards(card_data.buildingCards(), player_count),
             false);
-        List<OfferTile> offerTiles = selectOfferTiles(cardData.offerTiles(), player_count);
-        List<TurnOrderSpace> turnOrderSpaces = createTurnOrderSpaces(player_count);
+        List<OfferTile> offer_tiles = selectOfferTiles(card_data.offerTiles(), player_count);
+        List<TurnOrderSpace> turn_order_spaces = createTurnOrderSpaces(player_count);
 
-        TribeDeck tribeDeck = new TribeDeck(tribeCards, player_count);
-        BuildingDeck buildingDeck = new BuildingDeck(buildingCards);
-        OfferTrack offerTrack = new OfferTrack(offerTiles, player_count);
-        TurnOrderTile turnOrderTile = new TurnOrderTile(turnOrderSpaces);
+        TribeDeck tribe_deck = new TribeDeck(tribe_cards, player_count);
+        BuildingDeck building_deck = new BuildingDeck(building_cards);
+        OfferTrack offer_track = new OfferTrack(offer_tiles, player_count);
+        TurnOrderTile turn_order_tile = new TurnOrderTile(turn_order_spaces);
 
-        GameTable gameTable = new GameTable(offerTrack, turnOrderTile, buildingDeck, tribeDeck);
+        GameTable game_table = new GameTable(offer_track, turn_order_tile, building_deck, tribe_deck);
 
-        return new GameContext(game_name, player_count, gameTable);
+        return new GameContext(game_name, player_count, game_table);
     }
 
     public void createMapOfPlayers(GameContext game_context, List<String> nicknames) {
@@ -84,89 +85,89 @@ public class GameSetup {
             }
         }
 
-        List<Color> shuffledColors = new ArrayList<>(Arrays.asList(Color.values()));
-        Collections.shuffle(shuffledColors);
+        List<Color> shuffled_colors = new ArrayList<>(Arrays.asList(Color.values()));
+        Collections.shuffle(shuffled_colors);
 
-        Map<Color, Player> playersByColor = new EnumMap<>(Color.class);
+        Map<Color, Player> players_by_color = new LinkedHashMap<>();
         for (int i = 0; i < nicknames.size(); i++) {
-            Color randomColor = shuffledColors.get(i);
-            int initialFood = INITIAL_FOOD_BY_PLAYER_ORDER.get(i);
-            Player player = new Player(nicknames.get(i), randomColor, initialFood);
-            playersByColor.put(randomColor, player);
+            Color random_color = shuffled_colors.get(i);
+            int initial_food = INITIAL_FOOD_BY_PLAYER_ORDER.get(i);
+            Player player = new Player(nicknames.get(i), random_color, initial_food);
+            players_by_color.put(random_color, player);
         }
 
-        game_context.setupPlayers(playersByColor);
+        game_context.setupPlayers(players_by_color);
     }
 
-    private List<TribeCard> selectTribeCards(List<TribeCard> allCards, int player_count) {
-        if (allCards == null) {
+    private List<TribeCard> selectTribeCards(List<TribeCard> all_cards, int player_count) {
+        if (all_cards == null) {
             throw new IllegalArgumentException("tribeCards cannot be null");
         }
 
-        return allCards.stream()
+        return all_cards.stream()
                 .filter(card -> card.getMinPlayers() <= player_count)
                 .toList();
     }
 
-    private List<BuildingCard> selectBuildingCards(List<BuildingCard> allCards, int player_count) {
-        if (allCards == null) {
+    private List<BuildingCard> selectBuildingCards(List<BuildingCard> all_cards, int player_count) {
+        if (all_cards == null) {
             throw new IllegalArgumentException("buildingCards cannot be null");
         }
 
-        return allCards.stream()
+        return all_cards.stream()
                 .filter(card -> card.getMinPlayers() <= player_count)
                 .toList();
     }
 
-    private List<OfferTile> selectOfferTiles(List<OfferTile> allTiles, int player_count) {
-        if (allTiles == null) {
+    private List<OfferTile> selectOfferTiles(List<OfferTile> all_tiles, int player_count) {
+        if (all_tiles == null) {
             throw new IllegalArgumentException("offerTiles cannot be null");
         }
 
-        return allTiles.stream()
+        return all_tiles.stream()
                 .filter(tile -> tile.getMinNumPlayers() <= player_count)
                 .toList();
     }
 
     private List<TurnOrderSpace> createTurnOrderSpaces(int player_count) {
-        List<Integer> foodBonuses = FOOD_BONUS_BY_PLAYER_COUNT.get(player_count);
-        if (foodBonuses == null) {
+        List<Integer> food_bonuses = FOOD_BONUS_BY_PLAYER_COUNT.get(player_count);
+        if (food_bonuses == null) {
             throw new IllegalArgumentException("Unsupported player count: " + player_count);
         }
 
         List<TurnOrderSpace> spaces = new ArrayList<>();
-        for (int i = 0; i < foodBonuses.size(); i++) {
-            spaces.add(new TurnOrderSpace(foodBonuses.get(i)));
+        for (int i = 0; i < food_bonuses.size(); i++) {
+            spaces.add(new TurnOrderSpace(food_bonuses.get(i)));
         }
         return spaces;
     }
 
-    static <T extends Card> List<T> randomizeCardsWithinEra(List<T> cards, boolean reverseEraOrder) {
+    static <T extends Card> List<T> randomizeCardsWithinEra(List<T> cards, boolean reverse_era_order) {
         if (cards == null) {
             throw new IllegalArgumentException("cards cannot be null");
         }
 
-        Map<Era, List<T>> cardsByEra = new EnumMap<>(Era.class);
+        Map<Era, List<T>> cards_by_era = new EnumMap<>(Era.class);
         for (Era era : Era.values()) {
-            cardsByEra.put(era, new ArrayList<>());
+            cards_by_era.put(era, new ArrayList<>());
         }
 
         for (T card : cards) {
-            cardsByEra.get(card.getEra()).add(card);
+            cards_by_era.get(card.getEra()).add(card);
         }
 
-        for (List<T> eraCards : cardsByEra.values()) {
-            Collections.shuffle(eraCards);
+        for (List<T> era_cards : cards_by_era.values()) {
+            Collections.shuffle(era_cards);
         }
 
-        List<Era> eraOrder = new ArrayList<>(List.of(Era.values()));
-        if (reverseEraOrder) {
-            Collections.reverse(eraOrder);
+        List<Era> era_order = new ArrayList<>(List.of(Era.values()));
+        if (reverse_era_order) {
+            Collections.reverse(era_order);
         }
 
         List<T> result = new ArrayList<>();
-        for (Era era : eraOrder) {
-            result.addAll(cardsByEra.get(era));
+        for (Era era : era_order) {
+            result.addAll(cards_by_era.get(era));
         }
 
         return result;
