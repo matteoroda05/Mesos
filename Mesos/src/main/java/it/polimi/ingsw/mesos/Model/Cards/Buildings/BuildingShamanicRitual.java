@@ -69,7 +69,7 @@ public class BuildingShamanicRitual extends BuildingCard {
 
         int player_points = stars_or_points.get(owner.getColor());
 
-        if (player_points >= 0) return stars_or_points; // player didn't loose
+        if (player_points >= 0) return stars_or_points; // player didn't lose
 
         boolean single_loser = false;
         for (int point : stars_or_points.values()) {
