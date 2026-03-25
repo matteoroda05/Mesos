@@ -2,10 +2,8 @@
 
 ### Question list:
 - `newEra()` method only in model or in controller as well?
-- [TurnOrderTile](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Tiles/TurnOrderTile.java) and [TurnOrderSpace](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Tiles/TurnOrderSpace.java) argument
 - **Error handling**
 - Where do we handle "build" errors?
-- When testing, do we have to mock the game or build it entirely with the Loader?
 
 
 ### Todo list:
@@ -14,12 +12,10 @@
 - [CardLoader](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/CardLoader.java)
     - fix issues with loading gatherer cards from JSON file
 - [Tribe](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Tribe.java)
-    - fix/implement function that computes points from building effects
+    - fix/implement function that computes points from building effects -> removed, we add those points in controller
     - downcast issue
 - `TribeDeck`
     - use type enum instead of instanceof
-    - initialise cards from json file
-    -removed, we add those points in controller
 - [BuildingCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/BuildingCard.java)
     - conclude building effects under [Buildings](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings) package
         * [BuildingEndRound](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings/BuildingEndRound.java): add visitor that can allow extra card pick
