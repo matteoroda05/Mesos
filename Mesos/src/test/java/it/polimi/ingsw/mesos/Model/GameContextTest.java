@@ -53,118 +53,118 @@ class GameContextTest {
 
     @Test
     void constructorInitializesDefaultsAndGetters() {
-        GameTable table = createRealGameTable();
+        GameTable table_game = createRealGameTable();
 
-        GameContext context = new GameContext("MyGame", 2, table);
+        GameContext context_game = new GameContext("MyGame", 2, table_game);
 
-        assertEquals("MyGame", context.getGameName());
-        assertEquals(2, context.getGameSize());
-        assertEquals(0, context.getRoundNumber());
-        assertEquals(Era.FIRST, context.getCurrentEra());
-        assertSame(table, context.getGameTable());
-        assertTrue(context.getPlayers().isEmpty());
+        assertEquals("MyGame", context_game.getGameName());
+        assertEquals(2, context_game.getGameSize());
+        assertEquals(0, context_game.getRoundNumber());
+        assertEquals(Era.FIRST, context_game.getCurrentEra());
+        assertSame(table_game, context_game.getGameTable());
+        assertTrue(context_game.getPlayers().isEmpty());
     }
 
     @Test
     void setupPlayersThrowsWhenMapIsNull() {
-        GameContext context = new GameContext("MyGame", 2, createRealGameTable());
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
 
-        assertThrows(IllegalArgumentException.class, () -> context.setupPlayers(null));
+        assertThrows(IllegalArgumentException.class, () -> context_game.setupPlayers(null));
     }
 
     @Test
     void setupPlayersThrowsWhenMapSizeDiffersFromGameSize() {
-        GameContext context = new GameContext("MyGame", 2, createRealGameTable());
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
 
-        assertThrows(IllegalArgumentException.class, () -> context.setupPlayers(new EnumMap<>(Color.class)));
+        assertThrows(IllegalArgumentException.class, () -> context_game.setupPlayers(new EnumMap<>(Color.class)));
     }
 
     @Test
     void setupPlayersAcceptsValidMapAndPlayersCanBeRetrieved() {
-        GameContext context = new GameContext("MyGame", 2, createRealGameTable());
-        Map<Color, Player> players = createPlayersForTwoPlayerGame();
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
 
-        context.setupPlayers(players);
+        context_game.setupPlayers(players_map);
 
-        assertEquals(2, context.getPlayers().size());
-        assertSame(players.get(Color.BLUE), context.getPlayer(Color.BLUE));
-        assertSame(players.get(Color.YELLOW), context.getPlayer(Color.YELLOW));
+        assertEquals(2, context_game.getPlayers().size());
+        assertSame(players_map.get(Color.BLUE), context_game.getPlayer(Color.BLUE));
+        assertSame(players_map.get(Color.YELLOW), context_game.getPlayer(Color.YELLOW));
     }
 
     @Test
     void getPlayersReturnsImmutableListSnapshot() {
-        GameContext context = new GameContext("MyGame", 2, createRealGameTable());
-        Map<Color, Player> players = createPlayersForTwoPlayerGame();
-        context.setupPlayers(players);
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
+        context_game.setupPlayers(players_map);
 
-        List<Player> fromContext = context.getPlayers();
+        List<Player> players_from_context = context_game.getPlayers();
 
         assertThrows(UnsupportedOperationException.class,
-                () -> fromContext.add(new Player("Extra", Color.BLACK, 2)));
+            () -> players_from_context.add(new Player("Extra", Color.BLACK, 2)));
     }
 
     @Test
     void getPlayerThrowsWhenColorIsMissing() {
-        GameContext context = new GameContext("MyGame", 2, createRealGameTable());
-        context.setupPlayers(createPlayersForTwoPlayerGame());
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        context_game.setupPlayers(createPlayersForTwoPlayerGame());
 
-        assertThrows(IllegalArgumentException.class, () -> context.getPlayer(Color.BLACK));
+        assertThrows(IllegalArgumentException.class, () -> context_game.getPlayer(Color.BLACK));
     }
 
     @Test
     void newRoundAlwaysIncrementsRoundNumber() {
-        StubGameTable table = new StubGameTable(false);
-        GameContext context = new GameContext("MyGame", 2, table);
+        StubGameTable table_stub = new StubGameTable(false);
+        GameContext context_game = new GameContext("MyGame", 2, table_stub);
 
-        context.newRound();
+        context_game.newRound();
 
-        assertEquals(1, context.getRoundNumber());
-        assertEquals(1, table.getNewRoundCalls());
+        assertEquals(1, context_game.getRoundNumber());
+        assertEquals(1, table_stub.getNewRoundCalls());
     }
 
     @Test
     void newRoundKeepsEraWhenTableDoesNotOpenNewEra() {
-        StubGameTable table = new StubGameTable(false);
-        GameContext context = new GameContext("MyGame", 2, table);
+        StubGameTable table_stub = new StubGameTable(false);
+        GameContext context_game = new GameContext("MyGame", 2, table_stub);
 
-        context.newRound();
+        context_game.newRound();
 
-        assertEquals(Era.FIRST, context.getCurrentEra());
+        assertEquals(Era.FIRST, context_game.getCurrentEra());
     }
 
     @Test
     void newRoundAdvancesEraWhenTableOpensNewEra() {
-        StubGameTable table = new StubGameTable(true);
-        GameContext context = new GameContext("MyGame", 2, table);
+        StubGameTable table_stub = new StubGameTable(true);
+        GameContext context_game = new GameContext("MyGame", 2, table_stub);
 
-        context.newRound();
+        context_game.newRound();
 
-        assertEquals(Era.SECOND, context.getCurrentEra());
+        assertEquals(Era.SECOND, context_game.getCurrentEra());
     }
 
     @Test
     void computeFinalScoresAddsTribePrestigeToEachPlayer() {
-        GameContext context = new GameContext("MyGame", 2, createRealGameTable());
-        Map<Color, Player> players = createPlayersForTwoPlayerGame();
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
 
-        players.get(Color.BLUE).changePrestigePoints(3);
-        players.get(Color.YELLOW).changePrestigePoints(1);
+        players_map.get(Color.BLUE).changePrestigePoints(3);
+        players_map.get(Color.YELLOW).changePrestigePoints(1);
 
-        players.get(Color.BLUE).getTribe().addCard(new BuildingEndRound(Era.FIRST, 2, 1, 4));
-        players.get(Color.YELLOW).getTribe().addCard(new BuildingEndRound(Era.FIRST, 2, 1, 7));
+        players_map.get(Color.BLUE).getTribe().addCard(new BuildingEndRound(Era.FIRST, 2, 1, 4));
+        players_map.get(Color.YELLOW).getTribe().addCard(new BuildingEndRound(Era.FIRST, 2, 1, 7));
 
-        context.setupPlayers(players);
-        context.computeFinalScores();
+        context_game.setupPlayers(players_map);
+        context_game.computeFinalScores();
 
-        assertEquals(7, players.get(Color.BLUE).getPrestigePoints());
-        assertEquals(8, players.get(Color.YELLOW).getPrestigePoints());
+        assertEquals(7, players_map.get(Color.BLUE).getPrestigePoints());
+        assertEquals(8, players_map.get(Color.YELLOW).getPrestigePoints());
     }
 
     private static Map<Color, Player> createPlayersForTwoPlayerGame() {
-        Map<Color, Player> players = new EnumMap<>(Color.class);
-        players.put(Color.BLUE, new Player("Alice", Color.BLUE, 3));
-        players.put(Color.YELLOW, new Player("Bob", Color.YELLOW, 3));
-        return players;
+        Map<Color, Player> players_map = new EnumMap<>(Color.class);
+        players_map.put(Color.BLUE, new Player("Alice", Color.BLUE, 3));
+        players_map.put(Color.YELLOW, new Player("Bob", Color.YELLOW, 3));
+        return players_map;
     }
 
     private static GameTable createRealGameTable() {
@@ -172,13 +172,13 @@ class GameContextTest {
     }
 
     private static OfferTrack createOfferTrack() {
-        List<OfferTile> offerTiles = List.of(
+        List<OfferTile> offer_tiles = List.of(
                 new OfferTile('A', 0, 0, 1, 2),
                 new OfferTile('B', 1, 0, 0, 2),
                 new OfferTile('C', 0, 1, 0, 2),
                 new OfferTile('D', 1, 1, 0, 2)
         );
-        return new OfferTrack(offerTiles, 2);
+        return new OfferTrack(offer_tiles, 2);
     }
 
     private static TurnOrderTile createTurnOrderTile() {
@@ -198,26 +198,26 @@ class GameContextTest {
     }
 
     private static final class StubGameTable extends GameTable {
-        private final ArrayDeque<Boolean> newRoundResults;
-        private int newRoundCalls;
+        private final ArrayDeque<Boolean> new_round_results;
+        private int new_round_calls;
 
-        private StubGameTable(boolean... newRoundResults) {
+        private StubGameTable(boolean... new_round_results_input) {
             super(createOfferTrack(), createTurnOrderTile(), createBuildingDeck(), createTribeDeck());
-            this.newRoundResults = new ArrayDeque<>();
-            for (boolean result : newRoundResults) {
-                this.newRoundResults.addLast(result);
+            this.new_round_results = new ArrayDeque<>();
+            for (boolean result_item : new_round_results_input) {
+                this.new_round_results.addLast(result_item);
             }
-            this.newRoundCalls = 0;
+            this.new_round_calls = 0;
         }
 
         @Override
         public boolean newRound() {
-            newRoundCalls += 1;
-            return newRoundResults.isEmpty() ? false : newRoundResults.removeFirst();
+            new_round_calls += 1;
+            return new_round_results.isEmpty() ? false : new_round_results.removeFirst();
         }
 
         private int getNewRoundCalls() {
-            return newRoundCalls;
+            return new_round_calls;
         }
     }
 }
