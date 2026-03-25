@@ -62,7 +62,8 @@ public class ModelController {
             if (cost > player.getFood()) throw new IllegalArgumentException("player cannot afford this building");
             BuildingCard card_to_buy = market_row.takeBuildingCard(card);
             player.getTribe().addCard(card_to_buy);
-            player.loseFood(cost);
+            int check = player.loseFood(cost);
+            if (check > 0) throw new IllegalStateException("player lost more food than than available");
         } else {
             // For character cards
             CharacterCard wanted;
@@ -103,12 +104,9 @@ public class ModelController {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player p = this.game_context.getPlayer(player_color);
         food_amount = -food_amount;
-        int player_food = p.getFood();
-        if (player_food > food_amount) {
-            p.loseFood(-food_amount);
-        }else{
-            p.loseFood(player_food);
-            p.changePrestigePoints(substitute_prestige*(player_food-food_amount));
+        int prestige_loss = substitute_prestige * p.loseFood(food_amount);
+        if (prestige_loss != 0) {
+            p.changePrestigePoints(- prestige_loss);
         }
     }
 
