@@ -1,16 +1,18 @@
 package it.polimi.ingsw.mesos.Controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import it.polimi.ingsw.mesos.Model.*;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.GameTable;
-import it.polimi.ingsw.mesos.Model.MarketRow;
-import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
+import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
 public class ModelController {
     private final GameContext game_context;
@@ -40,15 +42,51 @@ public class ModelController {
         }
     }
 
+    public OfferTile getNextPlayerOfferTile() {
+        List<OfferTile> tiles = game_context.getGameTable().getOfferTrack().getOccupiedTiles();
+
+        if (tiles.isEmpty()) return null;
+        else return tiles.getFirst();
+    }
+
+    public Color getNextPlayerTurn() {
+        List<Color> tiles = game_context.getGameTable().getTurnOrderTile().currentOrderTopToBottom();
+
+        if (tiles.isEmpty()) return null;
+        else return tiles.getFirst();
+    }
+
+    public Map<Color, Tribe> getTribes() {
+        return game_context.getPlayers().stream().collect(Collectors.toMap(
+                Player::getColor,
+                Player::getTribe
+        ));
+    }
+
+    public List<BuildingCard> getBuildingsWithTrigger(BuildingTrigger trigger) {
+        return game_context.getPlayers().stream()
+                .map(Player::getTribe)
+                .map(tribe -> tribe.getBuildingsWithTrigger(trigger))
+                .flatMap(List::stream).toList();
+    }
+
+    public TurnOrderTile getTurnOrderTile() {
+        return game_context.getGameTable().getTurnOrderTile();
+    }
+
+    public GameTable getGameTable() {
+        return game_context.getGameTable();
+    }
+
     // PLAYER ACTIONS
     public void playerEndTurn(){
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
         Player player = this.game_context.getPlayer(player_color);
-        game_table.getTurnOrderTile().placeTotem(player);
+        game_table.getTurnOrderTile().placeTotem(player); // TODO: assign rewards (food)
     }
 
-    public void playerChooseCard(Color player_color, int card, boolean is_top){
+    public Optional<CharacterCard> playerChooseCard(Color player_color, int card, boolean is_top){
         if (card < 0) throw new IllegalArgumentException("card cannot be negative");
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player player = this.game_context.getPlayer(player_color);
@@ -74,7 +112,10 @@ public class ModelController {
             }
 
             player.getTribe().addCard(wanted);
+            return Optional.ofNullable(wanted);
         }
+
+        return Optional.empty();
     }
 
     public void playerChoseOffer(Color player_color, int offer_tile){
