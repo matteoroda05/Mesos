@@ -14,7 +14,7 @@
 - [Tribe](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Tribe.java)
     - fix/implement function that computes points from building effects -> removed, we add those points in controller
     - downcast issue
-- `TribeDeck`
+- [TribeDeck](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/TribeDeck.java)
     - use type enum instead of instanceof
 - [BuildingCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/BuildingCard.java)
     - conclude building effects under [Buildings](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings) package
@@ -31,3 +31,8 @@
 - [OfferTrack](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/OfferTrack.java)
   - method `getAvailableTiles()` could be removed
   - method `ensureTilesInitialized()` is useless
+
+### NOT NEEDED TESTS:
+- [TribeCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/TribeCard.java), [CharacterCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/CharacterCard.java) > already tested for in [CardTest](Mesos/src/test/java/it/polimi/ingsw/mesos/Model/Cards/CardTest.java)
+- [EventCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/EventCard.java) > test single event classes
+- [ArtistCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Characters/ArtistCard.java) > nothing to test for
