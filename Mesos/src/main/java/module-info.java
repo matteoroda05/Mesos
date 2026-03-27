@@ -29,4 +29,6 @@ module it.polimi.ingsw.mesos {
     opens it.polimi.ingsw.mesos.Model.Cards.Characters to com.fasterxml.jackson.databind;
     opens it.polimi.ingsw.mesos.Model.Cards.Buildings to com.fasterxml.jackson.databind;
     opens it.polimi.ingsw.mesos.Model.Tiles to com.fasterxml.jackson.databind;
+    exports it.polimi.ingsw.mesos.Controller.States;
+    opens it.polimi.ingsw.mesos.Controller.States to org.junit.platform.commons;
 }

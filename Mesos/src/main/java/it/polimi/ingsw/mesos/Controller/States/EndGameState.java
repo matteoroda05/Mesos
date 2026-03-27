@@ -1,11 +1,12 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.Controller.States;
 
+import it.polimi.ingsw.mesos.Controller.GameState;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tribe;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 

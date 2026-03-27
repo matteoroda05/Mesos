@@ -1,5 +1,7 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.Controller.States;
 
+import it.polimi.ingsw.mesos.Controller.GameState;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
