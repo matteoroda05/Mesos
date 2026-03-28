@@ -55,9 +55,9 @@ public class EventState extends GameState {
                 } else {
                     buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
                 }
-            }
 
-            // TODO: apply the results to each player
+                applyOutcome(outcome);
+            }
         }
 
         // sustenance events must be done after the other events
@@ -70,8 +70,7 @@ public class EventState extends GameState {
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
 
             buildings.forEach(building -> building.effect(outcome, controller));
-
-            // TODO: apply the result to each player
+            applyOutcome(outcome, event.getPointPenalty());
         }
 
         if (last_round) {
@@ -79,5 +78,22 @@ public class EventState extends GameState {
         } else {
             return new EndRoundState(controller);
         }
+    }
+
+    // TODO: fix for hunter's food reward
+    private void applyOutcome(Map<Color, Integer> outcome) {
+        outcome.forEach((player, delta) -> {
+            if (delta != 0) {
+                controller.playerChangePrestige(delta, player);
+            }
+        });
+    }
+
+    private void applyOutcome(Map<Color, Integer> outcome, int prestige_convertion) {
+        outcome.forEach((player, delta) -> {
+            if (delta != 0) {
+                controller.playerChangeFood(delta, player, prestige_convertion);
+            }
+        });
     }
 }
