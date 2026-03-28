@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import it.polimi.ingsw.mesos.Model.*;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -111,7 +112,10 @@ public class ModelController {
                 throw new IllegalArgumentException("player tried to take an event card");
             }
 
-            player.getTribe().addCard(wanted);
+            Class<? extends CharacterCard> card_type = player.getTribe().addCard(wanted);
+            if (card_type == HunterCard.class && ((HunterCard)wanted).isActiveHunter()) {
+                player.gainFood(player.getTribe().getNumCharacterOfType(HunterCard.class));
+            }
             return Optional.ofNullable(wanted);
         }
 

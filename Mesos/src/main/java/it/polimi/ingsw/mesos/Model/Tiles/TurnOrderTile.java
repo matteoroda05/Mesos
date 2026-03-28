@@ -19,6 +19,21 @@ public class TurnOrderTile {
 
     }
 
+    public void setupTotem(Player player) {
+        if (player == null) {
+            throw new IllegalArgumentException("player cannot be null");
+        }
+
+        for (TurnOrderSpace space : spaces) {
+            if (space.isFree()) {
+                space.setOccupant(player.getColor());
+                return;
+            }
+        }
+
+        throw new IllegalStateException("No free spaces in TurnOrderTile");
+    }
+
     public void placeTotem(Player player) {
         if (player == null) {
             throw new IllegalArgumentException("player cannot be null");
@@ -64,7 +79,14 @@ public class TurnOrderTile {
     }
 
     public void clearFirst() {
-        spaces.getFirst().clear();
+        for (TurnOrderSpace space : spaces) {
+            if (!space.isFree()) {
+                space.clear();
+                return;
+            }
+        }
+
+        throw new IllegalStateException("No occupied spaces in TurnOrderTile");
     }
 
     public void clear() {

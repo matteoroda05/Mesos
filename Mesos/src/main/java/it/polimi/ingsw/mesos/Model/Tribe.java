@@ -171,14 +171,16 @@ public class Tribe {
         return prestige;
     }
 
-    public void addCard(CharacterCard card) {
+    public Class<? extends CharacterCard> addCard(CharacterCard card) {
         if (card == null) {
             throw new IllegalArgumentException("card cannot be null");
         }
 
-        Class<? extends CharacterCard> cardType = card.getClass();
+        Class<? extends CharacterCard> card_type = card.getClass();
 
-        this.characters.get(cardType).add(card);
+        this.characters.get(card_type).add(card);
+
+        return card_type;
     }
 
     public void addCard(BuildingCard card) {
