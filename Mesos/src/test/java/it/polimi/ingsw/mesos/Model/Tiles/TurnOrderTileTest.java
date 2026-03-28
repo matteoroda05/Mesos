@@ -168,6 +168,27 @@ public class TurnOrderTileTest {
         assertFalse(tile.isFull());
     }
 
+    @Test
+    void clearFirstRemovesFirstOccupiedSpaceNotFirstPhysicalSpace() {
+        TurnOrderTile tile = new TurnOrderTile(createSpaces(1, -1));
+
+        tile.setupTotem(new Player("Alice", Color.BLUE, 0));
+        tile.setupTotem(new Player("Bob", Color.YELLOW, 0));
+
+        tile.clearFirst();
+        assertEquals(List.of(Color.YELLOW), tile.currentOrderTopToBottom());
+
+        tile.clearFirst();
+        assertTrue(tile.currentOrderTopToBottom().isEmpty());
+    }
+
+    @Test
+    void clearFirstThrowsWhenNoOccupiedSpaceExists() {
+        TurnOrderTile tile = new TurnOrderTile(createSpaces(1, -1));
+
+        assertThrows(IllegalStateException.class, tile::clearFirst);
+    }
+
     private List<TurnOrderSpace> createSpaces(int... bonuses) {
         return java.util.Arrays.stream(bonuses)
                 .mapToObj(TurnOrderSpace::new)

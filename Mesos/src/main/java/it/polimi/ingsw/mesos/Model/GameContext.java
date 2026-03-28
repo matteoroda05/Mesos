@@ -51,7 +51,7 @@ public class GameContext {
         // Place totems on turn order tile on casual order
         TurnOrderTile tile = this.game_table.getTurnOrderTile();
         for (Player p : players.values()) {
-            tile.placeTotem(p);
+            tile.setupTotem(p);
         }
     }
 
