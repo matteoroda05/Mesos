@@ -42,6 +42,7 @@ public class ShamanicRitualEvent extends EventCard {
 
         int lowest_stars = Integer.MAX_VALUE;
         int highest_stars = Integer.MIN_VALUE;
+
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
             int stars = tribe.getValue().countShamanStars();
             player_stars.put(tribe.getKey(), stars);
@@ -64,14 +65,12 @@ public class ShamanicRitualEvent extends EventCard {
         buildings.forEach((key, list) -> list.forEach(building ->
                 player_stars.replace(key, player_stars.get(key) + ((BuildingShamanicRitual) building).getStarBonus())));
 
-        int[] vals = new int[2];
         for (Map.Entry<Color, Integer> stars : player_stars.entrySet()) {
+            int[] vals = new int[2];
             if (stars.getValue() == highest_stars) {
                 vals[0] = winner_bonus;
             } else if (stars.getValue() == lowest_stars) {
                 vals[0] = loser_penalty;
-            } else {
-                vals[0] = 0;
             }
             player_outcomes.put(stars.getKey(), vals);
         }
