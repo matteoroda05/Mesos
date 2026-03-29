@@ -39,9 +39,9 @@ public class CavePaintingEvent extends EventCard {
     public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, int[]> player_outcomes = new HashMap<>();
 
-        int[] vals =  new int[2]; // new int[2] already initializes both to 0
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
             int artists = tribe.getValue().getNumCharacterOfType(ArtistCard.class);
+            int[] vals  =  new int[2]; // new int[2] already initializes both to 0
             if (artists >= threshold) {
                 vals[0] = points_per_artist * artists;
             } else {

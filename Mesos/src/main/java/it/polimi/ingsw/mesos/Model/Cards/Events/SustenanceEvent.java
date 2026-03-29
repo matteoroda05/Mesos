@@ -38,11 +38,11 @@ public final class SustenanceEvent extends EventCard {
     public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, int[]> food_requirements = new HashMap<>();
 
-        int[] vals = new int[2];
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
+            int[] vals = new int[2];
             int food_needed = tribe.getValue().getNumCharacters() * food_per_character;
             int discount = tribe.getValue().gatherersDiscount();
-            vals[1] = Math.max(0, food_needed - discount);
+            vals[1] = Math.max(0, - food_needed + discount);
             food_requirements.put(tribe.getKey(), vals);
         }
 
