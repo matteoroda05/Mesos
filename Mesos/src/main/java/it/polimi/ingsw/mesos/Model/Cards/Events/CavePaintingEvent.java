@@ -36,16 +36,18 @@ public class CavePaintingEvent extends EventCard {
     }
 
     @Override
-    public Map<Color, Integer> calculateOutcome(Map<Color, Tribe> players_tribes) {
-        Map<Color, Integer> player_outcomes = new HashMap<>();
+    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, int[]> player_outcomes = new HashMap<>();
 
+        int[] vals =  new int[2]; // new int[2] already initializes both to 0
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
             int artists = tribe.getValue().getNumCharacterOfType(ArtistCard.class);
             if (artists >= threshold) {
-                player_outcomes.put(tribe.getKey(), points_per_artist * artists);
+                vals[0] = points_per_artist * artists;
             } else {
-                player_outcomes.put(tribe.getKey(), penalty);
+                vals[0] = penalty;
             }
+            player_outcomes.put(tribe.getKey(), vals);
         }
 
         return player_outcomes;

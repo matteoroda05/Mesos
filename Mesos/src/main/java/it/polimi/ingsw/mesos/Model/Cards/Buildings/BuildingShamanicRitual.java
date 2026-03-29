@@ -35,15 +35,16 @@ public class BuildingShamanicRitual extends BuildingCard {
         phase = this.star_bonus != 0 ? EventPhase.PRE_EVENT : EventPhase.POST_EVENT;
     }
 
-    public void effect(Map<Color, Integer> points) {
+    public void effect(Map<Color, int[]> points) {
         if (win_multiplier != 0) {
             // multiply points if it's the only player that won
-            int player_points = points.get(owner.getColor());
+            int player_points = points.get(owner.getColor())[0];
 
             if (player_points <= 0) return; // player didn't win
 
             boolean single_winner = false;
-            for (int point : points.values()) {
+            for (int[] vals : points.values()) {
+                int point =  vals[0];
                 if (point > 0) {
                     if (single_winner) {
                         // more than one winner -> no bonus
@@ -55,15 +56,18 @@ public class BuildingShamanicRitual extends BuildingCard {
             }
 
             // there's only one winner and it's the player
-            points.replace(owner.getColor(), player_points * win_multiplier);
+            int[] vals = points.get(owner.getColor());
+            vals[0] = player_points * win_multiplier;
+            points.replace(owner.getColor(), vals);
             return;
         }
 
         // last effect: no pp lost if last
-        int player_points = points.get(owner.getColor());
-        if (player_points >= 0) return; // player didn't loose
+        int[] vals = points.get(owner.getColor());
+        if (vals[0] >= 0) return; // player didn't loose
+        vals[0] = 0;
 
-        points.replace(owner.getColor(), 0);
+        points.replace(owner.getColor(), vals);
     }
 
     public EventPhase getPhase() {

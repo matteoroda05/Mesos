@@ -48,7 +48,7 @@ public class EventState extends GameState {
             if (trigger == BuildingTrigger.ON_EVENT_SUSTENANCE) {
                 sustenance.add((SustenanceEvent) curr);
             } else {
-                Map<Color, Integer> outcome = curr.calculateOutcome(tribes);
+                Map<Color, int[]> outcome = curr.calculateOutcome(tribes);
                 List<BuildingCard> buildings = controller.getBuildingsWithTrigger(trigger);
                 if (trigger == BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL) {
                     buildings.forEach(building -> ((BuildingShamanicRitual) building).effect(outcome));
@@ -56,7 +56,7 @@ public class EventState extends GameState {
                     buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
                 }
 
-                applyOutcome(outcome);
+                applyOutcome(outcome, 0);
             }
         }
 
@@ -65,7 +65,7 @@ public class EventState extends GameState {
             SustenanceEvent event = sustenance.removeFirst();
             BuildingTrigger trigger = event.asTrigger();
 
-            Map<Color, Integer> outcome = event.calculateOutcome(tribes);
+            Map<Color, int[]> outcome = event.calculateOutcome(tribes);
             List<BuildingBonusEvent> buildings = controller.getBuildingsWithTrigger(trigger)
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
 
@@ -80,19 +80,13 @@ public class EventState extends GameState {
         }
     }
 
-    // TODO: fix for hunter's food reward
-    private void applyOutcome(Map<Color, Integer> outcome) {
+    private void applyOutcome(Map<Color, int[]> outcome, int prestige_convertion) {
         outcome.forEach((player, delta) -> {
-            if (delta != 0) {
-                controller.playerChangePrestige(delta, player);
+            if (delta[0] != 0){
+                controller.playerChangePrestige(delta[0], player);
             }
-        });
-    }
-
-    private void applyOutcome(Map<Color, Integer> outcome, int prestige_convertion) {
-        outcome.forEach((player, delta) -> {
-            if (delta != 0) {
-                controller.playerChangeFood(delta, player, prestige_convertion);
+            if (delta[1] != 0) {
+                controller.playerChangeFood(delta[1], player, prestige_convertion);
             }
         });
     }

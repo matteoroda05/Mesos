@@ -36,9 +36,9 @@ public class ShamanicRitualEvent extends EventCard {
     }
 
     @Override
-    public Map<Color, Integer> calculateOutcome(Map<Color, Tribe> players_tribes) {
+    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, Integer> player_stars = new HashMap<>();
-        Map<Color, Integer> player_outcomes = new HashMap<>();
+        Map<Color, int[]> player_outcomes = new HashMap<>();
 
         int lowest_stars = Integer.MAX_VALUE;
         int highest_stars = Integer.MIN_VALUE;
@@ -64,14 +64,16 @@ public class ShamanicRitualEvent extends EventCard {
         buildings.forEach((key, list) -> list.forEach(building ->
                 player_stars.replace(key, player_stars.get(key) + ((BuildingShamanicRitual) building).getStarBonus())));
 
+        int[] vals = new int[2];
         for (Map.Entry<Color, Integer> stars : player_stars.entrySet()) {
             if (stars.getValue() == highest_stars) {
-                player_outcomes.put(stars.getKey(), winner_bonus);
+                vals[0] = winner_bonus;
             } else if (stars.getValue() == lowest_stars) {
-                player_outcomes.put(stars.getKey(), loser_penalty);
+                vals[0] = loser_penalty;
             } else {
-                player_outcomes.put(stars.getKey(), 0);
+                vals[0] = 0;
             }
+            player_outcomes.put(stars.getKey(), vals);
         }
 
         return player_outcomes;

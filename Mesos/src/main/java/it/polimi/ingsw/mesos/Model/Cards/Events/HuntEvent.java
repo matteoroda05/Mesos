@@ -37,12 +37,15 @@ public class HuntEvent extends EventCard {
     }
 
     @Override
-    public Map<Color, Integer> calculateOutcome(Map<Color, Tribe> players_tribes) {
-        Map<Color, Integer> player_outcomes = new HashMap<>();
+    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, int[]> player_outcomes = new HashMap<>();
 
+        int[] vals =  new int[2]; //new int[2] alr initializes to 0
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
             int hunters = tribe.getValue().getNumCharacterOfType(HunterCard.class);
-            player_outcomes.put(tribe.getKey(), hunters * prestige_per_hunter);
+            vals[0] = hunters * prestige_per_hunter;
+            vals[1] = hunters * food_per_hunter;
+            player_outcomes.put(tribe.getKey(), vals);
         }
 
         return player_outcomes;
