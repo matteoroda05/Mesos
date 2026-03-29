@@ -70,9 +70,9 @@ public class BuildingBonusEvent extends BuildingCard {
         this.character_type = character_type;
     }
 
-    public void effect(Map<Color, Integer> food_output, ModelController visitor) {
+    public void effect(Map<Color, int[]> output, ModelController visitor) {
         final int multiplier = owner.getTribe().getNumCharacterOfType(character_type);
-        final int prev_food = food_output.get(owner.getColor());
+        final int prev_food = output.get(owner.getColor())[1];
         final int food_change = prev_food + multiplier * food_bonus;
         final int prestige_bonus = multiplier * pp_bonus;
 
