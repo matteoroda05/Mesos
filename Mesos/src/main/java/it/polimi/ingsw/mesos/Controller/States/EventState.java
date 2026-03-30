@@ -81,12 +81,12 @@ public class EventState extends GameState {
     }
 
     private void applyOutcome(Map<Color, int[]> outcome, int prestige_convertion) {
-        outcome.forEach((player, delta) -> {
-            if (delta[0] != 0){
-                controller.playerChangePrestige(delta[0], player);
+        outcome.forEach((player, deltas) -> {
+            if (deltas[0] != 0){
+                controller.playerChangePrestige(deltas[0], player);
             }
-            if (delta[1] != 0) {
-                controller.playerChangeFood(delta[1], player, prestige_convertion);
+            if (deltas[1] != 0) {
+                controller.playerChangeFood(deltas[1], player, prestige_convertion);
             }
         });
     }
