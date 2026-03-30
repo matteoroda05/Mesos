@@ -42,7 +42,7 @@ public final class SustenanceEvent extends EventCard {
             int[] vals = new int[2];
             int food_needed = tribe.getValue().getNumCharacters() * food_per_character;
             int discount = tribe.getValue().gatherersDiscount();
-            vals[1] = Math.max(0, - food_needed + discount);
+            vals[1] = Math.min(0, - food_needed + discount);
             food_requirements.put(tribe.getKey(), vals);
         }
 
