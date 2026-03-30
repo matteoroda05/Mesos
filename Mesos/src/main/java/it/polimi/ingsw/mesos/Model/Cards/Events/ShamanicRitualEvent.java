@@ -69,7 +69,9 @@ public class ShamanicRitualEvent extends EventCard {
             int[] vals = new int[2];
             if (stars.getValue() == highest_stars) {
                 vals[0] = winner_bonus;
-            } else if (stars.getValue() == lowest_stars) {
+            }
+            // if all have same they all win and loose at the same time
+            if (stars.getValue() == lowest_stars) {
                 vals[0] = loser_penalty;
             }
             player_outcomes.put(stars.getKey(), vals);

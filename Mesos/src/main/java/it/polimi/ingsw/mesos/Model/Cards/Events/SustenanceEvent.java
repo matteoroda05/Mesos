@@ -31,7 +31,7 @@ public final class SustenanceEvent extends EventCard {
     }
 
     public int getPointPenalty() {
-        return points_penalty;
+        return - points_penalty; // prestige conversion has to be positive
     }
 
     @Override
