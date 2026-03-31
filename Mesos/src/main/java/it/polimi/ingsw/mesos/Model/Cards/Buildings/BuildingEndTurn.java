@@ -1,15 +1,16 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
-
-import java.util.List;
 
 public class BuildingEndTurn extends BuildingCard {
     private final int food_bonus;
@@ -39,6 +40,7 @@ public class BuildingEndTurn extends BuildingCard {
                 if (space.getBonus() > 0) {
                     visitor.playerChangeFood(food_bonus, owner.getColor());
                 }
+                break;
             }
         }
 
