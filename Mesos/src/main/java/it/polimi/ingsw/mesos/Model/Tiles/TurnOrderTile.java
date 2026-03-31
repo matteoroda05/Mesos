@@ -34,7 +34,7 @@ public class TurnOrderTile {
         throw new IllegalStateException("No free spaces in TurnOrderTile");
     }
 
-    public void placeTotem(Player player) {
+    public int placeTotem(Player player) {
         if (player == null) {
             throw new IllegalArgumentException("player cannot be null");
         }
@@ -43,18 +43,7 @@ public class TurnOrderTile {
             if (space.isFree()) {
                 space.setOccupant(player.getColor());
 
-                int bonus = space.getBonus();
-                if (bonus > 0) {
-                    player.gainFood(bonus);
-                } else {
-                    int prestige_loss = player.loseFood(-bonus);
-                    if (prestige_loss > 0) {
-                        prestige_loss = prestige_loss << 1;
-                        player.changePrestigePoints(-prestige_loss);
-                    }
-                }
-
-                return;
+                return space.getBonus();
             }
         }
 
