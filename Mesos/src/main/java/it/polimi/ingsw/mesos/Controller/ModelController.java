@@ -94,7 +94,8 @@ public class ModelController {
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
         Player player = this.game_context.getPlayer(player_color);
-        game_table.getTurnOrderTile().placeTotem(player); // TODO: assign rewards (food)
+        int food_gain = game_table.getTurnOrderTile().placeTotem(player);
+        playerChangeFood(food_gain, player_color, 2);
     }
 
     public Optional<CharacterCard> playerChooseCard(Color player_color, int card, boolean is_top){
@@ -145,25 +146,17 @@ public class ModelController {
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
 
-    // TODO: "merge the two playerChangeFOod"
-    public void playerChangeFood(int food_amount, Color player_color) {
-        if (food_amount < 0) throw new IllegalArgumentException("food_amount cannot be " +
-                "negative for gain operations");
-        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        Player p = this.game_context.getPlayer(player_color);
-        p.gainFood(food_amount);
-    }
-    // TODO: "merge the two playerChangeFOod"
     public void playerChangeFood(int food_amount, Color player_color, int substitute_prestige) {
-        if (food_amount > 0){
-            playerChangeFood(food_amount, player_color);
-            return;
-        }
+        if (substitute_prestige < 0) throw new IllegalArgumentException("substitute_prestige cannot be negative");
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player p = this.game_context.getPlayer(player_color);
-        int prestige_loss = substitute_prestige * p.loseFood(Math.abs(food_amount));
-        if (prestige_loss != 0) {
-            p.changePrestigePoints(- prestige_loss);
+        if (food_amount > 0){
+            p.gainFood(food_amount);
+        } else if (food_amount < 0){
+            int prestige_loss = substitute_prestige * p.loseFood(Math.abs(food_amount));
+            if (prestige_loss != 0) {
+                p.changePrestigePoints(- prestige_loss);
+            }
         }
     }
 

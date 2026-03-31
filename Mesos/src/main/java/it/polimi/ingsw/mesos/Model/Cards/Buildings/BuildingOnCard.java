@@ -53,7 +53,7 @@ public class BuildingOnCard extends BuildingCard {
 
             final InventionIcon icon = ((InventorCard) card).getInventionIcon();
             final boolean not_in_set = inventor_icons.add(icon);
-            if (!not_in_set) visitor.playerChangeFood(food_bonus, owner.getColor());
+            if (!not_in_set) visitor.playerChangeFood(food_bonus, owner.getColor(), 0);
             return;
         }
 
@@ -75,7 +75,7 @@ public class BuildingOnCard extends BuildingCard {
         }
 
         if (keys.size() == 1 && keys.getFirst() == card.getClass()) {
-            visitor.playerChangeFood(food_bonus, owner.getColor());
+            visitor.playerChangeFood(food_bonus, owner.getColor(), 0);
         }
     }
 }

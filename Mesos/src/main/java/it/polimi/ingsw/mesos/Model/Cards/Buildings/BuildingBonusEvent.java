@@ -76,7 +76,7 @@ public class BuildingBonusEvent extends BuildingCard {
         final int food_change = prev_food + multiplier * food_bonus;
         final int prestige_bonus = multiplier * pp_bonus;
 
-        visitor.playerChangeFood(food_change, owner.getColor());
+        visitor.playerChangeFood(food_change, owner.getColor(), 0);
         visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 }

@@ -25,6 +25,7 @@ class ModelControllerTest {
         try {
             game_context = game_setup.createGame("TestGame", 3, CardLoader.load());
         } catch (IOException e) {
+            return;
         }
 
         List<String> player_names = List.of("Nicola", "Mathis", "Elia");
@@ -193,15 +194,15 @@ class ModelControllerTest {
 //    }
 
     @Test
-    void playerChangeFoodThrowsExceptionWhenFoodAmountIsNegative() {
+    void playerChangeFoodThrowsExceptionWhenSubstituePrestigeIsNegative() {
         assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(-5, Color.BLUE));
+                () -> model_controller.playerChangeFood(-5, Color.BLUE, -1));
     }
 
     @Test
     void playerChangeFoodThrowsExceptionWhenPlayerColorIsNull() {
         assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(5, null));
+                () -> model_controller.playerChangeFood(5, null, 2));
     }
 
 //    @Test
@@ -225,18 +226,6 @@ class ModelControllerTest {
 //        // Food deficit: 15 - initialFood, so prestige change: 2 * (initialFood - 15)
 //        assertEquals(initialPrestige + 2 * (initialFood - 15), player1.getPrestigePoints());
 //    }
-
-    @Test
-    void playerChangeFoodWithSubstituteThrowsExceptionWhenFoodAmountIsPositive() {
-        assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(5, Color.BLUE, 2));
-    }
-
-    @Test
-    void playerChangeFoodWithSubstituteThrowsExceptionWhenPlayerColorIsNull() {
-        assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(-5, null, 2));
-    }
 
 //    @Test
 //    void playerChangePrestigeUpdatesPlayerPrestige() {
