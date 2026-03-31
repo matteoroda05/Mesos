@@ -1,7 +1,13 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
@@ -10,14 +16,8 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 public class BuildingOnCard extends BuildingCard {
     private final int food_bonus;
-    private final boolean set_completion;
     private final boolean inventors_pair;
     private Set<InventionIcon> inventor_icons;
 
@@ -37,7 +37,6 @@ public class BuildingOnCard extends BuildingCard {
         if (set_completion == inventors_pair) throw new IllegalArgumentException("Building must have one and only one effect!");
 
         this.food_bonus = food_bonus;
-        this.set_completion = set_completion;
         this.inventors_pair = inventors_pair;
     }
 
@@ -60,6 +59,7 @@ public class BuildingOnCard extends BuildingCard {
 
         // ensure there's only one type with the least number of cards and that it is the one the player just received
         Map<Class<? extends CharacterCard>, Integer> counts = owner.getTribe().getNumCharactersOfEachType();
+        counts.replace(card.getClass(), counts.get(card.getClass()) - 1);
         int min = Integer.MAX_VALUE;
         List<Class<? extends CharacterCard>> keys = new ArrayList<>();
 
