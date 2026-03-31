@@ -47,7 +47,7 @@ public class ActionState extends GameState {
 
         if (chosen.isPresent()) {
             List<BuildingOnCard> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_ACQUIRE_CHARACTER)
-                    .stream().map(building -> ((BuildingOnCard) building)).toList();
+                    .stream().filter(building -> building.getOwner().getColor() == this.p).map(building -> ((BuildingOnCard) building)).toList();
             buildings.forEach(building -> building.effect(chosen.get(), controller));
         }
 
