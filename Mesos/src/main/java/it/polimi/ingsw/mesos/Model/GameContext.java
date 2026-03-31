@@ -95,6 +95,10 @@ public class GameContext {
         this.round_number += 1;
     }
 
+    public void newEra() {
+        this.current_era = this.current_era.next();
+    }
+
     public void computeFinalScores() {
         for (Player player : players.values()) {
             player.changePrestigePoints(player.getTribe().tribeEndGamePrestige());

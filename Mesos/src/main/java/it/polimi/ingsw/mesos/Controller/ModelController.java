@@ -45,13 +45,6 @@ public class ModelController {
         return row.getTakeableCards(player.getFood(), player.getTribe().buildersDiscount()).size();
     }
 
-    public void endRound() {
-        this.game_context.newRound();
-        if (this.game_context.getGameTable().newRound()){
-            this.game_context.getGameTable().beginNewEra();
-        }
-    }
-
     public OfferTile getNextPlayerOfferTile() {
         List<OfferTile> tiles = game_context.getGameTable().getOfferTrack().getOccupiedTiles();
 
@@ -86,6 +79,14 @@ public class ModelController {
 
     public GameTable getGameTable() {
         return game_context.getGameTable();
+    }
+
+    public void endRound() {
+        this.game_context.newRound();
+        if (this.game_context.getGameTable().newRound()){
+            this.game_context.getGameTable().beginNewEra();
+            this.game_context.newEra();
+        }
     }
 
     // PLAYER ACTIONS
