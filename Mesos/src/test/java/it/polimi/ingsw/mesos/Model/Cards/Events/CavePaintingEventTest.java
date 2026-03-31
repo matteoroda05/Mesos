@@ -2,12 +2,13 @@ package it.polimi.ingsw.mesos.Model.Cards.Events;
 
 import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,10 +53,14 @@ public class CavePaintingEventTest {
         tribe3.addCard(artist5);
         tribe3.addCard(artist6);
 
-        List<Tribe> tribes = List.of(tribe1, tribe2, tribe3);
-        List<Integer> output = cave_painting_event.calculateOutcome(tribes);
-        List<Integer> expected = List.of(-2, 12, -2);
+        Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
+        Map<Color, int[]> output = cave_painting_event.calculateOutcome(tribes);
 
-        assertIterableEquals(expected, output);
+        assertEquals(-2, output.get(Color.BLACK)[0]);
+        assertEquals(12, output.get(Color.BLUE)[0]);
+        assertEquals(-2, output.get(Color.ORANGE)[0]);
+        assertEquals(0, output.get(Color.BLACK)[1]);
+        assertEquals(0, output.get(Color.BLUE)[1]);
+        assertEquals(0, output.get(Color.ORANGE)[1]);
     }
 }

@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Controller.States;
 
+import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -39,5 +40,15 @@ public class ChooseOfferState extends GameState {
 
         p = controller.getNextPlayerTurn();
         return this;
+    }
+
+    @Override
+    public GameStatus getStatus() {
+        return GameStatus.ROUND_OFFER;
+    }
+
+    @Override
+    public Color getActivePlayer() {
+        return p;
     }
 }

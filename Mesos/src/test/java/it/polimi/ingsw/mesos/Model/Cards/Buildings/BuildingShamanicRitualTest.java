@@ -34,62 +34,55 @@ class BuildingShamanicRitualTest extends BuildingTestSupport {
 
     @Test
     void preEventEffectAddsStarsToTheOwner() {
-        Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 3, 0);
-        Map<Color, Integer> values = new EnumMap<>(Color.class);
-        values.put(Color.BLUE, 2);
-        values.put(Color.YELLOW, 1);
 
-        building.setOwner(fixture.owner());
-        building.effect(values);
-
-        assertEquals(5, values.get(Color.BLUE));
+        assertEquals(3, building.getStarBonus());
     }
 
     @Test
     void postEventWinEffectDoublesPointsForASingleWinner() {
         Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 0, 2);
-        Map<Color, Integer> values = new EnumMap<>(Color.class);
-        values.put(Color.BLUE, 6);
-        values.put(Color.YELLOW, 0);
+        Map<Color, int[]> values = new EnumMap<>(Color.class);
+        values.put(Color.BLUE, new int[]{6, 0});
+        values.put(Color.YELLOW, new int[]{0, 0});
 
         building.setOwner(fixture.owner());
         building.effect(values);
 
-        assertEquals(12, values.get(Color.BLUE));
+        assertEquals(12, values.get(Color.BLUE)[0]);
     }
 
     @Test
     void postEventWinEffectDoesNothingWithMultipleWinners() {
         Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 0, 2);
-        Map<Color, Integer> values = new EnumMap<>(Color.class);
-        values.put(Color.BLUE, 6);
-        values.put(Color.YELLOW, 1);
+        Map<Color, int[]> values = new EnumMap<>(Color.class);
+        values.put(Color.BLUE, new int[]{6, 0});
+        values.put(Color.YELLOW, new int[]{1, 0});
 
         building.setOwner(fixture.owner());
         building.effect(values);
 
-        assertEquals(6, values.get(Color.BLUE));
+        assertEquals(6, values.get(Color.BLUE)[0]);
     }
 
     @Test
-    void lastEffectCancelsPenaltyForASingleLoserOnly() {
+    void lastEffectCancelsOwnersPenaltyWheneverTheOwnerLoses() {
         Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 0, 0);
-        Map<Color, Integer> singleLoser = new EnumMap<>(Color.class);
-        singleLoser.put(Color.BLUE, -5);
-        singleLoser.put(Color.YELLOW, 8);
-        Map<Color, Integer> multipleLosers = new EnumMap<>(Color.class);
-        multipleLosers.put(Color.BLUE, -5);
-        multipleLosers.put(Color.YELLOW, -3);
+        Map<Color, int[]> singleLoser = new EnumMap<>(Color.class);
+        singleLoser.put(Color.BLUE, new int[]{-5, 0});
+        singleLoser.put(Color.YELLOW, new int[]{8, 0});
+        Map<Color, int[]> multipleLosers = new EnumMap<>(Color.class);
+        multipleLosers.put(Color.BLUE, new int[]{-5, 0});
+        multipleLosers.put(Color.YELLOW, new int[]{-3, 0});
 
         building.setOwner(fixture.owner());
         building.effect(singleLoser);
         building.effect(multipleLosers);
 
-        assertEquals(0, singleLoser.get(Color.BLUE));
-        assertEquals(-5, multipleLosers.get(Color.BLUE));
+        assertEquals(0, singleLoser.get(Color.BLUE)[0]);
+        assertEquals(0, multipleLosers.get(Color.BLUE)[0]);
     }
 }

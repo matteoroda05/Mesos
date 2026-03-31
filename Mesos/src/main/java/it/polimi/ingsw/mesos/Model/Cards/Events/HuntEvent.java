@@ -36,6 +36,14 @@ public class HuntEvent extends EventCard {
         return (float) food_per_hunter / prestige_per_hunter;
     }
 
+    public int getPrestigePerHunter() {
+        return prestige_per_hunter;
+    }
+
+    public int getFoodPerHunter() {
+        return food_per_hunter;
+    }
+
     @Override
     public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, int[]> player_outcomes = new HashMap<>();

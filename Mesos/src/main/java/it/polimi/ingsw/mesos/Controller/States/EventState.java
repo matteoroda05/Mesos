@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Controller.States;
 
+import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
@@ -19,7 +20,7 @@ public class EventState extends GameState {
 
     public EventState(ModelController controller) {
         super(controller);
-        last_round = round >= 10;
+        last_round = controller.getGameContext().getRoundNumber() >= 10;
         events = last_round ? controller.getAllEvents() : controller.getEventsBottom();
         events.sort(Comparator.comparing(EventCard::getEra)); // sort by era to maintain order
     }
@@ -89,5 +90,10 @@ public class EventState extends GameState {
                 controller.playerChangeFood(deltas[1], player, prestige_convertion);
             }
         });
+    }
+
+    @Override
+    public GameStatus getStatus() {
+        return GameStatus.ROUND_EVENTS;
     }
 }

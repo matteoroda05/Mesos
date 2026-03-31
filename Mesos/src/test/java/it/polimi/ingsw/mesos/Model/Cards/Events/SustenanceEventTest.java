@@ -3,15 +3,15 @@ package it.polimi.ingsw.mesos.Model.Cards.Events;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 public class SustenanceEventTest {
     private SustenanceEvent sustenance_event;
@@ -25,7 +25,7 @@ public class SustenanceEventTest {
     void constructorInitialisesCorrectly() {
         assertEquals(Era.SECOND, sustenance_event.getEra());
         assertEquals(BuildingTrigger.ON_EVENT_SUSTENANCE, sustenance_event.asTrigger());
-        assertEquals(-2, sustenance_event.getPointPenalty());
+        assertEquals(2, sustenance_event.getPointPenalty());
     }
 
     @Test
@@ -58,10 +58,14 @@ public class SustenanceEventTest {
         tribe3.addCard(artist5);
         tribe3.addCard(artist6);
 
-        List<Tribe> tribes = List.of(tribe1, tribe2, tribe3);
-        List<Integer> output = sustenance_event.calculateOutcome(tribes);
-        List<Integer> expected = List.of(1, 1, 2);
+        Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
+        Map<Color, int[]> output = sustenance_event.calculateOutcome(tribes);
 
-        assertIterableEquals(expected, output);
+        assertEquals(0, output.get(Color.BLACK)[0]);
+        assertEquals(-1, output.get(Color.BLACK)[1]);
+        assertEquals(0, output.get(Color.BLUE)[0]);
+        assertEquals(-1, output.get(Color.BLUE)[1]);
+        assertEquals(0, output.get(Color.ORANGE)[0]);
+        assertEquals(-2, output.get(Color.ORANGE)[1]);
     }
 }

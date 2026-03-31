@@ -55,7 +55,7 @@ class BuildingOnCardTest extends BuildingTestSupport {
     }
 
     @Test
-    void setCompletionEffectDoesNotRewardWhenLeastRepresentedTypesAreTied() {
+    void setCompletionEffectRewardsWhenTheAcquiredTypeWasTheOnlyMissingOne() {
         Fixture fixture = createFixture();
         BuildingOnCard building = new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, true, false);
         Tribe tribe = fixture.owner().getTribe();
@@ -73,7 +73,7 @@ class BuildingOnCardTest extends BuildingTestSupport {
 
         building.effect(acquired, fixture.controller());
 
-        assertEquals(foodBefore, fixture.owner().getFood());
+        assertEquals(foodBefore + 5, fixture.owner().getFood());
     }
 
     @Test

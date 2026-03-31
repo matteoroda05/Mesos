@@ -55,9 +55,13 @@ public class HuntEventTest {
         tribe3.addCard(hunter3);
 
         Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
-        Map<Color, Integer> output = hunt_event.calculateOutcome(tribes);
-        Map<Color, Integer> expected = Map.of(Color.BLACK, 0, Color.BLUE, 4, Color.ORANGE, 2);
+        Map<Color, int[]> output = hunt_event.calculateOutcome(tribes);
 
-        assertEquals(expected, output);
+        assertEquals(0, output.get(Color.BLACK)[0]);
+        assertEquals(0, output.get(Color.BLACK)[1]);
+        assertEquals(4, output.get(Color.BLUE)[0]);
+        assertEquals(2, output.get(Color.BLUE)[1]);
+        assertEquals(2, output.get(Color.ORANGE)[0]);
+        assertEquals(1, output.get(Color.ORANGE)[1]);
     }
 }

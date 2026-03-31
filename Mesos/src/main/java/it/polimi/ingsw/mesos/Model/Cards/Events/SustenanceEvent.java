@@ -34,6 +34,10 @@ public final class SustenanceEvent extends EventCard {
         return - points_penalty; // prestige conversion has to be positive
     }
 
+    public int getFoodPerCharacter() {
+        return food_per_character;
+    }
+
     @Override
     public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, int[]> food_requirements = new HashMap<>();
