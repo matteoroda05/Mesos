@@ -1,13 +1,19 @@
 package it.polimi.ingsw.mesos.Model.Cards.Events;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.Enums.EventPhase;
 import it.polimi.ingsw.mesos.Model.Tribe;
 
 public class ShamanicRitualEvent extends EventCard {
@@ -30,15 +36,16 @@ public class ShamanicRitualEvent extends EventCard {
     }
 
     @Override
-    public List<Integer> calculateOutcome(List<Tribe> players_tribes) {
-        List<Integer> player_stars = new ArrayList<>();
-        List<Integer> player_outcomes = new ArrayList<>();
+    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, Integer> player_stars = new HashMap<>();
+        Map<Color, int[]> player_outcomes = new HashMap<>();
 
         int lowest_stars = Integer.MAX_VALUE;
         int highest_stars = Integer.MIN_VALUE;
-        for (Tribe tribe : players_tribes) {
-            int stars = tribe.countShamanStars();
-            player_stars.add(stars);
+
+        for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
+            int stars = tribe.getValue().countShamanStars();
+            player_stars.put(tribe.getKey(), stars);
 
             if (stars < lowest_stars) {
                 lowest_stars = stars;
@@ -48,14 +55,26 @@ public class ShamanicRitualEvent extends EventCard {
             }
         }
 
-        for (int stars : player_stars) {
-            if (stars == highest_stars) {
-                player_outcomes.add(winner_bonus);
-            } else if (stars == lowest_stars) {
-                player_outcomes.add(loser_penalty);
-            } else {
-                player_outcomes.add(0);
+        Map<Color, List<BuildingCard>> buildings = players_tribes.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().getBuildingsWithTrigger(asTrigger()).stream()
+                        .filter(building ->
+                                ((BuildingShamanicRitual) building).getPhase() != EventPhase.PRE_EVENT).toList()
+        ));
+
+        buildings.forEach((key, list) -> list.forEach(building ->
+                player_stars.replace(key, player_stars.get(key) + ((BuildingShamanicRitual) building).getStarBonus())));
+
+        for (Map.Entry<Color, Integer> stars : player_stars.entrySet()) {
+            int[] vals = new int[2];
+            if (stars.getValue() == highest_stars) {
+                vals[0] = winner_bonus;
             }
+            // if all have same they all win and loose at the same time
+            if (stars.getValue() == lowest_stars) {
+                vals[0] = loser_penalty;
+            }
+            player_outcomes.put(stars.getKey(), vals);
         }
 
         return player_outcomes;

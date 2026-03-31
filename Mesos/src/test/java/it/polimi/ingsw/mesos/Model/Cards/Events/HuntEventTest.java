@@ -1,10 +1,11 @@
 package it.polimi.ingsw.mesos.Model.Cards.Events;
 
-import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,10 +54,10 @@ public class HuntEventTest {
         tribe2.addCard(hunter2);
         tribe3.addCard(hunter3);
 
-        List<Tribe> tribes = List.of(tribe1, tribe2, tribe3);
-        List<Integer> output = hunt_event.calculateOutcome(tribes);
-        List<Integer> expected = List.of(0, 4, 2);
+        Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
+        Map<Color, Integer> output = hunt_event.calculateOutcome(tribes);
+        Map<Color, Integer> expected = Map.of(Color.BLACK, 0, Color.BLUE, 4, Color.ORANGE, 2);
 
-        assertIterableEquals(expected, output);
+        assertEquals(expected, output);
     }
 }

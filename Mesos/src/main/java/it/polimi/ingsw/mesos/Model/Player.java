@@ -44,6 +44,7 @@ public final class Player {
         if (amount < 0) {
             throw new IllegalArgumentException("Food gained must be non-negative");
         }
+        System.out.println("adding " + amount + " food to player " + this.color);
 
         this.food += amount;
     }
@@ -52,6 +53,7 @@ public final class Player {
         if (amount < 0) {
             throw new IllegalArgumentException("Food lost must be non-negative");
         }
+        System.out.println("removing " + amount + " food to player " + this.color);
 
         int out = amount > this.food ? amount - this.food : 0;
         this.food = amount >= this.food ? 0 : this.food - amount;
@@ -59,6 +61,7 @@ public final class Player {
     }
 
     public void changePrestigePoints(int points) {
+        System.out.println("adding " + points + " prestige to player " + this.color);
         this.prestige_points += points;
     }
 }
