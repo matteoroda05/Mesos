@@ -103,7 +103,7 @@ public class ModelController {
         Player player = this.game_context.getPlayer(player_color);
         MarketRow market_row = is_top ? this.game_context.getGameTable().getTopRow() : this.game_context.getGameTable().getBottomRow();
 
-        if (card > market_row.getTribeCards().size()){
+        if (card >= market_row.getTribeCards().size()){
             // For building cards
             card -= market_row.getTribeCards().size();
             if (card > market_row.getBuildingCards().size()) throw new IllegalArgumentException("card is out of range");

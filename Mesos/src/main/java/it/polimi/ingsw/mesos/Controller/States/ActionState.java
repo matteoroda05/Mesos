@@ -36,10 +36,10 @@ public class ActionState extends GameState {
         Optional<CharacterCard> chosen;
         if (is_top && pick_top_row > 0) {
             chosen = controller.playerChooseCard(player_color, card, true);
-            if (chosen.isPresent()) pick_top_row--;
+            pick_top_row--;
         } else if (!is_top && pick_bottom_row > 0) {
             chosen = controller.playerChooseCard(player_color, card, false);
-            if (chosen.isPresent()) pick_bottom_row--;
+            pick_bottom_row--;
         } else {
             // TODO: set error in model to warn clients
             return this;
