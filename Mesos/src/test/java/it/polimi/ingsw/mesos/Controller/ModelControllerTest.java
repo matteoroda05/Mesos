@@ -227,9 +227,13 @@ class ModelControllerTest {
 //    }
 
     @Test
-    void playerChangeFoodWithSubstituteThrowsExceptionWhenFoodAmountIsPositive() {
-        assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(5, Color.BLUE, 2));
+    void playerChangeFoodWithSubstituteAcceptsPositiveAmountsAsSimpleGain() {
+        Color existingColor = game_context.getPlayers().getFirst().getColor();
+        int initialFood = game_context.getPlayer(existingColor).getFood();
+
+        model_controller.playerChangeFood(5, existingColor, 2);
+
+        assertEquals(initialFood + 5, game_context.getPlayer(existingColor).getFood());
     }
 
     @Test

@@ -75,4 +75,8 @@ public class BuildingShamanicRitual extends BuildingCard {
     }
 
     public int getStarBonus() { return star_bonus; }
+
+    public int getWinMultiplier() {
+        return win_multiplier;
+    }
 }

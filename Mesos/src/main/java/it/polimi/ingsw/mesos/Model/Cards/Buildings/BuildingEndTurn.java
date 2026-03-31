@@ -46,4 +46,8 @@ public class BuildingEndTurn extends BuildingCard {
 
         if (!found) throw new IllegalStateException("Called effect before player returns to order tile!");
     }
+
+    public int getFoodBonus() {
+        return food_bonus;
+    }
 }

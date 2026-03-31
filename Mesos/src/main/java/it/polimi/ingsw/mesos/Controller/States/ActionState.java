@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Controller.States;
 
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
+import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
@@ -102,5 +103,25 @@ public class ActionState extends GameState {
         pick_top_row = Math.min(tile.getTopPicks(), max_top_picks);
         pick_bottom_row = Math.min(tile.getBottomPicks(), max_bottom_picks);
         food_gain = tile.getFoodGain();
+    }
+
+    @Override
+    public GameStatus getStatus() {
+        return GameStatus.ROUND_ACTIONS;
+    }
+
+    @Override
+    public Color getActivePlayer() {
+        return p;
+    }
+
+    @Override
+    public int getRemainingTopChoices() {
+        return pick_top_row;
+    }
+
+    @Override
+    public int getRemainingBottomChoices() {
+        return pick_bottom_row;
     }
 }

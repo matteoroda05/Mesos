@@ -79,4 +79,16 @@ public class BuildingBonusEvent extends BuildingCard {
         visitor.playerChangeFood(food_change, owner.getColor());
         visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
+
+    public int getFoodBonus() {
+        return food_bonus;
+    }
+
+    public int getPrestigeBonus() {
+        return pp_bonus;
+    }
+
+    public Class<? extends CharacterCard> getCharacterType() {
+        return character_type;
+    }
 }

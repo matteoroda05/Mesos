@@ -116,15 +116,13 @@ class CardLoaderTest {
     }
 
     @Test
-    void huntEventsHaveNegativePenaltyByConstruction() {
-        // SustenanceEvent stores a negative penalty; loading from JSON must
-        // preserve the sign
+    void sustenanceEventsExposePositivePrestigeConversion() {
         data.tribeCards().stream()
                 .filter(c -> c instanceof SustenanceEvent)
                 .map(c -> (SustenanceEvent) c)
                 .forEach(e ->
-                        assertTrue(e.getPointPenalty() < 0,
-                                "SustenanceEvent penalty must be negative")
+                        assertTrue(e.getPointPenalty() > 0,
+                                "SustenanceEvent prestige conversion must be positive")
                 );
     }
 
