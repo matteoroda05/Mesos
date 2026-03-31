@@ -36,9 +36,14 @@ public class ModelController {
         return this.game_context.getGameTable().visibleEvents(true);
     }
 
-//    public int getAvailableCards(Player player) {
-//
-//    }
+    public int getAvailableCards(Color player_color, boolean is_top) {
+        Player player = game_context.getPlayer(player_color);
+        MarketRow row = is_top
+                ? game_context.getGameTable().getTopRow()
+                : game_context.getGameTable().getBottomRow();
+
+        return row.getTakeableCards(player.getFood(), player.getTribe().buildersDiscount()).size();
+    }
 
     public void endRound() {
         this.game_context.newRound();
