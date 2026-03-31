@@ -22,7 +22,9 @@ public class ActionState extends GameState {
     public ActionState(ModelController controller) {
         super(controller);
         OfferTile tile = controller.getNextPlayerOfferTile();
-        loadTile(tile);
+        int max_top_picks = controller.getAvailableCards(tile.getOccupant(), true);
+        int max_bottom_picks = controller.getAvailableCards(tile.getOccupant(), false);
+        loadTile(tile,  max_top_picks, max_bottom_picks);
     }
 
     @Override
@@ -89,14 +91,16 @@ public class ActionState extends GameState {
             return new EventState(controller);
         }
 
-        loadTile(next);
+        int max_top_picks = controller.getAvailableCards(next.getOccupant(), true);
+        int max_bottom_picks = controller.getAvailableCards(next.getOccupant(), false);
+        loadTile(next, max_top_picks, max_bottom_picks);
         return this;
     }
 
-    private void loadTile(OfferTile tile) {
+    private void loadTile(OfferTile tile, int max_top_picks, int max_bottom_picks) {
         p = tile.getOccupant();
-        pick_top_row = tile.getTopPicks();
-        pick_bottom_row = tile.getBottomPicks();
+        pick_top_row = Math.min(tile.getTopPicks(), max_top_picks);
+        pick_bottom_row = Math.min(tile.getBottomPicks(), max_bottom_picks);
         food_gain = tile.getFoodGain();
     }
 }
