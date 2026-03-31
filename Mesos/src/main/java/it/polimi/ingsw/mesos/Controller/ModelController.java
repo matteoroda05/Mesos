@@ -36,10 +36,20 @@ public class ModelController {
         return this.game_context.getGameTable().visibleEvents(true);
     }
 
+    public int getAvailableCards(Color player_color, boolean is_top) {
+        Player player = game_context.getPlayer(player_color);
+        MarketRow row = is_top
+                ? game_context.getGameTable().getTopRow()
+                : game_context.getGameTable().getBottomRow();
+
+        return row.getTakeableCards(player.getFood(), player.getTribe().buildersDiscount()).size();
+    }
+
     public void endRound() {
         this.game_context.newRound();
         if (this.game_context.getGameTable().newRound()){
             this.game_context.getGameTable().beginNewEra();
+            this.game_context.newEra();
         }
     }
 
@@ -93,7 +103,7 @@ public class ModelController {
         Player player = this.game_context.getPlayer(player_color);
         MarketRow market_row = is_top ? this.game_context.getGameTable().getTopRow() : this.game_context.getGameTable().getBottomRow();
 
-        if (card > market_row.getTribeCards().size()){
+        if (card >= market_row.getTribeCards().size()){
             // For building cards
             card -= market_row.getTribeCards().size();
             if (card > market_row.getBuildingCards().size()) throw new IllegalArgumentException("card is out of range");
@@ -135,6 +145,7 @@ public class ModelController {
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
 
+    // TODO: "merge the two playerChangeFOod"
     public void playerChangeFood(int food_amount, Color player_color) {
         if (food_amount < 0) throw new IllegalArgumentException("food_amount cannot be " +
                 "negative for gain operations");
@@ -142,14 +153,15 @@ public class ModelController {
         Player p = this.game_context.getPlayer(player_color);
         p.gainFood(food_amount);
     }
-
+    // TODO: "merge the two playerChangeFOod"
     public void playerChangeFood(int food_amount, Color player_color, int substitute_prestige) {
-        if (food_amount > 0) throw new IllegalArgumentException("food_amount cannot be " +
-                "positive for loss operations");
+        if (food_amount > 0){
+            playerChangeFood(food_amount, player_color);
+            return;
+        }
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player p = this.game_context.getPlayer(player_color);
-        food_amount = -food_amount;
-        int prestige_loss = substitute_prestige * p.loseFood(food_amount);
+        int prestige_loss = substitute_prestige * p.loseFood(Math.abs(food_amount));
         if (prestige_loss != 0) {
             p.changePrestigePoints(- prestige_loss);
         }

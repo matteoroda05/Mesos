@@ -1,8 +1,9 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
-import java.util.List;
+import java.util.Map;
 
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 
@@ -11,7 +12,7 @@ abstract public class EventCard extends TribeCard {
         super(era, 0);
     }
 
-    abstract public List<Integer> calculateOutcome(List<Tribe> player_tribes);
+    abstract public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> player_tribes);
 
     abstract public BuildingTrigger asTrigger();
 

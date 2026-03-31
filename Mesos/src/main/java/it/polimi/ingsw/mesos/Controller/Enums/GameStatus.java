@@ -1,6 +1,6 @@
 package it.polimi.ingsw.mesos.Controller.Enums;
 
-enum GameStatus{
+public enum GameStatus{
     LOADING,
     LOGIN,
     SETUP,
