@@ -10,7 +10,7 @@ public record GameOperationResult(
         GameSnapshot snapshot,
         String nickname,
         Color assignedColor
-) implements Serializable {
+) implements GameServerMessage {
 
     public GameOperationResult {
         if (message == null || message.isBlank()) {

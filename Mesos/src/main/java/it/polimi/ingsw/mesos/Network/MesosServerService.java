@@ -10,4 +10,8 @@ public interface MesosServerService {
     GameOperationResult chooseOffer(ChooseOfferRequest request);
 
     GameOperationResult chooseCard(ChooseCardRequest request);
+
+    GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink);
+
+    GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink);
 }

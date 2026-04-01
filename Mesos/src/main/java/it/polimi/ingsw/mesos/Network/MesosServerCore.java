@@ -3,8 +3,10 @@ package it.polimi.ingsw.mesos.Network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameFlowController;
@@ -104,16 +106,36 @@ public class MesosServerCore implements MesosServerService {
         return session.chooseCard(request.nickname(), request.cardIndex(), request.topRow());
     }
 
+    @Override
+    public synchronized GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink) {
+        GameSession session = sessions.get(request.gameName());
+        if (session == null) {
+            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+        }
+        return session.subscribe(request.nickname(), updateSink);
+    }
+
+    @Override
+    public synchronized GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink) {
+        GameSession session = sessions.get(request.gameName());
+        if (session == null) {
+            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+        }
+        return session.unsubscribe(request.nickname(), updateSink);
+    }
+
     private static final class GameSession {
         private final GameContext context;
         private final List<String> joinedNicknames;
         private final Map<String, Color> colorsByNickname;
+        private final Set<GameUpdateSink> subscribers;
         private GameFlowController controller;
 
         private GameSession(GameContext context) {
             this.context = context;
             this.joinedNicknames = new ArrayList<>();
             this.colorsByNickname = new LinkedHashMap<>();
+            this.subscribers = new LinkedHashSet<>();
         }
 
         private GameOperationResult join(String nickname, GameSetup gameSetup) {
@@ -143,7 +165,7 @@ public class MesosServerCore implements MesosServerService {
 
             return GameOperationResult.success(
                     started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby",
-                    toSnapshot(),
+                    publishAndSnapshot(started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby"),
                     nickname,
                     colorsByNickname.get(nickname)
             );
@@ -161,7 +183,12 @@ public class MesosServerCore implements MesosServerService {
 
             try {
                 controller.chooseOffer(playerColor, offerTileIndex);
-                return GameOperationResult.success("Tessera offerta scelta", toSnapshot(), nickname, playerColor);
+                return GameOperationResult.success(
+                        "Tessera offerta scelta",
+                        publishAndSnapshot("Tessera offerta scelta"),
+                        nickname,
+                        playerColor
+                );
             } catch (RuntimeException exception) {
                 return GameOperationResult.failure(exception.getMessage(), toSnapshot(), nickname, playerColor);
             }
@@ -179,10 +206,62 @@ public class MesosServerCore implements MesosServerService {
 
             try {
                 controller.chooseCard(playerColor, cardIndex, topRow);
-                return GameOperationResult.success("Carta scelta", toSnapshot(), nickname, playerColor);
+                return GameOperationResult.success(
+                        "Carta scelta",
+                        publishAndSnapshot("Carta scelta"),
+                        nickname,
+                        playerColor
+                );
             } catch (RuntimeException exception) {
                 return GameOperationResult.failure(exception.getMessage(), toSnapshot(), nickname, playerColor);
             }
+        }
+
+        private GameOperationResult subscribe(String nickname, GameUpdateSink updateSink) {
+            if (updateSink == null) {
+                return GameOperationResult.failure("Listener di aggiornamento non valido", toSnapshot());
+            }
+            if (!joinedNicknames.contains(nickname)) {
+                return GameOperationResult.failure("Il giocatore '" + nickname + "' non e' presente nella partita", toSnapshot());
+            }
+
+            subscribers.add(updateSink);
+            return GameOperationResult.success(
+                    "Iscrizione agli aggiornamenti attiva",
+                    toSnapshot(),
+                    nickname,
+                    colorsByNickname.get(nickname)
+            );
+        }
+
+        private GameOperationResult unsubscribe(String nickname, GameUpdateSink updateSink) {
+            if (updateSink != null) {
+                subscribers.remove(updateSink);
+            }
+            return GameOperationResult.success(
+                    "Iscrizione agli aggiornamenti disattivata",
+                    toSnapshot(),
+                    nickname,
+                    colorsByNickname.get(nickname)
+            );
+        }
+
+        private GameSnapshot publishAndSnapshot(String message) {
+            GameSnapshot snapshot = toSnapshot();
+            publish(new GameViewUpdate(context.getGameName(), message, snapshot));
+            return snapshot;
+        }
+
+        private void publish(GameViewUpdate update) {
+            List<GameUpdateSink> failedSubscribers = new ArrayList<>();
+            for (GameUpdateSink subscriber : subscribers) {
+                try {
+                    subscriber.accept(update);
+                } catch (IOException exception) {
+                    failedSubscribers.add(subscriber);
+                }
+            }
+            subscribers.removeAll(failedSubscribers);
         }
 
         private GameSnapshot toSnapshot() {

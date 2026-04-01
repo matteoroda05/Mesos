@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -18,9 +19,13 @@ import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
+import it.polimi.ingsw.mesos.Network.GameUpdateSink;
+import it.polimi.ingsw.mesos.Network.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
 
 public class SocketGameServer implements AutoCloseable {
     private final MesosServerService serverService;
@@ -71,10 +76,12 @@ public class SocketGameServer implements AutoCloseable {
     }
 
     private void handleClient(Socket clientSocket) {
+        ClientConnection connection = null;
         try (Socket socket = clientSocket;
              ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
             output.flush();
+            connection = new ClientConnection(output);
 
             while (running.get() && !socket.isClosed()) {
                 Object payload;
@@ -84,10 +91,8 @@ public class SocketGameServer implements AutoCloseable {
                     return;
                 }
 
-                GameOperationResult response = dispatch(payload);
-                output.writeObject(response);
-                output.flush();
-                output.reset();
+                GameOperationResult response = dispatch(payload, connection);
+                connection.sendMessage(response);
             }
         } catch (SocketException ignored) {
         } catch (ClassNotFoundException | IOException exception) {
@@ -95,11 +100,14 @@ public class SocketGameServer implements AutoCloseable {
                 throw new IllegalStateException("Failed to handle a socket client", exception);
             }
         } finally {
+            if (connection != null) {
+                connection.cleanup();
+            }
             clientSockets.remove(clientSocket);
         }
     }
 
-    private GameOperationResult dispatch(Object payload) {
+    private GameOperationResult dispatch(Object payload, ClientConnection connection) {
         if (!(payload instanceof GameRequest request)) {
             return GameOperationResult.failure("Unsupported request payload", null);
         }
@@ -110,6 +118,18 @@ public class SocketGameServer implements AutoCloseable {
             case SnapshotRequest snapshotRequest -> serverService.getSnapshot(snapshotRequest);
             case ChooseOfferRequest chooseOfferRequest -> serverService.chooseOffer(chooseOfferRequest);
             case ChooseCardRequest chooseCardRequest -> serverService.chooseCard(chooseCardRequest);
+            case SubscribeGameRequest subscribeGameRequest -> {
+                GameOperationResult result = serverService.subscribe(subscribeGameRequest, connection);
+                if (result.success()) {
+                    connection.subscribe(subscribeGameRequest);
+                }
+                yield result;
+            }
+            case UnsubscribeGameRequest unsubscribeGameRequest -> {
+                GameOperationResult result = serverService.unsubscribe(unsubscribeGameRequest, connection);
+                connection.unsubscribe(unsubscribeGameRequest);
+                yield result;
+            }
         };
     }
 
@@ -121,5 +141,56 @@ public class SocketGameServer implements AutoCloseable {
         }
         serverSocket.close();
         executorService.shutdownNow();
+    }
+
+    private final class ClientConnection implements GameUpdateSink {
+        private final ObjectOutputStream output;
+        private SubscribeGameRequest activeSubscription;
+
+        private ClientConnection(ObjectOutputStream output) {
+            this.output = output;
+        }
+
+        @Override
+        public void accept(GameViewUpdate update) throws IOException {
+            sendMessage(update);
+        }
+
+        private synchronized void sendMessage(Serializable message) throws IOException {
+            output.writeObject(message);
+            output.flush();
+            output.reset();
+        }
+
+        private void subscribe(SubscribeGameRequest request) {
+            if (activeSubscription != null
+                    && (!activeSubscription.gameName().equals(request.gameName())
+                    || !activeSubscription.nickname().equals(request.nickname()))) {
+                serverService.unsubscribe(
+                        new UnsubscribeGameRequest(activeSubscription.gameName(), activeSubscription.nickname()),
+                        this
+                );
+            }
+            activeSubscription = request;
+        }
+
+        private void unsubscribe(UnsubscribeGameRequest request) {
+            if (activeSubscription != null
+                    && activeSubscription.gameName().equals(request.gameName())
+                    && activeSubscription.nickname().equals(request.nickname())) {
+                activeSubscription = null;
+            }
+        }
+
+        private void cleanup() {
+            if (activeSubscription == null) {
+                return;
+            }
+            serverService.unsubscribe(
+                    new UnsubscribeGameRequest(activeSubscription.gameName(), activeSubscription.nickname()),
+                    this
+            );
+            activeSubscription = null;
+        }
     }
 }

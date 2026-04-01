@@ -6,15 +6,21 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameUpdateSink;
+import it.polimi.ingsw.mesos.Network.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 import it.polimi.ingsw.mesos.Network.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
 
 public class RmiGameServer implements AutoCloseable {
     private final Registry registry;
@@ -75,10 +81,12 @@ public class RmiGameServer implements AutoCloseable {
 
     private static final class RmiServerAdapter extends UnicastRemoteObject implements RemoteMesosServer {
         private final MesosServerService serverService;
+        private final Map<RemoteGameUpdateListener, GameUpdateSink> sinksByListener;
 
         private RmiServerAdapter(MesosServerService serverService) throws RemoteException {
             super();
             this.serverService = serverService;
+            this.sinksByListener = new ConcurrentHashMap<>();
         }
 
         @Override
@@ -104,6 +112,25 @@ public class RmiGameServer implements AutoCloseable {
         @Override
         public GameOperationResult chooseCard(ChooseCardRequest request) {
             return serverService.chooseCard(request);
+        }
+
+        @Override
+        public GameOperationResult subscribe(SubscribeGameRequest request, RemoteGameUpdateListener listener) {
+            if (listener == null) {
+                return GameOperationResult.failure("Listener RMI non valido", null);
+            }
+            GameUpdateSink sink = sinksByListener.computeIfAbsent(listener, this::createSink);
+            return serverService.subscribe(request, sink);
+        }
+
+        @Override
+        public GameOperationResult unsubscribe(UnsubscribeGameRequest request, RemoteGameUpdateListener listener) {
+            GameUpdateSink sink = listener == null ? null : sinksByListener.remove(listener);
+            return serverService.unsubscribe(request, sink);
+        }
+
+        private GameUpdateSink createSink(RemoteGameUpdateListener listener) {
+            return update -> listener.onUpdate(update);
         }
     }
 }
