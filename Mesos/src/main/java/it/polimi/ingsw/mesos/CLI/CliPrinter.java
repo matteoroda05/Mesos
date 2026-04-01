@@ -9,11 +9,11 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Network.CardSummary;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.OfferTileSummary;
-import it.polimi.ingsw.mesos.Network.PlayerSummary;
-import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.CardSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.GameSnapshot;
+import it.polimi.ingsw.mesos.NetworkVibe.OfferTileSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.PlayerSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.TurnOrderSpaceSummary;
 
 final class CliPrinter {
     private static final String NEW_LINE = System.lineSeparator();

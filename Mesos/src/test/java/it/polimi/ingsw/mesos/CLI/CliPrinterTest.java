@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Network.CardSummary;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.OfferTileSummary;
-import it.polimi.ingsw.mesos.Network.PlayerSummary;
-import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.CardSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.GameSnapshot;
+import it.polimi.ingsw.mesos.NetworkVibe.OfferTileSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.PlayerSummary;
+import it.polimi.ingsw.mesos.NetworkVibe.TurnOrderSpaceSummary;
 
 class CliPrinterTest {
     @Test
