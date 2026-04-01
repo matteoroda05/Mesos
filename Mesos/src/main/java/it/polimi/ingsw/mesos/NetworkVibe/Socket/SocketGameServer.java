@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.Socket;
+package it.polimi.ingsw.mesos.NetworkVibe.Socket;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -14,18 +14,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameRequest;
-import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.MesosServerService;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseCardRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.CreateGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameOperationResult;
+import it.polimi.ingsw.mesos.NetworkVibe.GameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameUpdateSink;
+import it.polimi.ingsw.mesos.NetworkVibe.GameViewUpdate;
+import it.polimi.ingsw.mesos.NetworkVibe.JoinGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.MesosServerService;
+import it.polimi.ingsw.mesos.NetworkVibe.SnapshotRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.UnsubscribeGameRequest;
 
 public class SocketGameServer implements AutoCloseable {
     private final MesosServerService serverService;

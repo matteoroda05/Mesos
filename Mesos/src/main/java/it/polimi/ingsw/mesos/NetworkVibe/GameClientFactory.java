@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.NetworkVibe;
 
 import java.io.IOException;
 
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameClient;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+import it.polimi.ingsw.mesos.NetworkVibe.RMI.RmiGameClient;
+import it.polimi.ingsw.mesos.NetworkVibe.Socket.SocketGameClient;
 
 public final class GameClientFactory {
     private GameClientFactory() {

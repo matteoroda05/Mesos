@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.NetworkVibe;
 
 public interface MesosServerService {
     GameOperationResult createGame(CreateGameRequest request);

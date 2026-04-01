@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.NetworkVibe;
 
 import java.util.concurrent.CountDownLatch;
 
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameServer;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
+import it.polimi.ingsw.mesos.NetworkVibe.RMI.RmiGameServer;
+import it.polimi.ingsw.mesos.NetworkVibe.Socket.SocketGameServer;
 
 public final class MesosServerLauncher {
     private MesosServerLauncher() {

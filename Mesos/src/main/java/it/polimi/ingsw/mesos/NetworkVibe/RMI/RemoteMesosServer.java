@@ -1,16 +1,16 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.NetworkVibe.RMI;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseCardRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.CreateGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameOperationResult;
+import it.polimi.ingsw.mesos.NetworkVibe.JoinGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SnapshotRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.UnsubscribeGameRequest;
 
 public interface RemoteMesosServer extends Remote {
     GameOperationResult createGame(CreateGameRequest request) throws RemoteException;

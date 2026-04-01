@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.NetworkVibe.RMI;
 
 import java.io.IOException;
 import java.rmi.NoSuchObjectException;
@@ -9,18 +9,17 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.MesosServerService;
-import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseCardRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.CreateGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameOperationResult;
+import it.polimi.ingsw.mesos.NetworkVibe.GameUpdateSink;
+import it.polimi.ingsw.mesos.NetworkVibe.JoinGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.MesosServerService;
+import it.polimi.ingsw.mesos.NetworkVibe.NetworkDefaults;
+import it.polimi.ingsw.mesos.NetworkVibe.SnapshotRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.UnsubscribeGameRequest;
 
 public class RmiGameServer implements AutoCloseable {
     private final Registry registry;

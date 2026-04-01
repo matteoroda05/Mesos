@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.NetworkVibe;
 
 public final class NetworkDefaults {
     public static final String DEFAULT_RMI_HOST = "127.0.0.1";

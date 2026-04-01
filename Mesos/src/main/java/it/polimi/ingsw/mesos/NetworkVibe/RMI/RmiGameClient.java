@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.NetworkVibe.RMI;
 
 import java.io.IOException;
 import java.rmi.NotBoundException;
@@ -7,17 +7,17 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.GameClient;
-import it.polimi.ingsw.mesos.Network.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseCardRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.CreateGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameClient;
+import it.polimi.ingsw.mesos.NetworkVibe.GameOperationResult;
+import it.polimi.ingsw.mesos.NetworkVibe.GameUpdateListener;
+import it.polimi.ingsw.mesos.NetworkVibe.GameViewUpdate;
+import it.polimi.ingsw.mesos.NetworkVibe.JoinGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SnapshotRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.UnsubscribeGameRequest;
 
 public class RmiGameClient implements GameClient {
     private final RemoteMesosServer remoteServer;

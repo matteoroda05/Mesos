@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.Socket;
+package it.polimi.ingsw.mesos.NetworkVibe.Socket;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -8,19 +8,19 @@ import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.GameClient;
-import it.polimi.ingsw.mesos.Network.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameRequest;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseCardRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.CreateGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameClient;
+import it.polimi.ingsw.mesos.NetworkVibe.GameOperationResult;
+import it.polimi.ingsw.mesos.NetworkVibe.GameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.GameServerMessage;
+import it.polimi.ingsw.mesos.NetworkVibe.GameUpdateListener;
+import it.polimi.ingsw.mesos.NetworkVibe.GameViewUpdate;
+import it.polimi.ingsw.mesos.NetworkVibe.JoinGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SnapshotRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.NetworkVibe.UnsubscribeGameRequest;
 
 public class SocketGameClient implements GameClient {
     private final Socket socket;

@@ -1,6 +1,4 @@
-package it.polimi.ingsw.mesos.Network;
-
-import java.io.Serializable;
+package it.polimi.ingsw.mesos.NetworkVibe;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 

@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.NetworkVibe;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameServer;
+import it.polimi.ingsw.mesos.NetworkVibe.RMI.RmiGameServer;
 
 class RmiGameIntegrationTest {
     @Test
