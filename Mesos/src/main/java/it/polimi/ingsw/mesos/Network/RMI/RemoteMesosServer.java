@@ -9,6 +9,8 @@ import it.polimi.ingsw.mesos.Network.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
 
 public interface RemoteMesosServer extends Remote {
     GameOperationResult createGame(CreateGameRequest request) throws RemoteException;
@@ -20,4 +22,8 @@ public interface RemoteMesosServer extends Remote {
     GameOperationResult chooseOffer(ChooseOfferRequest request) throws RemoteException;
 
     GameOperationResult chooseCard(ChooseCardRequest request) throws RemoteException;
+
+    GameOperationResult subscribe(SubscribeGameRequest request, RemoteGameUpdateListener listener) throws RemoteException;
+
+    GameOperationResult unsubscribe(UnsubscribeGameRequest request, RemoteGameUpdateListener listener) throws RemoteException;
 }

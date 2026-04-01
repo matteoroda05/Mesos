@@ -13,14 +13,18 @@ import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 import it.polimi.ingsw.mesos.Network.ServerEndpoint;
 import it.polimi.ingsw.mesos.Network.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
 
 public final class MesosCliClient {
     private final BufferedReader reader;
     private final CliPrinter printer;
+    private final Object consoleLock;
 
     private String nickname;
     private String gameName;
@@ -29,6 +33,7 @@ public final class MesosCliClient {
     public MesosCliClient() {
         this.reader = new BufferedReader(new InputStreamReader(System.in));
         this.printer = new CliPrinter();
+        this.consoleLock = new Object();
     }
 
     public static void main(String[] args) throws Exception {
@@ -61,37 +66,35 @@ public final class MesosCliClient {
             }
 
             handleResult(client.joinGame(new JoinGameRequest(gameName, nickname)));
+            handleResult(client.subscribe(new SubscribeGameRequest(gameName, nickname), this::handleRemoteUpdate), false);
             mainLoop(client);
+            client.unsubscribe(new UnsubscribeGameRequest(gameName, nickname));
         }
     }
 
     private void mainLoop(GameClient client) throws IOException {
+        printSnapshotIfAvailable();
+
         while (true) {
-            refreshSnapshot(client);
-
-            if (snapshot != null) {
-                System.out.println(printer.renderSnapshot(snapshot, nickname));
-            }
-
             String command = promptRaw("mesos> ").trim();
             if (command.isEmpty() || command.equalsIgnoreCase("refresh") || command.equalsIgnoreCase("poll")) {
+                refreshSnapshot(client);
+                printSnapshotIfAvailable();
                 continue;
             }
             if (command.equalsIgnoreCase("quit") || command.equalsIgnoreCase("exit") || command.equalsIgnoreCase("esci")) {
-                System.out.println("Chiusura del client CLI.");
+                printLine("Chiusura del client CLI.");
                 return;
             }
             if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("aiuto")) {
-                System.out.println(printer.renderHelp());
+                printLine(printer.renderHelp());
                 continue;
             }
             if (command.equalsIgnoreCase("show")
                     || command.equalsIgnoreCase("status")
                     || command.equalsIgnoreCase("mostra")
                     || command.equalsIgnoreCase("stato")) {
-                if (snapshot != null) {
-                    System.out.println(printer.renderSnapshot(snapshot, nickname));
-                }
+                printSnapshotIfAvailable();
                 continue;
             }
             if (command.toLowerCase(Locale.ROOT).startsWith("wait")
@@ -101,15 +104,15 @@ public final class MesosCliClient {
             }
 
             if (snapshot == null) {
-                System.out.println("Nessuno snapshot disponibile al momento. Premi Invio per aggiornare.");
+                printLine("Nessuno snapshot disponibile al momento. Premi Invio per aggiornare.");
                 continue;
             }
 
             try {
                 handleGameCommand(client, command);
             } catch (IllegalArgumentException exception) {
-                System.out.println("Comando non valido: " + exception.getMessage());
-                System.out.println(printer.renderHelp());
+                printLine("Comando non valido: " + exception.getMessage());
+                printLine(printer.renderHelp());
             }
         }
     }
@@ -185,10 +188,37 @@ public final class MesosCliClient {
             return;
         }
         if (printMessage || !result.success()) {
-            System.out.println((result.success() ? "[ok] " : "[error] ") + result.message());
+            printLine((result.success() ? "[ok] " : "[error] ") + result.message());
         }
         if (result.snapshot() != null) {
             snapshot = result.snapshot();
+        }
+    }
+
+    private void handleRemoteUpdate(GameViewUpdate update) {
+        if (update == null) {
+            return;
+        }
+        snapshot = update.snapshot();
+        synchronized (consoleLock) {
+            System.out.println();
+            System.out.println("[update] " + update.message());
+            System.out.println(printer.renderSnapshot(snapshot, nickname));
+            System.out.print("mesos> ");
+            System.out.flush();
+        }
+    }
+
+    private void printSnapshotIfAvailable() {
+        if (snapshot == null) {
+            return;
+        }
+        printLine(printer.renderSnapshot(snapshot, nickname));
+    }
+
+    private void printLine(String text) {
+        synchronized (consoleLock) {
+            System.out.println(text);
         }
     }
 
@@ -210,7 +240,7 @@ public final class MesosCliClient {
                 case "rmi", "r" -> {
                     return ConnectionType.RMI;
                 }
-                default -> System.out.println("Scegli 'socket' oppure 'rmi'.");
+                default -> printLine("Scegli 'socket' oppure 'rmi'.");
             }
         }
     }
@@ -221,7 +251,7 @@ public final class MesosCliClient {
             if (!value.isBlank()) {
                 return value;
             }
-            System.out.println(label + " non puo' essere vuoto.");
+            printLine(label + " non puo' essere vuoto.");
         }
     }
 
@@ -236,7 +266,7 @@ public final class MesosCliClient {
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException exception) {
-                System.out.println(label + " deve essere un numero valido.");
+                printLine(label + " deve essere un numero valido.");
             }
         }
     }
@@ -247,7 +277,7 @@ public final class MesosCliClient {
             if (value >= min && value <= max) {
                 return value;
             }
-            System.out.println(label + " deve essere compreso tra " + min + " e " + max + ".");
+            printLine(label + " deve essere compreso tra " + min + " e " + max + ".");
         }
     }
 
@@ -264,12 +294,14 @@ public final class MesosCliClient {
             if (value.equals("n") || value.equals("no")) {
                 return false;
             }
-            System.out.println("Rispondi con yes/no oppure y/n.");
+            printLine("Rispondi con yes/no oppure y/n.");
         }
     }
 
     private String promptRaw(String prompt) throws IOException {
-        System.out.print(prompt);
+        synchronized (consoleLock) {
+            System.out.print(prompt);
+        }
         return reader.readLine();
     }
 }

@@ -2,11 +2,14 @@ package it.polimi.ingsw.mesos.Network;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 
@@ -94,5 +97,86 @@ final class NetworkTestSupport {
         GameOperationResult snapshotResult = aliceClient.getSnapshot(new SnapshotRequest(gameName));
         assertTrue(snapshotResult.success());
         assertEquals(gameName, snapshotResult.snapshot().gameName());
+    }
+
+    static void assertPushUpdates(GameClient aliceClient, GameClient bobClient, String gameName) throws IOException {
+        GameOperationResult createGame = aliceClient.createGame(new CreateGameRequest(gameName, 2));
+        assertTrue(createGame.success());
+
+        GameOperationResult aliceJoin = aliceClient.joinGame(new JoinGameRequest(gameName, "Alice"));
+        assertTrue(aliceJoin.success());
+        GameOperationResult bobJoin = bobClient.joinGame(new JoinGameRequest(gameName, "Bob"));
+        assertTrue(bobJoin.success());
+
+        LinkedBlockingQueue<GameViewUpdate> aliceUpdates = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<GameViewUpdate> bobUpdates = new LinkedBlockingQueue<>();
+
+        GameOperationResult aliceSubscription = aliceClient.subscribe(
+                new SubscribeGameRequest(gameName, "Alice"),
+                aliceUpdates::offer
+        );
+        GameOperationResult bobSubscription = bobClient.subscribe(
+                new SubscribeGameRequest(gameName, "Bob"),
+                bobUpdates::offer
+        );
+        assertTrue(aliceSubscription.success());
+        assertTrue(bobSubscription.success());
+
+        Map<String, GameClient> clientsByNickname = Map.of(
+                "Alice", aliceClient,
+                "Bob", bobClient
+        );
+
+        GameSnapshot initialSnapshot = bobSubscription.snapshot();
+        String firstPlayer = initialSnapshot.currentPlayerNickname();
+        OfferTileSummary firstOffer = initialSnapshot.offerTiles().stream()
+                .filter(OfferTileSummary::available)
+                .filter(tile -> tile.topPicks() + tile.bottomPicks() > 0)
+                .findFirst()
+                .orElseThrow();
+
+        GameOperationResult firstOfferResult = clientsByNickname.get(firstPlayer)
+                .chooseOffer(new ChooseOfferRequest(gameName, firstPlayer, firstOffer.index()));
+        assertTrue(firstOfferResult.success());
+
+        GameViewUpdate aliceFirstUpdate = pollUpdate(aliceUpdates);
+        GameViewUpdate bobFirstUpdate = pollUpdate(bobUpdates);
+        assertNotNull(aliceFirstUpdate);
+        assertNotNull(bobFirstUpdate);
+        assertEquals(gameName, aliceFirstUpdate.gameName());
+        assertEquals(firstOfferResult.snapshot().status(), aliceFirstUpdate.snapshot().status());
+        assertEquals(firstOfferResult.snapshot().status(), bobFirstUpdate.snapshot().status());
+
+        GameOperationResult unsubscribeAlice = aliceClient.unsubscribe(new UnsubscribeGameRequest(gameName, "Alice"));
+        assertTrue(unsubscribeAlice.success());
+
+        String secondPlayer = firstOfferResult.snapshot().currentPlayerNickname();
+        OfferTileSummary secondOffer = firstOfferResult.snapshot().offerTiles().stream()
+                .filter(OfferTileSummary::available)
+                .filter(tile -> tile.topPicks() + tile.bottomPicks() > 0)
+                .findFirst()
+                .orElseThrow();
+
+        GameOperationResult secondOfferResult = clientsByNickname.get(secondPlayer)
+                .chooseOffer(new ChooseOfferRequest(gameName, secondPlayer, secondOffer.index()));
+        assertTrue(secondOfferResult.success());
+
+        GameViewUpdate bobSecondUpdate = pollUpdate(bobUpdates);
+        assertNotNull(bobSecondUpdate);
+        assertEquals(secondOfferResult.snapshot().status(), bobSecondUpdate.snapshot().status());
+        assertNull(pollUpdate(aliceUpdates, 300));
+    }
+
+    private static GameViewUpdate pollUpdate(LinkedBlockingQueue<GameViewUpdate> queue) {
+        return pollUpdate(queue, 2_000);
+    }
+
+    private static GameViewUpdate pollUpdate(LinkedBlockingQueue<GameViewUpdate> queue, long timeoutMillis) {
+        try {
+            return queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("Interrupted while waiting for a pushed update", exception);
+        }
     }
 }
