@@ -7,6 +7,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.EventPhase;
+import it.polimi.ingsw.mesos.Result;
 
 import java.util.Map;
 
@@ -35,16 +36,16 @@ public class BuildingShamanicRitual extends BuildingCard {
         phase = this.star_bonus != 0 ? EventPhase.PRE_EVENT : EventPhase.POST_EVENT;
     }
 
-    public void effect(Map<Color, int[]> points) {
+    public void effect(Map<Color, Result> points) {
         if (win_multiplier != 0) {
             // multiply points if it's the only player that won
-            int player_points = points.get(owner.getColor())[0];
+            int player_points = points.get(owner.getColor()).prestige();
 
             if (player_points <= 0) return; // player didn't win
 
             boolean single_winner = false;
-            for (int[] vals : points.values()) {
-                int point =  vals[0];
+            for (Result vals : points.values()) {
+                int point =  vals.prestige();
                 if (point > 0) {
                     if (single_winner) {
                         // more than one winner -> no bonus
@@ -56,18 +57,17 @@ public class BuildingShamanicRitual extends BuildingCard {
             }
 
             // there's only one winner and it's the player
-            int[] vals = points.get(owner.getColor());
-            vals[0] = player_points * win_multiplier;
-            points.replace(owner.getColor(), vals);
+            Result prev = points.get(owner.getColor());
+            Result new_points = new Result(prev.food(), player_points * win_multiplier, prev.penalty());
+            points.replace(owner.getColor(), new_points);
             return;
         }
 
         // last effect: no pp lost if last
-        int[] vals = points.get(owner.getColor());
-        if (vals[0] >= 0) return; // player didn't loose
-        vals[0] = 0;
-
-        points.replace(owner.getColor(), vals);
+        Result prev = points.get(owner.getColor());
+        if (prev.prestige() >= 0) return; // player didn't loose
+        Result new_points = new Result(prev.food(), 0, prev.penalty());
+        points.replace(owner.getColor(), new_points);
     }
 
     public EventPhase getPhase() {
