@@ -10,6 +10,7 @@ import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 
 import java.util.*;
 
@@ -48,7 +49,7 @@ public class EventState extends GameState {
             if (trigger == BuildingTrigger.ON_EVENT_SUSTENANCE) {
                 sustenance.add((SustenanceEvent) curr);
             } else {
-                Map<Color, int[]> outcome = curr.calculateOutcome(tribes);
+                Map<Color, Result> outcome = curr.calculateOutcome(tribes);
                 List<BuildingCard> buildings = controller.getBuildingsWithTrigger(trigger);
                 if (trigger == BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL) {
                     buildings.forEach(building -> ((BuildingShamanicRitual) building).effect(outcome));
@@ -56,7 +57,7 @@ public class EventState extends GameState {
                     buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
                 }
 
-                applyOutcome(outcome, 0);
+                applyOutcome(outcome);
             }
         }
 
@@ -65,12 +66,12 @@ public class EventState extends GameState {
             SustenanceEvent event = sustenance.removeFirst();
             BuildingTrigger trigger = event.asTrigger();
 
-            Map<Color, int[]> outcome = event.calculateOutcome(tribes);
+            Map<Color, Result> outcome = event.calculateOutcome(tribes);
             List<BuildingBonusEvent> buildings = controller.getBuildingsWithTrigger(trigger)
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
 
             buildings.forEach(building -> building.effect(outcome, controller));
-            applyOutcome(outcome, event.getPointPenalty());
+            applyOutcome(outcome);
         }
 
         if (last_round) {
@@ -80,13 +81,13 @@ public class EventState extends GameState {
         }
     }
 
-    private void applyOutcome(Map<Color, int[]> outcome, int prestige_convertion) {
-        outcome.forEach((player, deltas) -> {
-            if (deltas[0] != 0){
-                controller.playerChangePrestige(deltas[0], player);
+    private void applyOutcome(Map<Color, Result> outcome) {
+        outcome.forEach((player, values) -> {
+            if (values.prestige() != 0){
+                controller.playerChangePrestige(values.prestige(), player);
             }
-            if (deltas[1] != 0) {
-                controller.playerChangeFood(deltas[1], player, prestige_convertion);
+            if (values.food() != 0) {
+                controller.playerChangeFood(values.food(), player, values.penalty());
             }
         });
     }

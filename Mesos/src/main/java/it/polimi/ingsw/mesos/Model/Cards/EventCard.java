@@ -6,13 +6,15 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
+
 
 abstract public class EventCard extends TribeCard {
     public EventCard(Era era) {
         super(era, 0);
     }
 
-    abstract public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> player_tribes);
+    abstract public Map<Color, Result> calculateOutcome(Map<Color, Tribe> player_tribes);
 
     abstract public BuildingTrigger asTrigger();
 

@@ -15,6 +15,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.EventPhase;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 
 public class ShamanicRitualEvent extends EventCard {
     private final int winner_bonus;
@@ -36,9 +37,9 @@ public class ShamanicRitualEvent extends EventCard {
     }
 
     @Override
-    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
+    public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, Integer> player_stars = new HashMap<>();
-        Map<Color, int[]> player_outcomes = new HashMap<>();
+        Map<Color, Result> player_outcomes = new HashMap<>();
 
         int lowest_stars = Integer.MAX_VALUE;
         int highest_stars = Integer.MIN_VALUE;
@@ -66,13 +67,13 @@ public class ShamanicRitualEvent extends EventCard {
                 player_stars.replace(key, player_stars.get(key) + ((BuildingShamanicRitual) building).getStarBonus())));
 
         for (Map.Entry<Color, Integer> stars : player_stars.entrySet()) {
-            int[] vals = new int[2];
+            Result vals = new Result(0,0,0);
             if (stars.getValue() == highest_stars) {
-                vals[0] = winner_bonus;
+                vals = new Result(0, winner_bonus, 0);
             }
             // if all have same they all win and loose at the same time
             if (stars.getValue() == lowest_stars) {
-                vals[0] = loser_penalty;
+                vals = new Result(0, loser_penalty, 0);
             }
             player_outcomes.put(stars.getKey(), vals);
         }

@@ -10,6 +10,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 
 public final class SustenanceEvent extends EventCard {
     private final int food_per_character;
@@ -30,20 +31,16 @@ public final class SustenanceEvent extends EventCard {
         this.food_per_character = food_per_character;
     }
 
-    public int getPointPenalty() {
-        return - points_penalty; // prestige conversion has to be positive
-    }
-
     @Override
-    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
-        Map<Color, int[]> food_requirements = new HashMap<>();
+    public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, Result> food_requirements = new HashMap<>();
 
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
-            int[] vals = new int[2];
             int food_needed = tribe.getValue().getNumCharacters() * food_per_character;
             int discount = tribe.getValue().gatherersDiscount();
-            vals[1] = Math.min(0, - food_needed + discount);
-            food_requirements.put(tribe.getKey(), vals);
+            // Negative because prestige "conversion" has to be positive
+            Result val = new Result(Math.min(0, - food_needed + discount), 0, -points_penalty);
+            food_requirements.put(tribe.getKey(), val);
         }
 
         return food_requirements;

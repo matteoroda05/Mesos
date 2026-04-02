@@ -14,6 +14,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.Result;
 
 public class ModelController {
     private final GameContext game_context;
@@ -94,8 +95,8 @@ public class ModelController {
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
         Player player = this.game_context.getPlayer(player_color);
-        int food_gain = game_table.getTurnOrderTile().placeTotem(player);
-        playerChangeFood(food_gain, player_color, 2);
+        Result placing_result = game_table.getTurnOrderTile().placeTotem(player);
+        playerChangeFood(placing_result.food(), player_color, placing_result.penalty());
     }
 
     public Optional<CharacterCard> playerChooseCard(Color player_color, int card, boolean is_top){
