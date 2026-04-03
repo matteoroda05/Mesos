@@ -7,9 +7,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Result;
 
-public class TurnOrderTile {
-
-    private final List<TurnOrderSpace> spaces;
+public record TurnOrderTile(List<TurnOrderSpace> spaces) {
 
     public TurnOrderTile(List<TurnOrderSpace> spaces) {
         if (spaces == null) {
@@ -35,14 +33,14 @@ public class TurnOrderTile {
         throw new IllegalStateException("No free spaces in TurnOrderTile");
     }
 
-    public Result placeTotem(Player player) {
+    public Result placeTotem(Color player) {
         if (player == null) {
             throw new IllegalArgumentException("player cannot be null");
         }
 
         for (TurnOrderSpace space : spaces) {
             if (space.isFree()) {
-                space.setOccupant(player.getColor());
+                space.setOccupant(player);
 
                 int bonus = space.getBonus();
                 if (bonus > 0) {
@@ -67,10 +65,6 @@ public class TurnOrderTile {
         }
 
         return order;
-    }
-
-    public List<TurnOrderSpace> getSpaces() {
-        return spaces;
     }
 
     public void clearFirst() {
@@ -98,5 +92,4 @@ public class TurnOrderTile {
         }
         return true;
     }
-
 }
