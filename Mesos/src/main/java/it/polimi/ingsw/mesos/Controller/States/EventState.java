@@ -56,8 +56,7 @@ public class EventState extends GameState {
                 } else {
                     buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
                 }
-
-                applyOutcome(outcome);
+                outcome.forEach((player, result) -> {controller.playerApplyOutcome(result, player);});
             }
         }
 
@@ -71,7 +70,7 @@ public class EventState extends GameState {
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
 
             buildings.forEach(building -> building.effect(outcome, controller));
-            applyOutcome(outcome);
+            outcome.forEach((player, result) -> {controller.playerApplyOutcome(result, player);});
         }
 
         if (last_round) {
@@ -79,16 +78,5 @@ public class EventState extends GameState {
         } else {
             return new EndRoundState(controller);
         }
-    }
-
-    private void applyOutcome(Map<Color, Result> outcome) {
-        outcome.forEach((player, values) -> {
-            if (values.prestige() != 0){
-                controller.playerChangePrestige(values.prestige(), player);
-            }
-            if (values.food() != 0) {
-                controller.playerChangeFood(values.food(), player, values.penalty());
-            }
-        });
     }
 }
