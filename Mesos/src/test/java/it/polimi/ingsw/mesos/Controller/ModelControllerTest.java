@@ -196,13 +196,13 @@ class ModelControllerTest {
     @Test
     void playerChangeFoodThrowsExceptionWhenSubstituePrestigeIsNegative() {
         assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(-5, Color.BLUE, -1));
+                () -> model_controller.playerAddFood(-5, Color.BLUE, -1));
     }
 
     @Test
     void playerChangeFoodThrowsExceptionWhenPlayerColorIsNull() {
         assertThrows(IllegalArgumentException.class,
-                () -> model_controller.playerChangeFood(5, null, 2));
+                () -> model_controller.playerAddFood(5, null, 2));
     }
 
 //    @Test

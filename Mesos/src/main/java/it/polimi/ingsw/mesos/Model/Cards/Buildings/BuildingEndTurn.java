@@ -38,7 +38,7 @@ public class BuildingEndTurn extends BuildingCard {
             if (space.getOccupant() == owner.getColor()) {
                 found = true;
                 if (space.getBonus() > 0) {
-                    visitor.playerChangeFood(food_bonus, owner.getColor(), 0);
+                    visitor.playerAddFood(food_bonus, owner.getColor());
                 }
                 break;
             }

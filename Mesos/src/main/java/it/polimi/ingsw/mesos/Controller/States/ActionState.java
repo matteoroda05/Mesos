@@ -67,7 +67,7 @@ public class ActionState extends GameState {
     @Override
     public GameState process() {
         if (food_gain != 0) {
-            controller.playerChangeFood(food_gain, p, 0);
+            controller.playerAddFood(food_gain, p);
             food_gain = 0;
             return endTurn();
         }

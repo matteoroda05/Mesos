@@ -94,9 +94,8 @@ public class ModelController {
     public void playerEndTurn(){
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
-        Player player = this.game_context.getPlayer(player_color);
-        Result placing_result = game_table.getTurnOrderTile().placeTotem(player);
-        playerChangeFood(placing_result.food(), player_color, placing_result.penalty());
+        Result placing_result = game_table.getTurnOrderTile().placeTotem(player_color);
+        playerApplyOutcome(placing_result, player_color);
     }
 
     public Optional<CharacterCard> playerChooseCard(Color player_color, int card, boolean is_top){
@@ -147,18 +146,10 @@ public class ModelController {
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
 
-    public void playerChangeFood(int food_amount, Color player_color, int substitute_prestige) {
-        if (substitute_prestige < 0) throw new IllegalArgumentException("substitute_prestige cannot be negative");
+    public void playerAddFood(int food_amount, Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        Player p = this.game_context.getPlayer(player_color);
-        if (food_amount > 0){
-            p.gainFood(food_amount);
-        } else if (food_amount < 0){
-            int prestige_loss = substitute_prestige * p.loseFood(Math.abs(food_amount));
-            if (prestige_loss != 0) {
-                p.changePrestigePoints(- prestige_loss);
-            }
-        }
+        if (food_amount < 0) throw new IllegalArgumentException("food_amount cannot be negative");
+        this.game_context.getPlayer(player_color).gainFood(food_amount);
     }
 
     public void playerChangePrestige(int prestige_amount, Color player_color) {
