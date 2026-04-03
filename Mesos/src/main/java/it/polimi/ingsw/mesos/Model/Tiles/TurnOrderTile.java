@@ -15,7 +15,6 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
         }
 
         this.spaces = new ArrayList<>(spaces);
-
     }
 
     public void setupTotem(Player player) {
