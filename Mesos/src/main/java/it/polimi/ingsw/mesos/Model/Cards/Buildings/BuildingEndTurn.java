@@ -31,7 +31,7 @@ public class BuildingEndTurn extends BuildingCard {
     }
 
     public void effect(TurnOrderTile order, ModelController visitor) {
-        List<TurnOrderSpace> spaces = order.getSpaces();
+        List<TurnOrderSpace> spaces = order.spaces();
 
         boolean found = false;
         for (TurnOrderSpace space : spaces) {
