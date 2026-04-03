@@ -166,4 +166,18 @@ public class ModelController {
         Player p = this.game_context.getPlayer(player_color);
         p.changePrestigePoints(prestige_amount);
     }
+
+    public void playerApplyOutcome(Result outcome, Color player_color) {
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        Player p = this.game_context.getPlayer(player_color);
+        int penalty = 0;
+        if (outcome.food() > 0){
+            p.gainFood(outcome.food());
+        } else if (outcome.food() < 0) {
+            penalty = p.loseFood(outcome.food()) * outcome.penalty();
+        }
+        if (outcome.prestige() - penalty != 0){
+            p.changePrestigePoints(outcome.prestige() - penalty);
+        }
+    }
 }
