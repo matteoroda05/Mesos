@@ -23,22 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GameSetupTest {
 
     @Test
-    void randomizeCardsWithinEraKeepsEraOrderForBuildingCards() {
-        List<BuildingCard> input = List.of(
-                new TestBuildingCard(Era.SECOND),
-                new TestBuildingCard(Era.FIRST),
-                new TestBuildingCard(Era.THIRD),
-                new TestBuildingCard(Era.FIRST),
-                new TestBuildingCard(Era.SECOND)
-        );
-
-        List<BuildingCard> output = GameSetup.randomizeCardsWithinEra(input, false);
-
-        assertSameCards(input, output);
-        assertEraOrder(output, false);
-    }
-
-    @Test
     void randomizeCardsWithinEraReversesEraOrderForTribeCards() {
         List<TribeCard> input = List.of(
                 new TestTribeCard(Era.SECOND),
@@ -48,7 +32,7 @@ class GameSetupTest {
                 new TestTribeCard(Era.SECOND)
         );
 
-        List<TribeCard> output = GameSetup.randomizeCardsWithinEra(input, true);
+        List<TribeCard> output = GameSetup.selectTribeCards(input, 5);
 
         assertSameCards(input, output);
         assertEraOrder(output, true);
@@ -69,7 +53,7 @@ class GameSetupTest {
             assertNotNull(context.getGameTable().getTurnOrderTile());
             assertNotNull(context.getGameTable().getTopRow());
             assertNotNull(context.getGameTable().getBottomRow());
-            assertEquals(playerCount, context.getGameTable().getTurnOrderTile().getSpaces().size());
+            assertEquals(playerCount, context.getGameTable().getTurnOrderTile().spaces().size());
         }
     }
 

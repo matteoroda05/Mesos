@@ -7,8 +7,8 @@ import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 
 public class TribeDeck {
-    private List<TribeCard> deck;
-    private int n_players;
+    private final List<TribeCard> deck;
+    private final int n_players;
 
     public TribeDeck(List<TribeCard> deck, int n_players) {
         if (n_players < Globals.MIN_NUM_PLAYERS || n_players > Globals.MAX_NUM_PLAYERS) {
