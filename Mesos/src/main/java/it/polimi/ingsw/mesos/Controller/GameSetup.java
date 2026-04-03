@@ -13,7 +13,9 @@ import it.polimi.ingsw.mesos.Model.BuildingDeck;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
@@ -48,11 +50,8 @@ public class GameSetup {
         if (card_data == null) {
             throw new IllegalArgumentException("cardData cannot be null");
         }
-        // reverseEraOrder is true for tribe cards and false for building cards, because 
-        // the way the card are taken from tribeDeck is : removeLast.
-        List<TribeCard> tribe_cards = randomizeCardsWithinEra(
-            selectTribeCards(card_data.tribe_cards(), player_count),
-            true);
+
+        List<TribeCard> tribe_cards = selectTribeCards(card_data.tribe_cards(), player_count);
         List<BuildingCard> building_cards = selectBuildingCards(card_data.building_cards(), player_count);
         List<OfferTile> offer_tiles = selectOfferTiles(card_data.offer_tiles(), player_count);
         List<TurnOrderSpace> turn_order_spaces = createTurnOrderSpaces(player_count);
@@ -98,16 +97,6 @@ public class GameSetup {
         }
 
         game_context.setupPlayers(players_by_color);
-    }
-
-    private List<TribeCard> selectTribeCards(List<TribeCard> all_cards, int player_count) {
-        if (all_cards == null) {
-            throw new IllegalArgumentException("tribeCards cannot be null");
-        }
-
-        return all_cards.stream()
-                .filter(card -> card.getMinPlayers() <= player_count)
-                .toList();
     }
 
     private List<BuildingCard> selectBuildingCards(List<BuildingCard> all_cards, int player_count) {
@@ -173,34 +162,46 @@ public class GameSetup {
         return spaces;
     }
 
-    static <T extends Card> List<T> randomizeCardsWithinEra(List<T> cards, boolean reverse_era_order) {
+    static List<TribeCard> selectTribeCards(List<TribeCard> cards, int player_count) {
         if (cards == null) {
             throw new IllegalArgumentException("cards cannot be null");
         }
 
-        Map<Era, List<T>> cards_by_era = new EnumMap<>(Era.class);
+        Map<Era, List<TribeCard>> cards_by_era = new EnumMap<>(Era.class);
         for (Era era : Era.values()) {
             cards_by_era.put(era, new ArrayList<>());
         }
 
-        for (T card : cards) {
-            cards_by_era.get(card.getEra()).add(card);
+        List<TribeCard> final_events = new ArrayList<>();
+        for (TribeCard card : cards) {
+            if (card.getMinPlayers() <= player_count){
+                if (isFinalEvent(card)) {
+                    final_events.add(card);
+                } else {
+                    cards_by_era.get(card.getEra()).add(card);
+                }
+            }
         }
 
-        for (List<T> era_cards : cards_by_era.values()) {
+        for (List<TribeCard> era_cards : cards_by_era.values()) {
             shuffle(era_cards);
         }
 
-        List<Era> era_order = new ArrayList<>(List.of(Era.values()));
-        if (reverse_era_order) {
-            Collections.reverse(era_order);
-        }
 
-        List<T> result = new ArrayList<>();
-        for (Era era : era_order) {
+        shuffle(final_events);
+        List<TribeCard> result = new ArrayList<>(final_events);
+        // The list is reversed because TribeDeck uses "removeLast"
+        for (Era era : List.of(Era.THIRD, Era.SECOND, Era.FIRST)) {
             result.addAll(cards_by_era.get(era));
         }
 
         return result;
+    }
+
+    private static boolean isFinalEvent(Card card) {
+        return card.isEvent() &&
+                card.getEra() == Era.THIRD &&
+                (((EventCard) card).asTrigger() == BuildingTrigger.ON_EVENT_SUSTENANCE ||
+                        ((EventCard) card).asTrigger() == BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL);
     }
 }
