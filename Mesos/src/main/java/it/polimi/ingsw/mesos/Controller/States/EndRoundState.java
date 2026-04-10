@@ -3,11 +3,8 @@ package it.polimi.ingsw.mesos.Controller.States;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndRound;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
-import java.util.List;
 
 public class EndRoundState extends GameState {
     public EndRoundState(ModelController controller) {
@@ -28,10 +25,6 @@ public class EndRoundState extends GameState {
 
     @Override
     public GameState process() {
-        List<BuildingEndRound> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_ROUND)
-                        .stream().map(building -> ((BuildingEndRound) building)).toList();
-        buildings.forEach(building -> building.effect(controller.getGameTable()));
-
         controller.endRound();
 
         return new ChooseOfferState(controller);

@@ -13,7 +13,7 @@ import it.polimi.ingsw.mesos.Model.Player;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = BuildingOnCard.class,         name = "BUILDING_ON_CARD"),
         @JsonSubTypes.Type(value = BuildingEndTurn.class,        name = "BUILDING_END_TURN"),
-        @JsonSubTypes.Type(value = BuildingEndRound.class,       name = "BUILDING_END_ROUND"),
+        @JsonSubTypes.Type(value = BuildingAfterEveryone.class,       name = "BUILDING_END_ROUND"),
         @JsonSubTypes.Type(value = BuildingEndGame.class,        name = "BUILDING_END_GAME"),
         @JsonSubTypes.Type(value = BuildingBonusEvent.class,     name = "BUILDING_BONUS_EVENT"),
         @JsonSubTypes.Type(value = BuildingShamanicRitual.class, name = "BUILDING_SHAMANIC_RITUAL")

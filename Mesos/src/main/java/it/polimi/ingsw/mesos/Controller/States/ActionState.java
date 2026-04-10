@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Controller.States;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
@@ -19,11 +20,21 @@ public class ActionState extends GameState {
     private int pick_bottom_row;
     private Color p;
     private int food_gain;
+    private boolean is_extra = false;
 
     public ActionState(ModelController controller) {
         super(controller);
         OfferTile tile = controller.getNextPlayerOfferTile();
         loadTile(tile);
+    }
+
+    public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
+        super(controller);
+        p = color;
+        food_gain = 0;
+        is_extra = true;
+        if (top_row) pick_top_row = extra_picks;
+        else pick_bottom_row = extra_picks;
     }
 
     /**
@@ -84,7 +95,7 @@ public class ActionState extends GameState {
             return endTurn();
         }
         if (hasFinished()) {
-            endTurn();
+            return endTurn();
         }
         return this;
     }
@@ -102,24 +113,53 @@ public class ActionState extends GameState {
 
     /**
      * Ends the turn of the player (activates buildings and position the totem to the turn order tile). The next state is
-     * another player's turn or the resolution of events.
+     * another player's turn or the resolution of events. If this is the last player then activate buildings for after everyone.
+     * If this is already a bonus action then skips the standard end turn procedure.
      * @return new game state
      */
     private GameState endTurn() {
-        controller.playerEndTurn();
+        if (!is_extra) {
+            controller.playerEndTurn();
 
-        List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
-                .stream().map(building -> ((BuildingEndTurn) building)).toList();
-        TurnOrderTile tile = controller.getTurnOrderTile();
-        buildings.forEach(building -> building.effect(tile, controller));
+            List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
+                    .stream().map(building -> ((BuildingEndTurn) building)).toList();
+            TurnOrderTile tile = controller.getTurnOrderTile();
+            buildings.forEach(building -> building.effect(tile, controller));
+        }
 
         OfferTile next = controller.getNextPlayerOfferTile();
         if (next == null) {
-            return new EventState(controller);
+            ActionState next_state = extras();
+            if (next_state == null) {
+                return new EventState(controller);
+            }
+
+            return next_state;
         }
 
         loadTile(next);
         return this;
+    }
+
+    /**
+     * Handles the extra actions (granted by buildings) that take place after everyone has completed their turn
+     * @return null if there are no extra actions, the state with the extra actions otherwise
+     */
+    private ActionState extras() {
+        List<BuildingAfterEveryone> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_AFTER_EVERYONE)
+                .stream().map(building -> ((BuildingAfterEveryone) building)).toList();
+
+        for (BuildingAfterEveryone building : buildings) {
+            ActionState next_state = building.effect(controller.getGameTable(), controller);
+            if (next_state != null) {
+                return next_state;
+            }
+        }
+
+        // reset buildings active
+        controller.getBuildingsWithTrigger(BuildingTrigger.ON_AFTER_EVERYONE).forEach(building -> ((BuildingAfterEveryone) building).reset());
+
+        return null;
     }
 
     /**

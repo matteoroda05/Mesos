@@ -2,7 +2,7 @@ package it.polimi.ingsw.mesos.Model.Enums;
 
 public enum BuildingTrigger{
     ON_END_TURN,  // after each player
-    ON_END_ROUND,  // after all players
+    ON_AFTER_EVERYONE,  // after all players
     ON_END_GAME,
     ON_EVENT_SUSTENANCE,
     ON_EVENT_HUNT,

@@ -2,7 +2,7 @@ package it.polimi.ingsw.mesos.Model;
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndRound;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -185,8 +185,8 @@ class GameContextTest {
         players_map.get(Color.BLUE).changePrestigePoints(3);
         players_map.get(Color.YELLOW).changePrestigePoints(1);
 
-        players_map.get(Color.BLUE).getTribe().addCard(new BuildingEndRound(Era.FIRST, 2, 1, 4));
-        players_map.get(Color.YELLOW).getTribe().addCard(new BuildingEndRound(Era.FIRST, 2, 1, 7));
+        players_map.get(Color.BLUE).getTribe().addCard(new BuildingAfterEveryone(Era.FIRST, 2, 1, 4));
+        players_map.get(Color.YELLOW).getTribe().addCard(new BuildingAfterEveryone(Era.FIRST, 2, 1, 7));
 
         context_game.setupPlayers(players_map);
         context_game.computeFinalScores();
@@ -221,7 +221,7 @@ class GameContextTest {
     }
 
     private static BuildingDeck createBuildingDeck() {
-        return new BuildingDeck(List.of(new BuildingEndRound(Era.FIRST, 2, 1, 1)));
+        return new BuildingDeck(List.of(new BuildingAfterEveryone(Era.FIRST, 2, 1, 1)));
     }
 
     private static TribeDeck createTribeDeck() {
