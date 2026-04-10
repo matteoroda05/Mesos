@@ -12,6 +12,7 @@ public class GameFlowController {
             throw new IllegalArgumentException("context cannot be null");
         }
 
+        context.newRound();
         ModelController model_controller = new ModelController(context);
         this.current_state = new ChooseOfferState(model_controller);
         advance();

@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Controller.States;
 
+import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
@@ -40,5 +41,10 @@ public class EndGameState extends GameState {
                 .forEach(building -> ((BuildingEndGame) building).effect(controller));
 
         return null; // game finished, declare winner
+    }
+
+    @Override
+    public GameStatus getStatus() {
+        return GameStatus.END_GAME;
     }
 }

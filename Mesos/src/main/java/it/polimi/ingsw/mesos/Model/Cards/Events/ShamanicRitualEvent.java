@@ -81,6 +81,14 @@ public class ShamanicRitualEvent extends EventCard {
         return player_outcomes;
     }
 
+    public int getWinnerBonus() {
+        return winner_bonus;
+    }
+
+    public int getLoserPenalty() {
+        return loser_penalty;
+    }
+
     @Override
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL;

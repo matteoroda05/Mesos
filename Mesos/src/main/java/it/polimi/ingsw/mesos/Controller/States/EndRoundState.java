@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Controller.States;
 
+import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndRound;
@@ -33,8 +34,11 @@ public class EndRoundState extends GameState {
 
         controller.endRound();
 
-        round += 1;
-
         return new ChooseOfferState(controller);
+    }
+
+    @Override
+    public GameStatus getStatus() {
+        return GameStatus.ROUND_END;
     }
 }

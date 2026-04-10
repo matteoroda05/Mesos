@@ -78,4 +78,16 @@ public class BuildingOnCard extends BuildingCard {
             visitor.playerAddFood(food_bonus, owner.getColor());
         }
     }
+
+    public int getFoodBonus() {
+        return food_bonus;
+    }
+
+    public boolean isInventorsPair() {
+        return inventors_pair;
+    }
+
+    public boolean isSetCompletion() {
+        return !inventors_pair;
+    }
 }

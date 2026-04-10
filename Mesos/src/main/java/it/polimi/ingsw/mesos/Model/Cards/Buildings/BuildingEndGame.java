@@ -105,4 +105,24 @@ public class BuildingEndGame extends BuildingCard {
         final int prestige_bonus = min * character_set_bonus_prestige;
         visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
+
+    public boolean isDoubleBuildersPrestige() {
+        return double_builders_pp;
+    }
+
+    public int getCharacterSetBonusPrestige() {
+        return character_set_bonus_prestige;
+    }
+
+    public int getCharacterMultiplier() {
+        return character_multiplier;
+    }
+
+    public Class<? extends CharacterCard> getCharacterType() {
+        return character_type;
+    }
+
+    public int getPrestigeBonus() {
+        return prestige_bonus;
+    }
 }

@@ -1,0 +1,23 @@
+package it.polimi.ingsw.mesos.NetworkVibe;
+
+import java.io.Closeable;
+import java.io.IOException;
+
+public interface GameClient extends Closeable {
+    GameOperationResult createGame(CreateGameRequest request) throws IOException;
+
+    GameOperationResult joinGame(JoinGameRequest request) throws IOException;
+
+    GameOperationResult getSnapshot(SnapshotRequest request) throws IOException;
+
+    GameOperationResult chooseOffer(ChooseOfferRequest request) throws IOException;
+
+    GameOperationResult chooseCard(ChooseCardRequest request) throws IOException;
+
+    GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateListener listener) throws IOException;
+
+    GameOperationResult unsubscribe(UnsubscribeGameRequest request) throws IOException;
+
+    @Override
+    void close() throws IOException;
+}

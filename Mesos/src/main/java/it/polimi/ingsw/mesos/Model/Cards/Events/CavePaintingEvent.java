@@ -54,6 +54,18 @@ public class CavePaintingEvent extends EventCard {
         return player_outcomes;
     }
 
+    public int getThreshold() {
+        return threshold;
+    }
+
+    public int getPointsPerArtist() {
+        return points_per_artist;
+    }
+
+    public int getPenalty() {
+        return penalty;
+    }
+
     @Override
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_CAVE_PAINTINGS;
