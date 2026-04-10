@@ -90,7 +90,6 @@ public class SocketGameServer implements AutoCloseable {
                 } catch (EOFException exception) {
                     return;
                 }
-
                 GameOperationResult response = dispatch(payload, connection);
                 connection.sendMessage(response);
             }
