@@ -13,7 +13,9 @@ import it.polimi.ingsw.mesos.Model.BuildingDeck;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
+import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
@@ -25,7 +27,9 @@ import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import it.polimi.ingsw.mesos.Model.TribeDeck;
 
+import static it.polimi.ingsw.mesos.Globals.BUILDING_COUNT_BY_ERA;
 import static it.polimi.ingsw.mesos.Globals.PLAYER_STARTING_FOOD;
+import static java.util.Collections.shuffle;
 
 public class GameSetup {
 
@@ -46,15 +50,10 @@ public class GameSetup {
         if (card_data == null) {
             throw new IllegalArgumentException("cardData cannot be null");
         }
-        // reverseEraOrder is true for tribe cards and false for building cards, because 
-        // the way the card are taken from tribeDeck is : removeLast.
-        List<TribeCard> tribe_cards = randomizeCardsWithinEra(
-            selectTribeCards(card_data.tribeCards(), player_count),
-            true);
-        List<BuildingCard> building_cards = randomizeCardsWithinEra(
-            selectBuildingCards(card_data.buildingCards(), player_count),
-            false);
-        List<OfferTile> offer_tiles = selectOfferTiles(card_data.offerTiles(), player_count);
+
+        List<TribeCard> tribe_cards = selectTribeCards(card_data.tribe_cards(), player_count);
+        List<BuildingCard> building_cards = selectBuildingCards(card_data.building_cards(), player_count);
+        List<OfferTile> offer_tiles = selectOfferTiles(card_data.offer_tiles(), player_count);
         List<TurnOrderSpace> turn_order_spaces = createTurnOrderSpaces(player_count);
 
         TribeDeck tribe_deck = new TribeDeck(tribe_cards, player_count);
@@ -86,7 +85,7 @@ public class GameSetup {
         }
 
         List<Color> shuffled_colors = new ArrayList<>(Arrays.asList(Color.values()));
-        Collections.shuffle(shuffled_colors);
+        shuffle(shuffled_colors);
 
         Map<Color, Player> players_by_color = new LinkedHashMap<>();
         int[] starting_food = PLAYER_STARTING_FOOD();
@@ -100,24 +99,44 @@ public class GameSetup {
         game_context.setupPlayers(players_by_color);
     }
 
-    private List<TribeCard> selectTribeCards(List<TribeCard> all_cards, int player_count) {
-        if (all_cards == null) {
-            throw new IllegalArgumentException("tribeCards cannot be null");
-        }
-
-        return all_cards.stream()
-                .filter(card -> card.getMinPlayers() <= player_count)
-                .toList();
-    }
-
     private List<BuildingCard> selectBuildingCards(List<BuildingCard> all_cards, int player_count) {
         if (all_cards == null) {
             throw new IllegalArgumentException("buildingCards cannot be null");
         }
 
-        return all_cards.stream()
-                .filter(card -> card.getMinPlayers() <= player_count)
-                .toList();
+        Map<Era, Integer> cards_per_era = BUILDING_COUNT_BY_ERA(player_count);
+        // TODO: should we add these "impossible" exceptions?
+        if (cards_per_era == null) {
+            throw new IllegalArgumentException("Unsupported player count: " + player_count);
+        }
+
+        Map<Era, List<BuildingCard>> eligible_cards_by_era = new EnumMap<>(Era.class);
+        for (Era era : Era.values()) {
+            eligible_cards_by_era.put(era, new ArrayList<>());
+        }
+
+        for (BuildingCard card : all_cards) {
+            if (card.getMinPlayers() <= player_count) {
+                eligible_cards_by_era.get(card.getEra()).add(card);
+            }
+        }
+
+        List<BuildingCard> selected_cards = new ArrayList<>();
+        for (Era era : Era.values()) {
+            int required_cards = cards_per_era.get(era);
+            List<BuildingCard> era_cards = eligible_cards_by_era.get(era);
+            // TODO: same as before
+            if (era_cards.size() < required_cards) {
+                throw new IllegalStateException(
+                        "Not enough building cards for era " + era + ": required "
+                                + required_cards + ", available " + era_cards.size());
+            }
+
+            shuffle(era_cards);
+            selected_cards.addAll(era_cards.subList(0, required_cards));
+        }
+
+        return selected_cards;
     }
 
     private List<OfferTile> selectOfferTiles(List<OfferTile> all_tiles, int player_count) {
@@ -137,40 +156,52 @@ public class GameSetup {
         }
 
         List<TurnOrderSpace> spaces = new ArrayList<>();
-        for (int i = 0; i < food_bonuses.size(); i++) {
-            spaces.add(new TurnOrderSpace(food_bonuses.get(i)));
+        for (Integer food_bonus : food_bonuses) {
+            spaces.add(new TurnOrderSpace(food_bonus));
         }
         return spaces;
     }
 
-    static <T extends Card> List<T> randomizeCardsWithinEra(List<T> cards, boolean reverse_era_order) {
+    static List<TribeCard> selectTribeCards(List<TribeCard> cards, int player_count) {
         if (cards == null) {
             throw new IllegalArgumentException("cards cannot be null");
         }
 
-        Map<Era, List<T>> cards_by_era = new EnumMap<>(Era.class);
+        Map<Era, List<TribeCard>> cards_by_era = new EnumMap<>(Era.class);
         for (Era era : Era.values()) {
             cards_by_era.put(era, new ArrayList<>());
         }
 
-        for (T card : cards) {
-            cards_by_era.get(card.getEra()).add(card);
+        List<TribeCard> final_events = new ArrayList<>();
+        for (TribeCard card : cards) {
+            if (card.getMinPlayers() <= player_count){
+                if (isFinalEvent(card)) {
+                    final_events.add(card);
+                } else {
+                    cards_by_era.get(card.getEra()).add(card);
+                }
+            }
         }
 
-        for (List<T> era_cards : cards_by_era.values()) {
-            Collections.shuffle(era_cards);
+        for (List<TribeCard> era_cards : cards_by_era.values()) {
+            shuffle(era_cards);
         }
 
-        List<Era> era_order = new ArrayList<>(List.of(Era.values()));
-        if (reverse_era_order) {
-            Collections.reverse(era_order);
-        }
 
-        List<T> result = new ArrayList<>();
-        for (Era era : era_order) {
+        shuffle(final_events);
+        List<TribeCard> result = new ArrayList<>(final_events);
+        // The list is reversed because TribeDeck uses "removeLast"
+        for (Era era : List.of(Era.THIRD, Era.SECOND, Era.FIRST)) {
             result.addAll(cards_by_era.get(era));
         }
 
         return result;
+    }
+
+    private static boolean isFinalEvent(Card card) {
+        return card.isEvent() &&
+                card.getEra() == Era.THIRD &&
+                (((EventCard) card).asTrigger() == BuildingTrigger.ON_EVENT_SUSTENANCE ||
+                        ((EventCard) card).asTrigger() == BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL);
     }
 }

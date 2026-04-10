@@ -31,14 +31,14 @@ public class BuildingEndTurn extends BuildingCard {
     }
 
     public void effect(TurnOrderTile order, ModelController visitor) {
-        List<TurnOrderSpace> spaces = order.getSpaces();
+        List<TurnOrderSpace> spaces = order.spaces();
 
         boolean found = false;
         for (TurnOrderSpace space : spaces) {
             if (space.getOccupant() == owner.getColor()) {
                 found = true;
                 if (space.getBonus() > 0) {
-                    visitor.playerChangeFood(food_bonus, owner.getColor());
+                    visitor.playerAddFood(food_bonus, owner.getColor());
                 }
                 break;
             }

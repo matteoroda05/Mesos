@@ -14,6 +14,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.Result;
 
 public class ModelController {
     private final GameContext game_context;
@@ -93,8 +94,8 @@ public class ModelController {
     public void playerEndTurn(){
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
-        Player player = this.game_context.getPlayer(player_color);
-        game_table.getTurnOrderTile().placeTotem(player); // TODO: assign rewards (food)
+        Result placing_result = game_table.getTurnOrderTile().placeTotem(player_color);
+        playerApplyOutcome(placing_result, player_color);
     }
 
     public Optional<CharacterCard> playerChooseCard(Color player_color, int card, boolean is_top){
@@ -145,31 +146,29 @@ public class ModelController {
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
 
-    // TODO: "merge the two playerChangeFOod"
-    public void playerChangeFood(int food_amount, Color player_color) {
-        if (food_amount < 0) throw new IllegalArgumentException("food_amount cannot be " +
-                "negative for gain operations");
+    public void playerAddFood(int food_amount, Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        Player p = this.game_context.getPlayer(player_color);
-        p.gainFood(food_amount);
-    }
-    // TODO: "merge the two playerChangeFOod"
-    public void playerChangeFood(int food_amount, Color player_color, int substitute_prestige) {
-        if (food_amount > 0){
-            playerChangeFood(food_amount, player_color);
-            return;
-        }
-        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        Player p = this.game_context.getPlayer(player_color);
-        int prestige_loss = substitute_prestige * p.loseFood(Math.abs(food_amount));
-        if (prestige_loss != 0) {
-            p.changePrestigePoints(- prestige_loss);
-        }
+        if (food_amount < 0) throw new IllegalArgumentException("food_amount cannot be negative");
+        this.game_context.getPlayer(player_color).gainFood(food_amount);
     }
 
     public void playerChangePrestige(int prestige_amount, Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player p = this.game_context.getPlayer(player_color);
         p.changePrestigePoints(prestige_amount);
+    }
+
+    public void playerApplyOutcome(Result outcome, Color player_color) {
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        Player p = this.game_context.getPlayer(player_color);
+        int penalty = 0;
+        if (outcome.food() > 0){
+            p.gainFood(outcome.food());
+        } else if (outcome.food() < 0) {
+            penalty = p.loseFood(outcome.food()) * outcome.penalty();
+        }
+        if (outcome.prestige() - penalty != 0){
+            p.changePrestigePoints(outcome.prestige() - penalty);
+        }
     }
 }

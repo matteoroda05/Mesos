@@ -26,28 +26,28 @@ class CardLoaderTest {
 
     @Test
     void tribeCardListIsNotEmpty() {
-        assertFalse(data.tribeCards().isEmpty());
+        assertFalse(data.tribe_cards().isEmpty());
     }
 
     @Test
     void buildingCardListIsNotEmpty() {
-        assertFalse(data.buildingCards().isEmpty());
+        assertFalse(data.building_cards().isEmpty());
     }
 
     @Test
     void tribeCardsTotalCountMatchesExpected() {
-        assertEquals(95, data.tribeCards().size());
+        assertEquals(95, data.tribe_cards().size());
     }
 
     @Test
     void buildingCardsTotalCountMatchesExpected() {
-        assertEquals(21, data.buildingCards().size());
+        assertEquals(21, data.building_cards().size());
     }
 
 
     @Test
     void hunterCardsAreDeserializedToCorrectType() {
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof HunterCard)
                 .map(c -> (HunterCard) c)
                 .forEach(h ->
@@ -57,7 +57,7 @@ class CardLoaderTest {
 
     @Test
     void shamanCardsHavePositiveStarCount() {
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof ShamanCard)
                 .map(c -> (ShamanCard) c)
                 .forEach(s ->
@@ -68,7 +68,7 @@ class CardLoaderTest {
 
     @Test
     void builderCardsHaveNonNegativePrestigeAndDiscount() {
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof BuilderCard)
                 .map(c -> (BuilderCard) c)
                 .forEach(b -> {
@@ -79,7 +79,7 @@ class CardLoaderTest {
 
     @Test
     void inventorCardsHaveNonNullInventionIcon() {
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof InventorCard)
                 .map(c -> (InventorCard) c)
                 .forEach(i ->
@@ -90,7 +90,7 @@ class CardLoaderTest {
 
     @Test
     void gathererCardsHavePositiveFoodDiscount() {
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof GathererCard)
                 .map(c -> (GathererCard) c)
                 .forEach(g ->
@@ -101,7 +101,7 @@ class CardLoaderTest {
 
     @Test
     void huntEventsHaveOnePerEra() {
-        long count = data.tribeCards().stream()
+        long count = data.tribe_cards().stream()
                 .filter(c -> c instanceof HuntEvent)
                 .count();
         assertEquals(3, count, "There should be one HuntEvent per era");
@@ -109,15 +109,17 @@ class CardLoaderTest {
 
     @Test
     void sustenanceEventsHaveOnePerEra() {
-        long count = data.tribeCards().stream()
+        long count = data.tribe_cards().stream()
                 .filter(c -> c instanceof SustenanceEvent)
                 .count();
         assertEquals(3, count, "There should be one SustenanceEvent per era");
     }
 
     @Test
-    void sustenanceEventsExposePositivePrestigeConversion() {
-        data.tribeCards().stream()
+    void huntEventsHaveNegativePenaltyByConstruction() {
+        // SustenanceEvent stores a negative penalty; loading from JSON must
+        // preserve the sign
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof SustenanceEvent)
                 .map(c -> (SustenanceEvent) c)
                 .forEach(e ->
@@ -128,7 +130,7 @@ class CardLoaderTest {
 
     @Test
     void shamanicRitualEventsHaveCorrectSignsOnBonusAndPenalty() {
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof ShamanicRitualEvent)
                 .map(c -> (ShamanicRitualEvent) c)
                 .forEach(e -> {
@@ -140,7 +142,7 @@ class CardLoaderTest {
     @Test
     void eachEraHasAtLeastOneTribeCard() {
         for (Era era : Era.values()) {
-            boolean found = data.tribeCards().stream()
+            boolean found = data.tribe_cards().stream()
                     .anyMatch(c -> c.getEra() == era);
             assertTrue(found, "No tribe card found for era: " + era);
         }
@@ -149,7 +151,7 @@ class CardLoaderTest {
     @Test
     void eachEraHasAtLeastOneBuildingCard() {
         for (Era era : Era.values()) {
-            boolean found = data.buildingCards().stream()
+            boolean found = data.building_cards().stream()
                     .anyMatch(c -> c.getEra() == era);
             assertTrue(found, "No building card found for era: " + era);
         }
@@ -158,7 +160,7 @@ class CardLoaderTest {
 
     @Test
     void buildingCardsHaveNonNullTrigger() {
-        data.buildingCards().forEach(b ->
+        data.building_cards().forEach(b ->
                 assertNotNull(b.getTrigger(),
                         "Every BuildingCard must have a non-null trigger")
         );
@@ -166,7 +168,7 @@ class CardLoaderTest {
 
     @Test
     void buildingCardsHavePositiveFoodCost() {
-        data.buildingCards().forEach(b ->
+        data.building_cards().forEach(b ->
                 assertTrue(b.getFoodCost() > 0,
                         "Every BuildingCard must have a positive food cost")
         );
@@ -176,13 +178,13 @@ class CardLoaderTest {
     void tribeAcceptsAllCharacterCardsFromJson() {
         Tribe tribe = new Tribe();
 
-        data.tribeCards().stream()
+        data.tribe_cards().stream()
                 .filter(c -> c instanceof CharacterCard)
                 .map(c -> (CharacterCard) c)
                 .forEach(tribe::addCard);
 
         // Every character card loaded from JSON must end up in the tribe
-        long expected = data.tribeCards().stream()
+        long expected = data.tribe_cards().stream()
                 .filter(c -> c instanceof CharacterCard)
                 .count();
 
@@ -194,20 +196,20 @@ class CardLoaderTest {
     void tribeAcceptsAllBuildingCardsFromJson() {
         Tribe tribe = new Tribe();
 
-        data.buildingCards().forEach(tribe::addCard);
+        data.building_cards().forEach(tribe::addCard);
 
-        assertEquals(data.buildingCards().size(), tribe.getNumBuildings(),
+        assertEquals(data.building_cards().size(), tribe.getNumBuildings(),
                 "All building cards from JSON should be addable to a Tribe");
     }
 
 
     @Test
     void allCardsHaveNonNegativeMinPlayers() {
-        data.tribeCards().forEach(c ->
+        data.tribe_cards().forEach(c ->
                 assertTrue(c.getMinPlayers() >= 0,
                         "min_players must be >= 0, got " + c.getMinPlayers() + " for " + c)
         );
-        data.buildingCards().forEach(c ->
+        data.building_cards().forEach(c ->
                 assertTrue(c.getMinPlayers() >= 0,
                         "min_players must be >= 0, got " + c.getMinPlayers() + " for " + c)
         );

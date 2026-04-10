@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 
 public class CavePaintingEvent extends EventCard {
     private final int threshold;
@@ -36,18 +37,18 @@ public class CavePaintingEvent extends EventCard {
     }
 
     @Override
-    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
-        Map<Color, int[]> player_outcomes = new HashMap<>();
+    public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, Result> player_outcomes = new HashMap<>();
 
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
             int artists = tribe.getValue().getNumCharacterOfType(ArtistCard.class);
-            int[] vals  =  new int[2]; // new int[2] already initializes both to 0
+            Result val;
             if (artists >= threshold) {
-                vals[0] = points_per_artist * artists;
+                val = new Result(0, points_per_artist * artists, 0);
             } else {
-                vals[0] = penalty;
+                val = new Result(0, penalty, 0);
             }
-            player_outcomes.put(tribe.getKey(), vals);
+            player_outcomes.put(tribe.getKey(), val);
         }
 
         return player_outcomes;
