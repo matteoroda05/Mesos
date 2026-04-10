@@ -80,4 +80,9 @@ public class EventState extends GameState {
             return new EndRoundState(controller);
         }
     }
+
+    @Override
+    public GameStatus getStatus() {
+        return GameStatus.ROUND_EVENTS;
+    }
 }
