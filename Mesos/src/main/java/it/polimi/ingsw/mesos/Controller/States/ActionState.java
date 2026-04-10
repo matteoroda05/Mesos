@@ -23,14 +23,21 @@ public class ActionState extends GameState {
     public ActionState(ModelController controller) {
         super(controller);
         OfferTile tile = controller.getNextPlayerOfferTile();
-        int max_top_picks = controller.getAvailableCards(tile.getOccupant(), true);
-        int max_bottom_picks = controller.getAvailableCards(tile.getOccupant(), false);
-        loadTile(tile,  max_top_picks, max_bottom_picks);
+        loadTile(tile);
     }
 
+    /**
+     * Handles the selection of one card by the specified player: checks that the request is valid (if not send specific
+     * error message to the clients), activates interested buildings and adds card to the player's tribe
+     * @param player_color: color of the player that is trying to pick a card
+     * @param card: index of the requested card
+     * @param is_top: row from which the player is picking
+     * @return next game state
+     */
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
         if (p != player_color) {
+            // TODO: set error in model and ward clients
             return this;
         }
 
@@ -65,6 +72,10 @@ public class ActionState extends GameState {
         return this;
     }
 
+    /**
+     * If the current player chose the offer with the food then give the food to him and end is turn, otherwise do nothing
+     * @return next state
+     */
     @Override
     public GameState process() {
         if (food_gain != 0) {
@@ -72,13 +83,28 @@ public class ActionState extends GameState {
             food_gain = 0;
             return endTurn();
         }
+        if (hasFinished()) {
+            endTurn();
+        }
         return this;
     }
 
+    /**
+     * Checks if the player can take any cards and, if the offer consist of food, if it got the food already
+     * @return true if the player has completed all the actions
+     */
     private boolean hasFinished() {
-        return pick_bottom_row <= 0 && pick_top_row <= 0 && food_gain == 0;
+        final int max_top_picks = controller.getAvailableCards(p, true);
+        final int max_bottom_picks = controller.getAvailableCards(p, false);
+
+        return (pick_bottom_row <= 0 || max_bottom_picks <= 0) && (pick_top_row <= 0 || max_top_picks <= 0) && food_gain == 0;
     }
 
+    /**
+     * Ends the turn of the player (activates buildings and position the totem to the turn order tile). The next state is
+     * another player's turn or the resolution of events.
+     * @return new game state
+     */
     private GameState endTurn() {
         controller.playerEndTurn();
 
@@ -92,16 +118,18 @@ public class ActionState extends GameState {
             return new EventState(controller);
         }
 
-        int max_top_picks = controller.getAvailableCards(next.getOccupant(), true);
-        int max_bottom_picks = controller.getAvailableCards(next.getOccupant(), false);
-        loadTile(next, max_top_picks, max_bottom_picks);
+        loadTile(next);
         return this;
     }
 
-    private void loadTile(OfferTile tile, int max_top_picks, int max_bottom_picks) {
+    /**
+     * Construct the state based on the contents of the tile
+     * @param tile: offer tile to load
+     */
+    private void loadTile(OfferTile tile) {
         p = tile.getOccupant();
-        pick_top_row = Math.min(tile.getTopPicks(), max_top_picks);
-        pick_bottom_row = Math.min(tile.getBottomPicks(), max_bottom_picks);
+        pick_top_row = tile.getTopPicks();
+        pick_bottom_row = tile.getBottomPicks();
         food_gain = tile.getFoodGain();
     }
 
