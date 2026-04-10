@@ -5,21 +5,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-import it.polimi.ingsw.mesos.NetworkVibe.ChooseCardRequest;
-import it.polimi.ingsw.mesos.NetworkVibe.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.NetworkVibe.ConnectionType;
-import it.polimi.ingsw.mesos.NetworkVibe.CreateGameRequest;
-import it.polimi.ingsw.mesos.NetworkVibe.GameClient;
-import it.polimi.ingsw.mesos.NetworkVibe.GameClientFactory;
-import it.polimi.ingsw.mesos.NetworkVibe.GameOperationResult;
-import it.polimi.ingsw.mesos.NetworkVibe.GameSnapshot;
-import it.polimi.ingsw.mesos.NetworkVibe.GameViewUpdate;
-import it.polimi.ingsw.mesos.NetworkVibe.JoinGameRequest;
-import it.polimi.ingsw.mesos.NetworkVibe.NetworkDefaults;
-import it.polimi.ingsw.mesos.NetworkVibe.ServerEndpoint;
-import it.polimi.ingsw.mesos.NetworkVibe.SnapshotRequest;
-import it.polimi.ingsw.mesos.NetworkVibe.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.NetworkVibe.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.ConnectionType;
+import it.polimi.ingsw.mesos.Network.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.GameClient;
+import it.polimi.ingsw.mesos.Network.GameClientFactory;
+import it.polimi.ingsw.mesos.Network.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.NetworkDefaults;
+import it.polimi.ingsw.mesos.Network.ServerEndpoint;
+import it.polimi.ingsw.mesos.Network.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
 
 public final class MesosCliClient {
     private final BufferedReader reader;
