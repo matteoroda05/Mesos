@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 
 public class HuntEvent extends EventCard {
     private final int prestige_per_hunter;
@@ -45,12 +46,12 @@ public class HuntEvent extends EventCard {
     }
 
     @Override
-    public Map<Color, int[]> calculateOutcome(Map<Color, Tribe> players_tribes) {
-        Map<Color, int[]> player_outcomes = new HashMap<>();
+    public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
+        Map<Color, Result> player_outcomes = new HashMap<>();
 
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
             int hunters = tribe.getValue().getNumCharacterOfType(HunterCard.class);
-            int[] vals = {hunters * prestige_per_hunter, hunters * food_per_hunter};
+            Result vals = new Result(hunters * food_per_hunter, hunters * prestige_per_hunter, 0);
             player_outcomes.put(tribe.getKey(), vals);
         }
 

@@ -7,6 +7,7 @@ import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.*;
+import it.polimi.ingsw.mesos.Result;
 
 import java.util.Arrays;
 import java.util.List;
@@ -70,13 +71,13 @@ public class BuildingBonusEvent extends BuildingCard {
         this.character_type = character_type;
     }
 
-    public void effect(Map<Color, int[]> output, ModelController visitor) {
+    public void effect(Map<Color, Result> output, ModelController visitor) {
         final int multiplier = owner.getTribe().getNumCharacterOfType(character_type);
-        final int prev_food = output.get(owner.getColor())[1];
+        final int prev_food = output.get(owner.getColor()).food();
         final int food_change = prev_food + multiplier * food_bonus;
         final int prestige_bonus = multiplier * pp_bonus;
 
-        visitor.playerChangeFood(food_change, owner.getColor());
+        visitor.playerAddFood(food_change, owner.getColor());
         visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 

@@ -5,10 +5,9 @@ import java.util.List;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
+import it.polimi.ingsw.mesos.Result;
 
-public class TurnOrderTile {
-
-    private final List<TurnOrderSpace> spaces;
+public record TurnOrderTile(List<TurnOrderSpace> spaces) {
 
     public TurnOrderTile(List<TurnOrderSpace> spaces) {
         if (spaces == null) {
@@ -16,7 +15,6 @@ public class TurnOrderTile {
         }
 
         this.spaces = new ArrayList<>(spaces);
-
     }
 
     public void setupTotem(Player player) {
@@ -34,27 +32,21 @@ public class TurnOrderTile {
         throw new IllegalStateException("No free spaces in TurnOrderTile");
     }
 
-    public void placeTotem(Player player) {
+    public Result placeTotem(Color player) {
         if (player == null) {
             throw new IllegalArgumentException("player cannot be null");
         }
 
         for (TurnOrderSpace space : spaces) {
             if (space.isFree()) {
-                space.setOccupant(player.getColor());
+                space.setOccupant(player);
 
                 int bonus = space.getBonus();
                 if (bonus > 0) {
-                    player.gainFood(bonus);
-                } else {
-                    int prestige_loss = player.loseFood(-bonus);
-                    if (prestige_loss > 0) {
-                        prestige_loss = prestige_loss << 1;
-                        player.changePrestigePoints(-prestige_loss);
-                    }
+                    return new Result(bonus, 0, 0);
+                } else if (bonus < 0) {
+                    return new Result(bonus, 0, 2);
                 }
-
-                return;
             }
         }
 
@@ -72,10 +64,6 @@ public class TurnOrderTile {
         }
 
         return order;
-    }
-
-    public List<TurnOrderSpace> getSpaces() {
-        return spaces;
     }
 
     public void clearFirst() {
@@ -103,5 +91,4 @@ public class TurnOrderTile {
         }
         return true;
     }
-
 }

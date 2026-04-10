@@ -49,8 +49,8 @@ public class CardLoader {
     }
 
     public record CardData(
-            List<TribeCard> tribeCards,
-            List<BuildingCard> buildingCards,
-            List<OfferTile> offerTiles
+            List<TribeCard> tribe_cards,
+            List<BuildingCard> building_cards,
+            List<OfferTile> offer_tiles
     ) {}
 }
