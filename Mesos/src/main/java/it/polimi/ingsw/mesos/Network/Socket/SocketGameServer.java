@@ -14,18 +14,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameUpdateSink;
 import it.polimi.ingsw.mesos.Network.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class SocketGameServer implements AutoCloseable {
     private final MesosServerService serverService;
@@ -90,7 +85,14 @@ public class SocketGameServer implements AutoCloseable {
                 } catch (EOFException exception) {
                     return;
                 }
-                GameOperationResult response = dispatch(payload, connection);
+
+                GameOperationResult response;
+                if (!(payload instanceof GameRequest request)) {
+                    response = GameOperationResult.failure("Unsupported request payload", null);
+                } else {
+                    response = request.requestToService(serverService, connection);
+                }
+
                 connection.sendMessage(response);
             }
         } catch (SocketException ignored) {
@@ -106,32 +108,6 @@ public class SocketGameServer implements AutoCloseable {
         }
     }
 
-    private GameOperationResult dispatch(Object payload, ClientConnection connection) {
-        if (!(payload instanceof GameRequest request)) {
-            return GameOperationResult.failure("Unsupported request payload", null);
-        }
-
-        return switch (request) {
-            case CreateGameRequest createGameRequest -> serverService.createGame(createGameRequest);
-            case JoinGameRequest joinGameRequest -> serverService.joinGame(joinGameRequest);
-            case SnapshotRequest snapshotRequest -> serverService.getSnapshot(snapshotRequest);
-            case ChooseOfferRequest chooseOfferRequest -> serverService.chooseOffer(chooseOfferRequest);
-            case ChooseCardRequest chooseCardRequest -> serverService.chooseCard(chooseCardRequest);
-            case SubscribeGameRequest subscribeGameRequest -> {
-                GameOperationResult result = serverService.subscribe(subscribeGameRequest, connection);
-                if (result.success()) {
-                    connection.subscribe(subscribeGameRequest);
-                }
-                yield result;
-            }
-            case UnsubscribeGameRequest unsubscribeGameRequest -> {
-                GameOperationResult result = serverService.unsubscribe(unsubscribeGameRequest, connection);
-                connection.unsubscribe(unsubscribeGameRequest);
-                yield result;
-            }
-        };
-    }
-
     @Override
     public void close() throws IOException {
         running.set(false);
@@ -142,7 +118,7 @@ public class SocketGameServer implements AutoCloseable {
         executorService.shutdownNow();
     }
 
-    private final class ClientConnection implements GameUpdateSink {
+    public final class ClientConnection implements GameUpdateSink {
         private final ObjectOutputStream output;
         private SubscribeGameRequest activeSubscription;
 
@@ -161,7 +137,7 @@ public class SocketGameServer implements AutoCloseable {
             output.reset();
         }
 
-        private void subscribe(SubscribeGameRequest request) {
+        public void subscribe(SubscribeGameRequest request) {
             if (activeSubscription != null
                     && (!activeSubscription.gameName().equals(request.gameName())
                     || !activeSubscription.nickname().equals(request.nickname()))) {
@@ -173,7 +149,7 @@ public class SocketGameServer implements AutoCloseable {
             activeSubscription = request;
         }
 
-        private void unsubscribe(UnsubscribeGameRequest request) {
+        public void unsubscribe(UnsubscribeGameRequest request) {
             if (activeSubscription != null
                     && activeSubscription.gameName().equals(request.gameName())
                     && activeSubscription.nickname().equals(request.nickname())) {

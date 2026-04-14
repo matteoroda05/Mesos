@@ -1,4 +1,9 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.Network.Requests;
+
+import it.polimi.ingsw.mesos.Network.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameRequest;
+import it.polimi.ingsw.mesos.Network.MesosServerService;
+import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
 public record JoinGameRequest(
         String gameName,
@@ -20,5 +25,10 @@ public record JoinGameRequest(
         if (nickname == null || nickname.isBlank()) {
             throw new IllegalArgumentException("nickname cannot be null or blank");
         }
+    }
+
+    @Override
+    public GameOperationResult requestToService (MesosServerService service, SocketGameServer.ClientConnection connection){
+        return service.joinGame(this);
     }
 }

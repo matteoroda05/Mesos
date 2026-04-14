@@ -1,5 +1,7 @@
 package it.polimi.ingsw.mesos.Network;
 
+import it.polimi.ingsw.mesos.Network.Requests.*;
+
 import java.io.Closeable;
 import java.io.IOException;
 

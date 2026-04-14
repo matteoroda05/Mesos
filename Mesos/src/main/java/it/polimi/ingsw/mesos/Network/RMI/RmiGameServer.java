@@ -9,17 +9,17 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class RmiGameServer implements AutoCloseable {
     private final Registry registry;

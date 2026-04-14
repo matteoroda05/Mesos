@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;

@@ -7,17 +7,17 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import it.polimi.ingsw.mesos.Network.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class RmiGameClient implements GameClient {
     private final RemoteMesosServer remoteServer;

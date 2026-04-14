@@ -36,4 +36,5 @@ module it.polimi.ingsw.mesos {
     exports it.polimi.ingsw.mesos.Network.RMI;
     exports it.polimi.ingsw.mesos.Network.Socket;
     opens it.polimi.ingsw.mesos.Controller.States to org.junit.platform.commons;
+    exports it.polimi.ingsw.mesos.Network.Requests;
 }
