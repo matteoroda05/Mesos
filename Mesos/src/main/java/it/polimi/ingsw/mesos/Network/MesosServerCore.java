@@ -351,7 +351,7 @@ public class MesosServerCore implements MesosServerService {
 
         private List<TurnOrderSpaceSummary> summarizeTurnOrder() {
             List<TurnOrderSpaceSummary> summaries = new ArrayList<>();
-            List<TurnOrderSpace> spaces = context.getGameTable().getTurnOrderTile().getSpaces();
+            List<TurnOrderSpace> spaces = context.getGameTable().getTurnOrderTile().spaces();
             for (int index = 0; index < spaces.size(); index++) {
                 TurnOrderSpace space = spaces.get(index);
                 summaries.add(new TurnOrderSpaceSummary(
