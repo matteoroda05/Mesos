@@ -32,8 +32,9 @@ module it.polimi.ingsw.mesos {
     opens it.polimi.ingsw.mesos.Model.Tiles to com.fasterxml.jackson.databind;
     exports it.polimi.ingsw.mesos.Controller.States;
     exports it.polimi.ingsw.mesos.CLI;
-    exports it.polimi.ingsw.mesos.NetworkVibe;
-    exports it.polimi.ingsw.mesos.NetworkVibe.RMI;
-    exports it.polimi.ingsw.mesos.NetworkVibe.Socket;
+    exports it.polimi.ingsw.mesos.Network;
+    exports it.polimi.ingsw.mesos.Network.RMI;
+    exports it.polimi.ingsw.mesos.Network.Socket;
     opens it.polimi.ingsw.mesos.Controller.States to org.junit.platform.commons;
+    exports it.polimi.ingsw.mesos.Network.Requests;
 }

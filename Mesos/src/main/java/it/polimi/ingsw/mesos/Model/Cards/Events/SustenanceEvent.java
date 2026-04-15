@@ -50,4 +50,14 @@ public final class SustenanceEvent extends EventCard {
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_SUSTENANCE;
     }
+
+    // Utils for view
+
+    public int getFoodPerCharacter() {
+        return food_per_character;
+    }
+
+    public int getPointPenalty() {
+        return points_penalty;
+    }
 }
