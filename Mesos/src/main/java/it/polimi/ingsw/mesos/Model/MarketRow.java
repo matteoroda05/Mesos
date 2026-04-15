@@ -47,7 +47,7 @@ public class MarketRow {
         List<Card> takeable = new ArrayList<>();
 
         for (TribeCard card : tribe_market) {
-            if (!(card instanceof EventCard)) {
+            if (!(card.isEvent())) {
                 takeable.add(card);
             }
         }
