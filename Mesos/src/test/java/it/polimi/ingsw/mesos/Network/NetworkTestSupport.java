@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
 final class NetworkTestSupport {
     private NetworkTestSupport() {

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Network;
 
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 
 public interface MesosServerService {
     GameOperationResult createGame(CreateGameRequest request);

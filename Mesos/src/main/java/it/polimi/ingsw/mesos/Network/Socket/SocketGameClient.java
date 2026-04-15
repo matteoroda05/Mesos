@@ -12,11 +12,11 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameClient;
-import it.polimi.ingsw.mesos.Network.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
@@ -29,8 +29,8 @@ public class SocketGameClient implements GameClient {
     private final BlockingQueue<GameOperationResult> responses;
     private final Thread readerThread;
 
+    private volatile SocketClientContext context;
     private volatile boolean running;
-    private volatile GameUpdateListener updateListener;
     private volatile SubscribeGameRequest activeSubscription;
 
     public SocketGameClient(String host, int port) throws IOException {
@@ -46,6 +46,7 @@ public class SocketGameClient implements GameClient {
         this.output.flush();
         this.input = new ObjectInputStream(socket.getInputStream());
         this.responses = new LinkedBlockingQueue<>();
+        this.context = new SocketClientContext(this.responses, null);
         this.running = true;
         this.readerThread = new Thread(this::readLoop, "mesos-socket-client-reader");
         this.readerThread.setDaemon(true);
@@ -86,27 +87,27 @@ public class SocketGameClient implements GameClient {
             unsubscribe(new UnsubscribeGameRequest(activeSubscription.gameName(), activeSubscription.nickname()));
         }
 
-        updateListener = listener;
+        context = new SocketClientContext(responses, listener);
         GameOperationResult result = exchange(request);
         if (result.success()) {
             activeSubscription = request;
             return result;
         }
-        updateListener = null;
+        context = new SocketClientContext(responses, null);
         return result;
     }
 
     @Override
     public GameOperationResult unsubscribe(UnsubscribeGameRequest request) throws IOException {
         if (activeSubscription == null) {
-            updateListener = null;
+            context = new SocketClientContext(responses, null);
             return GameOperationResult.success("Nessuna sottoscrizione attiva", null);
         }
 
         GameOperationResult result = exchange(request);
         if (result.success()) {
             activeSubscription = null;
-            updateListener = null;
+            context = new SocketClientContext(responses, null);
         }
         return result;
     }
@@ -147,26 +148,22 @@ public class SocketGameClient implements GameClient {
         try {
             while (running && !socket.isClosed()) {
                 Object response = input.readObject();
-                if (response instanceof GameOperationResult result) {
-                    responses.offer(result);
-                } else if (response instanceof GameViewUpdate update) {
-                    GameUpdateListener listener = updateListener;
-                    if (listener != null) {
-                        listener.onUpdate(update);
-                    }
-                } else if (response instanceof GameServerMessage) {
-                    throw new IOException("Unsupported server message: " + response.getClass().getSimpleName());
-                } else {
+                try {
+                    GameServerMessage message = (GameServerMessage) response;
+                    message.execute(context);
+                } catch (ClassCastException exception) {
                     throw new IOException("Unexpected response type: " + response);
                 }
             }
         } catch (SocketException ignored) {
         } catch (ClassNotFoundException | IOException exception) {
             if (running) {
-                responses.offer(GameOperationResult.failure("Connessione socket chiusa: " + exception.getMessage(), null));
+                context.responses().offer(GameOperationResult.failure("Connessione socket chiusa: " + exception.getMessage(), null));
             }
         } finally {
             running = false;
         }
     }
+
+    public record SocketClientContext (BlockingQueue<GameOperationResult> responses, GameUpdateListener updateListener) { }
 }

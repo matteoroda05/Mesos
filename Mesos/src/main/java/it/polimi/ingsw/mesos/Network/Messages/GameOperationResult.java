@@ -1,6 +1,9 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.Network.Messages;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
+import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
 
 public record GameOperationResult(
         boolean success,
@@ -30,5 +33,11 @@ public record GameOperationResult(
 
     public static GameOperationResult failure(String message, GameSnapshot snapshot, String nickname, Color color) {
         return new GameOperationResult(false, message, snapshot, nickname, color);
+    }
+
+    @Override
+    public void execute(SocketGameClient.SocketClientContext context) {
+        // TODO: check if the this has been added and throw/do something
+        context.responses().offer(this);
     }
 }

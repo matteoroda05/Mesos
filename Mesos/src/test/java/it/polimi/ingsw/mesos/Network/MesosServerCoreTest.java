@@ -9,6 +9,7 @@ import java.io.IOException;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;

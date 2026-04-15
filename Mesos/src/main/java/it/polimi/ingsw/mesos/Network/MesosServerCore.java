@@ -39,6 +39,8 @@ import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
 public class MesosServerCore implements MesosServerService {
     private final CardLoader.CardData cardData;

@@ -1,4 +1,9 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.Network.Messages;
+
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
+import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.GameUpdateListener;
+import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
 
 public record GameViewUpdate(
         String gameName,
@@ -15,6 +20,14 @@ public record GameViewUpdate(
         }
         if (snapshot == null) {
             throw new IllegalArgumentException("snapshot cannot be null");
+        }
+    }
+
+    @Override
+    public void execute(SocketGameClient.SocketClientContext context) {
+        GameUpdateListener listener = context.updateListener();
+        if (listener != null) {
+            listener.onUpdate(this);
         }
     }
 }
