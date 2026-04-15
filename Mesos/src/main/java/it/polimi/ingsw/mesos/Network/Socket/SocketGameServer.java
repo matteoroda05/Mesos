@@ -79,18 +79,15 @@ public class SocketGameServer implements AutoCloseable {
             connection = new ClientConnection(output);
 
             while (running.get() && !socket.isClosed()) {
-                Object payload;
+                GameRequest payload;
+                GameOperationResult response;
                 try {
-                    payload = input.readObject();
+                    payload = (GameRequest) input.readObject();
+                    response = payload.requestToService(serverService, connection);
                 } catch (EOFException exception) {
                     return;
-                }
-
-                GameOperationResult response;
-                if (!(payload instanceof GameRequest request)) {
+                } catch (ClassCastException exception) {
                     response = GameOperationResult.failure("Unsupported request payload", null);
-                } else {
-                    response = request.requestToService(serverService, connection);
                 }
 
                 connection.sendMessage(response);
