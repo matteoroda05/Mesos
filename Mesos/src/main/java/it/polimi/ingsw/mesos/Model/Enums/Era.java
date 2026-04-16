@@ -5,6 +5,12 @@ public enum Era {
     SECOND,
     THIRD;
 
+    /**
+     * Returns the era that immediately follows this one.
+     *
+     * @return the next era
+     * @throws IllegalStateException if this era is already the last one
+     */
     public Era next() {
         Era[] eras = values();
         int nextIndex = this.ordinal() + 1;

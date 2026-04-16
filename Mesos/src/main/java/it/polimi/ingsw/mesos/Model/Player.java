@@ -40,6 +40,11 @@ public final class Player {
         return prestige_points;
     }
 
+    /**
+     * Adds food to the player's supply.
+     *
+     * @param amount non-negative amount of food to add
+     */
     public void gainFood(int amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Food gained must be non-negative");
@@ -49,6 +54,13 @@ public final class Player {
         this.food += amount;
     }
 
+    /**
+     * Removes food from the player and returns the unpaid remainder when the
+     * requested amount is greater than the current supply.
+     *
+     * @param amount non-negative amount of food to remove
+     * @return the amount that could not be paid because the player lacked food
+     */
     public int loseFood(int amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Food lost must be non-negative");
@@ -60,6 +72,11 @@ public final class Player {
         return out;
     }
 
+    /**
+     * Applies a prestige-point delta to the player score.
+     *
+     * @param points points to add, or a negative value to subtract
+     */
     public void changePrestigePoints(int points) {
         System.out.println("adding " + points + " prestige to player " + this.color);
         this.prestige_points += points;

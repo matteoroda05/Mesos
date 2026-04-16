@@ -71,6 +71,13 @@ public class BuildingBonusEvent extends BuildingCard {
         this.character_type = character_type;
     }
 
+    /**
+     * Applies the event bonus produced by this building for each matching
+     * character owned by the building owner.
+     *
+     * @param output base event results keyed by player color
+     * @param visitor controller used to mutate the owner's resources and score
+     */
     public void effect(Map<Color, Result> output, ModelController visitor) {
         final int multiplier = owner.getTribe().getNumCharacterOfType(character_type);
         final int prev_food = output.get(owner.getColor()).food();

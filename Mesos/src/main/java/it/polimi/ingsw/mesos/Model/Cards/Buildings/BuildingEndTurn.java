@@ -30,6 +30,13 @@ public class BuildingEndTurn extends BuildingCard {
         this.food_bonus = food_bonus;
     }
 
+    /**
+     * Grants the owner food at end turn only if their totem returned to a
+     * positive-bonus turn-order space.
+     *
+     * @param order turn order tile to inspect
+     * @param visitor controller used to grant food
+     */
     public void effect(TurnOrderTile order, ModelController visitor) {
         List<TurnOrderSpace> spaces = order.spaces();
 

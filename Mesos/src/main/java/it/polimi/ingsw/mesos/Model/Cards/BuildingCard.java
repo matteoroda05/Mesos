@@ -50,11 +50,21 @@ public abstract class BuildingCard extends Card {
         return owner;
     }
 
+    /**
+     * Assigns this building to a player and runs any ownership-dependent setup
+     * required by subclasses.
+     *
+     * @param owner player who acquired the building
+     */
     public void setOwner(Player owner) {
         this.owner = owner;
         onAssignment();
     }
 
+    /**
+     * Hook for subclasses that must initialize effect state after the owner is
+     * known.
+     */
     protected void onAssignment() {}
 
     public BuildingTrigger getTrigger() {

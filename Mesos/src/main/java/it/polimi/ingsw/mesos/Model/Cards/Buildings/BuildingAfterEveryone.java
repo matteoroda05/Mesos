@@ -23,6 +23,15 @@ public class BuildingAfterEveryone extends BuildingCard {
     }
 
     // TODO: add visitor that can allow extra card pick
+    /**
+     * Consumes this once-per-round building effect and, when the owner can take
+     * at least one top-row card, creates an action state for the extra pick.
+     *
+     * @param table game table used to inspect top-row availability
+     * @param controller controller that will drive the generated action state
+     * @return an action state for the extra pick, or null when no card can be
+     *         taken
+     */
     public ActionState effect(GameTable table, ModelController controller) {
         to_apply = false;  // effect applied this round, waits reset for new round
 
@@ -38,6 +47,9 @@ public class BuildingAfterEveryone extends BuildingCard {
         return to_apply;
     }
 
+    /**
+     * Reactivates this building effect for a new round.
+     */
     public void reset() {
         to_apply = true;
     }

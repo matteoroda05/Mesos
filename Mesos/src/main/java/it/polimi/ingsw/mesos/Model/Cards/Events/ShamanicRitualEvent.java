@@ -36,6 +36,14 @@ public class ShamanicRitualEvent extends EventCard {
         this.loser_penalty = loser_penalty;
     }
 
+    /**
+     * Resolves the ritual by comparing shaman stars, including eligible
+     * shamanic-ritual building bonuses before assigning winner bonuses and
+     * loser penalties.
+     *
+     * @param players_tribes tribes keyed by player color
+     * @return ritual outcome keyed by player color
+     */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, Integer> player_stars = new HashMap<>();
@@ -67,15 +75,15 @@ public class ShamanicRitualEvent extends EventCard {
                 player_stars.replace(key, player_stars.get(key) + ((BuildingShamanicRitual) building).getStarBonus())));
 
         for (Map.Entry<Color, Integer> stars : player_stars.entrySet()) {
-            Result vals = new Result(0,0,0);
+            int prestige_diff = 0;
             if (stars.getValue() == highest_stars) {
-                vals = new Result(0, winner_bonus, 0);
+                prestige_diff += winner_bonus;
             }
             // if all have same they all win and loose at the same time
             if (stars.getValue() == lowest_stars) {
-                vals = new Result(0, loser_penalty, 0);
+                prestige_diff += loser_penalty;
             }
-            player_outcomes.put(stars.getKey(), vals);
+            player_outcomes.put(stars.getKey(), new Result(0, prestige_diff, 0));
         }
 
         return player_outcomes;
@@ -89,6 +97,11 @@ public class ShamanicRitualEvent extends EventCard {
         return loser_penalty;
     }
 
+    /**
+     * Returns the building trigger used by shamanic-ritual-event buildings.
+     *
+     * @return shamanic ritual event trigger
+     */
     @Override
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL;

@@ -76,6 +76,11 @@ public class OfferTile {
         return occupant == null;
     }
 
+    /**
+     * Marks this offer tile as occupied by a player's totem.
+     *
+     * @param player_color color of the occupying player
+     */
     public void occupy(Color player_color) {
         if (player_color == null) {
             throw new IllegalArgumentException("Player Color cannot be null");
@@ -86,6 +91,12 @@ public class OfferTile {
         this.occupant = player_color;
     }
 
+    /**
+     * Removes the occupying totem and returns the player color that occupied
+     * the tile.
+     *
+     * @return previous occupant, or null if the tile was already empty
+     */
     public Color clear() {
         Color output = occupant;
         occupant = null;

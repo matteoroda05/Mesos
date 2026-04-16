@@ -36,6 +36,12 @@ public class TribeDeck {
         this.deck = new ArrayList<>(deck);
     }
 
+    /**
+     * Draws the cards needed to refill the top market row, capped by the
+     * remaining deck size.
+     *
+     * @return cards drawn from the end of the deck
+     */
     public List<TribeCard> drawTopRow() {
         int num_cards = Math.min(this.n_players + 4, deck.size());
         List<TribeCard> output = new ArrayList<>();
@@ -45,6 +51,12 @@ public class TribeDeck {
         return output;
     }
 
+    /**
+     * Draws the initial bottom row while skipping event cards, then puts the
+     * skipped events back at the end of the deck (tribe deck draws from last).
+     *
+     * @return non-event tribe cards for the initial bottom market row
+     */
     public List<TribeCard> drawInitialBottomRow() {
         int num_cards = this.n_players + 1;
         List<TribeCard> output = new ArrayList<>();

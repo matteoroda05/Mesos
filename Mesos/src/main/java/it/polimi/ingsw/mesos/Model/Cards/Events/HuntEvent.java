@@ -33,6 +33,11 @@ public class HuntEvent extends EventCard {
     }
 
     // Hunt event always gives 1 food por hunter, this method exists to support possible future extensions of the game
+    /**
+     * Returns the food-to-prestige ratio for this hunt event.
+     *
+     * @return food gained per prestige point awarded
+     */
     public float getMultiplier() {
         return (float) food_per_hunter / prestige_per_hunter;
     }
@@ -45,6 +50,13 @@ public class HuntEvent extends EventCard {
         return food_per_hunter;
     }
 
+    /**
+     * Awards each player food and prestige according to the number of hunters
+     * in their tribe.
+     *
+     * @param players_tribes tribes keyed by player color
+     * @return hunt rewards keyed by player color
+     */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, Result> player_outcomes = new HashMap<>();
@@ -58,6 +70,11 @@ public class HuntEvent extends EventCard {
         return player_outcomes;
     }
 
+    /**
+     * Returns the building trigger used by hunt-event buildings.
+     *
+     * @return hunt event trigger
+     */
     @Override
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_HUNT;

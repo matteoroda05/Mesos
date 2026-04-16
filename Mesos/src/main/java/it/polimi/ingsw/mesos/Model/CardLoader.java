@@ -18,6 +18,12 @@ public class CardLoader {
 
     private CardLoader() {}
 
+    /**
+     * Loads all card and tiles from the bundled JSON resource.
+     *
+     * @return parsed card and offer-tile data
+     * @throws IOException if the resource is missing or cannot be parsed
+     */
     public static CardData load() throws IOException {
         try (InputStream in = CardLoader.class.getResourceAsStream(RESOURCE_PATH)) {
             if (in == null) {
@@ -27,6 +33,13 @@ public class CardLoader {
         }
     }
 
+    /**
+     * Parses card and tile definitions from a JSON input stream.
+     *
+     * @param in stream containing the card JSON document
+     * @return parsed tribe cards, building cards, and offer tiles
+     * @throws IOException if the stream cannot be read or parsed
+     */
     public static CardData load(InputStream in) throws IOException {
         JsonNode root = MAPPER.readTree(in);
 

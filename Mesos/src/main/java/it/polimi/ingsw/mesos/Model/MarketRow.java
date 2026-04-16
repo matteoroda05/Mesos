@@ -29,6 +29,12 @@ public class MarketRow {
         return building_market;
     }
 
+    /**
+     * Returns a combined snapshot of tribe and building cards currently present
+     * in this market row.
+     *
+     * @return a new list containing all cards in row order by card group
+     */
     public List<Card> getCards() {
         List<Card> result = new ArrayList<>(tribe_market.size() + building_market.size());
         result.addAll(tribe_market);
@@ -36,12 +42,21 @@ public class MarketRow {
         return result;
     }
 
-    public List<Card> getTakeableCards(int playerFood, int buildersDiscount) {
-        if (playerFood < 0) {
-            throw new IllegalArgumentException("playerFood cannot be negative");
+    /**
+     * Computes which cards the player can take from this row. Non-event tribe
+     * cards are always takeable, while buildings are takeable only when the
+     * player's food covers their discounted cost.
+     *
+     * @param player_food the amount of food available to the player
+     * @param builders_discount the total discount applied to building costs
+     * @return a list of cards that can currently be taken
+     */
+    public List<Card> getTakeableCards(int player_food, int builders_discount) {
+        if (player_food < 0) {
+            throw new IllegalArgumentException("player_food cannot be negative");
         }
-        if (buildersDiscount < 0) {
-            throw new IllegalArgumentException("buildersDiscount cannot be negative");
+        if (builders_discount < 0) {
+            throw new IllegalArgumentException("builders_discount cannot be negative");
         }
 
         List<Card> takeable = new ArrayList<>();
@@ -53,8 +68,8 @@ public class MarketRow {
         }
 
         for (BuildingCard card : building_market) {
-            int effectiveCost = Math.max(0, card.getFoodCost() - buildersDiscount);
-            if (effectiveCost <= playerFood) {
+            int effectiveCost = Math.max(0, card.getFoodCost() - builders_discount);
+            if (effectiveCost <= player_food) {
                 takeable.add(card);
             }
         }
@@ -73,11 +88,23 @@ public class MarketRow {
         }
     }
 
+    /**
+     * Removes and returns a building card at the requested position.
+     *
+     * @param index position in the building market
+     * @return the removed building card
+     */
     public BuildingCard takeBuildingCard(int index) {
         checkIndex(index, building_market.size(), "building_market");
         return building_market.remove(index);
     }
 
+    /**
+     * Removes and returns a character card from the tribe market.
+     *
+     * @param index position in the tribe market
+     * @return the removed character card
+     */
     public CharacterCard takeCharacterCard(int index) {
         checkIndex(index, tribe_market.size(), "tribe_market");
         if (tribe_market.get(index).isEvent()) throw new IllegalArgumentException("Cannot take event card");
@@ -90,21 +117,46 @@ public class MarketRow {
         return building_market.get(index).getFoodCost();
     }
 
-    public void placeCard(Card c) {
-        switch (c) {
-            case null -> throw new IllegalArgumentException("card cannot be null");
-            case BuildingCard buildingCard -> building_market.add(buildingCard);
-            case TribeCard tribeCard -> tribe_market.add(tribeCard);
-            default -> throw new IllegalArgumentException("Unsupported card type: " + c.getClass().getSimpleName());
+    /**
+     * Adds a card to the tribe market.
+     *
+     * @param tc card to place in the row
+     */
+    public void placeCard(TribeCard tc){
+        if (tc == null){
+            throw new IllegalArgumentException("tribe card cannot be null");
         }
+        tribe_market.add(tc);
     }
 
+    /**
+     * Adds a card to the building market.
+     *
+     * @param bc card to place in the row
+     */
+    public void placeCard(BuildingCard bc){
+        if (bc == null){
+            throw new IllegalArgumentException("tribe card cannot be null");
+        }
+        building_market.add(bc);
+    }
+
+    /**
+     * Removes every tribe card from the row and returns the removed cards.
+     *
+     * @return the tribe cards that were present before clearing
+     */
     public List<TribeCard> removeTribeCards() {
         List<TribeCard> removed = new ArrayList<>(tribe_market);
         tribe_market.clear();
         return removed;
     }
 
+    /**
+     * Removes every building card from the row and returns the removed cards.
+     *
+     * @return the building cards that were present before clearing
+     */
     public List<BuildingCard> removeBuildingCards() {
         List<BuildingCard> removed = new ArrayList<>(building_market);
         building_market.clear();
@@ -115,6 +167,13 @@ public class MarketRow {
         return tribe_market.isEmpty() && building_market.isEmpty();
     }
 
+    /**
+     * Validates that an index can be used against a list of the given size.
+     *
+     * @param index candidate index
+     * @param size list size
+     * @param listName name used in the exception message
+     */
     private static void checkIndex(int index, int size, String listName) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException(
