@@ -243,7 +243,7 @@ public class ModelController {
         if (outcome.food() > 0){
             p.gainFood(outcome.food());
         } else if (outcome.food() < 0) {
-            penalty = p.loseFood(outcome.food()) * outcome.penalty();
+            penalty = p.loseFood(- outcome.food()) * outcome.penalty();
         }
         if (outcome.prestige() - penalty != 0){
             p.changePrestigePoints(outcome.prestige() - penalty);
