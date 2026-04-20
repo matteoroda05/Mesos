@@ -23,6 +23,12 @@ public class EndRoundState extends GameState {
         return this;
     }
 
+    /**
+     * Advances the model to the next round and starts a new offer-selection
+     * phase.
+     *
+     * @return the offer-selection state for the new round
+     */
     @Override
     public GameState process() {
         controller.endRound();

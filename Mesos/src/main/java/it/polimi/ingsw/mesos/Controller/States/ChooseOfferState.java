@@ -13,12 +13,29 @@ public class ChooseOfferState extends GameState {
         p = controller.getNextPlayerTurn();
     }
 
+    /**
+     * Rejects card choices during the offer-selection phase.
+     *
+     * @param player_color color of the player issuing the command
+     * @param card selected card index
+     * @param is_top true when selecting from the top market row
+     * @return this state, because card choices are not valid here
+     */
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
         // TODO: set error in model to warn clients
         return this;
     }
 
+    /**
+     * Handles the active player's offer selection and advances to the action
+     * phase once every player has chosen an offer tile.
+     *
+     * @param player_color color of the player choosing an offer
+     * @param offer_tile selected offer-tile index
+     * @return this state if more offers must be chosen, otherwise the first
+     *         action state
+     */
     @Override
     public GameState chooseOffer(Color player_color, int offer_tile) {
         if (p != player_color) {

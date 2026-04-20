@@ -18,6 +18,10 @@ public class GameFlowController {
         advance();
     }
 
+    /**
+     * Processes automatic state transitions until the game reaches a state that
+     * requires player input or reaches the finished state.
+     */
     private void advance() {
         while (current_state != null) {
             GameState next_state = current_state.process();
@@ -36,18 +40,36 @@ public class GameFlowController {
         return current_state == null;
     }
 
+    /**
+     * Applies a card-choice command to the current state and resolves any
+     * automatic transitions that follow it.
+     *
+     * @param player_color color of the player issuing the command
+     * @param card selected card index
+     * @param is_top true when the card is selected from the top row
+     */
     public void chooseCard(Color player_color, int card, boolean is_top) {
         ensureGameIsRunning();
         current_state = current_state.chooseCard(player_color, card, is_top);
         advance();
     }
 
+    /**
+     * Applies an offer-choice command to the current state and resolves any
+     * automatic transitions that follow it.
+     *
+     * @param player_color color of the player issuing the command
+     * @param offer_tile selected offer-tile index
+     */
     public void chooseOffer(Color player_color, int offer_tile) {
         ensureGameIsRunning();
         current_state = current_state.chooseOffer(player_color, offer_tile);
         advance();
     }
 
+    /**
+     * Guards public commands from being executed after the game has ended.
+     */
     private void ensureGameIsRunning() {
         if (current_state == null) {
             throw new IllegalStateException("game has already finished");

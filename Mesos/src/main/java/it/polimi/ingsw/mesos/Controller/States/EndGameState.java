@@ -28,6 +28,12 @@ public class EndGameState extends GameState {
         return this;
     }
 
+    /**
+     * Computes final scoring, applies end-game building effects, and terminates
+     * the state machine.
+     *
+     * @return null to mark the game as finished
+     */
     @Override
     public GameState process() {
         Map<Color, Tribe> tribes = controller.getTribes();

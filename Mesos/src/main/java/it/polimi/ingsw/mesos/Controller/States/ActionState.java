@@ -22,12 +22,25 @@ public class ActionState extends GameState {
     private int food_gain;
     private boolean is_extra = false;
 
+    /**
+     * Creates the action state for the next occupied offer tile.
+     *
+     * @param controller model controller used to read and apply game state
+     */
     public ActionState(ModelController controller) {
         super(controller);
         OfferTile tile = controller.getNextPlayerOfferTile();
         loadTile(tile);
     }
 
+    /**
+     * Creates an action state for bonus picks granted by a building effect.
+     *
+     * @param controller model controller used to apply the extra action
+     * @param color player receiving the extra action
+     * @param extra_picks number of extra card choices granted
+     * @param top_row true when the extra choices apply to the top row
+     */
     public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
         super(controller);
         p = color;
@@ -77,6 +90,13 @@ public class ActionState extends GameState {
         return this;
     }
 
+    /**
+     * Rejects offer choices during the action phase.
+     *
+     * @param player_color color of the player issuing the command
+     * @param offer_tile selected offer-tile index
+     * @return this state, because offer choices are not valid here
+     */
     @Override
     public GameState chooseOffer(Color player_color, int offer_tile) {
         // TODO: set error in model to warn clients
