@@ -245,8 +245,8 @@ public class ModelController {
         } else if (outcome.food() < 0) {
             penalty = p.loseFood(- outcome.food()) * outcome.penalty();
         }
-        if (outcome.prestige() - penalty != 0){
-            p.changePrestigePoints(outcome.prestige() - penalty);
+        if (outcome.prestige() + penalty != 0){
+            p.changePrestigePoints(outcome.prestige() + penalty);
         }
     }
 }
