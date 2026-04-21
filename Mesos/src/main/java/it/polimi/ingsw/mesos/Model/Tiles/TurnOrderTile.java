@@ -9,6 +9,10 @@ import it.polimi.ingsw.mesos.Result;
 
 public record TurnOrderTile(List<TurnOrderSpace> spaces) {
 
+    public List<TurnOrderSpace> getSpaces() {
+        return spaces;
+    }
+
     public TurnOrderTile(List<TurnOrderSpace> spaces) {
         if (spaces == null) {
             throw new IllegalArgumentException("spaces cannot be null");
@@ -55,11 +59,8 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
                 space.setOccupant(player);
 
                 int bonus = space.getBonus();
-                if (bonus > 0) {
-                    return new Result(bonus, 0, 0);
-                } else if (bonus < 0) {
-                    return new Result(bonus, 0, 2);
-                }
+                final int penalty = bonus < 0 ? 2 : 0;  // penalty for not having enough food to pay is always 2
+                return new Result(bonus, 0, penalty);
             }
         }
 

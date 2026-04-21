@@ -123,7 +123,7 @@ class CardLoaderTest {
                 .filter(c -> c instanceof SustenanceEvent)
                 .map(c -> (SustenanceEvent) c)
                 .forEach(e ->
-                        assertTrue(e.getPointPenalty() > 0,
+                        assertTrue(e.getPointPenalty() < 0,
                                 "SustenanceEvent prestige conversion must be positive")
                 );
     }

@@ -278,15 +278,8 @@ class MarketRowTest {
         TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
         MarketRow market_row = new MarketRow(false, tribe_deck, null);
 
-        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard(null));
-    }
-
-    @Test
-    void placeCardThrowsWhenCardTypeIsNotSupported() {
-        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-
-        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard(new UnsupportedCard()));
+        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard((TribeCard) null));
+        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard((BuildingCard) null));
     }
 
     @Test

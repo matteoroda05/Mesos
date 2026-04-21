@@ -21,6 +21,7 @@ public class ActionState extends GameState {
     private Color p;
     private int food_gain;
     private boolean is_extra = false;
+    private boolean skip = false;
 
     /**
      * Creates the action state for the next occupied offer tile.
@@ -30,7 +31,11 @@ public class ActionState extends GameState {
     public ActionState(ModelController controller) {
         super(controller);
         OfferTile tile = controller.getNextPlayerOfferTile();
-        loadTile(tile);
+        if (tile != null) {
+            loadTile(tile);
+        } else {
+            skip = true;
+        }
     }
 
     /**
@@ -109,6 +114,10 @@ public class ActionState extends GameState {
      */
     @Override
     public GameState process() {
+        if (skip) {
+            return new EventState(controller);
+        }
+
         if (food_gain != 0) {
             controller.playerAddFood(food_gain, p);
             food_gain = 0;

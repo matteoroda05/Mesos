@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.EnumMap;
 import java.util.Map;
 
+import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
@@ -48,9 +49,9 @@ class BuildingBonusEventTest extends BuildingTestSupport {
         fixture.owner().getTribe().addCard(new HunterCard(Era.FIRST, 2, false));
         building.setOwner(fixture.owner());
         int foodBefore = fixture.owner().getFood();
-        Map<Color, int[]> output = new EnumMap<>(Color.class);
-        output.put(Color.BLUE, new int[]{4, 3});
-        output.put(Color.YELLOW, new int[]{2, 1});
+        Map<Color, Result> output = new EnumMap<>(Color.class);
+        output.put(Color.BLUE, new Result(3, 4, 0));
+        output.put(Color.YELLOW, new Result(1, 2, 0));
 
         building.effect(output, fixture.controller());
 
@@ -65,9 +66,9 @@ class BuildingBonusEventTest extends BuildingTestSupport {
                 Era.SECOND, 2, 4, 3, 1, 1, ArtistCard.class, BuildingTrigger.ON_EVENT_CAVE_PAINTINGS);
 
         building.setOwner(fixture.owner());
-        Map<Color, int[]> output = new EnumMap<>(Color.class);
-        output.put(Color.BLUE, new int[]{0, 4});
-        output.put(Color.YELLOW, new int[]{0, 2});
+        Map<Color, Result> output = new EnumMap<>(Color.class);
+        output.put(Color.BLUE, new Result(4, 0, 0));
+        output.put(Color.YELLOW, new Result(2, 0, 0));
         building.effect(output, fixture.controller());
 
         assertEquals(14, fixture.owner().getFood());
