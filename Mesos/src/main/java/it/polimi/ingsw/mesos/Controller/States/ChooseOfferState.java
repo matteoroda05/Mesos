@@ -39,8 +39,7 @@ public class ChooseOfferState extends GameState {
     @Override
     public GameState chooseOffer(Color player_color, int offer_tile) {
         if (p != player_color) {
-            // TODO: set error in model to warn clients
-            return this;
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
         }
 
         try {

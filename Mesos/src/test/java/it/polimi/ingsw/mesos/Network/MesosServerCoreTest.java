@@ -32,7 +32,11 @@ class MesosServerCoreTest {
         assertEquals(GameStatus.ROUND_OFFER, secondJoin.snapshot().status());
         assertEquals(1, secondJoin.snapshot().currentRound());
         assertNotNull(secondJoin.snapshot().currentPlayerNickname());
-        assertNotNull(secondJoin.assignedColor());
+        assertNotNull(secondJoin.snapshot().players().stream()
+                .filter(player -> "Bob".equals(player.nickname()))
+                .findFirst()
+                .orElseThrow()
+                .color());
 
         GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("local-core"));
         assertTrue(snapshot.success());

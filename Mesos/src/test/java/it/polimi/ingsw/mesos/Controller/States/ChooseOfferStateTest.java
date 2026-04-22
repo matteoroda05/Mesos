@@ -40,13 +40,16 @@ class ChooseOfferStateTest extends StateTestSupport {
     }
 
     @Test
-    void chooseOfferInvalidPlayerReturnsSameState() {
+    void chooseOfferInvalidPlayerThrows() {
         Color firstPlayer = state.getActivePlayer();
         Color otherPlayer = player_colors.stream().filter(c -> c != firstPlayer).findFirst().orElseThrow();
-        
-        GameState nextState = state.chooseOffer(otherPlayer, 0);
-        
-        assertSame(state, nextState);
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> state.chooseOffer(otherPlayer, 0)
+        );
+
+        assertTrue(exception.getMessage().contains("Wrong turn"));
         assertEquals(firstPlayer, state.getActivePlayer());
     }
 

@@ -143,10 +143,10 @@ public class MesosServerCore implements MesosServerService {
 
         private GameOperationResult join(String nickname, GameSetup gameSetup) {
             if (colorsByNickname.containsKey(nickname)) {
-                return GameOperationResult.success("Giocatore gia' presente", toSnapshot(), nickname, colorsByNickname.get(nickname));
+                return GameOperationResult.success("Giocatore gia' presente", toSnapshot());
             }
             if (joinedNicknames.contains(nickname)) {
-                return GameOperationResult.success("Giocatore gia' presente", toSnapshot(), nickname, null);
+                return GameOperationResult.success("Giocatore gia' presente", toSnapshot());
             }
             if (started()) {
                 return GameOperationResult.failure("La partita e' gia' iniziata", toSnapshot());
@@ -168,9 +168,7 @@ public class MesosServerCore implements MesosServerService {
 
             return GameOperationResult.success(
                     started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby",
-                    publishAndSnapshot(started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby"),
-                    nickname,
-                    colorsByNickname.get(nickname)
+                    publishAndSnapshot(started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby")
             );
         }
 
@@ -188,12 +186,10 @@ public class MesosServerCore implements MesosServerService {
                 controller.chooseOffer(playerColor, offerTileIndex);
                 return GameOperationResult.success(
                         "Tessera offerta scelta",
-                        publishAndSnapshot("Tessera offerta scelta"),
-                        nickname,
-                        playerColor
+                        publishAndSnapshot("Tessera offerta scelta")
                 );
             } catch (RuntimeException exception) {
-                return GameOperationResult.failure(exception.getMessage(), toSnapshot(), nickname, playerColor);
+                return GameOperationResult.failure(exception.getMessage(), toSnapshot());
             }
         }
 
@@ -211,12 +207,10 @@ public class MesosServerCore implements MesosServerService {
                 controller.chooseCard(playerColor, cardIndex, topRow);
                 return GameOperationResult.success(
                         "Carta scelta",
-                        publishAndSnapshot("Carta scelta"),
-                        nickname,
-                        playerColor
+                        publishAndSnapshot("Carta scelta")
                 );
             } catch (RuntimeException exception) {
-                return GameOperationResult.failure(exception.getMessage(), toSnapshot(), nickname, playerColor);
+                return GameOperationResult.failure(exception.getMessage(), toSnapshot());
             }
         }
 
@@ -231,9 +225,7 @@ public class MesosServerCore implements MesosServerService {
             subscribers.add(updateSink);
             return GameOperationResult.success(
                     "Iscrizione agli aggiornamenti attiva",
-                    toSnapshot(),
-                    nickname,
-                    colorsByNickname.get(nickname)
+                    toSnapshot()
             );
         }
 
@@ -243,9 +235,7 @@ public class MesosServerCore implements MesosServerService {
             }
             return GameOperationResult.success(
                     "Iscrizione agli aggiornamenti disattivata",
-                    toSnapshot(),
-                    nickname,
-                    colorsByNickname.get(nickname)
+                    toSnapshot()
             );
         }
 

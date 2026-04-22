@@ -16,7 +16,6 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
@@ -150,7 +149,7 @@ public class SocketGameClient implements GameClient {
                 Object response = input.readObject();
                 try {
                     GameServerMessage message = (GameServerMessage) response;
-                    message.execute(context);
+                    message.messageExecute(context);
                 } catch (ClassCastException exception) {
                     throw new IOException("Unexpected response type: " + response);
                 }

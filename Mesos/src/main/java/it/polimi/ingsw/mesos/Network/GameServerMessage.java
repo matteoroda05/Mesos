@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
  public interface GameServerMessage extends Serializable {
-    default void execute(SocketGameClient.SocketClientContext context) throws IOException {
+    default void messageExecute(SocketGameClient.SocketClientContext context) throws IOException {
         throw new IOException("Unsupported server message: " + this.getClass().getSimpleName());
     }
 }

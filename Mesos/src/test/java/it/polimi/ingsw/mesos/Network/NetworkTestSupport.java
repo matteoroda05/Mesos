@@ -41,7 +41,11 @@ final class NetworkTestSupport {
         assertTrue(bobJoin.snapshot().started());
         assertEquals(GameStatus.ROUND_OFFER, bobJoin.snapshot().status());
         assertEquals(1, bobJoin.snapshot().currentRound());
-        assertNotNull(bobJoin.assignedColor());
+        assertNotNull(bobJoin.snapshot().players().stream()
+                .filter(player -> "Bob".equals(player.nickname()))
+                .findFirst()
+                .orElseThrow()
+                .color());
 
         Map<String, GameClient> clientsByNickname = Map.of(
                 "Alice", aliceClient,

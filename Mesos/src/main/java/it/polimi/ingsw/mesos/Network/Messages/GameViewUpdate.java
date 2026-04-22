@@ -24,7 +24,7 @@ public record GameViewUpdate(
     }
 
     @Override
-    public void execute(SocketGameClient.SocketClientContext context) {
+    public void messageExecute(SocketGameClient.SocketClientContext context) {
         GameUpdateListener listener = context.updateListener();
         if (listener != null) {
             listener.onUpdate(this);
