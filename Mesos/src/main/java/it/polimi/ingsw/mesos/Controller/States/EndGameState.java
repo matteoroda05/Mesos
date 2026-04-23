@@ -16,18 +16,6 @@ public class EndGameState extends GameState {
         super(controller);
     }
 
-    @Override
-    public GameState chooseCard(Color player_color, int card, boolean is_top) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
-    @Override
-    public GameState chooseOffer(Color player_color, int offer_tile) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
     /**
      * Computes final scoring, applies end-game building effects, and terminates
      * the state machine.

@@ -32,18 +32,6 @@ public class EventState extends GameState {
         events.sort(Comparator.comparing(EventCard::getEra)); // sort by era to maintain order
     }
 
-    @Override
-    public GameState chooseCard(Color player_color, int card, boolean is_top) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
-    @Override
-    public GameState chooseOffer(Color player_color, int offer_tile) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
     /**
      * Resolves all pending events in event order. Sustenance is delayed until
      * after other events, and event-triggered buildings are applied before

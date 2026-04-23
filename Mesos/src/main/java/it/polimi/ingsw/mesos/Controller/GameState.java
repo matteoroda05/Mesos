@@ -18,7 +18,9 @@ abstract public class GameState {
      * @param is_top true when selecting from the top market row
      * @return the next state after handling the command
      */
-    abstract public GameState chooseCard(Color player_color, int card, boolean is_top);
+    public GameState chooseCard(Color player_color, int card, boolean is_top) throws RuntimeException {
+        throw new RuntimeException("Unable to choose card: wrong game state");
+    }
 
     /**
      * Handles an offer-choice command for this state.
@@ -27,7 +29,9 @@ abstract public class GameState {
      * @param offer_tile selected offer-tile index
      * @return the next state after handling the command
      */
-    abstract public GameState chooseOffer(Color player_color, int offer_tile);
+    public GameState chooseOffer(Color player_color, int offer_tile) throws RuntimeException {
+        throw new RuntimeException("Unable to choose offer tile: wrong game state");
+    }
 
     /**
      * Performs automatic work for this state when no immediate player input is

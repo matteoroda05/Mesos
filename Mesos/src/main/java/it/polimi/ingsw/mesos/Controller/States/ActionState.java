@@ -66,8 +66,7 @@ public class ActionState extends GameState {
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
         if (p != player_color) {
-            // TODO: set error in model and ward clients
-            return this;
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
         }
 
         Optional<CharacterCard> chosen;
@@ -78,8 +77,7 @@ public class ActionState extends GameState {
             chosen = controller.playerChooseCard(player_color, card, false);
             pick_bottom_row--;
         } else {
-            // TODO: set error in model to warn clients
-            return this;
+            throw new RuntimeException("Wrong row: you tried picking from the wrong row");
         }
 
         if (chosen.isPresent()) {
@@ -92,19 +90,6 @@ public class ActionState extends GameState {
             return endTurn();
         }
 
-        return this;
-    }
-
-    /**
-     * Rejects offer choices during the action phase.
-     *
-     * @param player_color color of the player issuing the command
-     * @param offer_tile selected offer-tile index
-     * @return this state, because offer choices are not valid here
-     */
-    @Override
-    public GameState chooseOffer(Color player_color, int offer_tile) {
-        // TODO: set error in model to warn clients
         return this;
     }
 
