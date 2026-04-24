@@ -9,6 +9,10 @@ public final class GameClientFactory {
     private GameClientFactory() {
     }
 
+    public static GameClient connect(ConnectionType connectionType, String host) throws IOException {
+        return connect(ServerEndpoint.defaultEndpoint(connectionType, host));
+    }
+
     public static GameClient connect(ConnectionType connectionType, String host, int port) throws IOException {
         return connect(new ServerEndpoint(connectionType, host, port, NetworkDefaults.DEFAULT_RMI_SERVICE_NAME));
     }

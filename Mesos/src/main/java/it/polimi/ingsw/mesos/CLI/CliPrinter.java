@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.LobbyGameSummary;
+import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.OfferTileSummary;
 import it.polimi.ingsw.mesos.Network.PlayerSummary;
 import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
@@ -59,6 +62,56 @@ final class CliPrinter {
         }
 
         builder.append(NEW_LINE).append(commandsHint(snapshot, localNickname));
+        return builder.toString();
+    }
+
+    String renderLobby(LobbySnapshot lobbySnapshot) {
+        int boardWidth = Math.min(resolveBoardWidth(), 120);
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(NEW_LINE);
+        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
+        builder.append("LOBBY MESOS").append(NEW_LINE);
+        builder.append("Partite disponibili: ").append(lobbySnapshot.openGames().size()).append(NEW_LINE);
+        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
+
+        if (lobbySnapshot.openGames().isEmpty()) {
+            builder.append("Nessuna partita aperta al momento. Puoi crearne una nuova.")
+                    .append(NEW_LINE);
+        } else {
+            for (int playerCount = Globals.MIN_NUM_PLAYERS; playerCount <= Globals.MAX_NUM_PLAYERS; playerCount++) {
+                int currentPlayerCount = playerCount;
+                List<LobbyGameSummary> gamesForPlayerCount = lobbySnapshot.openGames().stream()
+                        .filter(game -> game.playerCount() == currentPlayerCount)
+                        .toList();
+                if (gamesForPlayerCount.isEmpty()) {
+                    continue;
+                }
+
+                builder.append(NEW_LINE)
+                        .append(currentPlayerCount)
+                        .append(" giocatori")
+                        .append(NEW_LINE);
+
+                for (LobbyGameSummary game : gamesForPlayerCount) {
+                    builder.append("  ")
+                            .append(game.gameName())
+                            .append(" | lobby ")
+                            .append(game.joinedPlayers())
+                            .append("/")
+                            .append(game.playerCount())
+                            .append(" | posti liberi ")
+                            .append(game.availableSeats())
+                            .append(NEW_LINE);
+                }
+            }
+        }
+
+        builder.append(NEW_LINE)
+                .append("Scegli 'join' per entrare in una partita esistente oppure 'create' per crearne una nuova.")
+                .append(NEW_LINE)
+                .append("Quando fai join devi digitare solo il nome della partita.")
+                .append(NEW_LINE);
         return builder.toString();
     }
 

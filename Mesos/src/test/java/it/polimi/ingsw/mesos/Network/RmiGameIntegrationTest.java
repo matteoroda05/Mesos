@@ -30,4 +30,23 @@ class RmiGameIntegrationTest {
             NetworkTestSupport.assertPushUpdates(aliceClient, bobClient, "rmi-push-room");
         }
     }
+
+    @Test
+    void rmiClientsSeeOnlyOpenGamesInLobby() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        int rmiPort = NetworkTestSupport.findFreePort();
+
+        try (RmiGameServer rmiServer = new RmiGameServer(serverCore, rmiPort, "MesosTestServiceLobby");
+             GameClient aliceClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceLobby"));
+             GameClient bobClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceLobby"));
+             GameClient observerClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceLobby"))) {
+            NetworkTestSupport.assertLobbyVisibilityAndFullGameRejection(
+                    aliceClient,
+                    bobClient,
+                    observerClient,
+                    "rmi-open-room",
+                    "rmi-full-room"
+            );
+        }
+    }
 }

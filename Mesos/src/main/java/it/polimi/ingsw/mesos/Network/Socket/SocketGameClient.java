@@ -17,6 +17,7 @@ import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -50,6 +51,11 @@ public class SocketGameClient implements GameClient {
         this.readerThread = new Thread(this::readLoop, "mesos-socket-client-reader");
         this.readerThread.setDaemon(true);
         this.readerThread.start();
+    }
+
+    @Override
+    public GameOperationResult getLobby() throws IOException {
+        return exchange(new LobbyRequest());
     }
 
     @Override

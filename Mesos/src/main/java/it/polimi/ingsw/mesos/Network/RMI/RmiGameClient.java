@@ -44,6 +44,11 @@ public class RmiGameClient implements GameClient {
     }
 
     @Override
+    public GameOperationResult getLobby() throws IOException {
+        return remoteServer.getLobby();
+    }
+
+    @Override
     public GameOperationResult createGame(CreateGameRequest request) throws IOException {
         return remoteServer.createGame(request);
     }

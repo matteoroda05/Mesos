@@ -89,6 +89,11 @@ public class RmiGameServer implements AutoCloseable {
         }
 
         @Override
+        public GameOperationResult getLobby() {
+            return serverService.getLobby();
+        }
+
+        @Override
         public GameOperationResult createGame(CreateGameRequest request) {
             return serverService.createGame(request);
         }

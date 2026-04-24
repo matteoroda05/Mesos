@@ -28,11 +28,26 @@ public record ServerEndpoint(
         return new ServerEndpoint(ConnectionType.SOCKET, host, port, NetworkDefaults.DEFAULT_RMI_SERVICE_NAME);
     }
 
+    public static ServerEndpoint socket(String host) {
+        return socket(host, NetworkDefaults.DEFAULT_SOCKET_PORT);
+    }
+
     public static ServerEndpoint rmi(String host, int port) {
         return new ServerEndpoint(ConnectionType.RMI, host, port, NetworkDefaults.DEFAULT_RMI_SERVICE_NAME);
     }
 
+    public static ServerEndpoint rmi(String host) {
+        return rmi(host, NetworkDefaults.DEFAULT_RMI_REGISTRY_PORT, NetworkDefaults.DEFAULT_RMI_SERVICE_NAME);
+    }
+
     public static ServerEndpoint rmi(String host, int port, String serviceName) {
         return new ServerEndpoint(ConnectionType.RMI, host, port, serviceName);
+    }
+
+    public static ServerEndpoint defaultEndpoint(ConnectionType connectionType, String host) {
+        return switch (connectionType) {
+            case SOCKET -> socket(host);
+            case RMI -> rmi(host);
+        };
     }
 }

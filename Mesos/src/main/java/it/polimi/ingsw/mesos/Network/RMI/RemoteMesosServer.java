@@ -13,6 +13,8 @@ import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public interface RemoteMesosServer extends Remote {
+    GameOperationResult getLobby() throws RemoteException;
+
     GameOperationResult createGame(CreateGameRequest request) throws RemoteException;
 
     GameOperationResult joinGame(JoinGameRequest request) throws RemoteException;

@@ -4,6 +4,8 @@ import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 
 public interface MesosServerService {
+    GameOperationResult getLobby();
+
     GameOperationResult createGame(CreateGameRequest request);
 
     GameOperationResult joinGame(JoinGameRequest request);

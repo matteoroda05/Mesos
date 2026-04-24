@@ -7,6 +7,8 @@ import java.io.Closeable;
 import java.io.IOException;
 
 public interface GameClient extends Closeable {
+    GameOperationResult getLobby() throws IOException;
+
     GameOperationResult createGame(CreateGameRequest request) throws IOException;
 
     GameOperationResult joinGame(JoinGameRequest request) throws IOException;

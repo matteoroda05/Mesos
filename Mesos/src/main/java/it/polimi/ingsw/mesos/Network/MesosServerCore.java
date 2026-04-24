@@ -61,10 +61,20 @@ public class MesosServerCore implements MesosServerService {
     }
 
     @Override
+    public synchronized GameOperationResult getLobby() {
+        return GameOperationResult.successLobby("Lobby aggiornata", toLobbySnapshot());
+    }
+
+    @Override
     public synchronized GameOperationResult createGame(CreateGameRequest request) {
         GameSession existing = sessions.get(request.gameName());
         if (existing != null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' esiste gia'", existing.toSnapshot());
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' esiste gia'",
+                    OperationErrorCode.GAME_NAME_TAKEN,
+                    null,
+                    toLobbySnapshot()
+            );
         }
 
         GameContext context = gameSetup.createGame(request.gameName(), request.playerCount(), cardData);
@@ -77,7 +87,28 @@ public class MesosServerCore implements MesosServerService {
     public synchronized GameOperationResult joinGame(JoinGameRequest request) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null,
+                    toLobbySnapshot()
+            );
+        }
+        if (!session.isJoinable()) {
+            return GameOperationResult.failure(
+                    "La lobby e' gia' piena",
+                    OperationErrorCode.GAME_FULL,
+                    null,
+                    toLobbySnapshot()
+            );
+        }
+        if (isNicknameTaken(request.nickname())) {
+            return GameOperationResult.failure(
+                    "Il giocatore '" + request.nickname() + "' esiste gia'",
+                    OperationErrorCode.PLAYER_NAME_TAKEN,
+                    null,
+                    toLobbySnapshot()
+            );
         }
         return session.join(request.nickname(), gameSetup);
     }
@@ -86,7 +117,11 @@ public class MesosServerCore implements MesosServerService {
     public synchronized GameOperationResult getSnapshot(SnapshotRequest request) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
         }
         return GameOperationResult.success("Snapshot aggiornato", session.toSnapshot());
     }
@@ -95,7 +130,11 @@ public class MesosServerCore implements MesosServerService {
     public synchronized GameOperationResult chooseOffer(ChooseOfferRequest request) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
         }
         return session.chooseOffer(request.nickname(), request.offerTileIndex());
     }
@@ -104,7 +143,11 @@ public class MesosServerCore implements MesosServerService {
     public synchronized GameOperationResult chooseCard(ChooseCardRequest request) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
         }
         return session.chooseCard(request.nickname(), request.cardIndex(), request.topRow());
     }
@@ -113,7 +156,11 @@ public class MesosServerCore implements MesosServerService {
     public synchronized GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
         }
         return session.subscribe(request.nickname(), updateSink);
     }
@@ -122,9 +169,24 @@ public class MesosServerCore implements MesosServerService {
     public synchronized GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
-            return GameOperationResult.failure("La partita '" + request.gameName() + "' non esiste", null);
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
         }
         return session.unsubscribe(request.nickname(), updateSink);
+    }
+
+    private boolean isNicknameTaken(String nickname) {
+        return sessions.values().stream().anyMatch(session -> session.containsNickname(nickname));
+    }
+
+    private LobbySnapshot toLobbySnapshot() {
+        return new LobbySnapshot(sessions.values().stream()
+                .filter(GameSession::isJoinable)
+                .map(GameSession::toLobbySummary)
+                .toList());
     }
 
     private static final class GameSession {
@@ -142,19 +204,6 @@ public class MesosServerCore implements MesosServerService {
         }
 
         private GameOperationResult join(String nickname, GameSetup gameSetup) {
-            if (colorsByNickname.containsKey(nickname)) {
-                return GameOperationResult.success("Giocatore gia' presente", toSnapshot());
-            }
-            if (joinedNicknames.contains(nickname)) {
-                return GameOperationResult.success("Giocatore gia' presente", toSnapshot());
-            }
-            if (started()) {
-                return GameOperationResult.failure("La partita e' gia' iniziata", toSnapshot());
-            }
-            if (joinedNicknames.size() >= context.getGameSize()) {
-                return GameOperationResult.failure("La lobby e' gia' piena", toSnapshot());
-            }
-
             joinedNicknames.add(nickname);
 
             if (joinedNicknames.size() == context.getGameSize()) {
@@ -172,6 +221,27 @@ public class MesosServerCore implements MesosServerService {
             );
         }
 
+        private boolean containsNickname(String nickname) {
+            return joinedNicknames.contains(nickname);
+        }
+
+        private boolean isJoinable() {
+            return !started() && !isFull();
+        }
+
+        private boolean isFull() {
+            return joinedNicknames.size() >= context.getGameSize();
+        }
+
+        private LobbyGameSummary toLobbySummary() {
+            return new LobbyGameSummary(
+                    context.getGameName(),
+                    context.getGameSize(),
+                    joinedNicknames.size(),
+                    context.getGameSize() - joinedNicknames.size()
+            );
+        }
+
         private GameOperationResult chooseOffer(String nickname, int offerTileIndex) {
             if (!started()) {
                 return GameOperationResult.failure("La partita non e' ancora iniziata", toSnapshot());
@@ -179,7 +249,11 @@ public class MesosServerCore implements MesosServerService {
 
             Color playerColor = colorsByNickname.get(nickname);
             if (playerColor == null) {
-                return GameOperationResult.failure("Giocatore sconosciuto '" + nickname + "'", toSnapshot());
+                return GameOperationResult.failure(
+                        "Giocatore sconosciuto '" + nickname + "'",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        toSnapshot()
+                );
             }
 
             try {
@@ -200,7 +274,11 @@ public class MesosServerCore implements MesosServerService {
 
             Color playerColor = colorsByNickname.get(nickname);
             if (playerColor == null) {
-                return GameOperationResult.failure("Giocatore sconosciuto '" + nickname + "'", toSnapshot());
+                return GameOperationResult.failure(
+                        "Giocatore sconosciuto '" + nickname + "'",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        toSnapshot()
+                );
             }
 
             try {
@@ -216,10 +294,18 @@ public class MesosServerCore implements MesosServerService {
 
         private GameOperationResult subscribe(String nickname, GameUpdateSink updateSink) {
             if (updateSink == null) {
-                return GameOperationResult.failure("Listener di aggiornamento non valido", toSnapshot());
+                return GameOperationResult.failure(
+                        "Listener di aggiornamento non valido",
+                        OperationErrorCode.INVALID_LISTENER,
+                        toSnapshot()
+                );
             }
             if (!joinedNicknames.contains(nickname)) {
-                return GameOperationResult.failure("Il giocatore '" + nickname + "' non e' presente nella partita", toSnapshot());
+                return GameOperationResult.failure(
+                        "Il giocatore '" + nickname + "' non e' presente nella partita",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        toSnapshot()
+                );
             }
 
             subscribers.add(updateSink);

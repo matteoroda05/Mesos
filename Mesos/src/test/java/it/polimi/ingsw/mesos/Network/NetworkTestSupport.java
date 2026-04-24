@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Network;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -172,6 +173,29 @@ final class NetworkTestSupport {
         assertNotNull(bobSecondUpdate);
         assertEquals(secondOfferResult.snapshot().status(), bobSecondUpdate.snapshot().status());
         assertNull(pollUpdate(aliceUpdates, 300));
+    }
+
+    static void assertLobbyVisibilityAndFullGameRejection(
+            GameClient aliceClient,
+            GameClient bobClient,
+            GameClient observerClient,
+            String openGameName,
+            String fullGameName
+    ) throws IOException {
+        assertTrue(aliceClient.createGame(new CreateGameRequest(openGameName, 3)).success());
+        assertTrue(aliceClient.createGame(new CreateGameRequest(fullGameName, 2)).success());
+        assertTrue(aliceClient.joinGame(new JoinGameRequest(fullGameName, "Alice")).success());
+        assertTrue(bobClient.joinGame(new JoinGameRequest(fullGameName, "Bob")).success());
+
+        GameOperationResult lobby = observerClient.getLobby();
+        assertTrue(lobby.success());
+        assertEquals(1, lobby.lobbySnapshot().openGames().size());
+        assertEquals(openGameName, lobby.lobbySnapshot().openGames().getFirst().gameName());
+
+        GameOperationResult fullJoin = observerClient.joinGame(new JoinGameRequest(fullGameName, "Charlie"));
+        assertFalse(fullJoin.success());
+        assertEquals(OperationErrorCode.GAME_FULL, fullJoin.errorCode());
+        assertNull(fullJoin.snapshot());
     }
 
     private static GameViewUpdate pollUpdate(LinkedBlockingQueue<GameViewUpdate> queue) {

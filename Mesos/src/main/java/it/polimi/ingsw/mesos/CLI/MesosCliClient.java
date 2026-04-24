@@ -5,18 +5,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
+import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
+import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.OperationErrorCode;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.ServerEndpoint;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -43,33 +45,207 @@ public final class MesosCliClient {
     private void run() throws Exception {
         printBanner();
 
-        ConnectionType connectionType = promptConnectionType();
-        String host = promptWithDefault("Host del server", NetworkDefaults.DEFAULT_RMI_HOST);
-        int port = promptInt(
-                "Porta",
-                connectionType == ConnectionType.SOCKET
-                        ? NetworkDefaults.DEFAULT_SOCKET_PORT
-                        : NetworkDefaults.DEFAULT_RMI_REGISTRY_PORT
-        );
-        String serviceName = connectionType == ConnectionType.RMI
-                ? promptWithDefault("Servizio RMI", NetworkDefaults.DEFAULT_RMI_SERVICE_NAME)
-                : NetworkDefaults.DEFAULT_RMI_SERVICE_NAME;
+        try (GameClient client = connectWithRetry()) {
+            lobbyLoop(client);
+        }
+    }
 
-        nickname = promptRequired("Nickname");
-        gameName = promptRequired("Nome partita");
-        boolean createGame = promptYesNo("Vuoi creare una nuova partita", false);
+    private GameClient connectWithRetry() throws IOException {
+        while (true) {
+            ConnectionType connectionType = promptConnectionType();
+            String host = promptWithDefault("Host del server", NetworkDefaults.DEFAULT_RMI_HOST);
 
-        try (GameClient client = GameClientFactory.connect(new ServerEndpoint(connectionType, host, port, serviceName))) {
-            if (createGame) {
-                int playerCount = promptIntInRange("Numero giocatori", 2, 5, 2);
-                handleResult(client.createGame(new CreateGameRequest(gameName, playerCount)));
+            try {
+                GameClient client = GameClientFactory.connect(connectionType, host);
+                String transport = connectionType.name().toLowerCase(Locale.ROOT);
+                printLine("[ok] Connessione " + transport + " attiva verso " + host + ".");
+                return client;
+            } catch (IOException exception) {
+                printLine("[error] Connessione fallita: " + describeConnectionError(exception));
+                printLine("Controlla l'indirizzo del server e riprova.");
+            }
+        }
+    }
+
+    private void lobbyLoop(GameClient client) throws IOException {
+        while (true) {
+            LobbySnapshot lobby = fetchLobby(client);
+            boolean createGame = promptLobbyAction();
+            String requestedGameName = promptRequired("Nome partita");
+
+            if (createGame
+                    ? handleCreateFlow(client, requestedGameName)
+                    : handleJoinFlow(client, lobby, requestedGameName)) {
+                return;
+            }
+        }
+    }
+
+    private boolean handleCreateFlow(GameClient client, String requestedGameName) throws IOException {
+        int playerCount = promptPlayerCount();
+        String createdGameName = createGameWithUniqueName(client, requestedGameName, playerCount);
+        if (createdGameName == null) {
+            return false;
+        }
+
+        String requestedNickname = promptRequired("Nickname");
+        return joinSelectedGame(client, createdGameName, requestedNickname, false);
+    }
+
+    private boolean handleJoinFlow(GameClient client, LobbySnapshot lobby, String requestedGameName) throws IOException {
+        String requestedNickname = promptRequired("Nickname");
+
+        if (lobby.openGames().stream().noneMatch(game -> game.gameName().equals(requestedGameName))) {
+            printLine("La partita '" + requestedGameName + "' non compare tra quelle disponibili.");
+        }
+
+        return joinSelectedGame(client, requestedGameName, requestedNickname, true);
+    }
+
+    private boolean joinSelectedGame(
+            GameClient client,
+            String requestedGameName,
+            String requestedNickname,
+            boolean offerCreateFallback
+    ) throws IOException {
+        String selectedGameName = requestedGameName;
+        String nicknameBase = requestedNickname;
+        String candidateNickname = requestedNickname;
+        boolean autoAppendNickname = false;
+        int nicknameSuffix = 1;
+
+        while (true) {
+            GameOperationResult joinResult = client.joinGame(new JoinGameRequest(selectedGameName, candidateNickname));
+            if (joinResult.success()) {
+                gameName = selectedGameName;
+                nickname = candidateNickname;
+                handleResult(joinResult);
+                enterGame(client);
+                return true;
             }
 
-            handleResult(client.joinGame(new JoinGameRequest(gameName, nickname)));
-            handleResult(client.subscribe(new SubscribeGameRequest(gameName, nickname), this::handleRemoteUpdate), false);
-            mainLoop(client);
-            client.unsubscribe(new UnsubscribeGameRequest(gameName, nickname));
+            printLine("[error] " + joinResult.message());
+            switch (joinResult.errorCode()) {
+                case PLAYER_NAME_TAKEN -> {
+                    if (autoAppendNickname) {
+                        candidateNickname = appendNumericSuffix(nicknameBase, nicknameSuffix++);
+                        printLine("Provo automaticamente con il nickname '" + candidateNickname + "'.");
+                        continue;
+                    }
+                    if (promptYesNo("Il nickname e' gia' in uso. Vuoi cambiarlo", true)) {
+                        nicknameBase = promptRequired("Nickname");
+                        candidateNickname = nicknameBase;
+                    } else {
+                        autoAppendNickname = true;
+                        candidateNickname = appendNumericSuffix(nicknameBase, nicknameSuffix++);
+                        printLine("Provo automaticamente con il nickname '" + candidateNickname + "'.");
+                    }
+                }
+                case GAME_NOT_FOUND -> {
+                    if (offerCreateFallback
+                            && promptYesNo("La partita non esiste. Vuoi crearla con questo nome", false)) {
+                        int playerCount = promptPlayerCount();
+                        String createdGameName = createGameWithUniqueName(client, selectedGameName, playerCount);
+                        if (createdGameName == null) {
+                            return false;
+                        }
+                        selectedGameName = createdGameName;
+                        continue;
+                    }
+                    return false;
+                }
+                case GAME_FULL -> {
+                    printLine("Scegli un'altra partita dalla lobby.");
+                    return false;
+                }
+                default -> {
+                    return false;
+                }
+            }
         }
+    }
+
+    private String createGameWithUniqueName(GameClient client, String requestedGameName, int playerCount) throws IOException {
+        String gameNameBase = requestedGameName;
+        String candidateGameName = requestedGameName;
+        boolean autoAppendGameName = false;
+        int gameNameSuffix = 1;
+
+        while (true) {
+            GameOperationResult createResult = client.createGame(new CreateGameRequest(candidateGameName, playerCount));
+            if (createResult.success()) {
+                gameName = candidateGameName;
+                handleResult(createResult);
+                return candidateGameName;
+            }
+
+            printLine("[error] " + createResult.message());
+            if (createResult.errorCode() != OperationErrorCode.GAME_NAME_TAKEN) {
+                return null;
+            }
+
+            if (autoAppendGameName) {
+                candidateGameName = appendNumericSuffix(gameNameBase, gameNameSuffix++);
+                printLine("Provo automaticamente con il nome partita '" + candidateGameName + "'.");
+                continue;
+            }
+
+            if (promptYesNo("Il nome partita e' gia' in uso. Vuoi cambiarlo", true)) {
+                gameNameBase = promptRequired("Nome partita");
+                candidateGameName = gameNameBase;
+            } else {
+                autoAppendGameName = true;
+                candidateGameName = appendNumericSuffix(gameNameBase, gameNameSuffix++);
+                printLine("Provo automaticamente con il nome partita '" + candidateGameName + "'.");
+            }
+        }
+    }
+
+    private void enterGame(GameClient client) throws IOException {
+        handleResult(client.subscribe(new SubscribeGameRequest(gameName, nickname), this::handleRemoteUpdate), false);
+        mainLoop(client);
+        client.unsubscribe(new UnsubscribeGameRequest(gameName, nickname));
+    }
+
+    private LobbySnapshot fetchLobby(GameClient client) throws IOException {
+        GameOperationResult lobbyResult = client.getLobby();
+        if (!lobbyResult.success()) {
+            printLine("[error] " + lobbyResult.message());
+            return new LobbySnapshot(null);
+        }
+
+        LobbySnapshot lobbySnapshot = lobbyResult.lobbySnapshot();
+        if (lobbySnapshot == null) {
+            return new LobbySnapshot(null);
+        }
+        printLine(printer.renderLobby(lobbySnapshot));
+        return lobbySnapshot;
+    }
+
+    private boolean promptLobbyAction() throws IOException {
+        while (true) {
+            String raw = promptWithDefault("Vuoi join o create", "join").toLowerCase(Locale.ROOT);
+            switch (raw) {
+                case "join", "j", "entra" -> {
+                    return false;
+                }
+                case "create", "c", "crea" -> {
+                    return true;
+                }
+                default -> printLine("Scegli 'join' oppure 'create'.");
+            }
+        }
+    }
+
+    private String appendNumericSuffix(String baseName, int suffix) {
+        return baseName + "-" + suffix;
+    }
+
+    private String describeConnectionError(IOException exception) {
+        if (exception.getMessage() == null || exception.getMessage().isBlank()) {
+            return exception.getClass().getSimpleName();
+        }
+        return exception.getMessage();
     }
 
     private void mainLoop(GameClient client) throws IOException {
@@ -225,7 +401,8 @@ public final class MesosCliClient {
     private void printBanner() {
         System.out.println("MESOS CLI");
         System.out.println("Avvia il server in un terminale separato con MesosServerLauncher.");
-        System.out.println("Per giocare da un altro computer usa l'IP del server al posto di 127.0.0.1.");
+        System.out.println("Scegli socket o rmi, poi inserisci solo l'indirizzo del server.");
+        System.out.println("Il client usa automaticamente le porte di default e, per RMI, il servizio MesosGameService.");
         System.out.println("Dentro il client usa 'help' oppure 'aiuto' per vedere tutti i comandi.");
         System.out.println();
     }
@@ -271,13 +448,14 @@ public final class MesosCliClient {
         }
     }
 
-    private int promptIntInRange(String label, int min, int max, int defaultValue) throws IOException {
+    private int promptPlayerCount() throws IOException {
         while (true) {
-            int value = promptInt(label, defaultValue);
-            if (value >= min && value <= max) {
+            int value = promptInt("Numero giocatori", 2);
+            if (value >= Globals.MIN_NUM_PLAYERS && value <= Globals.MAX_NUM_PLAYERS) {
                 return value;
             }
-            printLine(label + " deve essere compreso tra " + min + " e " + max + ".");
+            printLine("Numero giocatori deve essere compreso tra "
+                    + Globals.MIN_NUM_PLAYERS + " e " + Globals.MAX_NUM_PLAYERS + ".");
         }
     }
 
@@ -302,6 +480,10 @@ public final class MesosCliClient {
         synchronized (consoleLock) {
             System.out.print(prompt);
         }
-        return reader.readLine();
+        String value = reader.readLine();
+        if (value == null) {
+            throw new IOException("Input stream closed");
+        }
+        return value;
     }
 }
