@@ -21,9 +21,9 @@ class ActionStateTest extends StateTestSupport {
     @Override
     public void setUp() {
         super.setUp();
-        // Occupy an offer tile so ActionState constructor doesn't fail
         Color firstPlayer = player_colors.getFirst();
-        // game_context.getGameTable().getOfferTrack().getTile(0).occupy(firstPlayer);
+        game_context.getGameTable().getTurnOrderTile().clear();
+        game_context.getGameTable().getOfferTrack().getTile(0).occupy(firstPlayer);
         state = new ActionState(model_controller);
     }
 
@@ -33,16 +33,25 @@ class ActionStateTest extends StateTestSupport {
     }
 
     @Test
-    void chooseCardInvalidPlayerReturnsSameState() {
+    void chooseCardInvalidPlayerThrows() {
         Color otherPlayer = player_colors.get(1);
-        GameState nextState = state.chooseCard(otherPlayer, 0, true);
-        assertSame(state, nextState);
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> state.chooseCard(otherPlayer, 0, true)
+        );
+
+        assertTrue(exception.getMessage().contains("Wrong turn"));
     }
 
     @Test
-    void chooseOfferReturnsSameState() {
-        GameState nextState = state.chooseOffer(state.getActivePlayer(), 0);
-        assertSame(state, nextState);
+    void chooseOfferThrowsBecauseWrongGameState() {
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> state.chooseOffer(state.getActivePlayer(), 0)
+        );
+
+        assertTrue(exception.getMessage().contains("wrong game state"));
     }
 
     @Test

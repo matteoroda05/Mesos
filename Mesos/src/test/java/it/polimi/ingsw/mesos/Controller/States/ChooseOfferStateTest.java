@@ -70,8 +70,12 @@ class ChooseOfferStateTest extends StateTestSupport {
     }
 
     @Test
-    void chooseCardReturnsSameState() {
-        GameState nextState = state.chooseCard(state.getActivePlayer(), 0, true);
-        assertSame(state, nextState);
+    void chooseCardThrowsBecauseWrongGameState() {
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> state.chooseCard(state.getActivePlayer(), 0, true)
+        );
+
+        assertTrue(exception.getMessage().contains("wrong game state"));
     }
 }
