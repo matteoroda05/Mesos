@@ -119,14 +119,14 @@ final class CliPrinter {
         return String.join(NEW_LINE,
                 "",
                 "Comandi disponibili:",
-                "  <invio>                aggiorna il tavolo",
+                "  <invio>               aggiorna il tavolo",
                 "  show | mostra         ristampa lo snapshot corrente",
                 "  offer <indice>        scegli una tessera offerta",
                 "  card top <indice>     prendi una carta dalla riga alta",
                 "  card bottom <indice>  prendi una carta dalla riga bassa",
                 "  wait [secondi]        aspetta un po' e aggiorna",
                 "  help | aiuto          mostra questo aiuto",
-                "  quit | esci           chiude il client");
+                "  quit | esci | exit    chiude il client");
     }
 
     private String commandsHint(GameSnapshot snapshot, String localNickname) {

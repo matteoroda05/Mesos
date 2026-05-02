@@ -53,7 +53,7 @@ public final class MesosCliClient {
     private GameClient connectWithRetry() throws IOException {
         while (true) {
             ConnectionType connectionType = promptConnectionType();
-            String host = promptWithDefault("Host del server", NetworkDefaults.DEFAULT_RMI_HOST);
+            String host = promptRequired("Host del server");
 
             try {
                 GameClient client = GameClientFactory.connect(connectionType, host);
@@ -132,7 +132,7 @@ public final class MesosCliClient {
                         printLine("Provo automaticamente con il nickname '" + candidateNickname + "'.");
                         continue;
                     }
-                    if (promptYesNo("Il nickname e' gia' in uso. Vuoi cambiarlo", true)) {
+                    if (promptYesNo("Il nickname e' gia' in uso. Vuoi cambiarlo")) {
                         nicknameBase = promptRequired("Nickname");
                         candidateNickname = nicknameBase;
                     } else {
@@ -143,7 +143,7 @@ public final class MesosCliClient {
                 }
                 case GAME_NOT_FOUND -> {
                     if (offerCreateFallback
-                            && promptYesNo("La partita non esiste. Vuoi crearla con questo nome", false)) {
+                            && promptYesNo("La partita non esiste. Vuoi crearla con questo nome")) {
                         int playerCount = promptPlayerCount();
                         String createdGameName = createGameWithUniqueName(client, selectedGameName, playerCount);
                         if (createdGameName == null) {
@@ -190,7 +190,7 @@ public final class MesosCliClient {
                 continue;
             }
 
-            if (promptYesNo("Il nome partita e' gia' in uso. Vuoi cambiarlo", true)) {
+            if (promptYesNo("Il nome partita e' gia' in uso. Vuoi cambiarlo")) {
                 gameNameBase = promptRequired("Nome partita");
                 candidateGameName = gameNameBase;
             } else {
@@ -224,7 +224,7 @@ public final class MesosCliClient {
 
     private boolean promptLobbyAction() throws IOException {
         while (true) {
-            String raw = promptWithDefault("Vuoi join o create", "join").toLowerCase(Locale.ROOT);
+            String raw = promptRequired("Vuoi join o create").toLowerCase(Locale.ROOT);
             switch (raw) {
                 case "join", "j", "entra" -> {
                     return false;
@@ -253,7 +253,11 @@ public final class MesosCliClient {
 
         while (true) {
             String command = promptRaw("mesos> ").trim();
-            if (command.isEmpty() || command.equalsIgnoreCase("refresh") || command.equalsIgnoreCase("poll")) {
+            if (command.isEmpty()) {
+                printLine("Comando non puo' essere vuoto.");
+                continue;
+            }
+            if (command.equalsIgnoreCase("refresh") || command.equalsIgnoreCase("poll")) {
                 refreshSnapshot(client);
                 printSnapshotIfAvailable();
                 continue;
@@ -409,7 +413,7 @@ public final class MesosCliClient {
 
     private ConnectionType promptConnectionType() throws IOException {
         while (true) {
-            String raw = promptWithDefault("Tipo connessione (socket/rmi)", "socket").toLowerCase(Locale.ROOT);
+            String raw = promptRequired("Tipo connessione (socket/rmi)").toLowerCase(Locale.ROOT);
             switch (raw) {
                 case "socket", "s" -> {
                     return ConnectionType.SOCKET;
@@ -432,14 +436,9 @@ public final class MesosCliClient {
         }
     }
 
-    private String promptWithDefault(String label, String defaultValue) throws IOException {
-        String value = promptRaw(label + " [" + defaultValue + "]: ").trim();
-        return value.isBlank() ? defaultValue : value;
-    }
-
-    private int promptInt(String label, int defaultValue) throws IOException {
+    private int promptInt(String label) throws IOException {
         while (true) {
-            String value = promptWithDefault(label, String.valueOf(defaultValue));
+            String value = promptRequired(label);
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException exception) {
@@ -450,7 +449,7 @@ public final class MesosCliClient {
 
     private int promptPlayerCount() throws IOException {
         while (true) {
-            int value = promptInt("Numero giocatori", 2);
+            int value = promptInt("Numero giocatori");
             if (value >= Globals.MIN_NUM_PLAYERS && value <= Globals.MAX_NUM_PLAYERS) {
                 return value;
             }
@@ -459,12 +458,12 @@ public final class MesosCliClient {
         }
     }
 
-    private boolean promptYesNo(String label, boolean defaultValue) throws IOException {
-        String defaultToken = defaultValue ? "Y/n" : "y/N";
+    private boolean promptYesNo(String label) throws IOException {
         while (true) {
-            String value = promptRaw(label + " [" + defaultToken + "]: ").trim().toLowerCase(Locale.ROOT);
+            String value = promptRaw(label + ": ").trim().toLowerCase(Locale.ROOT);
             if (value.isBlank()) {
-                return defaultValue;
+                printLine(label + " non puo' essere vuoto.");
+                continue;
             }
             if (value.equals("y") || value.equals("yes")) {
                 return true;
