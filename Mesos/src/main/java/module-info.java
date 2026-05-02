@@ -1,8 +1,6 @@
 module it.polimi.ingsw.mesos {
+    requires java.desktop;
     requires java.rmi;
-    requires javafx.controls;
-    requires javafx.fxml;
-    requires org.controlsfx.controls;
 
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
@@ -12,7 +10,6 @@ module it.polimi.ingsw.mesos {
     opens it.polimi.ingsw.mesos.Model.Enums  to com.fasterxml.jackson.databind;
     opens it.polimi.ingsw.mesos.Controller   to org.junit.platform.commons;
 
-    opens it.polimi.ingsw.mesos to javafx.fxml;
     exports it.polimi.ingsw.mesos;
     exports it.polimi.ingsw.mesos.Controller;
     exports it.polimi.ingsw.mesos.Controller.Enums;
@@ -38,4 +35,5 @@ module it.polimi.ingsw.mesos {
     opens it.polimi.ingsw.mesos.Controller.States to org.junit.platform.commons;
     exports it.polimi.ingsw.mesos.Network.Requests;
     exports it.polimi.ingsw.mesos.Network.Messages;
+    exports it.polimi.ingsw.mesos.Launcher;
 }
