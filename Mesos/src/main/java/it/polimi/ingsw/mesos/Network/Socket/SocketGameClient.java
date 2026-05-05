@@ -6,8 +6,12 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
@@ -16,8 +20,12 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
+import it.polimi.ingsw.mesos.Network.Requests.DeclineReconnectRequest;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ReconnectGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ReconnectProbeRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -28,10 +36,12 @@ public class SocketGameClient implements GameClient {
     private final ObjectInputStream input;
     private final BlockingQueue<GameOperationResult> responses;
     private final Thread readerThread;
+    private final ScheduledExecutorService heartbeatExecutor;
 
     private volatile SocketClientContext context;
     private volatile boolean running;
     private volatile SubscribeGameRequest activeSubscription;
+    private volatile HeartbeatRequest activeHeartbeat;
 
     public SocketGameClient(String host, int port) throws IOException {
         if (host == null || host.isBlank()) {
@@ -51,6 +61,17 @@ public class SocketGameClient implements GameClient {
         this.readerThread = new Thread(this::readLoop, "mesos-socket-client-reader");
         this.readerThread.setDaemon(true);
         this.readerThread.start();
+        this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "mesos-socket-heartbeat");
+            thread.setDaemon(true);
+            return thread;
+        });
+        this.heartbeatExecutor.scheduleAtFixedRate(
+                this::sendHeartbeat,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                TimeUnit.MILLISECONDS
+        );
     }
 
     @Override
@@ -65,6 +86,29 @@ public class SocketGameClient implements GameClient {
 
     @Override
     public GameOperationResult joinGame(JoinGameRequest request) throws IOException {
+        GameOperationResult result = exchange(request);
+        if (result.success()) {
+            activeHeartbeat = new HeartbeatRequest(request.gameName(), request.nickname());
+        }
+        return result;
+    }
+
+    @Override
+    public GameOperationResult getReconnectProposal() throws IOException {
+        return exchange(new ReconnectProbeRequest());
+    }
+
+    @Override
+    public GameOperationResult reconnectGame(ReconnectGameRequest request) throws IOException {
+        GameOperationResult result = exchange(request);
+        if (result.success()) {
+            activeHeartbeat = new HeartbeatRequest(request.gameName(), request.nickname());
+        }
+        return result;
+    }
+
+    @Override
+    public GameOperationResult declineReconnect(DeclineReconnectRequest request) throws IOException {
         return exchange(request);
     }
 
@@ -138,6 +182,8 @@ public class SocketGameClient implements GameClient {
 
     @Override
     public void close() throws IOException {
+        activeHeartbeat = null;
+        heartbeatExecutor.shutdownNow();
         if (activeSubscription != null) {
             try {
                 unsubscribe(new UnsubscribeGameRequest(activeSubscription.gameName(), activeSubscription.nickname()));
@@ -147,6 +193,17 @@ public class SocketGameClient implements GameClient {
         running = false;
         socket.close();
         readerThread.interrupt();
+    }
+
+    private void sendHeartbeat() {
+        HeartbeatRequest heartbeat = activeHeartbeat;
+        if (!running || heartbeat == null || socket.isClosed()) {
+            return;
+        }
+        try {
+            exchange(heartbeat);
+        } catch (IOException ignored) {
+        }
     }
 
     private void readLoop() {

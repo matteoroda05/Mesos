@@ -6,6 +6,7 @@ public enum GameStatus{
     SETUP,
     ROUND_OFFER,
     ROUND_ACTIONS,
+    SUSPENDED,
     ROUND_EVENTS,
     ROUND_END,
     FINAL_EVENTS,

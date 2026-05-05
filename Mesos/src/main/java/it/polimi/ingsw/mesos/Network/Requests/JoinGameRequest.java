@@ -29,6 +29,6 @@ public record JoinGameRequest(
 
     @Override
     public GameOperationResult requestToService (MesosServerService service, SocketGameServer.ClientConnection connection){
-        return service.joinGame(this);
+        return service.joinGame(this, connection.clientAddress());
     }
 }

@@ -22,6 +22,7 @@ public class ActionState extends GameState {
     private int food_gain;
     private boolean is_extra = false;
     private boolean skip = false;
+    private final List<Color> skipped_offer_players;
 
     /**
      * Creates the action state for the next occupied offer tile.
@@ -29,11 +30,19 @@ public class ActionState extends GameState {
      * @param controller model controller used to read and apply game state
      */
     public ActionState(ModelController controller) {
+        this(controller, List.of());
+    }
+
+    public ActionState(ModelController controller, List<Color> skipped_offer_players) {
         super(controller);
+        this.skipped_offer_players = new java.util.ArrayList<>(
+                skipped_offer_players == null ? List.of() : skipped_offer_players
+        );
         OfferTile tile = controller.getNextPlayerOfferTile();
         if (tile != null) {
             loadTile(tile);
         } else {
+            returnSkippedOfferPlayers();
             skip = true;
         }
     }
@@ -48,6 +57,7 @@ public class ActionState extends GameState {
      */
     public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
         super(controller);
+        this.skipped_offer_players = new java.util.ArrayList<>();
         p = color;
         food_gain = 0;
         is_extra = true;
@@ -91,6 +101,14 @@ public class ActionState extends GameState {
         }
 
         return this;
+    }
+
+    @Override
+    public GameState skipTurn() {
+        if (p == null) {
+            return new EventState(controller);
+        }
+        return endTurn();
     }
 
     /**
@@ -143,6 +161,7 @@ public class ActionState extends GameState {
 
         OfferTile next = controller.getNextPlayerOfferTile();
         if (next == null) {
+            returnSkippedOfferPlayers();
             ActionState next_state = extras();
             if (next_state == null) {
                 return new EventState(controller);
@@ -153,6 +172,12 @@ public class ActionState extends GameState {
 
         loadTile(next);
         return this;
+    }
+
+    private void returnSkippedOfferPlayers() {
+        while (!skipped_offer_players.isEmpty()) {
+            controller.playerReturnSkippedOffer(skipped_offer_players.removeFirst());
+        }
     }
 
     /**

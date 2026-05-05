@@ -6,23 +6,33 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.DeclineReconnectRequest;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ReconnectGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ReconnectProbeRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class RmiGameClient implements GameClient {
     private final RemoteMesosServer remoteServer;
+    private final ScheduledExecutorService heartbeatExecutor;
     private SubscribeGameRequest activeSubscription;
     private RemoteGameUpdateListener remoteListener;
+    private volatile HeartbeatRequest activeHeartbeat;
 
     public RmiGameClient(String host, int registryPort, String serviceName) throws IOException {
         if (host == null || host.isBlank()) {
@@ -41,6 +51,17 @@ public class RmiGameClient implements GameClient {
         } catch (NotBoundException exception) {
             throw new IOException("RMI service '" + serviceName + "' is not bound", exception);
         }
+        this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "mesos-rmi-heartbeat");
+            thread.setDaemon(true);
+            return thread;
+        });
+        this.heartbeatExecutor.scheduleAtFixedRate(
+                this::sendHeartbeat,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                TimeUnit.MILLISECONDS
+        );
     }
 
     @Override
@@ -55,7 +76,30 @@ public class RmiGameClient implements GameClient {
 
     @Override
     public GameOperationResult joinGame(JoinGameRequest request) throws IOException {
-        return remoteServer.joinGame(request);
+        GameOperationResult result = remoteServer.joinGame(request);
+        if (result.success()) {
+            activeHeartbeat = new HeartbeatRequest(request.gameName(), request.nickname());
+        }
+        return result;
+    }
+
+    @Override
+    public GameOperationResult getReconnectProposal() throws IOException {
+        return remoteServer.getReconnectProposal(new ReconnectProbeRequest());
+    }
+
+    @Override
+    public GameOperationResult reconnectGame(ReconnectGameRequest request) throws IOException {
+        GameOperationResult result = remoteServer.reconnectGame(request);
+        if (result.success()) {
+            activeHeartbeat = new HeartbeatRequest(request.gameName(), request.nickname());
+        }
+        return result;
+    }
+
+    @Override
+    public GameOperationResult declineReconnect(DeclineReconnectRequest request) throws IOException {
+        return remoteServer.declineReconnect(request);
     }
 
     @Override
@@ -124,6 +168,8 @@ public class RmiGameClient implements GameClient {
 
     @Override
     public void close() throws IOException {
+        activeHeartbeat = null;
+        heartbeatExecutor.shutdownNow();
         if (activeSubscription != null) {
             try {
                 unsubscribe(new UnsubscribeGameRequest(activeSubscription.gameName(), activeSubscription.nickname()));
@@ -135,6 +181,17 @@ public class RmiGameClient implements GameClient {
             } catch (Exception ignored) {
             }
             remoteListener = null;
+        }
+    }
+
+    private void sendHeartbeat() {
+        HeartbeatRequest heartbeat = activeHeartbeat;
+        if (heartbeat == null) {
+            return;
+        }
+        try {
+            remoteServer.heartbeat(heartbeat);
+        } catch (RemoteException ignored) {
         }
     }
 

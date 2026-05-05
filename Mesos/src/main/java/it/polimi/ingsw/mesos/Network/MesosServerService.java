@@ -10,6 +10,10 @@ public interface MesosServerService {
 
     GameOperationResult joinGame(JoinGameRequest request);
 
+    default GameOperationResult joinGame(JoinGameRequest request, String clientAddress) {
+        return joinGame(request);
+    }
+
     GameOperationResult getSnapshot(SnapshotRequest request);
 
     GameOperationResult chooseOffer(ChooseOfferRequest request);
@@ -19,4 +23,28 @@ public interface MesosServerService {
     GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink);
 
     GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink);
+
+    default GameOperationResult heartbeat(HeartbeatRequest request, String clientAddress) {
+        return GameOperationResult.failure("Heartbeat non supportato", null);
+    }
+
+    default GameOperationResult getReconnectProposal(ReconnectProbeRequest request, String clientAddress) {
+        return GameOperationResult.successReconnect("Nessuna partita da riconnettere", null);
+    }
+
+    default GameOperationResult reconnectGame(ReconnectGameRequest request, String clientAddress) {
+        return GameOperationResult.failure(
+                "Nessuna riconnessione disponibile",
+                OperationErrorCode.RECONNECT_NOT_AVAILABLE,
+                null
+        );
+    }
+
+    default GameOperationResult declineReconnect(DeclineReconnectRequest request, String clientAddress) {
+        return GameOperationResult.failure(
+                "Nessuna riconnessione disponibile",
+                OperationErrorCode.RECONNECT_NOT_AVAILABLE,
+                null
+        );
+    }
 }

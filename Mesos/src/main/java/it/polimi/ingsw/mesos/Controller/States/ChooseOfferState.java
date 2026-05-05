@@ -5,12 +5,17 @@ import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ChooseOfferState extends GameState {
     private Color p;
+    private final List<Color> skipped_players;
 
     public ChooseOfferState(ModelController controller) {
         super(controller);
         p = controller.getNextPlayerTurn();
+        skipped_players = new ArrayList<>();
     }
 
     /**
@@ -32,10 +37,25 @@ public class ChooseOfferState extends GameState {
 
         p = controller.getNextPlayerTurn();
         if (p == null) {
-            return new ActionState(controller);
+            return new ActionState(controller, skipped_players);
         }
 
         p = controller.getNextPlayerTurn();
+        return this;
+    }
+
+    @Override
+    public GameState skipTurn() {
+        if (p == null) {
+            return new ActionState(controller, skipped_players);
+        }
+
+        controller.playerSkippedOffer(p);
+        skipped_players.add(p);
+        p = controller.getNextPlayerTurn();
+        if (p == null) {
+            return new ActionState(controller, skipped_players);
+        }
         return this;
     }
 

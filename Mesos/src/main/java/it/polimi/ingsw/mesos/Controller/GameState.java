@@ -33,6 +33,10 @@ abstract public class GameState {
         throw new RuntimeException("Unable to choose offer tile: wrong game state");
     }
 
+    public GameState skipTurn() throws RuntimeException {
+        throw new RuntimeException("Unable to skip turn: wrong game state");
+    }
+
     /**
      * Performs automatic work for this state when no immediate player input is
      * required.
