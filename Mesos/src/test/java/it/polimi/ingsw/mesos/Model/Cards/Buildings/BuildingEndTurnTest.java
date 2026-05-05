@@ -24,7 +24,7 @@ class BuildingEndTurnTest extends BuildingTestSupport {
 
         order.clear();
         building.setOwner(fixture.owner());
-        order.placeTotem(fixture.owner());
+        order.placeTotem(fixture.owner().getColor());
         int foodBeforeEffect = fixture.owner().getFood();
 
         building.effect(order, fixture.controller());
@@ -40,7 +40,7 @@ class BuildingEndTurnTest extends BuildingTestSupport {
 
         order.clear();
         building.setOwner(fixture.owner());
-        order.placeTotem(fixture.owner());
+        order.placeTotem(fixture.owner().getColor());
         int foodBeforeEffect = fixture.owner().getFood();
 
         building.effect(order, fixture.controller());
@@ -56,7 +56,7 @@ class BuildingEndTurnTest extends BuildingTestSupport {
 
         order.clear();
         building.setOwner(fixture.owner());
-        order.placeTotem(fixture.other());
+        order.placeTotem(fixture.other().getColor());
 
         assertThrows(IllegalStateException.class, () -> building.effect(order, fixture.controller()));
     }

@@ -5,6 +5,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,11 +54,11 @@ public class ShamanicRitualEventTest {
         tribe3.addCard(shaman6);
 
         Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
-        Map<Color, int[]> output = shamanic_ritual_event.calculateOutcome(tribes);
+        Map<Color, Result> output = shamanic_ritual_event.calculateOutcome(tribes);
 
-        assertEquals(-5, output.get(Color.BLACK)[0]);
-        assertEquals(7, output.get(Color.BLUE)[0]);
-        assertEquals(0, output.get(Color.ORANGE)[0]);
+        assertEquals(-5, output.get(Color.BLACK).prestige());
+        assertEquals(7, output.get(Color.BLUE).prestige());
+        assertEquals(0, output.get(Color.ORANGE).prestige());
     }
 
     @Test
@@ -81,11 +82,11 @@ public class ShamanicRitualEventTest {
         tribe3.addCard(shaman6);
 
         Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
-        Map<Color, int[]> output = shamanic_ritual_event.calculateOutcome(tribes);
+        Map<Color, Result> output = shamanic_ritual_event.calculateOutcome(tribes);
 
-        assertEquals(-5, output.get(Color.BLACK)[0]);
-        assertEquals(7, output.get(Color.BLUE)[0]);
-        assertEquals(7, output.get(Color.ORANGE)[0]);
+        assertEquals(-5, output.get(Color.BLACK).prestige());
+        assertEquals(7, output.get(Color.BLUE).prestige());
+        assertEquals(7, output.get(Color.ORANGE).prestige());
     }
 
     @Test
@@ -101,10 +102,10 @@ public class ShamanicRitualEventTest {
         tribe1.addCard(shaman2);
 
         Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
-        Map<Color, int[]> output = shamanic_ritual_event.calculateOutcome(tribes);
+        Map<Color, Result> output = shamanic_ritual_event.calculateOutcome(tribes);
 
-        assertEquals(7, output.get(Color.BLACK)[0]);
-        assertEquals(-5, output.get(Color.BLUE)[0]);
-        assertEquals(-5, output.get(Color.ORANGE)[0]);
+        assertEquals(7, output.get(Color.BLACK).prestige());
+        assertEquals(-5, output.get(Color.BLUE).prestige());
+        assertEquals(-5, output.get(Color.ORANGE).prestige());
     }
 }

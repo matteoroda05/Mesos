@@ -27,6 +27,12 @@ public class BuildingDeck {
         }
     }
 
+    /**
+     * Draws all building cards for the earliest era that still has buildings
+     * in the deck, then removes that era from future draws.
+     *
+     * @return the building cards for the next available era
+     */
     public List<BuildingCard> drawBuildingCards() {
         if (deck == null) {
             throw new IllegalStateException("Building deck is not initialized");

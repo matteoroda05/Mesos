@@ -82,6 +82,12 @@ public class BuildingEndGame extends BuildingCard {
         this.prestige_bonus = prestige_bonus;
     }
 
+    /**
+     * Applies this building's single configured end-game scoring effect to its
+     * owner.
+     *
+     * @param visitor controller used to update player prestige
+     */
     public void effect(ModelController visitor) {
         if (prestige_bonus != 0) {
             visitor.playerChangePrestige(prestige_bonus, owner.getColor());

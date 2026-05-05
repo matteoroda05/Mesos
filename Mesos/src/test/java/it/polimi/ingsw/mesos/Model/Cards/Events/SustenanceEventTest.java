@@ -6,6 +6,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ public class SustenanceEventTest {
     void constructorInitialisesCorrectly() {
         assertEquals(Era.SECOND, sustenance_event.getEra());
         assertEquals(BuildingTrigger.ON_EVENT_SUSTENANCE, sustenance_event.asTrigger());
-        assertEquals(2, sustenance_event.getPointPenalty());
+        assertEquals(-2, sustenance_event.getPointPenalty());
     }
 
     @Test
@@ -59,13 +60,13 @@ public class SustenanceEventTest {
         tribe3.addCard(artist6);
 
         Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
-        Map<Color, int[]> output = sustenance_event.calculateOutcome(tribes);
+        Map<Color, Result> output = sustenance_event.calculateOutcome(tribes);
 
-        assertEquals(0, output.get(Color.BLACK)[0]);
-        assertEquals(-1, output.get(Color.BLACK)[1]);
-        assertEquals(0, output.get(Color.BLUE)[0]);
-        assertEquals(-1, output.get(Color.BLUE)[1]);
-        assertEquals(0, output.get(Color.ORANGE)[0]);
-        assertEquals(-2, output.get(Color.ORANGE)[1]);
+        assertEquals(0, output.get(Color.BLACK).prestige());
+        assertEquals(-1, output.get(Color.BLACK).food());
+        assertEquals(0, output.get(Color.BLUE).prestige());
+        assertEquals(-1, output.get(Color.BLUE).food());
+        assertEquals(0, output.get(Color.ORANGE).prestige());
+        assertEquals(-2, output.get(Color.ORANGE).food());
     }
 }

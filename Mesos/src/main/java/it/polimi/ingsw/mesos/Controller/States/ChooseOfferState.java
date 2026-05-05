@@ -13,25 +13,22 @@ public class ChooseOfferState extends GameState {
         p = controller.getNextPlayerTurn();
     }
 
-    @Override
-    public GameState chooseCard(Color player_color, int card, boolean is_top) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
+    /**
+     * Handles the active player's offer selection and advances to the action
+     * phase once every player has chosen an offer tile.
+     *
+     * @param player_color color of the player choosing an offer
+     * @param offer_tile selected offer-tile index
+     * @return this state if more offers must be chosen, otherwise the first
+     *         action state
+     */
     @Override
     public GameState chooseOffer(Color player_color, int offer_tile) {
         if (p != player_color) {
-            // TODO: set error in model to warn clients
-            return this;
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
         }
 
-        try {
-            controller.playerChoseOffer(player_color, offer_tile);
-        } catch (Exception _) {
-            // TODO: set error in model to warn clients
-            return this;
-        }
+        controller.playerChoseOffer(player_color, offer_tile);
 
         p = controller.getNextPlayerTurn();
         if (p == null) {

@@ -1,5 +1,35 @@
 # Software engineering project – Polytechnic University of Milan, 2025/2026
 
+### Build runnable jars
+
+From the repository root:
+
+```bash
+cd Mesos
+./mvnw clean package
+```
+
+This creates two runnable jars. You can double-click them to open a small game window, or run them from a terminal:
+
+- `Mesos/target/Mesos-1.0-SNAPSHOT-server.jar`
+- `Mesos/target/Mesos-1.0-SNAPSHOT-client.jar`
+
+Open the server jar first:
+
+```bash
+cd Mesos
+java -jar target/Mesos-1.0-SNAPSHOT-server.jar
+```
+
+Then open the client jar:
+
+```bash
+cd Mesos
+java -jar target/Mesos-1.0-SNAPSHOT-client.jar
+```
+
+By default the server listens on socket port `12345` and RMI port `1099`.
+
 ### Question list:
 - `newEra()` method only in model or in controller as well?
 - **Error handling**

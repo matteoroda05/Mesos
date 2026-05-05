@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Model;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import it.polimi.ingsw.mesos.Globals;
@@ -23,11 +24,11 @@ public class OfferTrack {
             throw new IllegalArgumentException("There must be " + num_players +" + 2 tiles");
         }
 
-        if (offer_tiles.stream().anyMatch(tile -> tile == null)) {
+        if (offer_tiles.stream().anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException("Offer track contains null tile entries");
         }
 
-        if (offer_tiles.stream().map(tile -> tile.getOfferTileId()).distinct().count() != offer_tiles.size()) {
+        if (offer_tiles.stream().map(OfferTile::getOfferTileId).distinct().count() != offer_tiles.size()) {
             throw new IllegalArgumentException("Offer track contains duplicate tiles");
         }
 
@@ -38,12 +39,19 @@ public class OfferTrack {
         this.tiles = offer_tiles;
     }
 
+    /**
+     * Returns the offer tiles that can still be occupied this round.
+     *
+     * @return available offer tiles
+     * @throws IllegalStateException if no tile is available, which should not
+     *                               happen during a valid offer phase
+     */
     public List<OfferTile> getAvailableTiles() {
         ensureTilesInitialized();
 
         List<OfferTile> output = this.tiles.stream()
-                .filter(tile -> tile != null)
-                .filter(tile -> tile.isAvailable())
+                .filter(Objects::nonNull)
+                .filter(OfferTile::isAvailable)
                 .collect(Collectors.toList());
 
         if (output.isEmpty()) {
@@ -53,17 +61,26 @@ public class OfferTrack {
         return output;
     }
 
+    /**
+     * Returns the offer tiles that already contain a player totem.
+     *
+     * @return occupied offer tiles
+     */
     public List<OfferTile> getOccupiedTiles() {
         ensureTilesInitialized();
 
-        List<OfferTile> output = this.tiles.stream()
-                .filter(tile -> tile != null)
+        return this.tiles.stream()
+                .filter(Objects::nonNull)
                 .filter(tile -> !tile.isAvailable())
                 .collect(Collectors.toList());
-
-        return output;
     }
 
+    /**
+     * Retrieves an offer tile by position and validates that the tile is not null.
+     *
+     * @param index tile position in the offer track
+     * @return the offer tile at the requested index
+     */
     public OfferTile getTile(int index){
         ensureTilesInitialized();
 
@@ -79,6 +96,7 @@ public class OfferTrack {
         return tile;
     }
     
+    // TODO: remove since constructor ensures tiles is never null since its never modified
     private void ensureTilesInitialized() {
         if (tiles == null) {
             throw new IllegalStateException("Offer track tiles are not initialized");

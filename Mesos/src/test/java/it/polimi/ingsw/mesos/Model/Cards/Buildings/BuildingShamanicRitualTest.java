@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.EnumMap;
 import java.util.Map;
 
+import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
@@ -43,46 +44,46 @@ class BuildingShamanicRitualTest extends BuildingTestSupport {
     void postEventWinEffectDoublesPointsForASingleWinner() {
         Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 0, 2);
-        Map<Color, int[]> values = new EnumMap<>(Color.class);
-        values.put(Color.BLUE, new int[]{6, 0});
-        values.put(Color.YELLOW, new int[]{0, 0});
+        Map<Color, Result> values = new EnumMap<>(Color.class);
+        values.put(Color.BLUE, new Result(0,6,0));
+        values.put(Color.YELLOW, new Result(0,0,0));
 
         building.setOwner(fixture.owner());
         building.effect(values);
 
-        assertEquals(12, values.get(Color.BLUE)[0]);
+        assertEquals(12, values.get(Color.BLUE).prestige());
     }
 
     @Test
     void postEventWinEffectDoesNothingWithMultipleWinners() {
         Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 0, 2);
-        Map<Color, int[]> values = new EnumMap<>(Color.class);
-        values.put(Color.BLUE, new int[]{6, 0});
-        values.put(Color.YELLOW, new int[]{1, 0});
+        Map<Color, Result> values = new EnumMap<>(Color.class);
+        values.put(Color.BLUE, new Result(0, 6, 0));
+        values.put(Color.YELLOW, new Result(0, 1, 0));
 
         building.setOwner(fixture.owner());
         building.effect(values);
 
-        assertEquals(6, values.get(Color.BLUE)[0]);
+        assertEquals(6, values.get(Color.BLUE).prestige());
     }
 
     @Test
     void lastEffectCancelsOwnersPenaltyWheneverTheOwnerLoses() {
         Fixture fixture = createFixture();
         BuildingShamanicRitual building = new BuildingShamanicRitual(Era.SECOND, 2, 3, 4, 0, 0);
-        Map<Color, int[]> singleLoser = new EnumMap<>(Color.class);
-        singleLoser.put(Color.BLUE, new int[]{-5, 0});
-        singleLoser.put(Color.YELLOW, new int[]{8, 0});
-        Map<Color, int[]> multipleLosers = new EnumMap<>(Color.class);
-        multipleLosers.put(Color.BLUE, new int[]{-5, 0});
-        multipleLosers.put(Color.YELLOW, new int[]{-3, 0});
+        Map<Color, Result> singleLoser = new EnumMap<>(Color.class);
+        singleLoser.put(Color.BLUE, new Result(0, -5, 0));
+        singleLoser.put(Color.YELLOW, new Result(0, 8, 0));
+        Map<Color, Result> multipleLosers = new EnumMap<>(Color.class);
+        multipleLosers.put(Color.BLUE, new Result(0, -5, 0));
+        multipleLosers.put(Color.YELLOW, new Result(0, -3, 0));
 
         building.setOwner(fixture.owner());
         building.effect(singleLoser);
         building.effect(multipleLosers);
 
-        assertEquals(0, singleLoser.get(Color.BLUE)[0]);
-        assertEquals(0, multipleLosers.get(Color.BLUE)[0]);
+        assertEquals(0, singleLoser.get(Color.BLUE).prestige());
+        assertEquals(0, multipleLosers.get(Color.BLUE).prestige());
     }
 }

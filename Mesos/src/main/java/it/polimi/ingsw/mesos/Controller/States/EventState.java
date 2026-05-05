@@ -19,6 +19,12 @@ public class EventState extends GameState {
     private final List<EventCard> events;
     private final boolean last_round;
 
+    /**
+     * Builds the event-resolution state, selecting bottom-row events during a
+     * normal round or all visible events during the final round.
+     *
+     * @param controller model controller used to resolve events
+     */
     public EventState(ModelController controller) {
         super(controller);
         last_round = controller.getGameContext().getRoundNumber() >= 10;
@@ -26,18 +32,14 @@ public class EventState extends GameState {
         events.sort(Comparator.comparing(EventCard::getEra)); // sort by era to maintain order
     }
 
-    @Override
-    public GameState chooseCard(Color player_color, int card, boolean is_top) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
-    @Override
-    public GameState chooseOffer(Color player_color, int offer_tile) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
+    /**
+     * Resolves all pending events in event order. Sustenance is delayed until
+     * after other events, and event-triggered buildings are applied before
+     * outcomes are committed to players.
+     *
+     * @return the end-game state after final events, otherwise the end-round
+     *         state
+     */
     @Override
     public GameState process() {
         List<SustenanceEvent> sustenance = new ArrayList<>();
@@ -79,5 +81,10 @@ public class EventState extends GameState {
         } else {
             return new EndRoundState(controller);
         }
+    }
+
+    @Override
+    public GameStatus getStatus() {
+        return last_round ? GameStatus.FINAL_EVENTS : GameStatus.ROUND_EVENTS;
     }
 }

@@ -36,6 +36,12 @@ public class BuildingShamanicRitual extends BuildingCard {
         phase = this.star_bonus != 0 ? EventPhase.PRE_EVENT : EventPhase.POST_EVENT;
     }
 
+    /**
+     * Adjusts shamanic ritual results after the base event outcome: it either
+     * doubles a sole winner's prestige or cancels the owner's prestige loss.
+     *
+     * @param points mutable ritual outcomes keyed by player color
+     */
     public void effect(Map<Color, Result> points) {
         if (win_multiplier != 0) {
             // multiply points if it's the only player that won

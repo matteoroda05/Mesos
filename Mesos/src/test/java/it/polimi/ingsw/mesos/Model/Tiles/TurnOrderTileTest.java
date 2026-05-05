@@ -4,6 +4,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,55 +64,34 @@ public class TurnOrderTileTest {
     }
 
     @Test
-    void placeTotemOccupiesFirstFreeSpacesInOrderAndAppliesBonuses() {
+    void placeTotemOccupiesFirstFreeSpacesInOrder() {
         TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 1, 0, -1));
         Player firstPlayer = new Player("Alice", Color.BLUE, 2);
         Player secondPlayer = new Player("Bob", Color.YELLOW, 2);
         Player thirdPlayer = new Player("Carol", Color.ORANGE, 2);
 
-        tile.placeTotem(firstPlayer);
-        tile.placeTotem(secondPlayer);
-        tile.placeTotem(thirdPlayer);
+        tile.placeTotem(firstPlayer.getColor());
+        tile.placeTotem(secondPlayer.getColor());
+        tile.placeTotem(thirdPlayer.getColor());
 
         assertEquals(Color.BLUE, tile.getSpaces().get(0).getOccupant());
         assertEquals(Color.YELLOW, tile.getSpaces().get(1).getOccupant());
         assertEquals(Color.ORANGE, tile.getSpaces().get(2).getOccupant());
         assertNull(tile.getSpaces().get(3).getOccupant());
-        assertEquals(4, firstPlayer.getFood());
-        assertEquals(3, secondPlayer.getFood());
-        assertEquals(2, thirdPlayer.getFood());
         assertEquals(List.of(Color.BLUE, Color.YELLOW, Color.ORANGE), tile.currentOrderTopToBottom());
     }
 
     @Test
-    void placeTotemOnLastSpaceWithEnoughFoodRemovesOneFoodWithoutLosingPrestige() {
+    void placeTotemOnLastSpace() {
         TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 0, -1));
         Player firstPlayer = new Player("Alice", Color.BLUE, 0);
         Player secondPlayer = new Player("Bob", Color.YELLOW, 0);
         Player thirdPlayer = new Player("Carol", Color.ORANGE, 2);
 
-        tile.placeTotem(firstPlayer);
-        tile.placeTotem(secondPlayer);
-        tile.placeTotem(thirdPlayer);
+        tile.placeTotem(firstPlayer.getColor());
+        tile.placeTotem(secondPlayer.getColor());
+        tile.placeTotem(thirdPlayer.getColor());
 
-        assertEquals(1, thirdPlayer.getFood());
-        assertEquals(0, thirdPlayer.getPrestigePoints());
-        assertEquals(Color.ORANGE, tile.getSpaces().get(2).getOccupant());
-    }
-
-    @Test
-    void placeTotemOnLastSpaceWithInsufficientFoodLosesPrestigeWithoutGoingBelowZeroFood() {
-        TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 0, -1));
-        Player firstPlayer = new Player("Alice", Color.BLUE, 0);
-        Player secondPlayer = new Player("Bob", Color.YELLOW, 0);
-        Player thirdPlayer = new Player("Carol", Color.ORANGE, 0);
-
-        tile.placeTotem(firstPlayer);
-        tile.placeTotem(secondPlayer);
-        tile.placeTotem(thirdPlayer);
-
-        assertEquals(0, thirdPlayer.getFood());
-        assertEquals(-2, thirdPlayer.getPrestigePoints());
         assertEquals(Color.ORANGE, tile.getSpaces().get(2).getOccupant());
     }
 
@@ -123,10 +103,10 @@ public class TurnOrderTileTest {
 
         assertFalse(tile.isFull());
 
-        tile.placeTotem(firstPlayer);
+        tile.placeTotem(firstPlayer.getColor());
         assertFalse(tile.isFull());
 
-        tile.placeTotem(secondPlayer);
+        tile.placeTotem(secondPlayer.getColor());
         assertTrue(tile.isFull());
     }
 
@@ -134,21 +114,21 @@ public class TurnOrderTileTest {
     void placeTotemThrowsExceptionWhenTileIsFull() {
         TurnOrderTile tile = new TurnOrderTile(createSpaces(1, -1));
 
-        tile.placeTotem(new Player("Alice", Color.BLUE, 0));
-        tile.placeTotem(new Player("Bob", Color.YELLOW, 0));
+        tile.placeTotem(Color.BLUE);
+        tile.placeTotem(Color.YELLOW);
 
         assertThrows(IllegalStateException.class,
-                () -> tile.placeTotem(new Player("Carol", Color.ORANGE, 0)));
+                () -> tile.placeTotem(Color.ORANGE));
     }
 
     @Test
     void currentOrderContainsAllPlayersWhenEverySpaceIsOccupied() {
         TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 1, 0, -1));
 
-        tile.placeTotem(new Player("Alice", Color.BLUE, 0));
-        tile.placeTotem(new Player("Bob", Color.YELLOW, 0));
-        tile.placeTotem(new Player("Carol", Color.ORANGE, 0));
-        tile.placeTotem(new Player("Dave", Color.WHITE, 0));
+        tile.placeTotem(Color.BLUE);
+        tile.placeTotem(Color.YELLOW);
+        tile.placeTotem(Color.ORANGE);
+        tile.placeTotem(Color.WHITE);
 
         assertEquals(List.of(Color.BLUE, Color.YELLOW, Color.ORANGE, Color.WHITE), tile.currentOrderTopToBottom());
         assertTrue(tile.isFull());
@@ -158,8 +138,8 @@ public class TurnOrderTileTest {
     void clearRemovesAllOccupantsAndResetsState() {
         TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 0, -1));
 
-        tile.placeTotem(new Player("Alice", Color.BLUE, 0));
-        tile.placeTotem(new Player("Bob", Color.YELLOW, 0));
+        tile.placeTotem(Color.BLUE);
+        tile.placeTotem(Color.YELLOW);
 
         tile.clear();
 

@@ -61,6 +61,13 @@ public class GameTable {
         return bottom_row;
     }
 
+    /**
+     * Places a player's totem on an available offer tile after validating both
+     * the player and the requested tile.
+     *
+     * @param player the player whose totem is being placed
+     * @param offer_tile_id index of the offer tile on the offer track
+     */
     public void placeTotemOnOfferTrack(Player player, int offer_tile_id) {
         if (player == null) {
             throw new IllegalArgumentException("Player cannot be null");
@@ -79,7 +86,14 @@ public class GameTable {
         offer_tile.occupy(player.getColor());
     }
 
-    // Returns wether a new era has begun
+    /**
+     * Refills the top market row with tribe cards and reports whether any
+     * drawn card belongs to a new era.
+     *
+     * @param curr_era the era of the cards moved down during this refill
+     * @return true when at least one newly drawn card belongs to a different
+     *         era
+     */
     private boolean restoreTopRow(Era curr_era) {
         if (tribe_deck == null) {
             throw new IllegalArgumentException("Tribe deck null at start of new era.");
@@ -88,7 +102,7 @@ public class GameTable {
         List<TribeCard> drawn_cards = tribe_deck.drawTopRow();
         boolean new_era = false;
 
-        for (Card card : drawn_cards) {
+        for (TribeCard card : drawn_cards) {
             top_row.placeCard(card);
             if (card.getEra() != curr_era) {
                 new_era = true;
@@ -98,6 +112,11 @@ public class GameTable {
         return new_era;
     }
 
+    /**
+     * Performs the building-card transition that happens when a new era starts:
+     * bottom-row buildings are discarded, top-row buildings move down, and new
+     * buildings are drawn into the top row.
+     */
     public void beginNewEra() {
         bottom_row.removeBuildingCards();
 
@@ -112,6 +131,13 @@ public class GameTable {
         }
     }
 
+    /**
+     * Collects all visible event cards from the market rows.
+     *
+     * @param include_top_row when true, events in the top row are included in
+     *                        addition to bottom-row events
+     * @return event cards currently visible in the requested rows
+     */
     public List<EventCard> visibleEvents(boolean include_top_row) {
         List<EventCard> result = new ArrayList<>();
 
@@ -132,7 +158,12 @@ public class GameTable {
         return result;
     }
 
-    // Returns wether a new era has begun
+    /**
+     * Advances market rows for a new round by removing old bottom-row tribe
+     * cards, moving top-row tribe cards down, and refilling the top row.
+     *
+     * @return true if refilling the top row revealed cards from a new era
+     */
     public boolean newRound() {
         bottom_row.removeTribeCards();
         List<TribeCard> to_move = top_row.removeTribeCards();

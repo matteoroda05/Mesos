@@ -48,7 +48,7 @@ abstract class BuildingTestSupport {
                         new OfferTile('C', 0, 1, 0, 2),
                         new OfferTile('D', 0, 2, 0, 2)), 2),
                 new TurnOrderTile(spaces),
-                new BuildingDeck(List.of(new BuildingEndRound(Era.FIRST, 2, 1, 1))),
+                new BuildingDeck(List.of(new BuildingAfterEveryone(Era.FIRST, 2, 1, 1))),
                 new TribeDeck(2, List.of(new ArtistCard(Era.FIRST, 2))));
 
         GameContext context = new GameContext("test", 2, table);

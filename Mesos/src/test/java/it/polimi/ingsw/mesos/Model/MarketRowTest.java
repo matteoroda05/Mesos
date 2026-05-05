@@ -3,7 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndRound;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
@@ -35,9 +35,9 @@ class MarketRowTest {
     private HuntEvent event_card_one;
     private HuntEvent event_card_two;
 
-    private BuildingEndRound building_card_low_cost;
-    private BuildingEndRound building_card_medium_cost;
-    private BuildingEndRound building_card_high_cost;
+    private BuildingAfterEveryone building_card_low_cost;
+    private BuildingAfterEveryone building_card_medium_cost;
+    private BuildingAfterEveryone building_card_high_cost;
 
     @BeforeEach
     void setUp() {
@@ -51,9 +51,9 @@ class MarketRowTest {
         event_card_one = new HuntEvent(Era.FIRST, 1, 1);
         event_card_two = new HuntEvent(Era.SECOND, 2, 1);
 
-        building_card_low_cost = new BuildingEndRound(Era.FIRST, 0, 1, 1);
-        building_card_medium_cost = new BuildingEndRound(Era.FIRST, 0, 3, 2);
-        building_card_high_cost = new BuildingEndRound(Era.SECOND, 0, 7, 3);
+        building_card_low_cost = new BuildingAfterEveryone(Era.FIRST, 0, 1, 1);
+        building_card_medium_cost = new BuildingAfterEveryone(Era.FIRST, 0, 3, 2);
+        building_card_high_cost = new BuildingAfterEveryone(Era.SECOND, 0, 7, 3);
     }
 
     @Test
@@ -260,7 +260,7 @@ class MarketRowTest {
         MarketRow market_row = new MarketRow(false, tribe_deck, null);
 
         BuilderCard extra_tribe_card = new BuilderCard(Era.SECOND, 2, 1, 1);
-        BuildingEndRound extra_building_card = new BuildingEndRound(Era.SECOND, 0, 2, 1);
+        BuildingAfterEveryone extra_building_card = new BuildingAfterEveryone(Era.SECOND, 0, 2, 1);
 
         market_row.placeCard(extra_tribe_card);
         market_row.placeCard(extra_building_card);
@@ -278,15 +278,8 @@ class MarketRowTest {
         TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
         MarketRow market_row = new MarketRow(false, tribe_deck, null);
 
-        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard(null));
-    }
-
-    @Test
-    void placeCardThrowsWhenCardTypeIsNotSupported() {
-        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-
-        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard(new UnsupportedCard()));
+        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard((TribeCard) null));
+        assertThrows(IllegalArgumentException.class, () -> market_row.placeCard((BuildingCard) null));
     }
 
     @Test

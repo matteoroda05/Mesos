@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.NetworkVibe.CardSummary;
-import it.polimi.ingsw.mesos.NetworkVibe.GameSnapshot;
-import it.polimi.ingsw.mesos.NetworkVibe.OfferTileSummary;
-import it.polimi.ingsw.mesos.NetworkVibe.PlayerSummary;
-import it.polimi.ingsw.mesos.NetworkVibe.TurnOrderSpaceSummary;
+import it.polimi.ingsw.mesos.Network.CardSummary;
+import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.LobbyGameSummary;
+import it.polimi.ingsw.mesos.Network.LobbySnapshot;
+import it.polimi.ingsw.mesos.Network.OfferTileSummary;
+import it.polimi.ingsw.mesos.Network.PlayerSummary;
+import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
 
 final class CliPrinter {
     private static final String NEW_LINE = System.lineSeparator();
@@ -62,18 +65,68 @@ final class CliPrinter {
         return builder.toString();
     }
 
+    String renderLobby(LobbySnapshot lobbySnapshot) {
+        int boardWidth = Math.min(resolveBoardWidth(), 120);
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(NEW_LINE);
+        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
+        builder.append("LOBBY MESOS").append(NEW_LINE);
+        builder.append("Partite disponibili: ").append(lobbySnapshot.openGames().size()).append(NEW_LINE);
+        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
+
+        if (lobbySnapshot.openGames().isEmpty()) {
+            builder.append("Nessuna partita aperta al momento. Puoi crearne una nuova.")
+                    .append(NEW_LINE);
+        } else {
+            for (int playerCount = Globals.MIN_NUM_PLAYERS; playerCount <= Globals.MAX_NUM_PLAYERS; playerCount++) {
+                int currentPlayerCount = playerCount;
+                List<LobbyGameSummary> gamesForPlayerCount = lobbySnapshot.openGames().stream()
+                        .filter(game -> game.playerCount() == currentPlayerCount)
+                        .toList();
+                if (gamesForPlayerCount.isEmpty()) {
+                    continue;
+                }
+
+                builder.append(NEW_LINE)
+                        .append(currentPlayerCount)
+                        .append(" giocatori")
+                        .append(NEW_LINE);
+
+                for (LobbyGameSummary game : gamesForPlayerCount) {
+                    builder.append("  ")
+                            .append(game.gameName())
+                            .append(" | lobby ")
+                            .append(game.joinedPlayers())
+                            .append("/")
+                            .append(game.playerCount())
+                            .append(" | posti liberi ")
+                            .append(game.availableSeats())
+                            .append(NEW_LINE);
+                }
+            }
+        }
+
+        builder.append(NEW_LINE)
+                .append("Scegli 'join' per entrare in una partita esistente oppure 'create' per crearne una nuova.")
+                .append(NEW_LINE)
+                .append("Quando fai join devi digitare solo il nome della partita.")
+                .append(NEW_LINE);
+        return builder.toString();
+    }
+
     String renderHelp() {
         return String.join(NEW_LINE,
                 "",
                 "Comandi disponibili:",
-                "  <invio>                aggiorna il tavolo",
+                "  <invio>               aggiorna il tavolo",
                 "  show | mostra         ristampa lo snapshot corrente",
                 "  offer <indice>        scegli una tessera offerta",
                 "  card top <indice>     prendi una carta dalla riga alta",
                 "  card bottom <indice>  prendi una carta dalla riga bassa",
                 "  wait [secondi]        aspetta un po' e aggiorna",
                 "  help | aiuto          mostra questo aiuto",
-                "  quit | esci           chiude il client");
+                "  quit | esci | exit    chiude il client");
     }
 
     private String commandsHint(GameSnapshot snapshot, String localNickname) {

@@ -36,6 +36,13 @@ public class CavePaintingEvent extends EventCard {
         this.penalty = penalty;
     }
 
+    /**
+     * Awards prestige to tribes that meet the artist threshold and applies the
+     * event penalty to tribes below it.
+     *
+     * @param players_tribes tribes keyed by player color
+     * @return cave-painting outcome keyed by player color
+     */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, Result> player_outcomes = new HashMap<>();
@@ -66,6 +73,11 @@ public class CavePaintingEvent extends EventCard {
         return penalty;
     }
 
+    /**
+     * Returns the building trigger used by cave-painting-event buildings.
+     *
+     * @return cave painting event trigger
+     */
     @Override
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_CAVE_PAINTINGS;

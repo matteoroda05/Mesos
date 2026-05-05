@@ -2,7 +2,6 @@ package it.polimi.ingsw.mesos.Controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +38,16 @@ public class GameSetup {
             4, List.of(2, 1, 0, -1),
             5, List.of(3, 1, 0, 0, -1));
 
+    /**
+     * Creates the static game model for a new match by selecting the cards and
+     * tiles valid for the player count, creating the decks, and wiring the game
+     * table.
+     *
+     * @param game_name name of the game
+     * @param player_count number of players in the match
+     * @param card_data loaded card and tile definitions
+     * @return initialized game context without players assigned yet
+     */
     public GameContext createGame(String game_name, int player_count, CardLoader.CardData card_data) {
         if (game_name == null || game_name.isBlank()) {
             throw new IllegalArgumentException("game_name cannot be null or blank");
@@ -66,6 +75,13 @@ public class GameSetup {
         return new GameContext(game_name, player_count, game_table);
     }
 
+    /**
+     * Creates players from nicknames, assigns random colors and starting food,
+     * then registers them in the game context.
+     *
+     * @param game_context game context to populate
+     * @param nicknames player nicknames in seating order
+     */
     public void createMapOfPlayers(GameContext game_context, List<String> nicknames) {
         if (nicknames == null) {
             throw new IllegalArgumentException("nickname cannot be null");
@@ -99,6 +115,14 @@ public class GameSetup {
         game_context.setupPlayers(players_by_color);
     }
 
+    /**
+     * Selects and shuffles the required number of building cards for each era,
+     * considering the minimum-player requirement of each card.
+     *
+     * @param all_cards complete building-card pool
+     * @param player_count number of players in the match
+     * @return selected building cards grouped by era order
+     */
     private List<BuildingCard> selectBuildingCards(List<BuildingCard> all_cards, int player_count) {
         if (all_cards == null) {
             throw new IllegalArgumentException("buildingCards cannot be null");
@@ -139,6 +163,13 @@ public class GameSetup {
         return selected_cards;
     }
 
+    /**
+     * Keeps only offer tiles that are valid for the current player count.
+     *
+     * @param all_tiles complete offer-tile pool
+     * @param player_count number of players in the match
+     * @return offer tiles usable in this match
+     */
     private List<OfferTile> selectOfferTiles(List<OfferTile> all_tiles, int player_count) {
         if (all_tiles == null) {
             throw new IllegalArgumentException("offerTiles cannot be null");
@@ -149,6 +180,13 @@ public class GameSetup {
                 .toList();
     }
 
+    /**
+     * Creates the turn-order spaces and their food bonuses for the configured
+     * player count.
+     *
+     * @param player_count number of players in the match
+     * @return turn-order spaces used by the game table
+     */
     private List<TurnOrderSpace> createTurnOrderSpaces(int player_count) {
         List<Integer> food_bonuses = FOOD_BONUS_BY_PLAYER_COUNT.get(player_count);
         if (food_bonuses == null) {
@@ -162,6 +200,14 @@ public class GameSetup {
         return spaces;
     }
 
+    /**
+     * Builds the tribe deck for the match by filtering invalid cards, shuffling
+     * cards within each era, and placing final events so they are drawn last.
+     *
+     * @param cards complete tribe-card pool
+     * @param player_count number of players in the match
+     * @return ordered tribe deck compatible with {@link TribeDeck#drawTopRow()}
+     */
     static List<TribeCard> selectTribeCards(List<TribeCard> cards, int player_count) {
         if (cards == null) {
             throw new IllegalArgumentException("cards cannot be null");
@@ -198,6 +244,13 @@ public class GameSetup {
         return result;
     }
 
+    /**
+     * Detects final third-era events that must be kept at the end of the tribe
+     * deck.
+     *
+     * @param card card to inspect
+     * @return true when the card is a final event
+     */
     private static boolean isFinalEvent(Card card) {
         return card.isEvent() &&
                 card.getEra() == Era.THIRD &&

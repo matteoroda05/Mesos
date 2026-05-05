@@ -1,7 +1,7 @@
 package it.polimi.ingsw.mesos.Model;
 
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndRound;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,17 +16,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BuildingDeckTest {
-    private BuildingEndRound first_era_card_one;
-    private BuildingEndRound first_era_card_two;
-    private BuildingEndRound second_era_card;
-    private BuildingEndRound third_era_card;
+    private BuildingAfterEveryone first_era_card_one;
+    private BuildingAfterEveryone first_era_card_two;
+    private BuildingAfterEveryone second_era_card;
+    private BuildingAfterEveryone third_era_card;
 
     @BeforeEach
     void setUp() {
-        first_era_card_one = new BuildingEndRound(Era.FIRST, 0, 1, 1);
-        first_era_card_two = new BuildingEndRound(Era.FIRST, 0, 2, 2);
-        second_era_card = new BuildingEndRound(Era.SECOND, 0, 3, 3);
-        third_era_card = new BuildingEndRound(Era.THIRD, 0, 4, 4);
+        first_era_card_one = new BuildingAfterEveryone(Era.FIRST, 0, 1, 1);
+        first_era_card_two = new BuildingAfterEveryone(Era.FIRST, 0, 2, 2);
+        second_era_card = new BuildingAfterEveryone(Era.SECOND, 0, 3, 3);
+        third_era_card = new BuildingAfterEveryone(Era.THIRD, 0, 4, 4);
     }
 
     @Test

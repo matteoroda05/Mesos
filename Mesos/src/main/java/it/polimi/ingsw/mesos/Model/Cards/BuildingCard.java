@@ -13,7 +13,7 @@ import it.polimi.ingsw.mesos.Model.Player;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = BuildingOnCard.class,         name = "BUILDING_ON_CARD"),
         @JsonSubTypes.Type(value = BuildingEndTurn.class,        name = "BUILDING_END_TURN"),
-        @JsonSubTypes.Type(value = BuildingEndRound.class,       name = "BUILDING_END_ROUND"),
+        @JsonSubTypes.Type(value = BuildingAfterEveryone.class,       name = "BUILDING_END_ROUND"),
         @JsonSubTypes.Type(value = BuildingEndGame.class,        name = "BUILDING_END_GAME"),
         @JsonSubTypes.Type(value = BuildingBonusEvent.class,     name = "BUILDING_BONUS_EVENT"),
         @JsonSubTypes.Type(value = BuildingShamanicRitual.class, name = "BUILDING_SHAMANIC_RITUAL")
@@ -50,11 +50,21 @@ public abstract class BuildingCard extends Card {
         return owner;
     }
 
+    /**
+     * Assigns this building to a player and runs any ownership-dependent setup
+     * required by subclasses.
+     *
+     * @param owner player who acquired the building
+     */
     public void setOwner(Player owner) {
         this.owner = owner;
         onAssignment();
     }
 
+    /**
+     * Hook for subclasses that must initialize effect state after the owner is
+     * known.
+     */
     protected void onAssignment() {}
 
     public BuildingTrigger getTrigger() {

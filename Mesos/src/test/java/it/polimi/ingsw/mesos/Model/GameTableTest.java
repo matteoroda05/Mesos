@@ -3,7 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndRound;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -29,7 +29,7 @@ class GameTableTest {
 	@Test
 	void constructorThrowsWhenOfferTrackIsNull() {
 		TurnOrderTile turn_order_tile = createTurnOrderTile();
-		BuildingDeck building_deck = createBuildingDeck(List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+		BuildingDeck building_deck = createBuildingDeck(List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		TribeDeck tribe_deck = createTribeDeck(createHunters(Era.FIRST, 9));
 
 		assertThrows(IllegalArgumentException.class,
@@ -39,7 +39,7 @@ class GameTableTest {
 	@Test
 	void constructorThrowsWhenTurnOrderTileIsNull() {
 		OfferTrack offer_track = createOfferTrack(2);
-		BuildingDeck building_deck = createBuildingDeck(List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+		BuildingDeck building_deck = createBuildingDeck(List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		TribeDeck tribe_deck = createTribeDeck(createHunters(Era.FIRST, 9));
 
 		assertThrows(IllegalArgumentException.class,
@@ -60,7 +60,7 @@ class GameTableTest {
 	void constructorThrowsWhenTribeDeckIsNull() {
 		OfferTrack offer_track = createOfferTrack(2);
 		TurnOrderTile turn_order_tile = createTurnOrderTile();
-		BuildingDeck building_deck = createBuildingDeck(List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+		BuildingDeck building_deck = createBuildingDeck(List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 
 		assertThrows(IllegalArgumentException.class,
 				() -> new GameTable(offer_track, turn_order_tile, building_deck, null));
@@ -71,8 +71,8 @@ class GameTableTest {
 		OfferTrack offer_track = createOfferTrack(2);
 		TurnOrderTile turn_order_tile = createTurnOrderTile();
 		BuildingDeck building_deck = createBuildingDeck(List.of(
-				new BuildingEndRound(Era.FIRST, 0, 1, 1),
-				new BuildingEndRound(Era.SECOND, 0, 2, 2)));
+				new BuildingAfterEveryone(Era.FIRST, 0, 1, 1),
+				new BuildingAfterEveryone(Era.SECOND, 0, 2, 2)));
 		TribeDeck tribe_deck = createTribeDeck(createHunters(Era.FIRST, 12));
 
 		GameTable game_table = new GameTable(offer_track, turn_order_tile, building_deck, tribe_deck);
@@ -87,7 +87,7 @@ class GameTableTest {
 	void placeTotemOnOfferTrackThrowsWhenPlayerIsNull() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
-				List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 
 		assertThrows(IllegalArgumentException.class,
 				() -> game_table.placeTotemOnOfferTrack(null, 0));
@@ -97,7 +97,7 @@ class GameTableTest {
 	void placeTotemOnOfferTrackThrowsWhenOfferTileIdIsOutOfBounds() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
-				List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		Player player = new Player("alice", Color.BLUE, 2);
 
 		assertThrows(IndexOutOfBoundsException.class,
@@ -108,7 +108,7 @@ class GameTableTest {
 	void placeTotemOnOfferTrackThrowsWhenOfferTileIsNotAvailable() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
-				List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		Player first_player = new Player("alice", Color.BLUE, 2);
 		Player second_player = new Player("bob", Color.YELLOW, 2);
 
@@ -122,7 +122,7 @@ class GameTableTest {
 	void placeTotemOnOfferTrackOccupiesSelectedTileWithPlayerColor() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
-				List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		Player player = new Player("alice", Color.BLUE, 2);
 
 		game_table.placeTotemOnOfferTrack(player, 1);
@@ -133,11 +133,11 @@ class GameTableTest {
 
 	@Test
 	void beginNewEraMovesTopBuildingsToBottomClearsBottomAndRefillsTop() {
-		BuildingEndRound old_bottom_building = new BuildingEndRound(Era.FIRST, 0, 4, 1);
-		BuildingEndRound first_era_top_one = new BuildingEndRound(Era.FIRST, 0, 1, 1);
-		BuildingEndRound first_era_top_two = new BuildingEndRound(Era.FIRST, 0, 2, 2);
-		BuildingEndRound second_era_top_one = new BuildingEndRound(Era.SECOND, 0, 3, 3);
-		BuildingEndRound second_era_top_two = new BuildingEndRound(Era.SECOND, 0, 5, 4);
+		BuildingAfterEveryone old_bottom_building = new BuildingAfterEveryone(Era.FIRST, 0, 4, 1);
+		BuildingAfterEveryone first_era_top_one = new BuildingAfterEveryone(Era.FIRST, 0, 1, 1);
+		BuildingAfterEveryone first_era_top_two = new BuildingAfterEveryone(Era.FIRST, 0, 2, 2);
+		BuildingAfterEveryone second_era_top_one = new BuildingAfterEveryone(Era.SECOND, 0, 3, 3);
+		BuildingAfterEveryone second_era_top_two = new BuildingAfterEveryone(Era.SECOND, 0, 5, 4);
 
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
@@ -159,7 +159,7 @@ class GameTableTest {
 	void visibleEventsReturnsOnlyBottomRowEventsWhenTopRowIsExcluded() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
-				List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		HuntEvent bottom_event = new HuntEvent(Era.FIRST, 1, 1);
 		HuntEvent top_event = new HuntEvent(Era.SECOND, 2, 1);
 
@@ -175,7 +175,7 @@ class GameTableTest {
 	void visibleEventsIncludesTopRowEventsWhenRequested() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
-				List.of(new BuildingEndRound(Era.FIRST, 0, 1, 1)));
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
 		HuntEvent bottom_event = new HuntEvent(Era.FIRST, 1, 1);
 		HuntEvent top_event = new HuntEvent(Era.SECOND, 2, 1);
 
@@ -193,8 +193,8 @@ class GameTableTest {
 		GameTable game_table = createGameTable(
 				first_era_tribes,
 				List.of(
-						new BuildingEndRound(Era.FIRST, 0, 1, 1),
-						new BuildingEndRound(Era.SECOND, 0, 2, 2)));
+						new BuildingAfterEveryone(Era.FIRST, 0, 1, 1),
+						new BuildingAfterEveryone(Era.SECOND, 0, 2, 2)));
 
 		List<TribeCard> expected_moved_to_bottom = List.of(
 				first_era_tribes.get(14),
@@ -227,9 +227,9 @@ class GameTableTest {
 		GameTable game_table = createGameTable(
 				mixed_tribes,
 				List.of(
-						new BuildingEndRound(Era.FIRST, 0, 1, 1),
-						new BuildingEndRound(Era.SECOND, 0, 2, 2),
-						new BuildingEndRound(Era.THIRD, 0, 3, 3)));
+						new BuildingAfterEveryone(Era.FIRST, 0, 1, 1),
+						new BuildingAfterEveryone(Era.SECOND, 0, 2, 2),
+						new BuildingAfterEveryone(Era.THIRD, 0, 3, 3)));
 
 		boolean new_era_started = game_table.newRound();
 

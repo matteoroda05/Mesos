@@ -5,7 +5,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 public class TurnOrderSpace {
 
     private final int foodBonus;
-    private Color occupant;   // null se lo spazio è libero
+    private Color occupant = null;   // null se lo spazio è libero
 
     public TurnOrderSpace(int foodBonus) {
         if (foodBonus < -1 || foodBonus > 3) {

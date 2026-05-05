@@ -31,6 +31,13 @@ public final class SustenanceEvent extends EventCard {
         this.food_per_character = food_per_character;
     }
 
+    /**
+     * Calculates each player's food requirement from tribe size, reduced by any
+     * gatherer discount, and records the penalty conversion for unpaid food.
+     *
+     * @param players_tribes tribes keyed by player color
+     * @return sustenance costs keyed by player color
+     */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
         Map<Color, Result> food_requirements = new HashMap<>();
@@ -46,8 +53,23 @@ public final class SustenanceEvent extends EventCard {
         return food_requirements;
     }
 
+    /**
+     * Returns the building trigger used by sustenance-event buildings.
+     *
+     * @return sustenance event trigger
+     */
     @Override
     public BuildingTrigger asTrigger() {
         return BuildingTrigger.ON_EVENT_SUSTENANCE;
+    }
+
+    // Utils for view
+
+    public int getFoodPerCharacter() {
+        return food_per_character;
+    }
+
+    public int getPointPenalty() {
+        return points_penalty;
     }
 }

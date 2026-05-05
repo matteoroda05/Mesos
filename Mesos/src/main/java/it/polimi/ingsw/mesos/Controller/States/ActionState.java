@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Controller.States;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
@@ -19,11 +20,39 @@ public class ActionState extends GameState {
     private int pick_bottom_row;
     private Color p;
     private int food_gain;
+    private boolean is_extra = false;
+    private boolean skip = false;
 
+    /**
+     * Creates the action state for the next occupied offer tile.
+     *
+     * @param controller model controller used to read and apply game state
+     */
     public ActionState(ModelController controller) {
         super(controller);
         OfferTile tile = controller.getNextPlayerOfferTile();
-        loadTile(tile);
+        if (tile != null) {
+            loadTile(tile);
+        } else {
+            skip = true;
+        }
+    }
+
+    /**
+     * Creates an action state for bonus picks granted by a building effect.
+     *
+     * @param controller model controller used to apply the extra action
+     * @param color player receiving the extra action
+     * @param extra_picks number of extra card choices granted
+     * @param top_row true when the extra choices apply to the top row
+     */
+    public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
+        super(controller);
+        p = color;
+        food_gain = 0;
+        is_extra = true;
+        if (top_row) pick_top_row = extra_picks;
+        else pick_bottom_row = extra_picks;
     }
 
     /**
@@ -37,8 +66,7 @@ public class ActionState extends GameState {
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
         if (p != player_color) {
-            // TODO: set error in model and ward clients
-            return this;
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
         }
 
         Optional<CharacterCard> chosen;
@@ -49,8 +77,7 @@ public class ActionState extends GameState {
             chosen = controller.playerChooseCard(player_color, card, false);
             pick_bottom_row--;
         } else {
-            // TODO: set error in model to warn clients
-            return this;
+            throw new RuntimeException("Wrong row: you tried picking from the wrong row");
         }
 
         if (chosen.isPresent()) {
@@ -66,25 +93,23 @@ public class ActionState extends GameState {
         return this;
     }
 
-    @Override
-    public GameState chooseOffer(Color player_color, int offer_tile) {
-        // TODO: set error in model to warn clients
-        return this;
-    }
-
     /**
      * If the current player chose the offer with the food then give the food to him and end is turn, otherwise do nothing
      * @return next state
      */
     @Override
     public GameState process() {
+        if (skip) {
+            return new EventState(controller);
+        }
+
         if (food_gain != 0) {
             controller.playerAddFood(food_gain, p);
             food_gain = 0;
             return endTurn();
         }
         if (hasFinished()) {
-            endTurn();
+            return endTurn();
         }
         return this;
     }
@@ -102,24 +127,53 @@ public class ActionState extends GameState {
 
     /**
      * Ends the turn of the player (activates buildings and position the totem to the turn order tile). The next state is
-     * another player's turn or the resolution of events.
+     * another player's turn or the resolution of events. If this is the last player then activate buildings for after everyone.
+     * If this is already a bonus action then skips the standard end turn procedure.
      * @return new game state
      */
     private GameState endTurn() {
-        controller.playerEndTurn();
+        if (!is_extra) {
+            controller.playerEndTurn();
 
-        List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
-                .stream().map(building -> ((BuildingEndTurn) building)).toList();
-        TurnOrderTile tile = controller.getTurnOrderTile();
-        buildings.forEach(building -> building.effect(tile, controller));
+            List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
+                    .stream().map(building -> ((BuildingEndTurn) building)).toList();
+            TurnOrderTile tile = controller.getTurnOrderTile();
+            buildings.forEach(building -> building.effect(tile, controller));
+        }
 
         OfferTile next = controller.getNextPlayerOfferTile();
         if (next == null) {
-            return new EventState(controller);
+            ActionState next_state = extras();
+            if (next_state == null) {
+                return new EventState(controller);
+            }
+
+            return next_state;
         }
 
         loadTile(next);
         return this;
+    }
+
+    /**
+     * Handles the extra actions (granted by buildings) that take place after everyone has completed their turn
+     * @return null if there are no extra actions, the state with the extra actions otherwise
+     */
+    private ActionState extras() {
+        List<BuildingAfterEveryone> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_AFTER_EVERYONE)
+                .stream().map(building -> ((BuildingAfterEveryone) building)).toList();
+
+        for (BuildingAfterEveryone building : buildings) {
+            ActionState next_state = building.effect(controller.getGameTable(), controller);
+            if (next_state != null) {
+                return next_state;
+            }
+        }
+
+        // reset buildings active
+        controller.getBuildingsWithTrigger(BuildingTrigger.ON_AFTER_EVERYONE).forEach(building -> ((BuildingAfterEveryone) building).reset());
+
+        return null;
     }
 
     /**

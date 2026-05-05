@@ -40,6 +40,10 @@ public class BuildingOnCard extends BuildingCard {
         this.inventors_pair = inventors_pair;
     }
 
+    /**
+     * Captures the owner's current invention icons when this building tracks
+     * repeated inventor icons.
+     */
     @Override
     protected void onAssignment() {
         if (inventors_pair) {
@@ -47,6 +51,14 @@ public class BuildingOnCard extends BuildingCard {
         }
     }
 
+    /**
+     * Applies the on-character-acquired effect: repeated inventor icons grant
+     * food for inventor-pair buildings, while set-completion buildings reward
+     * when a new set is completed at acquisition.
+     *
+     * @param card character card just acquired by the owner
+     * @param visitor controller used to grant food
+     */
     public void effect(CharacterCard card, ModelController visitor) {
         if (inventors_pair) {
             if (card.getClass() != InventorCard.class) return;
@@ -83,6 +95,7 @@ public class BuildingOnCard extends BuildingCard {
         return food_bonus;
     }
 
+    // TODO: remove this method??
     public boolean isInventorsPair() {
         return inventors_pair;
     }
