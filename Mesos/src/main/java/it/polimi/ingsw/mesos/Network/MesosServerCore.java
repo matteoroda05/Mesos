@@ -7,10 +7,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.LongSupplier;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameFlowController;
@@ -46,76 +42,22 @@ import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
-public class MesosServerCore implements MesosServerService, AutoCloseable {
+public class MesosServerCore implements MesosServerService {
     private final CardLoader.CardData cardData;
     private final GameSetup gameSetup;
     private final Map<String, GameSession> sessions;
-    private final Map<String, ReconnectTarget> lastReconnectTargetByAddress;
-    private final long heartbeatTimeoutMillis;
-    private final long suspensionTimeoutMillis;
-    private final LongSupplier clock;
-    private final ScheduledExecutorService heartbeatMonitor;
 
     public MesosServerCore() throws IOException {
         this(CardLoader.load());
     }
 
     public MesosServerCore(CardLoader.CardData cardData) {
-        this(
-                cardData,
-                NetworkDefaults.HEARTBEAT_TIMEOUT_MILLIS,
-                NetworkDefaults.DISCONNECTION_WIN_TIMEOUT_MILLIS,
-                NetworkDefaults.HEARTBEAT_CHECK_INTERVAL_MILLIS,
-                System::currentTimeMillis,
-                true
-        );
-    }
-
-    MesosServerCore(
-            CardLoader.CardData cardData,
-            long heartbeatTimeoutMillis,
-            long suspensionTimeoutMillis,
-            long heartbeatCheckIntervalMillis,
-            LongSupplier clock,
-            boolean startHeartbeatMonitor
-    ) {
         if (cardData == null) {
             throw new IllegalArgumentException("cardData cannot be null");
-        }
-        if (heartbeatTimeoutMillis <= 0) {
-            throw new IllegalArgumentException("heartbeatTimeoutMillis must be positive");
-        }
-        if (suspensionTimeoutMillis <= 0) {
-            throw new IllegalArgumentException("suspensionTimeoutMillis must be positive");
-        }
-        if (heartbeatCheckIntervalMillis <= 0) {
-            throw new IllegalArgumentException("heartbeatCheckIntervalMillis must be positive");
-        }
-        if (clock == null) {
-            throw new IllegalArgumentException("clock cannot be null");
         }
         this.cardData = cardData;
         this.gameSetup = new GameSetup();
         this.sessions = new LinkedHashMap<>();
-        this.lastReconnectTargetByAddress = new LinkedHashMap<>();
-        this.heartbeatTimeoutMillis = heartbeatTimeoutMillis;
-        this.suspensionTimeoutMillis = suspensionTimeoutMillis;
-        this.clock = clock;
-        if (startHeartbeatMonitor) {
-            this.heartbeatMonitor = Executors.newSingleThreadScheduledExecutor(runnable -> {
-                Thread thread = new Thread(runnable, "mesos-heartbeat-monitor");
-                thread.setDaemon(true);
-                return thread;
-            });
-            this.heartbeatMonitor.scheduleAtFixedRate(
-                    this::safeCheckConnections,
-                    heartbeatCheckIntervalMillis,
-                    heartbeatCheckIntervalMillis,
-                    TimeUnit.MILLISECONDS
-            );
-        } else {
-            this.heartbeatMonitor = null;
-        }
     }
 
     @Override
@@ -143,11 +85,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
 
     @Override
     public synchronized GameOperationResult joinGame(JoinGameRequest request) {
-        return joinGame(request, null);
-    }
-
-    @Override
-    public synchronized GameOperationResult joinGame(JoinGameRequest request, String clientAddress) {
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
             return GameOperationResult.failure(
@@ -173,7 +110,7 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
                     toLobbySnapshot()
             );
         }
-        return session.join(request.nickname(), gameSetup, normalizeAddress(clientAddress), clock.getAsLong());
+        return session.join(request.nickname(), gameSetup);
     }
 
     @Override
@@ -241,126 +178,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
         return session.unsubscribe(request.nickname(), updateSink);
     }
 
-    @Override
-    public synchronized GameOperationResult heartbeat(HeartbeatRequest request, String clientAddress) {
-        GameSession session = sessions.get(request.gameName());
-        if (session == null) {
-            return GameOperationResult.failure(
-                    "La partita '" + request.gameName() + "' non esiste",
-                    OperationErrorCode.GAME_NOT_FOUND,
-                    null
-            );
-        }
-        return session.heartbeat(request.nickname(), normalizeAddress(clientAddress), clock.getAsLong());
-    }
-
-    @Override
-    public synchronized GameOperationResult getReconnectProposal(ReconnectProbeRequest request, String clientAddress) {
-        ReconnectTarget target = reconnectTargetFor(clientAddress);
-        if (target == null) {
-            return GameOperationResult.successReconnect("Nessuna partita da riconnettere", null);
-        }
-        return GameOperationResult.successReconnect(
-                "Riconnessione disponibile",
-                new ReconnectProposal(target.gameName(), target.nickname())
-        );
-    }
-
-    @Override
-    public synchronized GameOperationResult reconnectGame(ReconnectGameRequest request, String clientAddress) {
-        GameSession session = sessions.get(request.gameName());
-        if (session == null) {
-            return GameOperationResult.failure(
-                    "La partita '" + request.gameName() + "' non esiste",
-                    OperationErrorCode.GAME_NOT_FOUND,
-                    null
-            );
-        }
-        return session.reconnect(request.nickname(), normalizeAddress(clientAddress), clock.getAsLong());
-    }
-
-    @Override
-    public synchronized GameOperationResult declineReconnect(DeclineReconnectRequest request, String clientAddress) {
-        GameSession session = sessions.get(request.gameName());
-        if (session == null) {
-            return GameOperationResult.failure(
-                    "La partita '" + request.gameName() + "' non esiste",
-                    OperationErrorCode.GAME_NOT_FOUND,
-                    null
-            );
-        }
-        return session.declineReconnect(request.nickname(), normalizeAddress(clientAddress), clock.getAsLong());
-    }
-
-    @Override
-    public void close() {
-        if (heartbeatMonitor != null) {
-            heartbeatMonitor.shutdownNow();
-        }
-    }
-
-    synchronized void checkConnectionsForTesting() {
-        checkConnections();
-    }
-
-    private void safeCheckConnections() {
-        try {
-            synchronized (this) {
-                checkConnections();
-            }
-        } catch (RuntimeException ignored) {
-        }
-    }
-
-    private void checkConnections() {
-        long now = clock.getAsLong();
-        for (GameSession session : sessions.values()) {
-            session.checkConnections(now);
-        }
-    }
-
-    private String normalizeAddress(String clientAddress) {
-        if (clientAddress == null || clientAddress.isBlank()) {
-            return null;
-        }
-        return clientAddress.strip();
-    }
-
-    private void rememberReconnectTarget(String clientAddress, String gameName, String nickname) {
-        String normalizedAddress = normalizeAddress(clientAddress);
-        if (normalizedAddress == null) {
-            return;
-        }
-        lastReconnectTargetByAddress.put(normalizedAddress, new ReconnectTarget(gameName, nickname));
-    }
-
-    private void forgetReconnectTarget(String clientAddress, String gameName, String nickname) {
-        String normalizedAddress = normalizeAddress(clientAddress);
-        if (normalizedAddress == null) {
-            return;
-        }
-        ReconnectTarget target = lastReconnectTargetByAddress.get(normalizedAddress);
-        if (target != null && target.gameName().equals(gameName) && target.nickname().equals(nickname)) {
-            lastReconnectTargetByAddress.remove(normalizedAddress);
-        }
-    }
-
-    private ReconnectTarget reconnectTargetFor(String clientAddress) {
-        String normalizedAddress = normalizeAddress(clientAddress);
-        if (normalizedAddress == null) {
-            return null;
-        }
-        ReconnectTarget target = lastReconnectTargetByAddress.get(normalizedAddress);
-        if (target == null) {
-            return null;
-        }
-        GameSession session = sessions.get(target.gameName());
-        if (session == null || !session.canReconnect(target.nickname(), normalizedAddress)) {
-            return null;
-        }
-        return target;
-    }
-
     private boolean isNicknameTaken(String nickname) {
         return sessions.values().stream().anyMatch(session -> session.containsNickname(nickname));
     }
@@ -372,29 +189,22 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
                 .toList());
     }
 
-    private final class GameSession {
+    private static final class GameSession {
         private final GameContext context;
         private final List<String> joinedNicknames;
         private final Map<String, Color> colorsByNickname;
-        private final Map<String, PlayerConnectionState> connectionStatesByNickname;
         private final Set<GameUpdateSink> subscribers;
         private GameFlowController controller;
-        private boolean suspended;
-        private long suspensionDeadlineMillis;
-        private String forcedWinnerNickname;
 
         private GameSession(GameContext context) {
             this.context = context;
             this.joinedNicknames = new ArrayList<>();
             this.colorsByNickname = new LinkedHashMap<>();
-            this.connectionStatesByNickname = new LinkedHashMap<>();
             this.subscribers = new LinkedHashSet<>();
         }
 
-        private GameOperationResult join(String nickname, GameSetup gameSetup, String clientAddress, long now) {
+        private GameOperationResult join(String nickname, GameSetup gameSetup) {
             joinedNicknames.add(nickname);
-            connectionStatesByNickname.put(nickname, new PlayerConnectionState(clientAddress, now));
-            rememberReconnectTarget(clientAddress, context.getGameName(), nickname);
 
             if (joinedNicknames.size() == context.getGameSize()) {
                 gameSetup.createMapOfPlayers(context, joinedNicknames);
@@ -436,10 +246,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
             if (!started()) {
                 return GameOperationResult.failure("La partita non e' ancora iniziata", toSnapshot());
             }
-            GameOperationResult availabilityFailure = availabilityFailure(nickname);
-            if (availabilityFailure != null) {
-                return availabilityFailure;
-            }
 
             Color playerColor = colorsByNickname.get(nickname);
             if (playerColor == null) {
@@ -452,7 +258,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
 
             try {
                 controller.chooseOffer(playerColor, offerTileIndex);
-                rebalanceForActivePlayers(clock.getAsLong(), "Partita ripresa: almeno due giocatori sono di nuovo online");
                 return GameOperationResult.success(
                         "Tessera offerta scelta",
                         publishAndSnapshot("Tessera offerta scelta")
@@ -466,10 +271,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
             if (!started()) {
                 return GameOperationResult.failure("La partita non e' ancora iniziata", toSnapshot());
             }
-            GameOperationResult availabilityFailure = availabilityFailure(nickname);
-            if (availabilityFailure != null) {
-                return availabilityFailure;
-            }
 
             Color playerColor = colorsByNickname.get(nickname);
             if (playerColor == null) {
@@ -482,7 +283,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
 
             try {
                 controller.chooseCard(playerColor, cardIndex, topRow);
-                rebalanceForActivePlayers(clock.getAsLong(), "Partita ripresa: almeno due giocatori sono di nuovo online");
                 return GameOperationResult.success(
                         "Carta scelta",
                         publishAndSnapshot("Carta scelta")
@@ -525,211 +325,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
             );
         }
 
-        private GameOperationResult heartbeat(String nickname, String clientAddress, long now) {
-            PlayerConnectionState state = connectionStatesByNickname.get(nickname);
-            if (state == null) {
-                return GameOperationResult.failure(
-                        "Il giocatore '" + nickname + "' non e' presente nella partita",
-                        OperationErrorCode.PLAYER_NOT_IN_GAME,
-                        toSnapshot()
-                );
-            }
-            if (!state.online()) {
-                return GameOperationResult.failure(
-                        "Il giocatore '" + nickname + "' deve riconnettersi prima di inviare heartbeat",
-                        OperationErrorCode.RECONNECT_NOT_AVAILABLE,
-                        toSnapshot()
-                );
-            }
-            state.recordHeartbeat(clientAddress, now);
-            rememberReconnectTarget(clientAddress, context.getGameName(), nickname);
-            return GameOperationResult.success("Heartbeat ricevuto", toSnapshot());
-        }
-
-        private boolean canReconnect(String nickname, String clientAddress) {
-            PlayerConnectionState state = connectionStatesByNickname.get(nickname);
-            return state != null
-                    && started()
-                    && !finished()
-                    && !state.online()
-                    && !state.reconnectDeclined()
-                    && sameKnownAddress(state.clientAddress(), clientAddress);
-        }
-
-        private GameOperationResult reconnect(String nickname, String clientAddress, long now) {
-            if (!canReconnect(nickname, clientAddress)) {
-                return GameOperationResult.failure(
-                        "Nessuna riconnessione disponibile per '" + nickname + "'",
-                        OperationErrorCode.RECONNECT_NOT_AVAILABLE,
-                        toSnapshot()
-                );
-            }
-
-            PlayerConnectionState state = connectionStatesByNickname.get(nickname);
-            state.reconnect(clientAddress, now);
-            rememberReconnectTarget(clientAddress, context.getGameName(), nickname);
-            rebalanceForActivePlayers(now, "Partita ripresa: almeno due giocatori sono di nuovo online");
-            return GameOperationResult.success(
-                    nickname + " si e' riconnesso alla partita",
-                    publishAndSnapshot(nickname + " si e' riconnesso alla partita")
-            );
-        }
-
-        private GameOperationResult declineReconnect(String nickname, String clientAddress, long now) {
-            PlayerConnectionState state = connectionStatesByNickname.get(nickname);
-            if (state == null || !sameKnownAddress(state.clientAddress(), clientAddress)) {
-                return GameOperationResult.failure(
-                        "Nessuna riconnessione disponibile per '" + nickname + "'",
-                        OperationErrorCode.RECONNECT_NOT_AVAILABLE,
-                        toSnapshot()
-                );
-            }
-
-            state.declineReconnect();
-            forgetReconnectTarget(clientAddress, context.getGameName(), nickname);
-            rebalanceForActivePlayers(now, "Partita ripresa: almeno due giocatori sono di nuovo online");
-            return GameOperationResult.success(
-                    nickname + " non rientrera' nella partita",
-                    publishAndSnapshot(nickname + " non rientrera' nella partita")
-            );
-        }
-
-        private void checkConnections(long now) {
-            if (!started() || finished()) {
-                return;
-            }
-
-            boolean disconnected = false;
-            for (Map.Entry<String, PlayerConnectionState> entry : connectionStatesByNickname.entrySet()) {
-                PlayerConnectionState state = entry.getValue();
-                if (state.shouldTimeout(now, heartbeatTimeoutMillis)) {
-                    state.disconnect(now);
-                    rememberReconnectTarget(state.clientAddress(), context.getGameName(), entry.getKey());
-                    publish(new GameViewUpdate(
-                            context.getGameName(),
-                            entry.getKey() + " si e' disconnesso dalla partita",
-                            toSnapshot()
-                    ));
-                    disconnected = true;
-                }
-            }
-
-            if (disconnected) {
-                rebalanceForActivePlayers(now, "Partita ripresa: almeno due giocatori sono di nuovo online");
-            }
-            checkSuspensionDeadline(now);
-        }
-
-        private void rebalanceForActivePlayers(long now, String resumeMessage) {
-            if (!started() || forcedWinnerNickname != null || controller.isGameFinished()) {
-                return;
-            }
-
-            int onlinePlayers = onlinePlayerCount();
-            if (onlinePlayers == 0) {
-                suspended = true;
-                suspensionDeadlineMillis = 0;
-                return;
-            }
-            if (onlinePlayers == 1) {
-                boolean newlySuspended = !suspended || suspensionDeadlineMillis == 0;
-                suspended = true;
-                suspensionDeadlineMillis = now + suspensionTimeoutMillis;
-                if (newlySuspended) {
-                    publishAndSnapshot("Partita sospesa: rimane online solo " + onlyOnlineNickname()
-                            + ". Timeout vittoria tra 60 secondi");
-                }
-                return;
-            }
-
-            boolean wasSuspended = suspended;
-            suspended = false;
-            suspensionDeadlineMillis = 0;
-            skipOfflineActivePlayers();
-            if (wasSuspended) {
-                publishAndSnapshot(resumeMessage);
-            }
-        }
-
-        private void skipOfflineActivePlayers() {
-            while (started() && !controller.isGameFinished() && !suspended) {
-                String activeNickname = nicknameForColor(currentState().getActivePlayer());
-                if (activeNickname == null || isOnline(activeNickname)) {
-                    return;
-                }
-                controller.skipTurn();
-                publishAndSnapshot("Turno saltato: " + activeNickname + " e' offline");
-            }
-        }
-
-        private void checkSuspensionDeadline(long now) {
-            if (!suspended || suspensionDeadlineMillis == 0 || onlinePlayerCount() != 1 || now < suspensionDeadlineMillis) {
-                return;
-            }
-            forcedWinnerNickname = onlyOnlineNickname();
-            suspended = false;
-            suspensionDeadlineMillis = 0;
-            publishAndSnapshot(forcedWinnerNickname + " vince: timeout di riconnessione scaduto");
-        }
-
-        private GameOperationResult availabilityFailure(String nickname) {
-            if (forcedWinnerNickname != null) {
-                return GameOperationResult.failure(
-                        "La partita e' gia' terminata",
-                        OperationErrorCode.GAME_SUSPENDED,
-                        toSnapshot()
-                );
-            }
-            if (suspended) {
-                return GameOperationResult.failure(
-                        "La partita e' sospesa in attesa di una riconnessione",
-                        OperationErrorCode.GAME_SUSPENDED,
-                        toSnapshot()
-                );
-            }
-            if (!isOnline(nickname)) {
-                return GameOperationResult.failure(
-                        "Il giocatore '" + nickname + "' risulta offline",
-                        OperationErrorCode.RECONNECT_NOT_AVAILABLE,
-                        toSnapshot()
-                );
-            }
-            return null;
-        }
-
-        private boolean sameKnownAddress(String expected, String actual) {
-            return expected != null && actual != null && expected.equals(actual);
-        }
-
-        private boolean isOnline(String nickname) {
-            PlayerConnectionState state = connectionStatesByNickname.get(nickname);
-            return state != null && state.online();
-        }
-
-        private int onlinePlayerCount() {
-            int count = 0;
-            for (PlayerConnectionState state : connectionStatesByNickname.values()) {
-                if (state.online()) {
-                    count++;
-                }
-            }
-            return count;
-        }
-
-        private String onlyOnlineNickname() {
-            String onlyOnline = null;
-            for (Map.Entry<String, PlayerConnectionState> entry : connectionStatesByNickname.entrySet()) {
-                if (!entry.getValue().online()) {
-                    continue;
-                }
-                if (onlyOnline != null) {
-                    return null;
-                }
-                onlyOnline = entry.getKey();
-            }
-            return onlyOnline;
-        }
-
         private GameSnapshot publishAndSnapshot(String message) {
             GameSnapshot snapshot = toSnapshot();
             publish(new GameViewUpdate(context.getGameName(), message, snapshot));
@@ -759,7 +354,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
                     joinedNicknames.size(),
                     started(),
                     finished(),
-                    winnerNickname(),
                     currentStatus(),
                     context.getRoundNumber(),
                     context.getCurrentEra(),
@@ -780,7 +374,7 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
         }
 
         private boolean finished() {
-            return forcedWinnerNickname != null || (started() && controller.isGameFinished());
+            return started() && controller.isGameFinished();
         }
 
         private GameState currentState() {
@@ -791,32 +385,16 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
             if (!started()) {
                 return GameStatus.LOGIN;
             }
-            if (forcedWinnerNickname != null || controller.isGameFinished()) {
+            if (controller.isGameFinished()) {
                 return GameStatus.END_GAME;
             }
-            if (suspended) {
-                return GameStatus.SUSPENDED;
-            }
             return controller.getCurrentState().getStatus();
-        }
-
-        private String winnerNickname() {
-            if (forcedWinnerNickname != null) {
-                return forcedWinnerNickname;
-            }
-            if (!started() || !controller.isGameFinished()) {
-                return null;
-            }
-            return context.getPlayers().stream()
-                    .max((first, second) -> Integer.compare(first.getPrestigePoints(), second.getPrestigePoints()))
-                    .map(Player::getNickname)
-                    .orElse(null);
         }
 
         private List<PlayerSummary> summarizePlayers() {
             if (!started()) {
                 return joinedNicknames.stream()
-                        .map(nickname -> new PlayerSummary(nickname, null, 0, 0, 0, 0, isOnline(nickname)))
+                        .map(nickname -> new PlayerSummary(nickname, null, 0, 0, 0, 0))
                         .toList();
             }
 
@@ -827,8 +405,7 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
                             player.getFood(),
                             player.getPrestigePoints(),
                             player.getTribe().getNumCharacters(),
-                            player.getTribe().getNumBuildings(),
-                            isOnline(player.getNickname())
+                            player.getTribe().getNumBuildings()
                     ))
                     .toList();
         }
@@ -1020,64 +597,6 @@ public class MesosServerCore implements MesosServerService, AutoCloseable {
                     .map(Map.Entry::getKey)
                     .findFirst()
                     .orElse(null);
-        }
-    }
-
-    private record ReconnectTarget(String gameName, String nickname) {
-    }
-
-    private static final class PlayerConnectionState {
-        private String clientAddress;
-        private long lastMessageAtMillis;
-        private boolean online;
-        private boolean reconnectDeclined;
-
-        private PlayerConnectionState(String clientAddress, long now) {
-            this.clientAddress = clientAddress;
-            this.lastMessageAtMillis = now;
-            this.online = true;
-            this.reconnectDeclined = false;
-        }
-
-        private String clientAddress() {
-            return clientAddress;
-        }
-
-        private boolean online() {
-            return online;
-        }
-
-        private boolean reconnectDeclined() {
-            return reconnectDeclined;
-        }
-
-        private void recordHeartbeat(String clientAddress, long now) {
-            if (clientAddress != null) {
-                this.clientAddress = clientAddress;
-            }
-            this.lastMessageAtMillis = now;
-        }
-
-        private void reconnect(String clientAddress, long now) {
-            if (clientAddress != null) {
-                this.clientAddress = clientAddress;
-            }
-            this.lastMessageAtMillis = now;
-            this.online = true;
-            this.reconnectDeclined = false;
-        }
-
-        private void disconnect(long now) {
-            this.lastMessageAtMillis = now;
-            this.online = false;
-        }
-
-        private void declineReconnect() {
-            this.reconnectDeclined = true;
-        }
-
-        private boolean shouldTimeout(long now, long timeoutMillis) {
-            return online && clientAddress != null && now - lastMessageAtMillis > timeoutMillis;
         }
     }
 }

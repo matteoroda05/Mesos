@@ -13,12 +13,6 @@ public interface GameClient extends Closeable {
 
     GameOperationResult joinGame(JoinGameRequest request) throws IOException;
 
-    GameOperationResult getReconnectProposal() throws IOException;
-
-    GameOperationResult reconnectGame(ReconnectGameRequest request) throws IOException;
-
-    GameOperationResult declineReconnect(DeclineReconnectRequest request) throws IOException;
-
     GameOperationResult getSnapshot(SnapshotRequest request) throws IOException;
 
     GameOperationResult chooseOffer(ChooseOfferRequest request) throws IOException;

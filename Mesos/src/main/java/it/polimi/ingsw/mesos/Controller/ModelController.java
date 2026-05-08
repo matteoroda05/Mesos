@@ -205,20 +205,6 @@ public class ModelController {
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
 
-    public void playerSkippedOffer(Color player_color) {
-        GameTable game_table = this.game_context.getGameTable();
-        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        if (!game_table.getTurnOrderTile().currentOrderTopToBottom().getFirst().equals(player_color)) {
-            throw new IllegalStateException("Player " + player_color + " is not the first player in the turn order");
-        }
-        game_table.getTurnOrderTile().clearFirst();
-    }
-
-    public void playerReturnSkippedOffer(Color player_color) {
-        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        this.game_context.getGameTable().getTurnOrderTile().placeTotem(player_color);
-    }
-
     /**
      * Grants food to a player.
      *

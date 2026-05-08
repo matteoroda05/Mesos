@@ -6,12 +6,8 @@ import java.rmi.RemoteException;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.DeclineReconnectRequest;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ReconnectGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ReconnectProbeRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -22,14 +18,6 @@ public interface RemoteMesosServer extends Remote {
     GameOperationResult createGame(CreateGameRequest request) throws RemoteException;
 
     GameOperationResult joinGame(JoinGameRequest request) throws RemoteException;
-
-    GameOperationResult getReconnectProposal(ReconnectProbeRequest request) throws RemoteException;
-
-    GameOperationResult reconnectGame(ReconnectGameRequest request) throws RemoteException;
-
-    GameOperationResult declineReconnect(DeclineReconnectRequest request) throws RemoteException;
-
-    GameOperationResult heartbeat(HeartbeatRequest request) throws RemoteException;
 
     GameOperationResult getSnapshot(SnapshotRequest request) throws RemoteException;
 

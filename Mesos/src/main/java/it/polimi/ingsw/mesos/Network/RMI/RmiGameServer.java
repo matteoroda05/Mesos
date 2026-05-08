@@ -3,8 +3,6 @@ package it.polimi.ingsw.mesos.Network.RMI;
 import java.io.IOException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.rmi.server.RemoteServer;
-import java.rmi.server.ServerNotActiveException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -14,15 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.DeclineReconnectRequest;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateSink;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.Requests.ReconnectGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ReconnectProbeRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -106,27 +100,7 @@ public class RmiGameServer implements AutoCloseable {
 
         @Override
         public GameOperationResult joinGame(JoinGameRequest request) {
-            return serverService.joinGame(request, clientAddress());
-        }
-
-        @Override
-        public GameOperationResult getReconnectProposal(ReconnectProbeRequest request) {
-            return serverService.getReconnectProposal(request, clientAddress());
-        }
-
-        @Override
-        public GameOperationResult reconnectGame(ReconnectGameRequest request) {
-            return serverService.reconnectGame(request, clientAddress());
-        }
-
-        @Override
-        public GameOperationResult declineReconnect(DeclineReconnectRequest request) {
-            return serverService.declineReconnect(request, clientAddress());
-        }
-
-        @Override
-        public GameOperationResult heartbeat(HeartbeatRequest request) {
-            return serverService.heartbeat(request, clientAddress());
+            return serverService.joinGame(request);
         }
 
         @Override
@@ -161,14 +135,6 @@ public class RmiGameServer implements AutoCloseable {
 
         private GameUpdateSink createSink(RemoteGameUpdateListener listener) {
             return update -> listener.onUpdate(update);
-        }
-
-        private String clientAddress() {
-            try {
-                return RemoteServer.getClientHost();
-            } catch (ServerNotActiveException exception) {
-                return null;
-            }
         }
     }
 }

@@ -58,7 +58,7 @@ final class CliPrinter {
         appendBoard(builder, snapshot, boardWidth);
 
         if (snapshot.finished()) {
-            appendFinalRanking(builder, snapshot.players(), snapshot.winnerNickname());
+            appendFinalRanking(builder, snapshot.players());
         }
 
         builder.append(NEW_LINE).append(commandsHint(snapshot, localNickname));
@@ -136,9 +136,6 @@ final class CliPrinter {
         if (snapshot.finished()) {
             return "Partita conclusa: usa 'quit' per uscire oppure premi Invio per rivedere il risultato.";
         }
-        if (snapshot.status() == GameStatus.SUSPENDED) {
-            return "Partita sospesa: premi Invio per aggiornare o usa 'wait 2'.";
-        }
         if (!Objects.equals(snapshot.currentPlayerNickname(), localNickname)) {
             return "Non e' il tuo turno: premi Invio per aggiornare o usa 'wait 2'.";
         }
@@ -163,13 +160,7 @@ final class CliPrinter {
             return youAre + "La partita non e' ancora iniziata.";
         }
         if (snapshot.finished()) {
-            if (snapshot.winnerNickname() != null) {
-                return youAre + "La partita e' terminata. Vince " + snapshot.winnerNickname() + ".";
-            }
             return youAre + "La partita e' terminata. Controlla la classifica finale qui sotto.";
-        }
-        if (snapshot.status() == GameStatus.SUSPENDED) {
-            return youAre + "La partita e' sospesa in attesa che un altro giocatore si riconnetta.";
         }
         if (snapshot.currentPlayerNickname() == null) {
             return youAre + "Il tavolo e' in aggiornamento.";
@@ -231,7 +222,6 @@ final class CliPrinter {
                     .append(player.characterCount())
                     .append(" | edifici ")
                     .append(player.buildingCount())
-                    .append(player.online() ? " | online" : " | offline")
                     .append(NEW_LINE);
         }
     }
@@ -324,10 +314,7 @@ final class CliPrinter {
         }
     }
 
-    private void appendFinalRanking(StringBuilder builder, List<PlayerSummary> players, String winnerNickname) {
-        if (winnerNickname != null) {
-            builder.append(NEW_LINE).append("Vincitore: ").append(winnerNickname).append(NEW_LINE);
-        }
+    private void appendFinalRanking(StringBuilder builder, List<PlayerSummary> players) {
         builder.append(NEW_LINE).append("Classifica finale").append(NEW_LINE);
         List<PlayerSummary> ranking = players.stream()
                 .sorted(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
@@ -530,7 +517,6 @@ final class CliPrinter {
             case SETUP -> "Setup";
             case ROUND_OFFER -> "Scelta tessere";
             case ROUND_ACTIONS -> "Scelta carte";
-            case SUSPENDED -> "Sospesa";
             case ROUND_EVENTS -> "Eventi di round";
             case ROUND_END -> "Fine round";
             case FINAL_EVENTS -> "Eventi finali";

@@ -67,12 +67,6 @@ public class GameFlowController {
         advance();
     }
 
-    public void skipTurn() {
-        ensureGameIsRunning();
-        current_state = current_state.skipTurn();
-        advance();
-    }
-
     /**
      * Guards public commands from being executed after the game has ended.
      */

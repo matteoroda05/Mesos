@@ -10,7 +10,6 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.DeclineReconnectRequest;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
@@ -18,10 +17,8 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
-import it.polimi.ingsw.mesos.Network.ReconnectProposal;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.Requests.ReconnectGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -49,9 +46,6 @@ public final class MesosCliClient {
         printBanner();
 
         try (GameClient client = connectWithRetry()) {
-            if (handleReconnectOffer(client)) {
-                return;
-            }
             lobbyLoop(client);
         }
     }
@@ -85,36 +79,6 @@ public final class MesosCliClient {
                 return;
             }
         }
-    }
-
-    private boolean handleReconnectOffer(GameClient client) throws IOException {
-        GameOperationResult reconnectCheck = client.getReconnectProposal();
-        if (!reconnectCheck.success() || reconnectCheck.reconnectProposal() == null) {
-            return false;
-        }
-
-        ReconnectProposal proposal = reconnectCheck.reconnectProposal();
-        if (!promptYesNo("Trovata la tua ultima partita '" + proposal.gameName()
-                + "' come '" + proposal.nickname() + "'. Vuoi riconnetterti")) {
-            handleResult(client.declineReconnect(
-                    new DeclineReconnectRequest(proposal.gameName(), proposal.nickname())
-            ));
-            return false;
-        }
-
-        GameOperationResult reconnectResult = client.reconnectGame(
-                new ReconnectGameRequest(proposal.gameName(), proposal.nickname())
-        );
-        if (!reconnectResult.success()) {
-            handleResult(reconnectResult);
-            return false;
-        }
-
-        gameName = proposal.gameName();
-        nickname = proposal.nickname();
-        handleResult(reconnectResult);
-        enterGame(client);
-        return true;
     }
 
     private boolean handleCreateFlow(GameClient client, String requestedGameName) throws IOException {
@@ -501,7 +465,7 @@ public final class MesosCliClient {
                 printLine(label + " non puo' essere vuoto.");
                 continue;
             }
-            if (value.equals("y") || value.equals("yes") || value.equals("s") || value.equals("si")) {
+            if (value.equals("y") || value.equals("yes")) {
                 return true;
             }
             if (value.equals("n") || value.equals("no")) {

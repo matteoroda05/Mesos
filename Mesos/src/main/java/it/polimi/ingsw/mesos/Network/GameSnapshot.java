@@ -13,7 +13,6 @@ public record GameSnapshot(
         int joinedPlayers,
         boolean started,
         boolean finished,
-        String winnerNickname,
         GameStatus status,
         int currentRound,
         Era currentEra,

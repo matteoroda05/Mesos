@@ -76,7 +76,7 @@ public class SocketGameServer implements AutoCloseable {
              ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
              ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
             output.flush();
-            connection = new ClientConnection(output, socket.getInetAddress().getHostAddress());
+            connection = new ClientConnection(output);
 
             while (running.get() && !socket.isClosed()) {
                 GameRequest payload;
@@ -117,12 +117,10 @@ public class SocketGameServer implements AutoCloseable {
 
     public final class ClientConnection implements GameUpdateSink {
         private final ObjectOutputStream output;
-        private final String clientAddress;
         private SubscribeGameRequest activeSubscription;
 
-        private ClientConnection(ObjectOutputStream output, String clientAddress) {
+        private ClientConnection(ObjectOutputStream output) {
             this.output = output;
-            this.clientAddress = clientAddress;
         }
 
         @Override
@@ -154,10 +152,6 @@ public class SocketGameServer implements AutoCloseable {
                     && activeSubscription.nickname().equals(request.nickname())) {
                 activeSubscription = null;
             }
-        }
-
-        public String clientAddress() {
-            return clientAddress;
         }
 
         private void cleanup() {

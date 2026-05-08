@@ -10,8 +10,7 @@ public record PlayerSummary(
         int food,
         int prestigePoints,
         int characterCount,
-        int buildingCount,
-        boolean online
+        int buildingCount
 ) implements Serializable {
 
     public PlayerSummary {

@@ -28,7 +28,6 @@ class CliPrinterTest {
                     2,
                     true,
                     false,
-                    null,
                     GameStatus.ROUND_ACTIONS,
                     2,
                     Era.SECOND,
@@ -37,8 +36,8 @@ class CliPrinterTest {
                     1,
                     2,
                     List.of(
-                            new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2, true),
-                            new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1, true)
+                            new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
+                            new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)
                     ),
                     List.of(
                             new OfferTileSummary(0, 'A', 1, 0, 0, false, Color.BLUE, "Alice"),
