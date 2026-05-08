@@ -14,6 +14,7 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateSink;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
@@ -25,6 +26,7 @@ public class RmiGameServer implements AutoCloseable {
     private final Registry registry;
     private final RemoteMesosServer remoteServer;
     private final String serviceName;
+    private final String advertisedHost;
     private final int port;
 
     public RmiGameServer(MesosServerService serverService, int port, String serviceName) throws RemoteException {
@@ -46,12 +48,11 @@ public class RmiGameServer implements AutoCloseable {
             throw new IllegalArgumentException("serviceName cannot be null or blank");
         }
 
-        if (System.getProperty("java.rmi.server.hostname") == null) {
-            System.setProperty("java.rmi.server.hostname", host);
-        }
+        NetworkDefaults.configureRmiServerHostname(host);
 
         this.port = port;
         this.serviceName = serviceName;
+        this.advertisedHost = System.getProperty("java.rmi.server.hostname");
         this.registry = LocateRegistry.createRegistry(port);
         this.remoteServer = new RmiServerAdapter(serverService);
         registry.rebind(serviceName, remoteServer);
@@ -59,6 +60,10 @@ public class RmiGameServer implements AutoCloseable {
 
     public int getPort() {
         return port;
+    }
+
+    public String getAdvertisedHost() {
+        return advertisedHost;
     }
 
     @Override
@@ -131,6 +136,11 @@ public class RmiGameServer implements AutoCloseable {
         public GameOperationResult unsubscribe(UnsubscribeGameRequest request, RemoteGameUpdateListener listener) {
             GameUpdateSink sink = listener == null ? null : sinksByListener.remove(listener);
             return serverService.unsubscribe(request, sink);
+        }
+
+        @Override
+        public GameOperationResult heartbeat(HeartbeatRequest request) {
+            return serverService.heartbeat(request);
         }
 
         private GameUpdateSink createSink(RemoteGameUpdateListener listener) {

@@ -67,6 +67,12 @@ public class GameFlowController {
         advance();
     }
 
+    public void skipCurrentTurn(Color player_color) {
+        ensureGameIsRunning();
+        current_state = current_state.skipTurn(player_color);
+        advance();
+    }
+
     /**
      * Guards public commands from being executed after the game has ended.
      */

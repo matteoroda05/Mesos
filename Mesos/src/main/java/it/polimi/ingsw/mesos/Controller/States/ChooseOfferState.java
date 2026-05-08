@@ -40,6 +40,20 @@ public class ChooseOfferState extends GameState {
     }
 
     @Override
+    public GameState skipTurn(Color player_color) {
+        if (p != player_color) {
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
+        }
+
+        controller.playerSkipOffer(player_color);
+        p = controller.getNextPlayerTurn();
+        if (p == null) {
+            return new ActionState(controller);
+        }
+        return this;
+    }
+
+    @Override
     public GameStatus getStatus() {
         return GameStatus.ROUND_OFFER;
     }

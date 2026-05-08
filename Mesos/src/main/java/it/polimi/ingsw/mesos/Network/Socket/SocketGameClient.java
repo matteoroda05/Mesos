@@ -7,6 +7,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
@@ -16,6 +20,8 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
+import it.polimi.ingsw.mesos.Network.NetworkDefaults;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
@@ -28,10 +34,12 @@ public class SocketGameClient implements GameClient {
     private final ObjectInputStream input;
     private final BlockingQueue<GameOperationResult> responses;
     private final Thread readerThread;
+    private final ScheduledExecutorService heartbeatExecutor;
 
     private volatile SocketClientContext context;
     private volatile boolean running;
     private volatile SubscribeGameRequest activeSubscription;
+    private volatile ScheduledFuture<?> heartbeatTask;
 
     public SocketGameClient(String host, int port) throws IOException {
         if (host == null || host.isBlank()) {
@@ -48,6 +56,11 @@ public class SocketGameClient implements GameClient {
         this.responses = new LinkedBlockingQueue<>();
         this.context = new SocketClientContext(this.responses, null);
         this.running = true;
+        this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(task -> {
+            Thread thread = new Thread(task, "mesos-socket-client-heartbeat");
+            thread.setDaemon(true);
+            return thread;
+        });
         this.readerThread = new Thread(this::readLoop, "mesos-socket-client-reader");
         this.readerThread.setDaemon(true);
         this.readerThread.start();
@@ -96,6 +109,7 @@ public class SocketGameClient implements GameClient {
         GameOperationResult result = exchange(request);
         if (result.success()) {
             activeSubscription = request;
+            startHeartbeat();
             return result;
         }
         context = new SocketClientContext(responses, null);
@@ -111,6 +125,7 @@ public class SocketGameClient implements GameClient {
 
         GameOperationResult result = exchange(request);
         if (result.success()) {
+            stopHeartbeat();
             activeSubscription = null;
             context = new SocketClientContext(responses, null);
         }
@@ -144,9 +159,40 @@ public class SocketGameClient implements GameClient {
             } catch (IOException ignored) {
             }
         }
+        stopHeartbeat();
+        heartbeatExecutor.shutdownNow();
         running = false;
         socket.close();
         readerThread.interrupt();
+    }
+
+    private void startHeartbeat() {
+        stopHeartbeat();
+        heartbeatTask = heartbeatExecutor.scheduleAtFixedRate(
+                this::sendHeartbeat,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    private void stopHeartbeat() {
+        ScheduledFuture<?> task = heartbeatTask;
+        if (task != null) {
+            task.cancel(true);
+            heartbeatTask = null;
+        }
+    }
+
+    private void sendHeartbeat() {
+        SubscribeGameRequest subscription = activeSubscription;
+        if (!running || subscription == null) {
+            return;
+        }
+        try {
+            exchange(new HeartbeatRequest(subscription.gameName(), subscription.nickname()));
+        } catch (IOException ignored) {
+        }
     }
 
     private void readLoop() {

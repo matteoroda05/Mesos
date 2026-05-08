@@ -93,6 +93,18 @@ public class ActionState extends GameState {
         return this;
     }
 
+    @Override
+    public GameState skipTurn(Color player_color) {
+        if (p != player_color) {
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
+        }
+
+        pick_top_row = 0;
+        pick_bottom_row = 0;
+        food_gain = 0;
+        return endTurn();
+    }
+
     /**
      * If the current player chose the offer with the food then give the food to him and end is turn, otherwise do nothing
      * @return next state

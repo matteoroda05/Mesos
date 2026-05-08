@@ -82,4 +82,19 @@ class MesosServerCoreTest {
         assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, duplicatePlayer.errorCode());
         assertNull(duplicatePlayer.snapshot());
     }
+
+    @Test
+    void startedGameAllowsKnownPlayerToRejoinWithSameNickname() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("rejoin-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("rejoin-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("rejoin-room", "Bob")).success());
+
+        GameOperationResult rejoin = serverCore.joinGame(new JoinGameRequest("rejoin-room", "Alice"));
+
+        assertTrue(rejoin.success());
+        assertEquals(GameStatus.ROUND_OFFER, rejoin.snapshot().status());
+        assertEquals(2, rejoin.snapshot().joinedPlayers());
+    }
 }

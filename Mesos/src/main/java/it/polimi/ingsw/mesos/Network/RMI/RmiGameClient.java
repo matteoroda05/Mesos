@@ -6,6 +6,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
@@ -14,6 +18,8 @@ import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.NetworkDefaults;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
@@ -21,8 +27,10 @@ import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class RmiGameClient implements GameClient {
     private final RemoteMesosServer remoteServer;
+    private final ScheduledExecutorService heartbeatExecutor;
     private SubscribeGameRequest activeSubscription;
     private RemoteGameUpdateListener remoteListener;
+    private ScheduledFuture<?> heartbeatTask;
 
     public RmiGameClient(String host, int registryPort, String serviceName) throws IOException {
         if (host == null || host.isBlank()) {
@@ -38,6 +46,11 @@ public class RmiGameClient implements GameClient {
         try {
             Registry registry = LocateRegistry.getRegistry(host, registryPort);
             this.remoteServer = (RemoteMesosServer) registry.lookup(serviceName);
+            this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(task -> {
+                Thread thread = new Thread(task, "mesos-rmi-client-heartbeat");
+                thread.setDaemon(true);
+                return thread;
+            });
         } catch (NotBoundException exception) {
             throw new IOException("RMI service '" + serviceName + "' is not bound", exception);
         }
@@ -88,6 +101,7 @@ public class RmiGameClient implements GameClient {
             if (result.success()) {
                 activeSubscription = request;
                 remoteListener = exportedListener;
+                startHeartbeat();
                 return result;
             }
 
@@ -111,6 +125,7 @@ public class RmiGameClient implements GameClient {
         try {
             GameOperationResult result = remoteServer.unsubscribe(request, remoteListener);
             if (result.success()) {
+                stopHeartbeat();
                 activeSubscription = null;
                 RemoteGameUpdateListener listenerToClose = remoteListener;
                 remoteListener = null;
@@ -135,6 +150,36 @@ public class RmiGameClient implements GameClient {
             } catch (Exception ignored) {
             }
             remoteListener = null;
+        }
+        stopHeartbeat();
+        heartbeatExecutor.shutdownNow();
+    }
+
+    private void startHeartbeat() {
+        stopHeartbeat();
+        heartbeatTask = heartbeatExecutor.scheduleAtFixedRate(
+                this::sendHeartbeat,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                NetworkDefaults.HEARTBEAT_INTERVAL_MILLIS,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    private void stopHeartbeat() {
+        if (heartbeatTask != null) {
+            heartbeatTask.cancel(true);
+            heartbeatTask = null;
+        }
+    }
+
+    private void sendHeartbeat() {
+        SubscribeGameRequest subscription = activeSubscription;
+        if (subscription == null) {
+            return;
+        }
+        try {
+            remoteServer.heartbeat(new HeartbeatRequest(subscription.gameName(), subscription.nickname()));
+        } catch (RemoteException ignored) {
         }
     }
 
