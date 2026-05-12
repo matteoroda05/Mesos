@@ -1,6 +1,8 @@
 module it.polimi.ingsw.mesos {
     requires java.desktop;
     requires java.rmi;
+    requires javafx.controls;
+    requires javafx.graphics;
 
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
@@ -36,4 +38,7 @@ module it.polimi.ingsw.mesos {
     exports it.polimi.ingsw.mesos.Network.Requests;
     exports it.polimi.ingsw.mesos.Network.Messages;
     exports it.polimi.ingsw.mesos.Launcher;
+    exports it.polimi.ingsw.mesos.gui;
+    opens it.polimi.ingsw.mesos.Launcher to javafx.graphics;
+    opens it.polimi.ingsw.mesos.gui to javafx.graphics;
 }

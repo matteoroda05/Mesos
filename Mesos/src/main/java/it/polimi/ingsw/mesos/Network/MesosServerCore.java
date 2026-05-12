@@ -405,7 +405,9 @@ public class MesosServerCore implements MesosServerService {
                             player.getFood(),
                             player.getPrestigePoints(),
                             player.getTribe().getNumCharacters(),
-                            player.getTribe().getNumBuildings()
+                            player.getTribe().getNumBuildings(),
+                            summarizeOwnedCards(player.getTribe().getCharacterCards()),
+                            summarizeOwnedCards(player.getTribe().getBuildingCards())
                     ))
                     .toList();
         }
@@ -468,7 +470,8 @@ public class MesosServerCore implements MesosServerService {
                         false,
                         describeCard(buildingCard),
                         buildingCard.getFoodCost(),
-                        buildingCard.getPrestigePoints()
+                        buildingCard.getPrestigePoints(),
+                        buildingCard.getPresentationId()
                 );
                 case EventCard eventCard -> new CardSummary(
                         selectionIndex,
@@ -477,7 +480,8 @@ public class MesosServerCore implements MesosServerService {
                         true,
                         describeCard(eventCard),
                         null,
-                        null
+                        null,
+                        eventCard.getPresentationId()
                 );
                 case CharacterCard characterCard -> new CardSummary(
                         selectionIndex,
@@ -486,55 +490,64 @@ public class MesosServerCore implements MesosServerService {
                         false,
                         describeCard(characterCard),
                         null,
-                        null
+                        null,
+                        characterCard.getPresentationId()
                 );
                 default -> throw new IllegalStateException("Unsupported card type: " + card.getClass().getSimpleName());
             };
         }
 
+        private List<CardSummary> summarizeOwnedCards(List<? extends Card> cards) {
+            List<CardSummary> summaries = new ArrayList<>();
+            for (int index = 0; index < cards.size(); index++) {
+                summaries.add(summarizeCard(cards.get(index), index));
+            }
+            return summaries;
+        }
+
         private String describeCard(Card card) {
             return switch (card) {
                 case BuilderCard builderCard ->
-                        "sconto edifici " + builderCard.getBuildingDiscount()
-                                + ", fine partita +" + builderCard.getPrestigePoints() + " pp";
+                        "Building discount " + builderCard.getBuildingDiscount()
+                                + ", end game +" + builderCard.getPrestigePoints() + " pp";
                 case GathererCard gathererCard ->
-                        "sconto sostentamento " + gathererCard.getDiscount() + " cibo";
+                        "Sustenance discount " + gathererCard.getDiscount() + " food";
                 case HunterCard hunterCard ->
-                        hunterCard.isActiveHunter() ? "cacciatore attivo" : "cacciatore";
+                        hunterCard.isActiveHunter() ? "Active hunter" : "Hunter";
                 case InventorCard inventorCard ->
-                        "icona " + inventorCard.getInventionIcon();
+                        "Icon " + inventorCard.getInventionIcon();
                 case ShamanCard shamanCard ->
-                        shamanCard.getStars() + " stelle sciamaniche";
+                        shamanCard.getStars() + " shamanic stars";
                 case HuntEvent huntEvent ->
-                        "+" + huntEvent.getPrestigePerHunter() + " pp e +" + huntEvent.getFoodPerHunter()
-                                + " cibo per cacciatore";
+                        "+" + huntEvent.getPrestigePerHunter() + " pp and +" + huntEvent.getFoodPerHunter()
+                                + " food per hunter";
                 case CavePaintingEvent cavePaintingEvent ->
-                        "con almeno " + cavePaintingEvent.getThreshold() + " artisti: +"
+                        "With at least " + cavePaintingEvent.getThreshold() + " artists: +"
                                 + cavePaintingEvent.getPointsPerArtist()
-                                + " pp ciascuno, altrimenti " + cavePaintingEvent.getPenalty() + " pp";
+                                + " pp each, otherwise " + cavePaintingEvent.getPenalty() + " pp";
                 case ShamanicRitualEvent shamanicRitualEvent ->
-                        "vincitori +" + shamanicRitualEvent.getWinnerBonus()
-                                + " pp, sconfitti " + shamanicRitualEvent.getLoserPenalty() + " pp";
+                        "Winners +" + shamanicRitualEvent.getWinnerBonus()
+                                + " pp, losers " + shamanicRitualEvent.getLoserPenalty() + " pp";
                 case SustenanceEvent sustenanceEvent ->
-                        sustenanceEvent.getFoodPerCharacter() + " cibo per personaggio, ogni deficit costa "
+                        sustenanceEvent.getFoodPerCharacter() + " food per character, each deficit costs "
                                 + sustenanceEvent.getPointPenalty() + " pp";
                 case BuildingBonusEvent buildingBonusEvent ->
-                        "su " + formatTrigger(buildingBonusEvent.getTrigger())
+                        "On " + formatTrigger(buildingBonusEvent.getTrigger())
                                 + ": " + formatName(buildingBonusEvent.getCharacterType().getSimpleName())
-                                + " da' " + signed(buildingBonusEvent.getFoodBonus(), " cibo")
+                                + " gives " + signed(buildingBonusEvent.getFoodBonus(), " food")
                                 + ", +" + buildingBonusEvent.getPrestigeBonus() + " pp";
                 case BuildingEndTurn buildingEndTurn ->
-                        "fine turno: +" + buildingEndTurn.getFoodBonus() + " cibo con bonus turno positivo";
+                        "End turn: +" + buildingEndTurn.getFoodBonus() + " food with a positive turn-order bonus";
                 case BuildingOnCard buildingOnCard ->
                         buildingOnCard.isSetCompletion()
-                                ? "quando prendi carte: +" + buildingOnCard.getFoodBonus() + " cibo se completi un set"
-                                : "coppia inventori: +" + buildingOnCard.getFoodBonus() + " cibo con icona duplicata";
+                                ? "When taking cards: +" + buildingOnCard.getFoodBonus() + " food if you complete a set"
+                                : "Inventor pair: +" + buildingOnCard.getFoodBonus() + " food with a duplicated icon";
                 case BuildingShamanicRitual buildingShamanicRitual ->
                         buildingShamanicRitual.getStarBonus() != 0
-                                ? "rituale: +" + buildingShamanicRitual.getStarBonus() + " stelle prima del punteggio"
+                                ? "Ritual: +" + buildingShamanicRitual.getStarBonus() + " stars before scoring"
                                 : buildingShamanicRitual.getWinMultiplier() != 0
-                                        ? "rituale: il vincitore moltiplica x" + buildingShamanicRitual.getWinMultiplier()
-                                        : "rituale: annulla la tua penalita' se perdi";
+                                        ? "Ritual: the winner multiplies by x" + buildingShamanicRitual.getWinMultiplier()
+                                        : "Ritual: cancel your penalty if you lose";
                 case BuildingEndGame buildingEndGame ->
                         describeEndGameBuilding(buildingEndGame);
                 default -> "";
@@ -543,17 +556,17 @@ public class MesosServerCore implements MesosServerService {
 
         private String describeEndGameBuilding(BuildingEndGame buildingEndGame) {
             if (buildingEndGame.isDoubleBuildersPrestige()) {
-                return "fine partita: raddoppia il prestigio dei builder";
+                return "End game: double builders' prestige";
             }
             if (buildingEndGame.getCharacterSetBonusPrestige() != 0) {
-                return "fine partita: +" + buildingEndGame.getCharacterSetBonusPrestige() + " pp per set completo di personaggi";
+                return "End game: +" + buildingEndGame.getCharacterSetBonusPrestige() + " pp for each complete character set";
             }
             if (buildingEndGame.getCharacterMultiplier() != 0 && buildingEndGame.getCharacterType() != null) {
-                return "fine partita: +" + buildingEndGame.getCharacterMultiplier() + " pp per "
+                return "End game: +" + buildingEndGame.getCharacterMultiplier() + " pp per "
                         + formatName(buildingEndGame.getCharacterType().getSimpleName());
             }
             if (buildingEndGame.getPrestigeBonus() != 0) {
-                return "fine partita: +" + buildingEndGame.getPrestigeBonus() + " pp";
+                return "End game: +" + buildingEndGame.getPrestigeBonus() + " pp";
             }
             return "";
         }

@@ -7,11 +7,6 @@ public final class MesosServerLauncherApp {
     }
 
     public static void main(String[] args) throws Exception {
-        if (System.console() != null) {
-            MesosServerLauncher.main(args);
-            return;
-        }
-
-        SwingConsoleWindow.open("Mesos Server", () -> MesosServerLauncher.main(args));
+        MesosServerLauncher.main(args);
     }
 }

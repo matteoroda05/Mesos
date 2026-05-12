@@ -1,0 +1,174 @@
+Riepilogo file modificati per la GUI JavaFX di MESOS
+===================================================
+
+Questo file elenca i file che ho modificato per implementare il client JavaFX
+e spiega in modo discorsivo che cosa e' stato cambiato in ciascuno.
+
+
+1. File esistenti modificati
+----------------------------
+
+pom.xml
+- Ho aggiunto la dipendenza standard OpenJFX necessaria per usare JavaFX.
+- Ho aggiunto il plugin Maven di JavaFX per poter avviare il client GUI tramite Maven.
+- Ho lasciato invariata il piu' possibile la struttura della build esistente.
+
+src/main/java/module-info.java
+- Ho aggiunto il modulo JavaFX richiesto dal client grafico.
+- Ho aperto il package del launcher a JavaFX, in modo che l'entry point `Application` funzioni correttamente in ambiente modulare.
+
+src/main/java/it/polimi/ingsw/mesos/Launcher/MesosClientLauncher.java
+- Ho sostituito il vecchio avvio CLI/Swing.
+- Il launcher del client ora avvia l'applicazione JavaFX invece di usare `MesosCliClient` o `SwingConsoleWindow` come frontend finale.
+
+src/main/java/it/polimi/ingsw/mesos/Launcher/MesosServerLauncherApp.java
+- Ho semplificato il launcher server applicativo.
+- Prima, in assenza di console, provava ad aprire una finestra Swing; questo faceva fallire facilmente l'avvio con `mvn exec:java`.
+- Ora delega sempre direttamente a `MesosServerLauncher`, cosi' il server parte correttamente da terminale anche nel flusso di sviluppo locale.
+
+src/main/java/it/polimi/ingsw/mesos/Model/Cards/Card.java
+- Ho aggiunto un piccolo campo di presentazione per risolvere gli asset grafici.
+- Questo non cambia le regole di gioco: serve solo a conservare una chiave visiva usata dal client per trovare l'immagine corretta.
+
+src/main/java/it/polimi/ingsw/mesos/Model/CardLoader.java
+- Ho centralizzato l'assegnazione delle chiavi degli asset durante il caricamento delle carte.
+- Ho mappato le tribe card verso le immagini frontali tribe, le building card verso le immagini frontali building e le event card verso un'immagine evento generica e sicura.
+- Ho lasciato invariato `Cards.json`, come richiesto dal fatto che e' un file "old".
+
+src/main/java/it/polimi/ingsw/mesos/Model/Tribe.java
+- Ho aggiunto accessor in sola lettura per ottenere le carte personaggio e le carte edificio possedute.
+- Servono solo per esporre alla GUI uno stato che esisteva gia' nel model.
+
+src/main/java/it/polimi/ingsw/mesos/Network/CardSummary.java
+- Ho esteso il DTO aggiungendo il campo `assetKey`.
+- Ho mantenuto compatibilita' con il codice precedente aggiungendo anche un costruttore compatibile con la vecchia firma.
+
+src/main/java/it/polimi/ingsw/mesos/Network/PlayerSummary.java
+- Ho esteso il DTO per permettere alla GUI di mostrare anche le carte possedute da ciascun giocatore.
+- Ho aggiunto `characterCards` e `buildingCards` come dati di presentazione.
+- Anche qui ho mantenuto compatibilita' con il costruttore precedente.
+
+src/main/java/it/polimi/ingsw/mesos/Network/MesosServerCore.java
+- Ho esteso la generazione degli snapshot in modo che includano:
+  - le chiavi grafiche delle carte
+  - le carte personaggio possedute dai giocatori
+  - le carte edificio possedute dai giocatori
+- Ho tradotto in inglese le descrizioni testuali delle carte inviate al client, per rispettare il vincolo dei testi GUI in inglese.
+- Non ho spostato logica di regole nel client: il server resta la fonte autorevole.
+
+
+2. Nuovi file aggiunti
+----------------------
+
+src/main/java/it/polimi/ingsw/mesos/Launcher/MesosClientApplication.java
+- Ho aggiunto la vera applicazione JavaFX del client.
+- Qui ho implementato l'intero flusso GUI:
+  - schermata connessione
+  - lobby
+  - create game
+  - join game
+  - waiting room
+  - tavolo di gioco
+  - classifica finale
+- Gestisce azioni asincrone, overlay di caricamento, messaggi di stato e transizioni tra schermate.
+- Ho anche corretto il comportamento di ridimensionamento della finestra rendendo connection e lobby piu' responsive, con wrapping dei pannelli e vincoli minimi meno rigidi.
+- In un secondo passaggio ho ulteriormente abbassato i vincoli minimi della stage, ridotto il padding generale e reso il contenitore principale piu' permissivo, per evitare tagli e blocchi del resize.
+- Nelle iterazioni successive ho anche compattato lobby e waiting room per farle stare in una singola schermata senza dipendere dallo scroll, riducendo in particolare l'altezza della tabella lobby e stringendo i pannelli pre-partita.
+- In un ulteriore giro di rifinitura ho anche tolto diversi limiti di larghezza troppo rigidi in lobby e waiting room, per evitare l'effetto di riquadri forzati e lasciare i contenitori piu' fluidi rispetto alla finestra.
+- Ho poi semplificato ancora la lobby rimuovendo il pannello laterale "How this works" e aggiungendo piu' margine superiore sia in lobby sia nella waiting room.
+
+src/main/java/it/polimi/ingsw/mesos/GUI/MesosGuiService.java
+- Ho aggiunto un service dedicato lato GUI sopra `GameClient`.
+- Esegue le operazioni di rete in asincrono, cosi' il thread JavaFX non si blocca.
+- Gestisce connect, fetch lobby, create/join, refresh snapshot, scelta offerta/carta, subscribe/unsubscribe e disconnect.
+
+src/main/java/it/polimi/ingsw/mesos/GUI/MesosAssetResolver.java
+- Ho aggiunto un resolver centralizzato per le immagini.
+- Usa solo risorse caricate da classpath.
+- Gestisce in modo esplicito i mapping speciali:
+  - `Color.BLACK` -> `totem_purple.png`
+  - offer tile `B/C` -> immagine condivisa
+  - offer tile `E/F` -> immagine condivisa
+  - turn order tile dipendente dal numero di giocatori
+- Ho poi aggiunto anche il supporto alle carte retro era tribe/building e alle immagini informative evento/fine partita, per comporre una board interna piu' vicina al tavolo reale.
+- Se un'immagine manca, restituisce un risultato vuoto e la GUI mostra un placeholder leggibile.
+- In debug grafico ho rifinito anche le offer tile condivise `B/C` ed `E/F`, tagliando programmaticamente la meta' corretta dell'immagine invece di riusare la stessa immagine doppia intera per due tessere diverse.
+
+src/main/java/it/polimi/ingsw/mesos/GUI/MesosUserMessageMapper.java
+- Ho aggiunto un livello di mapping/traduzione per i messaggi del backend e della rete.
+- Converte errori codificati e messaggi grezzi misti in testi piu' puliti e coerenti per la GUI in inglese.
+- Mappa anche gli stati di gioco a etichette leggibili nell'interfaccia.
+
+src/main/java/it/polimi/ingsw/mesos/GUI/MesosGameBoardView.java
+- Ho aggiunto la vista principale del tavolo JavaFX.
+- Visualizza:
+  - pannelli giocatore
+  - carte possedute
+  - tessere offerta
+  - ordine di turno
+  - riga alta
+  - riga bassa
+  - classifica finale
+- Abilita i click solo quando lo snapshot indica che l'azione ha senso a livello informativo.
+- Usa placeholder quando un'immagine non e' disponibile.
+- In un secondo passaggio ho rifatto completamente la schermata interna con una composizione piu' simile al tavolo fisico:
+  - header compatto con stato partita e giocatori
+  - riga alta carte
+  - fascia centrale con tessere offerta e ordine di turno
+  - riga bassa carte
+  - pannello finale del giocatore focalizzato
+- La board interna ora e' pensata per stare tutta in una sola schermata senza scroll, usando una scala automatica sul viewport.
+- Ho anche corretto il viewport perche' non imponesse piu' una dimensione minima enorme alla finestra, che era la causa del resize bloccato e del taglio visivo.
+- Nelle iterazioni successive ho alleggerito ancora la board:
+  - ho eliminato l'header interno
+  - ho centrato il tavolo verso l'alto
+  - ho ingrandito carte e offer tiles
+  - ho sostituito la vecchia immagine della turn order tile con una colonna pulita di slot ordine di turno
+  - ho differenziato visivamente le offer tile che condividono lo stesso artwork B/C ed E/F con etichette esterne, invece di sovrascrivere testo sulle immagini
+  - ho eliminato i due retro laterali delle righe mercato, per lasciare al centro quasi solo il tavolo di gioco
+  - ho corretto la centratura usando i bounds reali del contenuto, cosi' la shell della board non viene piu' posizionata su una larghezza teorica sbagliata
+  - ho poi semplificato ancora il posizionamento della canvas togliendo le compensazioni laterali spurie, per riportare la board davvero al centro del viewport
+- quando il viewport custom ha continuato a creare decentramenti, l'ho sostituito con un wrapper di scala piu' semplice e stabile, basato su una canvas scalata dentro un contenitore centrato
+- In un'altra rifinitura della board ho corretto il deck di carte possedute in basso:
+  - ogni carta ora vive dentro uno slot stabile, cosi' l'hover non salta piu' tra carte vicine
+  - la fascia inferiore ha piu' spazio verticale, per evitare che le carte vengano tagliate
+  - le offer tile sono state rese piu' compatte togliendo le etichette sotto e riducendo anche la larghezza del box ordine di turno
+
+src/main/resources/it/polimi/ingsw/mesos/gui/mesos-gui.css
+- Ho aggiunto il foglio di stile JavaFX della GUI.
+- Definisce l'identita' visiva generale, i pannelli, i pulsanti, le carte, i placeholder, gli overlay e lo stile della tabella lobby.
+- In seguito ho esteso lo stile per la nuova board interna, introducendo classi dedicate per tavolo, corsie carte, fascia centrale, marker ordine di turno, pannello giocatore e badge sovrapposti alle carte.
+- Nelle iterazioni di debug grafico ho poi ripulito la board:
+  - allineamenti centrati reali anche lato CSS
+  - nuove pill sotto le offer tile
+  - nuova colonna ordine di turno senza immagini deformate o sovrapposte
+  - shell del tavolo piu' compatta e focalizzata sulle carte
+- In un passaggio successivo ho anche rifatto il tema globale:
+  - sfondo applicativo basato su `cards_png/sfondo1.png`
+  - palette scura coerente con i colori dell'immagine
+  - pannelli, form, tabella lobby e board aggiornati su toni fuoco/prugna/blu petrolio
+  - offer tile rese di nuovo piu' grandi e ravvicinate
+
+
+3. File rimossi
+---------------
+
+src/main/resources/it/polimi/ingsw/mesos/hello-view.fxml
+- Ho rimosso la risorsa FXML placeholder non funzionante.
+- Puntava a un `HelloController` inesistente e non faceva parte di una GUI reale.
+
+
+4. Note architetturali importanti
+---------------------------------
+
+- La GUI non duplica la logica di gioco.
+- La GUI usa il layer di rete esistente, gli snapshot e gli update push gia' previsti dal progetto.
+- Le regole restano validate e applicate lato server/controller.
+- I metadati grafici sono stati aggiunti in modo minimo e mirato, solo per mostrare correttamente le immagini nel client.
+- `Cards.json` non e' stato riscritto o "modernizzato".
+
+
+5. Nota sullo stato git
+-----------------------
+
+`src/main/resources/cards_png/` compare come directory non tracciata in `git status`, ma non l'ho modificata in questo passaggio di implementazione.

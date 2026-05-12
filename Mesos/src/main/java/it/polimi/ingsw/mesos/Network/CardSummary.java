@@ -11,8 +11,21 @@ public record CardSummary(
         boolean event,
         String details,
         Integer foodCost,
-        Integer prestigePoints
+        Integer prestigePoints,
+        String presentationId
 ) implements Serializable {
+
+    public CardSummary(
+            int selectionIndex,
+            String type,
+            Era era,
+            boolean event,
+            String details,
+            Integer foodCost,
+            Integer prestigePoints
+    ) {
+        this(selectionIndex, type, era, event, details, foodCost, prestigePoints, null);
+    }
 
     public CardSummary {
         if (selectionIndex < 0) {
@@ -23,6 +36,9 @@ public record CardSummary(
         }
         if (details == null) {
             details = "";
+        }
+        if (presentationId != null && presentationId.isBlank()) {
+            presentationId = null;
         }
     }
 }

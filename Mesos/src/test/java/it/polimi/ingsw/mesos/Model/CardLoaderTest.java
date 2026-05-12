@@ -36,7 +36,7 @@ class CardLoaderTest {
 
     @Test
     void tribeCardsTotalCountMatchesExpected() {
-        assertEquals(95, data.tribe_cards().size());
+        assertEquals(96, data.tribe_cards().size());
     }
 
     @Test
@@ -136,6 +136,14 @@ class CardLoaderTest {
                 .forEach(e -> {
                     assertNotNull(e);
                 });
+    }
+
+    @Test
+    void allCardsExposePresentationIds() {
+        data.tribe_cards().forEach(card ->
+                assertNotNull(card.getPresentationId(), "Every tribe card must expose a presentation id"));
+        data.building_cards().forEach(card ->
+                assertNotNull(card.getPresentationId(), "Every building card must expose a presentation id"));
     }
 
 
