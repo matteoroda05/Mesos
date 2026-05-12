@@ -2,14 +2,26 @@ package it.polimi.ingsw.mesos.Controller.States;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.CardLoader;
+import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
+import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
+import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
+import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.GameContext;
 import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
+import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -69,6 +81,42 @@ class ActionStateTest extends StateTestSupport {
             state.chooseCard(p, 0, false);
             assertEquals(initialBottom - 1, state.getRemainingBottomChoices());
         }
+    }
+
+    @Test
+    void processReturnsSameStateWhenPicksRemain() {
+        assertSame(state, state.process());
+    }
+
+    @Test
+    void constructorSkipsToEventsWhenNoOfferTileIsOccupied() {
+        game_context.getGameTable().getOfferTrack().getTile(0).clear();
+
+        ActionState skipped = new ActionState(model_controller);
+
+        assertInstanceOf(EventState.class, skipped.process());
+    }
+
+    @Test
+    void extraActionCanTargetBottomRow() {
+        Color player = player_colors.getFirst();
+
+        ActionState extra = new ActionState(model_controller, player, 2, false);
+
+        assertEquals(player, extra.getActivePlayer());
+        assertEquals(0, extra.getRemainingTopChoices());
+        assertEquals(2, extra.getRemainingBottomChoices());
+    }
+
+    @Test
+    void chooseCardRejectsRowsWithoutRemainingPicks() {
+        Color player = player_colors.getFirst();
+        ActionState topOnly = new ActionState(model_controller, player, 1, true);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> topOnly.chooseCard(player, 0, false));
+
+        assertTrue(exception.getMessage().contains("Wrong row"));
     }
 
     @Test
@@ -144,5 +192,166 @@ class ActionStateTest extends StateTestSupport {
         assertEquals(p, extraState.getActivePlayer());
         assertEquals(1, extraState.getRemainingTopChoices());
         assertEquals(0, extraState.getRemainingBottomChoices());
+    }
+
+    @Test
+    void processEndsStandardTurnRunsEndTurnBuildingsAndLoadsNextOfferTile() throws Exception {
+        java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
+        }
+
+        CardLoader.CardData baseData = CardLoader.load();
+        CardLoader.CardData customData = new CardLoader.CardData(
+                baseData.tribe_cards(), baseData.building_cards(), customTiles);
+
+        it.polimi.ingsw.mesos.Controller.GameSetup setup = new it.polimi.ingsw.mesos.Controller.GameSetup();
+        game_context = setup.createGame("StandardTurnLoadsNext", 3, customData);
+        setup.createMapOfPlayers(game_context, java.util.List.of("N", "M", "E"));
+        model_controller = new it.polimi.ingsw.mesos.Controller.ModelController(game_context);
+        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
+        game_context.getGameTable().getTurnOrderTile().clear();
+
+        Color first = player_colors.get(0);
+        Color second = player_colors.get(1);
+        game_context.getGameTable().getOfferTrack().getTile(0).occupy(first);
+        game_context.getGameTable().getOfferTrack().getTile(1).occupy(second);
+
+        CountingEndTurnBuilding building = new CountingEndTurnBuilding();
+        building.setOwner(game_context.getPlayer(first));
+        game_context.getPlayer(first).getTribe().addCard(building);
+
+        state = new ActionState(model_controller);
+        GameState nextState = state.process();
+
+        assertSame(state, nextState);
+        assertEquals(second, state.getActivePlayer());
+        assertEquals(1, building.calls);
+        assertTrue(game_context.getGameTable().getOfferTrack().getTile(0).isAvailable());
+        assertEquals(first, game_context.getGameTable().getTurnOrderTile().currentOrderTopToBottom().getFirst());
+    }
+
+    @Test
+    void extraTopCardChoiceTriggersOwnedOnCardBuildingAndFinishes() {
+        Color player = player_colors.getFirst();
+        CountingOnCardBuilding building = new CountingOnCardBuilding();
+        building.setOwner(game_context.getPlayer(player));
+        ActionSpyController spy = new ActionSpyController(
+                game_context,
+                Optional.of(new HunterCard(Era.FIRST, 2, false)),
+                List.of(building)
+        );
+
+        GameState nextState = new ActionState(spy, player, 1, true)
+                .chooseCard(player, 0, true);
+
+        assertInstanceOf(EventState.class, nextState);
+        assertEquals(1, spy.chooseCardCalls);
+        assertEquals(1, building.calls);
+    }
+
+    @Test
+    void extraBottomBuildingChoiceDoesNotTriggerOnCardBuilding() {
+        Color player = player_colors.getFirst();
+        CountingOnCardBuilding building = new CountingOnCardBuilding();
+        building.setOwner(game_context.getPlayer(player));
+        ActionSpyController spy = new ActionSpyController(
+                game_context,
+                Optional.empty(),
+                List.of(building)
+        );
+
+        GameState nextState = new ActionState(spy, player, 1, false)
+                .chooseCard(player, 0, false);
+
+        assertInstanceOf(EventState.class, nextState);
+        assertEquals(1, spy.chooseCardCalls);
+        assertEquals(0, building.calls);
+    }
+
+    @Test
+    void bottomCharacterChoiceIgnoresOnCardBuildingsOwnedByOtherPlayers() {
+        Color player = player_colors.getFirst();
+        Color other = player_colors.get(1);
+        CountingOnCardBuilding building = new CountingOnCardBuilding();
+        building.setOwner(game_context.getPlayer(other));
+        ActionSpyController spy = new ActionSpyController(
+                game_context,
+                Optional.of(new HunterCard(Era.FIRST, 2, false)),
+                List.of(building)
+        );
+
+        GameState nextState = new ActionState(spy, player, 1, false)
+                .chooseCard(player, 0, false);
+
+        assertInstanceOf(EventState.class, nextState);
+        assertEquals(1, spy.chooseCardCalls);
+        assertEquals(0, building.calls);
+    }
+
+    private static final class ActionSpyController extends ModelController {
+        private final Optional<CharacterCard> chosenCard;
+        private final List<BuildingCard> onCardBuildings;
+        private int chooseCardCalls;
+
+        private ActionSpyController(
+                GameContext gameContext,
+                Optional<CharacterCard> chosenCard,
+                List<BuildingCard> onCardBuildings
+        ) {
+            super(gameContext);
+            this.chosenCard = chosenCard;
+            this.onCardBuildings = onCardBuildings;
+        }
+
+        @Override
+        public Optional<CharacterCard> playerChooseCard(Color player_color, int card, boolean is_top) {
+            chooseCardCalls++;
+            return chosenCard;
+        }
+
+        @Override
+        public int getAvailableCards(Color player_color, boolean is_top) {
+            return 0;
+        }
+
+        @Override
+        public OfferTile getNextPlayerOfferTile() {
+            return null;
+        }
+
+        @Override
+        public List<BuildingCard> getBuildingsWithTrigger(BuildingTrigger trigger) {
+            if (trigger == BuildingTrigger.ON_ACQUIRE_CHARACTER) {
+                return onCardBuildings;
+            }
+            return List.of();
+        }
+    }
+
+    private static final class CountingOnCardBuilding extends BuildingOnCard {
+        private int calls;
+
+        private CountingOnCardBuilding() {
+            super(Era.FIRST, 2, 0, 0, 1, true, false);
+        }
+
+        @Override
+        public void effect(CharacterCard card, ModelController visitor) {
+            calls++;
+        }
+    }
+
+    private static final class CountingEndTurnBuilding extends BuildingEndTurn {
+        private int calls;
+
+        private CountingEndTurnBuilding() {
+            super(Era.FIRST, 2, 0, 0, 1);
+        }
+
+        @Override
+        public void effect(TurnOrderTile order, ModelController visitor) {
+            calls++;
+        }
     }
 }

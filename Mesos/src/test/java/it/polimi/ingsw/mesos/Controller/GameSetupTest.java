@@ -18,6 +18,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameSetupTest {
@@ -58,6 +59,24 @@ class GameSetupTest {
     }
 
     @Test
+    void createGameRejectsInvalidInputsAndMalformedCardData() throws Exception {
+        GameSetup setup = new GameSetup();
+        CardLoader.CardData validData = CardLoader.load();
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame(null, 2, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame(" ", 2, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame("Game", 1, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame("Game", 6, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame("Game", 2, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> setup.createGame("Game", 2, new CardLoader.CardData(null, validData.building_cards(), validData.offer_tiles())));
+        assertThrows(IllegalArgumentException.class,
+                () -> setup.createGame("Game", 2, new CardLoader.CardData(validData.tribe_cards(), null, validData.offer_tiles())));
+        assertThrows(IllegalArgumentException.class,
+                () -> setup.createGame("Game", 2, new CardLoader.CardData(validData.tribe_cards(), validData.building_cards(), null)));
+    }
+
+    @Test
     void createMapOfPlayersPopulatesPlayersAndTurnOrderFromTwoToFive() throws Exception {
         GameSetup setup = new GameSetup();
         CardLoader.CardData cardData = CardLoader.load();
@@ -86,6 +105,26 @@ class GameSetupTest {
                     assignedColors,
                     context.getGameTable().getTurnOrderTile().currentOrderTopToBottom());
         }
+    }
+
+    @Test
+    void createMapOfPlayersRejectsInvalidInputs() throws Exception {
+        GameSetup setup = new GameSetup();
+        GameContext context = setup.createGame("PlayerValidation", 2, CardLoader.load());
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, null));
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(null, List.of("Alice", "Bob")));
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, List.of("Alice")));
+        List<String> nullNickname = new ArrayList<>();
+        nullNickname.add("Alice");
+        nullNickname.add(null);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, nullNickname));
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, List.of("Alice", " ")));
+    }
+
+    @Test
+    void selectTribeCardsRejectsNullCardList() {
+        assertThrows(IllegalArgumentException.class, () -> GameSetup.selectTribeCards(null, 2));
     }
 
     @Test
