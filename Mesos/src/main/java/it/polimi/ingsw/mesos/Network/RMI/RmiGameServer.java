@@ -9,18 +9,11 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class RmiGameServer implements AutoCloseable {
     private final Registry registry;
@@ -96,6 +89,11 @@ public class RmiGameServer implements AutoCloseable {
         @Override
         public GameOperationResult getLobby() {
             return serverService.getLobby();
+        }
+
+        @Override
+        public GameOperationResult nickname(NicknameRequest request){
+            return serverService.nickname(request);
         }
 
         @Override

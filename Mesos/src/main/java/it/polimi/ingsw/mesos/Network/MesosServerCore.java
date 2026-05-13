@@ -49,6 +49,9 @@ public class MesosServerCore implements MesosServerService {
     private final CardLoader.CardData cardData;
     private final GameSetup gameSetup;
     private final Map<String, GameSession> sessions;
+    private final Set<String> takenNicknames;
+    private final Map<String, String> disconnectedGameByNickname;
+    private final Map<String, Long> lastHeartbeatByNickname;
     private final ScheduledExecutorService resilienceTimer;
 
     public MesosServerCore() throws IOException {
@@ -62,6 +65,10 @@ public class MesosServerCore implements MesosServerService {
         this.cardData = cardData;
         this.gameSetup = new GameSetup();
         this.sessions = new LinkedHashMap<>();
+        this.disconnectedGameByNickname = new LinkedHashMap<>();
+        this.takenNicknames = new LinkedHashSet<>();
+        this.lastHeartbeatByNickname = new LinkedHashMap<>();
+
         this.resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
             Thread thread = new Thread(task, "mesos-server-resilience");
             thread.setDaemon(true);
@@ -72,6 +79,30 @@ public class MesosServerCore implements MesosServerService {
                 1_000,
                 1_000,
                 TimeUnit.MILLISECONDS
+        );
+    }
+
+    @Override
+    public synchronized GameOperationResult nickname(NicknameRequest request) {
+        if (takenNicknames.contains(request.nickname())
+                && !disconnectedGameByNickname.containsKey(request.nickname())) {
+            return GameOperationResult.failure(
+                    "Il giocatore '" + request.nickname() + "' esiste gia'",
+                    OperationErrorCode.PLAYER_NAME_TAKEN,
+                    null,
+                    null
+            );
+        }
+
+        boolean rejoinAvailable = disconnectedGameByNickname.containsKey(request.nickname());
+
+        if (!rejoinAvailable) {
+            takenNicknames.add(request.nickname());
+        }
+
+        return GameOperationResult.successNickname(
+                "Nickname accettato " + request.nickname(),
+                rejoinAvailable
         );
     }
 
@@ -100,6 +131,35 @@ public class MesosServerCore implements MesosServerService {
 
     @Override
     public synchronized GameOperationResult joinGame(JoinGameRequest request) {
+        if (request.rejoin()) {
+            if (!disconnectedGameByNickname.containsKey(request.nickname())){
+                return GameOperationResult.failure(
+                        "Il nickname '" + request.nickname() + "' non e' riconnettibile",
+                        OperationErrorCode.NICKNAME_DISCONNECTED,
+                        null,
+                        toLobbySnapshot()
+                );
+            }
+            String gameName = disconnectedGameByNickname.get(request.nickname());
+            if (gameName == null) {
+                markConnected(request.nickname());
+                return GameOperationResult.successLobby("Lobby aggiornata", toLobbySnapshot());
+            }
+
+            GameSession session = sessions.get(gameName);
+            if (session == null || !session.containsNickname(request.nickname())) {
+                disconnectedGameByNickname.remove(request.nickname());
+                return GameOperationResult.failure(
+                        "La partita precedente non e' piu' disponibile",
+                        OperationErrorCode.GAME_NOT_FOUND,
+                        null,
+                        toLobbySnapshot()
+                );
+            }
+
+            return session.rejoin(request.nickname());
+        }
+
         GameSession session = sessions.get(request.gameName());
         if (session == null) {
             return GameOperationResult.failure(
@@ -109,9 +169,6 @@ public class MesosServerCore implements MesosServerService {
                     toLobbySnapshot()
             );
         }
-        if (session.containsNickname(request.nickname())) {
-            return session.rejoin(request.nickname());
-        }
         if (!session.isJoinable()) {
             return GameOperationResult.failure(
                     "La lobby e' gia' piena",
@@ -120,14 +177,16 @@ public class MesosServerCore implements MesosServerService {
                     toLobbySnapshot()
             );
         }
-        if (isNicknameTaken(request.nickname())) {
+
+        if (disconnectedGameByNickname.containsKey(request.nickname())) {
             return GameOperationResult.failure(
-                    "Il giocatore '" + request.nickname() + "' esiste gia'",
-                    OperationErrorCode.PLAYER_NAME_TAKEN,
+                    "Il nickname '" + request.nickname() + "' appartiene a una sessione disconnessa",
+                    OperationErrorCode.NICKNAME_DISCONNECTED,
                     null,
                     toLobbySnapshot()
             );
         }
+
         return session.join(request.nickname(), gameSetup);
     }
 
@@ -198,40 +257,102 @@ public class MesosServerCore implements MesosServerService {
 
     @Override
     public synchronized GameOperationResult heartbeat(HeartbeatRequest request) {
-        GameSession session = sessions.get(request.gameName());
-        if (session == null) {
-            return GameOperationResult.failure(
-                    "La partita '" + request.gameName() + "' non esiste",
-                    OperationErrorCode.GAME_NOT_FOUND,
-                    null
-            );
+        if (request.joined()) {
+            GameSession session = sessions.get(request.gameName());
+            if (session == null) {
+                return GameOperationResult.failure(
+                        "La partita '" + request.gameName() + "' non esiste",
+                        OperationErrorCode.GAME_NOT_FOUND,
+                        null
+                );
+            }
+
+            if (!session.joinedNicknames.contains(request.nickname()) ||
+                    !request.gameName().equals(session.context.getGameName())){
+                return GameOperationResult.failure(
+                        "Il player '" + request.nickname() + "' non esiste nella partita" + request.gameName(),
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        null
+                );
+            }
+        } else {
+            if (!takenNicknames.contains(request.nickname()) ||
+                    hasNicknameJoined(request.nickname())) {
+                return GameOperationResult.failure(
+                        "Il player '" + request.nickname() + "' non esiste o è gia entrato in una partita",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        null
+                );
+            }
         }
-        return session.heartbeat(request.nickname());
+
+        markConnected(request.nickname());
+
+        if (request.joined()) {
+            sessions.get(request.gameName()).applyResilienceRules();
+        }
+
+        return GameOperationResult.success("Sono attivo", null);
+    }
+
+    private void markConnected(String nickname) {
+        lastHeartbeatByNickname.put(nickname, System.currentTimeMillis());
+        disconnectedGameByNickname.remove(nickname);
+    }
+
+    private void markDisconnected(String nickname) {
+        lastHeartbeatByNickname.remove(nickname);
+        GameSession session = getSessionByNickname(nickname);
+        if (session != null && !session.finished()) {
+            disconnectedGameByNickname.put(nickname, session.context.getGameName());
+            session.publishAndSnapshot("Giocatore disconnesso: " + nickname);
+        } else if (session == null) {
+            disconnectedGameByNickname.put(nickname, null);
+        }
     }
 
     private synchronized void checkDisconnectedClients() {
+        if (!lastHeartbeatByNickname.isEmpty()){
+            long now = System.currentTimeMillis();
+
+            List<String> expiredNicknames = lastHeartbeatByNickname.entrySet().stream()
+                    .filter(entry -> now - entry.getValue() > NetworkDefaults.HEARTBEAT_TIMEOUT_MILLIS)
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            expiredNicknames.forEach(this :: markDisconnected);
+        }
+
         for (GameSession session : sessions.values()) {
-            session.checkHeartbeatTimeouts();
+            session.applyResilienceRules();
         }
     }
 
-    private boolean isNicknameTaken(String nickname) {
+    private boolean hasNicknameJoined (String nickname) {
         return sessions.values().stream().anyMatch(session -> session.containsNickname(nickname));
     }
 
-    private LobbySnapshot toLobbySnapshot() {
-        return new LobbySnapshot(sessions.values().stream()
-                .filter(GameSession::isJoinable)
-                .map(GameSession::toLobbySummary)
-                .toList());
+    private GameSession getSessionByNickname(String nickname) {
+        return sessions.values().stream()
+                .filter(session -> session.containsNickname(nickname))
+                .findFirst()
+                .orElse(null);
     }
 
-    private static final class GameSession {
+    private LobbySnapshot toLobbySnapshot() {
+        return new LobbySnapshot(
+                sessions.values().stream()
+                        .filter(GameSession::isJoinable)
+                        .map(GameSession::toLobbySummary)
+                        .toList()
+        );
+    }
+
+    private final class GameSession {
         private final GameContext context;
         private final List<String> joinedNicknames;
         private final Map<String, Color> colorsByNickname;
         private final Set<GameUpdateSink> subscribers;
-        private final Map<String, Long> lastHeartbeatByNickname;
         private GameFlowController controller;
         private long singleConnectedSince;
         private String forcedWinnerNickname;
@@ -241,7 +362,6 @@ public class MesosServerCore implements MesosServerService {
             this.joinedNicknames = new ArrayList<>();
             this.colorsByNickname = new LinkedHashMap<>();
             this.subscribers = new LinkedHashSet<>();
-            this.lastHeartbeatByNickname = new LinkedHashMap<>();
             this.singleConnectedSince = -1;
         }
 
@@ -265,13 +385,6 @@ public class MesosServerCore implements MesosServerService {
         }
 
         private GameOperationResult rejoin(String nickname) {
-            if (!started()) {
-                return GameOperationResult.failure(
-                        "Il giocatore '" + nickname + "' e' gia' nella lobby",
-                        OperationErrorCode.PLAYER_NAME_TAKEN,
-                        toSnapshot()
-                );
-            }
             markConnected(nickname);
             applyResilienceRules();
             return GameOperationResult.success(
@@ -394,19 +507,6 @@ public class MesosServerCore implements MesosServerService {
             );
         }
 
-        private GameOperationResult heartbeat(String nickname) {
-            if (!joinedNicknames.contains(nickname)) {
-                return GameOperationResult.failure(
-                        "Il giocatore '" + nickname + "' non e' presente nella partita",
-                        OperationErrorCode.PLAYER_NOT_IN_GAME,
-                        null
-                );
-            }
-            markConnected(nickname);
-            applyResilienceRules();
-            return GameOperationResult.success("Sono attivo", null);
-        }
-
         private GameOperationResult updateConnectionBeforeCommand(String nickname) {
             markConnected(nickname);
             applyResilienceRules();
@@ -420,33 +520,6 @@ public class MesosServerCore implements MesosServerService {
                 );
             }
             return null;
-        }
-
-        private void checkHeartbeatTimeouts() {
-            if (lastHeartbeatByNickname.isEmpty()) {
-                return;
-            }
-            long now = System.currentTimeMillis();
-            List<String> expiredNicknames = lastHeartbeatByNickname.entrySet().stream()
-                    .filter(entry -> now - entry.getValue() > NetworkDefaults.HEARTBEAT_TIMEOUT_MILLIS)
-                    .map(Map.Entry::getKey)
-                    .toList();
-            if (expiredNicknames.isEmpty()) {
-                applyResilienceRules();
-                return;
-            }
-
-            expiredNicknames.forEach(this::markDisconnected);
-            applyResilienceRules();
-            publishAndSnapshot("Giocatore disconnesso: " + String.join(", ", expiredNicknames));
-        }
-
-        private void markConnected(String nickname) {
-            lastHeartbeatByNickname.put(nickname, System.currentTimeMillis());
-        }
-
-        private void markDisconnected(String nickname) {
-            lastHeartbeatByNickname.remove(nickname);
         }
 
         private boolean isConnected(String nickname) {

@@ -11,7 +11,8 @@ public record GameOperationResult(
         String message,
         OperationErrorCode errorCode,
         GameSnapshot snapshot,
-        LobbySnapshot lobbySnapshot
+        LobbySnapshot lobbySnapshot,
+        boolean rejoinAvailable
 ) implements GameServerMessage {
 
     public GameOperationResult {
@@ -22,23 +23,23 @@ public record GameOperationResult(
     }
 
     public static GameOperationResult success(String message, GameSnapshot snapshot) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, null);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, null, false);
     }
 
     public static GameOperationResult success(String message, GameSnapshot snapshot, LobbySnapshot lobbySnapshot) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, lobbySnapshot);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, lobbySnapshot, false);
     }
 
     public static GameOperationResult successLobby(String message, LobbySnapshot lobbySnapshot) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, lobbySnapshot);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, lobbySnapshot, false);
     }
 
     public static GameOperationResult failure(String message, GameSnapshot snapshot) {
-        return new GameOperationResult(false, message, OperationErrorCode.NONE, snapshot, null);
+        return new GameOperationResult(false, message, OperationErrorCode.NONE, snapshot, null, false);
     }
 
     public static GameOperationResult failure(String message, OperationErrorCode errorCode, GameSnapshot snapshot) {
-        return new GameOperationResult(false, message, errorCode, snapshot, null);
+        return new GameOperationResult(false, message, errorCode, snapshot, null, false);
     }
 
     public static GameOperationResult failure(
@@ -47,7 +48,11 @@ public record GameOperationResult(
             GameSnapshot snapshot,
             LobbySnapshot lobbySnapshot
     ) {
-        return new GameOperationResult(false, message, errorCode, snapshot, lobbySnapshot);
+        return new GameOperationResult(false, message, errorCode, snapshot, lobbySnapshot, false);
+    }
+
+    public static GameOperationResult successNickname(String message, boolean rejoinAvailable) {
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, null, rejoinAvailable);
     }
 
     @Override

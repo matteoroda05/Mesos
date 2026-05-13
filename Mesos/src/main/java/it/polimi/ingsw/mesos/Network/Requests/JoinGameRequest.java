@@ -7,12 +7,20 @@ import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
 public record JoinGameRequest(
         String gameName,
-        String nickname
+        String nickname,
+        boolean rejoin
 ) implements GameRequest {
 
+    public JoinGameRequest(String gameName, String nickname) {
+        this(gameName, nickname, false);
+    }
+
     public JoinGameRequest {
-        validateGameName(gameName);
         validateNickname(nickname);
+
+        if (!rejoin) {
+            validateGameName(gameName);
+        }
     }
 
     static void validateGameName(String gameName) {

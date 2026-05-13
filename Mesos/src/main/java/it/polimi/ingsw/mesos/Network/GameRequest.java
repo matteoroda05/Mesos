@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public sealed interface GameRequest extends Serializable permits CreateGameRequest, JoinGameRequest, SnapshotRequest,
         ChooseOfferRequest, ChooseCardRequest, SubscribeGameRequest, UnsubscribeGameRequest, LobbyRequest,
-        HeartbeatRequest {
+        HeartbeatRequest, NicknameRequest {
 
     GameOperationResult requestToService (MesosServerService service, ClientConnection connection);
 }

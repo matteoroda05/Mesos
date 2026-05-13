@@ -6,10 +6,8 @@ import java.io.InputStreamReader;
 import java.util.Locale;
 
 import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
@@ -17,11 +15,6 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public final class MesosCliClient {
     private final BufferedReader reader;
@@ -46,7 +39,9 @@ public final class MesosCliClient {
         printBanner();
 
         try (GameClient client = connectWithRetry()) {
-            lobbyLoop(client);
+            if (!chooseNickname(client)) {
+                lobbyLoop(client);
+            }
         }
     }
 
@@ -65,6 +60,67 @@ public final class MesosCliClient {
                 printLine("Controlla l'indirizzo del server e riprova.");
             }
         }
+    }
+
+    private boolean chooseNickname(GameClient client) throws IOException {
+        while (true) {
+            String candidateNickname = promptRequired("Nickname");
+
+            while (true) {
+                GameOperationResult nicknameResult =
+                        client.nickname(new NicknameRequest(candidateNickname));
+
+                if (!nicknameResult.success()) {
+                    if (nicknameResult.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN) {
+                        candidateNickname = handleTakenName(candidateNickname, "Nickname");
+                        continue;
+                    }
+
+                    printLine("[error] " + nicknameResult.message());
+                    break;
+                }
+
+                nickname = candidateNickname;
+
+                boolean rejoinAvailable = nicknameResult.rejoinAvailable();
+
+                if (!rejoinAvailable) {
+                    return false;
+                }
+
+                if (promptYesNo("Esiste una sessione disconnessa con questo nickname. Vuoi riconnetterti?")) {
+                    GameOperationResult rejoinResult =
+                            client.joinGame(new JoinGameRequest(null, nickname, true));
+
+                    if (rejoinResult.success() && rejoinResult.snapshot() != null) {
+                        handleResult(rejoinResult);
+                        gameName = rejoinResult.snapshot().gameName();
+                        enterGame(client);
+                        return true;
+                    } else if (rejoinResult.success() && rejoinResult.lobbySnapshot() != null) {
+                        return false; //Go to lobby with recovered nickname
+                    }
+
+                    printLine("[error] " + rejoinResult.message());
+                }
+
+                nickname = null;
+                break;
+            }
+        }
+    }
+
+    private String handleTakenName(String nameBase, String nameLabel) throws IOException {
+        if (promptYesNo("Il " + nameLabel + " e' gia' in uso. Vuoi mantenerlo con un suffisso automatico")) {
+            int suffix = 1;
+            while (true) {
+                String candidate = appendNumericSuffix(nameBase, suffix++);
+                printLine("Provo automaticamente con il " + nameLabel + " '" + candidate + "'.");
+                return candidate;
+            }
+        }
+
+        return promptRequired(nameLabel);
     }
 
     private void lobbyLoop(GameClient client) throws IOException {
@@ -88,37 +144,24 @@ public final class MesosCliClient {
             return false;
         }
 
-        String requestedNickname = promptRequired("Nickname");
-        return joinSelectedGame(client, createdGameName, requestedNickname, false);
+        return joinSelectedGame(client, createdGameName, false);
     }
 
     private boolean handleJoinFlow(GameClient client, LobbySnapshot lobby, String requestedGameName) throws IOException {
-        String requestedNickname = promptRequired("Nickname");
-
         if (lobby.openGames().stream().noneMatch(game -> game.gameName().equals(requestedGameName))) {
             printLine("La partita '" + requestedGameName + "' non compare tra quelle disponibili.");
         }
 
-        return joinSelectedGame(client, requestedGameName, requestedNickname, true);
+        return joinSelectedGame(client, requestedGameName, true);
     }
 
-    private boolean joinSelectedGame(
-            GameClient client,
-            String requestedGameName,
-            String requestedNickname,
-            boolean offerCreateFallback
-    ) throws IOException {
+    private boolean joinSelectedGame( GameClient client, String requestedGameName, boolean offerCreateFallback) throws IOException {
         String selectedGameName = requestedGameName;
-        String nicknameBase = requestedNickname;
-        String candidateNickname = requestedNickname;
-        boolean autoAppendNickname = false;
-        int nicknameSuffix = 1;
 
         while (true) {
-            GameOperationResult joinResult = client.joinGame(new JoinGameRequest(selectedGameName, candidateNickname));
+            GameOperationResult joinResult = client.joinGame(new JoinGameRequest(selectedGameName, nickname));
             if (joinResult.success()) {
                 gameName = selectedGameName;
-                nickname = candidateNickname;
                 handleResult(joinResult);
                 enterGame(client);
                 return true;
@@ -126,21 +169,6 @@ public final class MesosCliClient {
 
             printLine("[error] " + joinResult.message());
             switch (joinResult.errorCode()) {
-                case PLAYER_NAME_TAKEN -> {
-                    if (autoAppendNickname) {
-                        candidateNickname = appendNumericSuffix(nicknameBase, nicknameSuffix++);
-                        printLine("Provo automaticamente con il nickname '" + candidateNickname + "'.");
-                        continue;
-                    }
-                    if (promptYesNo("Il nickname e' gia' in uso. Vuoi cambiarlo")) {
-                        nicknameBase = promptRequired("Nickname");
-                        candidateNickname = nicknameBase;
-                    } else {
-                        autoAppendNickname = true;
-                        candidateNickname = appendNumericSuffix(nicknameBase, nicknameSuffix++);
-                        printLine("Provo automaticamente con il nickname '" + candidateNickname + "'.");
-                    }
-                }
                 case GAME_NOT_FOUND -> {
                     if (offerCreateFallback
                             && promptYesNo("La partita non esiste. Vuoi crearla con questo nome")) {
@@ -166,10 +194,7 @@ public final class MesosCliClient {
     }
 
     private String createGameWithUniqueName(GameClient client, String requestedGameName, int playerCount) throws IOException {
-        String gameNameBase = requestedGameName;
         String candidateGameName = requestedGameName;
-        boolean autoAppendGameName = false;
-        int gameNameSuffix = 1;
 
         while (true) {
             GameOperationResult createResult = client.createGame(new CreateGameRequest(candidateGameName, playerCount));
@@ -184,20 +209,7 @@ public final class MesosCliClient {
                 return null;
             }
 
-            if (autoAppendGameName) {
-                candidateGameName = appendNumericSuffix(gameNameBase, gameNameSuffix++);
-                printLine("Provo automaticamente con il nome partita '" + candidateGameName + "'.");
-                continue;
-            }
-
-            if (promptYesNo("Il nome partita e' gia' in uso. Vuoi cambiarlo")) {
-                gameNameBase = promptRequired("Nome partita");
-                candidateGameName = gameNameBase;
-            } else {
-                autoAppendGameName = true;
-                candidateGameName = appendNumericSuffix(gameNameBase, gameNameSuffix++);
-                printLine("Provo automaticamente con il nome partita '" + candidateGameName + "'.");
-            }
+            candidateGameName = handleTakenName(candidateGameName, "Nome partita");
         }
     }
 

@@ -21,4 +21,6 @@ public interface MesosServerService {
     GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink);
 
     GameOperationResult heartbeat(HeartbeatRequest request);
+
+    GameOperationResult nickname(NicknameRequest request);
 }

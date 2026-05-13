@@ -3,18 +3,13 @@ package it.polimi.ingsw.mesos.Network.RMI;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public interface RemoteMesosServer extends Remote {
     GameOperationResult getLobby() throws RemoteException;
+
+    GameOperationResult nickname(NicknameRequest request) throws RemoteException;
 
     GameOperationResult createGame(CreateGameRequest request) throws RemoteException;
 

@@ -12,21 +12,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public class SocketGameClient implements GameClient {
     private final Socket socket;
@@ -39,6 +31,9 @@ public class SocketGameClient implements GameClient {
     private volatile SocketClientContext context;
     private volatile boolean running;
     private volatile SubscribeGameRequest activeSubscription;
+    private volatile boolean sendHeartbeat;
+    private volatile String heartbeatNickname;
+    private volatile String heartbeatGameName;
     private volatile ScheduledFuture<?> heartbeatTask;
 
     public SocketGameClient(String host, int port) throws IOException {
@@ -67,6 +62,18 @@ public class SocketGameClient implements GameClient {
     }
 
     @Override
+    public GameOperationResult nickname(NicknameRequest request) throws IOException {
+        GameOperationResult result = exchange(request);
+        if (result.success() && !result.rejoinAvailable()) {
+            heartbeatNickname = request.nickname();
+            heartbeatGameName = null;
+            sendHeartbeat = true;
+            startHeartbeat();
+        }
+        return result;
+    }
+
+    @Override
     public GameOperationResult getLobby() throws IOException {
         return exchange(new LobbyRequest());
     }
@@ -78,7 +85,14 @@ public class SocketGameClient implements GameClient {
 
     @Override
     public GameOperationResult joinGame(JoinGameRequest request) throws IOException {
-        return exchange(request);
+        GameOperationResult result = exchange(request);
+        if (result.success()) {
+            heartbeatNickname = request.nickname();
+            heartbeatGameName = result.snapshot() == null ? null : result.snapshot().gameName();
+            sendHeartbeat = true;
+            startHeartbeat();
+        }
+        return result;
     }
 
     @Override
@@ -109,7 +123,6 @@ public class SocketGameClient implements GameClient {
         GameOperationResult result = exchange(request);
         if (result.success()) {
             activeSubscription = request;
-            startHeartbeat();
             return result;
         }
         context = new SocketClientContext(responses, null);
@@ -125,7 +138,6 @@ public class SocketGameClient implements GameClient {
 
         GameOperationResult result = exchange(request);
         if (result.success()) {
-            stopHeartbeat();
             activeSubscription = null;
             context = new SocketClientContext(responses, null);
         }
@@ -159,6 +171,9 @@ public class SocketGameClient implements GameClient {
             } catch (IOException ignored) {
             }
         }
+        sendHeartbeat = false;
+        heartbeatNickname = null;
+        heartbeatGameName = null;
         stopHeartbeat();
         heartbeatExecutor.shutdownNow();
         running = false;
@@ -185,15 +200,22 @@ public class SocketGameClient implements GameClient {
     }
 
     private void sendHeartbeat() {
-        SubscribeGameRequest subscription = activeSubscription;
-        if (!running || subscription == null) {
+        String nickname = heartbeatNickname;
+        String gameName = heartbeatGameName;
+        if (!running || !sendHeartbeat || nickname == null) {
             return;
         }
+
         try {
-            exchange(new HeartbeatRequest(subscription.gameName(), subscription.nickname()));
+            if (gameName == null) {
+                exchange(new HeartbeatRequest(nickname));
+            } else {
+                exchange(new HeartbeatRequest(gameName, nickname, true));
+            }
         } catch (IOException ignored) {
         }
     }
+
 
     private void readLoop() {
         try {

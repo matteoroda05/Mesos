@@ -7,12 +7,24 @@ import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
 public record HeartbeatRequest(
         String gameName,
-        String nickname
+        String nickname,
+        boolean joined
 ) implements GameRequest {
 
     public HeartbeatRequest {
-        JoinGameRequest.validateGameName(gameName);
         JoinGameRequest.validateNickname(nickname);
+
+        if (joined) {
+            JoinGameRequest.validateGameName(gameName);
+        } else{
+            if (gameName != null) {
+                throw new IllegalArgumentException("gameName has to be null in lobby state");
+            }
+        }
+    }
+
+    public HeartbeatRequest (String nickname){
+        this(null,  nickname, false);
     }
 
     @Override
