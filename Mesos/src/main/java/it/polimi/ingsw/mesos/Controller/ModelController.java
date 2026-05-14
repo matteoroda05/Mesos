@@ -60,7 +60,7 @@ public class ModelController {
      */
     public void endRound() {
         this.game_context.newRound();
-        if (this.game_context.getGameTable().newRound()){
+        if (this.game_context.getGameTable().newRound(game_context.getCurrentEra())){
             this.game_context.getGameTable().beginNewEra();
             this.game_context.newEra();
         }

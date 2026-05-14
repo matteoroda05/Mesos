@@ -164,10 +164,9 @@ public class GameTable {
      *
      * @return true if refilling the top row revealed cards from a new era
      */
-    public boolean newRound() {
+    public boolean newRound(Era curr_era) {
         bottom_row.removeTribeCards();
         List<TribeCard> to_move = top_row.removeTribeCards();
-        Era curr_era = to_move.getFirst().getEra();
 
         for (TribeCard card : to_move) {
             bottom_row.placeCard(card);
