@@ -64,11 +64,12 @@ class MesosServerCoreSummaryTest {
     }
 
     private static Object newSession() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
         GameSetup setup = new GameSetup();
         GameContext context = setup.createGame("Summary", 2, CardLoader.load());
         Class<?> sessionClass = Class.forName("it.polimi.ingsw.mesos.Network.MesosServerCore$GameSession");
-        Constructor<?> constructor = sessionClass.getDeclaredConstructor(GameContext.class);
+        Constructor<?> constructor = sessionClass.getDeclaredConstructor(MesosServerCore.class, GameContext.class);
         constructor.setAccessible(true);
-        return constructor.newInstance(context);
+        return constructor.newInstance(serverCore, context);
     }
 }

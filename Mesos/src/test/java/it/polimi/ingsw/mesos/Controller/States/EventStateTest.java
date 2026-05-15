@@ -52,7 +52,6 @@ class EventStateTest extends StateTestSupport {
 
     @Test
     void processMovesToEndGameStateWhenLastRound() {
-        // Force last round
         for (int i = 0; i < 10; i++) {
             game_context.newRound();
         }

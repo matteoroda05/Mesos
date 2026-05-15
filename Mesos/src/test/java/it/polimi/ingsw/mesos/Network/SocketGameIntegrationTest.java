@@ -22,8 +22,10 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -311,6 +313,11 @@ class SocketGameIntegrationTest {
         }
 
         @Override
+        public GameOperationResult nickname(NicknameRequest request) {
+            return GameOperationResult.successNickname("nickname", false);
+        }
+
+        @Override
         public GameOperationResult createGame(CreateGameRequest request) {
             return GameOperationResult.success("created", null);
         }
@@ -348,6 +355,11 @@ class SocketGameIntegrationTest {
             return unsubscribeSuccess
                     ? GameOperationResult.success("unsubscribed", null)
                     : GameOperationResult.failure("unsubscribe failed", null);
+        }
+
+        @Override
+        public GameOperationResult heartbeat(HeartbeatRequest request) {
+            return GameOperationResult.success("heartbeat", null);
         }
     }
 

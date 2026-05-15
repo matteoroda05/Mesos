@@ -63,6 +63,7 @@ class ModelValidationEdgesTest {
         assertThrows(IllegalStateException.class, () -> tribe.getNumCharacterOfType(UnknownCharacterCard.class));
         assertThrows(IllegalArgumentException.class, () -> tribe.getBuildingsWithTrigger(null));
         assertThrows(IllegalArgumentException.class, () -> tribe.addCard((CharacterCard) null));
+        assertThrows(NullPointerException.class, () -> tribe.addCard(new UnknownCharacterCard()));
         assertThrows(IllegalArgumentException.class, () -> tribe.addCard((BuildingCard) null));
     }
 

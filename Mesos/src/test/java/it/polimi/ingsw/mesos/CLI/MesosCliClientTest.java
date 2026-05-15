@@ -19,6 +19,7 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -28,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -146,7 +146,7 @@ class MesosCliClientTest {
 
     @Test
     void createGameWithUniqueNameCoversRenameAutoAppendAndFailure() throws Exception {
-        MesosCliClient renameCli = newCli("yes\nRenamed\n");
+        MesosCliClient renameCli = newCli("no\nRenamed\n");
         FakeClient renameClient = new FakeClient();
         renameClient.createResults.add(GameOperationResult.failure("taken", OperationErrorCode.GAME_NAME_TAKEN, null));
         renameClient.createResults.add(GameOperationResult.success("created", snapshot(GameStatus.LOGIN)));
@@ -155,15 +155,15 @@ class MesosCliClientTest {
                 new Class<?>[] {GameClient.class, String.class, int.class}, renameClient, "Room", 2));
         assertEquals(List.of("Room", "Renamed"), renameClient.createdGameNames);
 
-        MesosCliClient autoCli = newCli("no\n");
+        MesosCliClient autoCli = newCli("yes\nyes\n");
         FakeClient autoClient = new FakeClient();
         autoClient.createResults.add(GameOperationResult.failure("taken", OperationErrorCode.GAME_NAME_TAKEN, null));
         autoClient.createResults.add(GameOperationResult.failure("taken again", OperationErrorCode.GAME_NAME_TAKEN, null));
         autoClient.createResults.add(GameOperationResult.success("created", snapshot(GameStatus.LOGIN)));
 
-        assertEquals("Room-2", invoke(autoCli, "createGameWithUniqueName",
+        assertEquals("Room-1-1", invoke(autoCli, "createGameWithUniqueName",
                 new Class<?>[] {GameClient.class, String.class, int.class}, autoClient, "Room", 2));
-        assertEquals(List.of("Room", "Room-1", "Room-2"), autoClient.createdGameNames);
+        assertEquals(List.of("Room", "Room-1", "Room-1-1"), autoClient.createdGameNames);
 
         MesosCliClient failCli = newCli("");
         FakeClient failClient = new FakeClient();
@@ -174,54 +174,36 @@ class MesosCliClientTest {
     }
 
     @Test
-    void joinSelectedGameCoversNicknameCollisionFallbacksAndErrors() throws Exception {
-        MesosCliClient renameCli = newCli("yes\nAlice2\nquit\n");
-        FakeClient renameClient = new FakeClient();
-        renameClient.joinResults.add(GameOperationResult.failure("taken", OperationErrorCode.PLAYER_NAME_TAKEN, null));
-        renameClient.joinResults.add(GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
-        renameClient.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
-
-        assertEquals(true, invoke(renameCli, "joinSelectedGame",
-                new Class<?>[] {GameClient.class, String.class, String.class, boolean.class},
-                renameClient, "Room", "Alice", false));
-        assertEquals(List.of("Alice", "Alice2"), renameClient.joinNicknames);
-
-        MesosCliClient autoCli = newCli("no\nquit\n");
-        FakeClient autoClient = new FakeClient();
-        autoClient.joinResults.add(GameOperationResult.failure("taken", OperationErrorCode.PLAYER_NAME_TAKEN, null));
-        autoClient.joinResults.add(GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
-        autoClient.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
-
-        assertEquals(true, invoke(autoCli, "joinSelectedGame",
-                new Class<?>[] {GameClient.class, String.class, String.class, boolean.class},
-                autoClient, "Room", "Alice", false));
-        assertEquals(List.of("Alice", "Alice-1"), autoClient.joinNicknames);
-
+    void joinSelectedGameCoversCreateFallbacksAndErrors() throws Exception {
         MesosCliClient foundCli = newCli("yes\n2\nquit\n");
         FakeClient foundClient = new FakeClient();
         foundClient.joinResults.add(GameOperationResult.failure("missing", OperationErrorCode.GAME_NOT_FOUND, null));
         foundClient.joinResults.add(GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
         foundClient.createResults.add(GameOperationResult.success("created", snapshot(GameStatus.LOGIN)));
         foundClient.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
+        setField(foundCli, "nickname", "Alice");
 
         assertEquals(true, invoke(foundCli, "joinSelectedGame",
-                new Class<?>[] {GameClient.class, String.class, String.class, boolean.class},
-                foundClient, "Room", "Alice", true));
+                new Class<?>[] {GameClient.class, String.class, boolean.class},
+                foundClient, "Room", true));
         assertEquals(List.of("Room"), foundClient.createdGameNames);
+        assertEquals(List.of("Alice", "Alice"), foundClient.joinNicknames);
 
         MesosCliClient noFallbackCli = newCli("");
         FakeClient noFallbackClient = new FakeClient();
         noFallbackClient.joinResults.add(GameOperationResult.failure("missing", OperationErrorCode.GAME_NOT_FOUND, null));
+        setField(noFallbackCli, "nickname", "Alice");
         assertEquals(false, invoke(noFallbackCli, "joinSelectedGame",
-                new Class<?>[] {GameClient.class, String.class, String.class, boolean.class},
-                noFallbackClient, "Room", "Alice", false));
+                new Class<?>[] {GameClient.class, String.class, boolean.class},
+                noFallbackClient, "Room", false));
 
         MesosCliClient fullCli = newCli("");
         FakeClient fullClient = new FakeClient();
         fullClient.joinResults.add(GameOperationResult.failure("full", OperationErrorCode.GAME_FULL, null));
+        setField(fullCli, "nickname", "Alice");
         assertEquals(false, invoke(fullCli, "joinSelectedGame",
-                new Class<?>[] {GameClient.class, String.class, String.class, boolean.class},
-                fullClient, "Room", "Alice", false));
+                new Class<?>[] {GameClient.class, String.class, boolean.class},
+                fullClient, "Room", false));
     }
 
     @Test
@@ -231,6 +213,7 @@ class MesosCliClientTest {
         createClient.createResults.add(GameOperationResult.success("created", snapshot(GameStatus.LOGIN)));
         createClient.joinResults.add(GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
         createClient.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
+        setField(createCli, "nickname", "Alice");
 
         assertEquals(true, invoke(createCli, "handleCreateFlow",
                 new Class<?>[] {GameClient.class, String.class}, createClient, "Room"));
@@ -240,9 +223,63 @@ class MesosCliClientTest {
         joinClient.joinResults.add(GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
         joinClient.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
         LobbySnapshot lobby = new LobbySnapshot(List.of(new LobbyGameSummary("Other", 2, 1, 1)));
+        setField(joinCli, "nickname", "Bob");
 
         assertEquals(true, invoke(joinCli, "handleJoinFlow",
                 new Class<?>[] {GameClient.class, LobbySnapshot.class, String.class}, joinClient, lobby, "Room"));
+    }
+
+    @Test
+    void chooseNicknameCoversRegistrationRetriesAndRejoinPaths() throws Exception {
+        MesosCliClient plainCli = newCli("Alice\n");
+        FakeClient plainClient = new FakeClient();
+        plainClient.nicknameResults.add(GameOperationResult.successNickname("registered", false));
+
+        assertEquals(false, invoke(plainCli, "chooseNickname", GameClient.class, plainClient));
+        assertEquals("Alice", field(plainCli, "nickname"));
+        assertEquals(List.of("Alice"), plainClient.nicknames);
+
+        MesosCliClient retryCli = newCli("Alice\nno\nAlice2\n");
+        FakeClient retryClient = new FakeClient();
+        retryClient.nicknameResults.add(GameOperationResult.failure("taken", OperationErrorCode.PLAYER_NAME_TAKEN, null));
+        retryClient.nicknameResults.add(GameOperationResult.successNickname("registered", false));
+
+        assertEquals(false, invoke(retryCli, "chooseNickname", GameClient.class, retryClient));
+        assertEquals("Alice2", field(retryCli, "nickname"));
+        assertEquals(List.of("Alice", "Alice2"), retryClient.nicknames);
+
+        MesosCliClient declineCli = newCli("Alice\nno\nBob\n");
+        FakeClient declineClient = new FakeClient();
+        declineClient.nicknameResults.add(GameOperationResult.successNickname("rejoin", true));
+        declineClient.nicknameResults.add(GameOperationResult.successNickname("registered", false));
+
+        assertEquals(false, invoke(declineCli, "chooseNickname", GameClient.class, declineClient));
+        assertEquals("Bob", field(declineCli, "nickname"));
+        assertEquals(List.of("Alice", "Bob"), declineClient.nicknames);
+
+        MesosCliClient rejoinCli = newCli("Alice\nyes\nquit\n");
+        FakeClient rejoinClient = new FakeClient();
+        rejoinClient.nicknameResults.add(GameOperationResult.successNickname("rejoin", true));
+        rejoinClient.joinResults.add(GameOperationResult.success("rejoined", snapshot(GameStatus.LOGIN)));
+        rejoinClient.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
+
+        assertEquals(true, invoke(rejoinCli, "chooseNickname", GameClient.class, rejoinClient));
+        assertEquals("Alice", field(rejoinCli, "nickname"));
+        assertEquals("Room", field(rejoinCli, "gameName"));
+        assertEquals(List.of(true), rejoinClient.joinRejoinFlags);
+    }
+
+    @Test
+    void promptLobbyActionAcceptsAliasesAfterInvalidInput() throws Exception {
+        MesosCliClient createCli = newCli("bad\ncrea\n");
+        ByteArrayOutputStream output = captureOutput();
+
+        assertEquals(true, invoke(createCli, "promptLobbyAction"));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Scegli 'join' oppure 'create'."));
+
+        MesosCliClient joinCli = newCli("entra\n");
+
+        assertEquals(false, invoke(joinCli, "promptLobbyAction"));
     }
 
     @Test
@@ -393,8 +430,11 @@ class MesosCliClientTest {
         private final Queue<GameOperationResult> offerResults = new ArrayDeque<>();
         private final Queue<GameOperationResult> cardResults = new ArrayDeque<>();
         private final Queue<GameOperationResult> subscribeResults = new ArrayDeque<>();
+        private final Queue<GameOperationResult> nicknameResults = new ArrayDeque<>();
         private final List<String> createdGameNames = new ArrayList<>();
         private final List<String> joinNicknames = new ArrayList<>();
+        private final List<Boolean> joinRejoinFlags = new ArrayList<>();
+        private final List<String> nicknames = new ArrayList<>();
         private final List<Integer> offerIndexes = new ArrayList<>();
         private final List<Integer> cardIndexes = new ArrayList<>();
         private final List<Boolean> cardRows = new ArrayList<>();
@@ -413,6 +453,7 @@ class MesosCliClientTest {
         @Override
         public GameOperationResult joinGame(JoinGameRequest request) {
             joinNicknames.add(request.nickname());
+            joinRejoinFlags.add(request.rejoin());
             return poll(joinResults, GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
         }
 
@@ -442,6 +483,12 @@ class MesosCliClientTest {
         @Override
         public GameOperationResult unsubscribe(UnsubscribeGameRequest request) {
             return GameOperationResult.success("unsubscribed", snapshot(GameStatus.LOGIN));
+        }
+
+        @Override
+        public GameOperationResult nickname(NicknameRequest request) {
+            nicknames.add(request.nickname());
+            return poll(nicknameResults, GameOperationResult.successNickname("registered", false));
         }
 
         @Override

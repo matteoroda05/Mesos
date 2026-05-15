@@ -68,7 +68,6 @@ class ActionStateTest extends StateTestSupport {
 
     @Test
     void chooseCardDecrementsPicks() {
-        // Offer tile 0 has some picks. Let's check.
         int initialTop = state.getRemainingTopChoices();
         int initialBottom = state.getRemainingBottomChoices();
 
@@ -120,8 +119,36 @@ class ActionStateTest extends StateTestSupport {
     }
 
     @Test
+    void skipTurnRejectsWrongPlayerAndClearsStandardOfferAction() {
+        Color activePlayer = state.getActivePlayer();
+        Color otherPlayer = player_colors.stream().filter(color -> color != activePlayer).findFirst().orElseThrow();
+        OfferTile occupiedTile = game_context.getGameTable().getOfferTrack().getTile(0);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> state.skipTurn(otherPlayer));
+
+        assertTrue(exception.getMessage().contains("Wrong turn"));
+
+        GameState nextState = state.skipTurn(activePlayer);
+
+        assertInstanceOf(EventState.class, nextState);
+        assertTrue(occupiedTile.isAvailable());
+    }
+
+    @Test
+    void skipTurnOnExtraActionDoesNotClearCurrentOfferTile() {
+        Color activePlayer = state.getActivePlayer();
+        OfferTile occupiedTile = game_context.getGameTable().getOfferTrack().getTile(0);
+
+        GameState nextState = new ActionState(model_controller, activePlayer, 1, true)
+                .skipTurn(activePlayer);
+
+        assertInstanceOf(ActionState.class, nextState);
+        assertEquals(activePlayer, occupiedTile.getOccupant());
+    }
+
+    @Test
     void processWithFoodGainAddsFoodAndTransitions() throws Exception {
-        // Create custom offer tiles including one with food gain
         java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
         customTiles.add(new OfferTile('A', 0, 0, 3, 2));
         for (int i = 1; i < 5; i++) {
@@ -147,14 +174,12 @@ class ActionStateTest extends StateTestSupport {
         state = new ActionState(model_controller);
         GameState nextState = state.process();
 
-        // 3 food from offer tile + 2 food from turn order space (first space for 3 players)
         assertEquals(initialFood + 3 + 2, game_context.getPlayer(p).getFood());
         assertInstanceOf(EventState.class, nextState);
     }
 
     @Test
     void processTriggersExtrasWhenNoMorePlayers() throws Exception {
-        // Create custom offer tiles with 0 picks to trigger endTurn immediately
         java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
         for (int i = 0; i < 5; i++) {
             customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
@@ -174,7 +199,6 @@ class ActionStateTest extends StateTestSupport {
         Color p = player_colors.getFirst();
         game_context.getGameTable().getOfferTrack().getTile(0).occupy(p);
 
-        // Give the player a BuildingAfterEveryone
         BuildingAfterEveryone building =
                 new BuildingAfterEveryone(
                         Era.FIRST, 2, 0, 0);
@@ -183,10 +207,8 @@ class ActionStateTest extends StateTestSupport {
 
         state = new ActionState(model_controller);
 
-        // Now call process
         GameState nextState = state.process();
 
-        // It should be an ActionState (the extra one)
         assertInstanceOf(ActionState.class, nextState);
         ActionState extraState = (ActionState) nextState;
         assertEquals(p, extraState.getActivePlayer());

@@ -130,13 +130,17 @@ class NetworkValueObjectsTest {
 
     @Test
     void operationResultsAndViewUpdatesExecuteAgainstSocketContext() {
-        GameOperationResult success = new GameOperationResult(true, null, null, null, null);
+        GameOperationResult success = new GameOperationResult(true, null, null, null, null, false);
         assertEquals("Operation completed", success.message());
         assertEquals(OperationErrorCode.NONE, success.errorCode());
 
-        GameOperationResult failure = new GameOperationResult(false, " ", null, null, null);
+        GameOperationResult failure = new GameOperationResult(false, " ", null, null, null, false);
         assertEquals("Operation failed", failure.message());
         assertEquals(OperationErrorCode.NONE, failure.errorCode());
+
+        GameOperationResult nickname = GameOperationResult.successNickname("ok", true);
+        assertTrue(nickname.rejoinAvailable());
+        assertEquals(OperationErrorCode.NONE, nickname.errorCode());
 
         LinkedBlockingQueue<GameOperationResult> responses = new LinkedBlockingQueue<>();
         success.messageExecute(new SocketGameClient.SocketClientContext(responses, null));

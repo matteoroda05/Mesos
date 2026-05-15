@@ -145,25 +145,18 @@ class GameContextTest {
         GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
         context_game.setupPlayers(createPlayersForTwoPlayerGame());
 
+        assertThrows(IllegalArgumentException.class, () -> context_game.getPlayer(null));
         assertThrows(IllegalArgumentException.class, () -> context_game.getPlayer(Color.BLACK));
     }
 
     @Test
-    void newRoundAlwaysIncrementsRoundNumber() {
+    void setupPlayersRejectsNullPlayerValue() {
         GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+        Map<Color, Player> players_map = new EnumMap<>(Color.class);
+        players_map.put(Color.BLUE, new Player("Alice", Color.BLUE, 3));
+        players_map.put(Color.YELLOW, null);
 
-        context_game.newRound();
-
-        assertEquals(1, context_game.getRoundNumber());
-    }
-
-    @Test
-    void newRoundKeepsEraAsFirstEra() {
-        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
-
-        context_game.newRound();
-
-        assertEquals(Era.FIRST, context_game.getCurrentEra());
+        assertThrows(IllegalArgumentException.class, () -> context_game.setupPlayers(players_map));
     }
 
     @Test
@@ -175,6 +168,19 @@ class GameContextTest {
 
         assertEquals(2, context_game.getRoundNumber());
         assertEquals(Era.FIRST, context_game.getCurrentEra());
+    }
+
+    @Test
+    void newEraAdvancesUntilLastEraThenRejectsFurtherAdvancement() {
+        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
+
+        context_game.newEra();
+        assertEquals(Era.SECOND, context_game.getCurrentEra());
+
+        context_game.newEra();
+        assertEquals(Era.THIRD, context_game.getCurrentEra());
+
+        assertThrows(IllegalStateException.class, context_game::newEra);
     }
 
     @Test

@@ -156,6 +156,15 @@ class GameTableTest {
 	}
 
 	@Test
+	void beginNewEraThrowsWhenNoLaterBuildingEraCanBeDrawn() {
+		GameTable game_table = createGameTable(
+				createHunters(Era.FIRST, 12),
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
+
+		assertThrows(IllegalAccessError.class, game_table::beginNewEra);
+	}
+
+	@Test
 	void visibleEventsReturnsOnlyBottomRowEventsWhenTopRowIsExcluded() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),

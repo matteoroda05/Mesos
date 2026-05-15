@@ -3,6 +3,9 @@ package it.polimi.ingsw.mesos.Controller;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -37,6 +40,23 @@ class GameSetupTest {
 
         assertSameCards(input, output);
         assertEraOrder(output, true);
+    }
+
+    @Test
+    void selectTribeCardsPlacesFinalEventsWhereTribeDeckDrawsThemLast() {
+        SustenanceEvent finalSustenance = new SustenanceEvent(Era.THIRD, -1, 1);
+        ShamanicRitualEvent finalRitual = new ShamanicRitualEvent(Era.THIRD, 5, -3);
+        HuntEvent regularThirdEraEvent = new HuntEvent(Era.THIRD, 1, 1);
+        TestTribeCard firstEraCard = new TestTribeCard(Era.FIRST);
+        TestTribeCard secondEraCard = new TestTribeCard(Era.SECOND);
+
+        List<TribeCard> output = GameSetup.selectTribeCards(
+                List.of(firstEraCard, finalSustenance, secondEraCard, finalRitual, regularThirdEraEvent),
+                5);
+
+        assertSameCards(List.of(firstEraCard, finalSustenance, secondEraCard, finalRitual, regularThirdEraEvent), output);
+        assertTrue(output.subList(0, 2).containsAll(List.of(finalSustenance, finalRitual)));
+        assertEquals(firstEraCard, output.getLast());
     }
 
     @Test
