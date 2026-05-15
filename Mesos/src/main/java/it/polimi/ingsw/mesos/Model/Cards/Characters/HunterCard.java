@@ -8,6 +8,15 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 public final class HunterCard extends CharacterCard {
     private final boolean active_hunter;
 
+    /**
+     * Creates a hunter card from JSON data.
+     *
+     * @param era era this card belongs to
+     * @param min_players minimum players required to use this card
+     * @param active_hunter whether this hunter is active for hunt effects
+     * @throws IllegalArgumentException if the minimum player count is outside
+     *                                  the range accepted by the base card
+     */
     @JsonCreator
     public HunterCard(
             @JsonProperty("era")          Era era,
@@ -18,6 +27,11 @@ public final class HunterCard extends CharacterCard {
         this.active_hunter = active_hunter;
     }
 
+    /**
+     * Returns whether this hunter is marked active.
+     *
+     * @return true when active
+     */
     public boolean isActiveHunter() {
         return active_hunter;
     }

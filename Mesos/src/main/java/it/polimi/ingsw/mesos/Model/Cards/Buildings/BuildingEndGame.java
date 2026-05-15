@@ -28,6 +28,20 @@ public class BuildingEndGame extends BuildingCard {
             "GATHERER", GathererCard.class
     );
 
+    /**
+     * Creates an end-game building from JSON data, converting the optional
+     * character type string into the matching character class.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param double_builders_pp whether builder prestige is counted again
+     * @param character_set_bonus_prestige prestige for each full character set
+     * @param character_multiplier prestige per character of the configured type
+     * @param character_type_str character type name from JSON
+     * @param prestige_bonus fixed prestige bonus
+     */
     @JsonCreator
     private BuildingEndGame(
             @JsonProperty("era")                      Era era,
@@ -48,6 +62,22 @@ public class BuildingEndGame extends BuildingCard {
                 prestige_bonus);
     }
 
+    /**
+     * Creates an end-game building with exactly one scoring effect.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param double_builders_pp whether builder prestige is counted again
+     * @param character_set_bonus_prestige prestige for each full character set
+     * @param character_multiplier prestige per character of the configured type
+     * @param character_type character class counted by multiplier effects
+     * @param prestige_bonus fixed prestige bonus
+     * @throws IllegalArgumentException if any bonus value is outside its
+     *                                  allowed range or the configuration does
+     *                                  not enable exactly one effect
+     */
     public BuildingEndGame(
             Era era,
             int min_players,
@@ -87,6 +117,9 @@ public class BuildingEndGame extends BuildingCard {
      * owner.
      *
      * @param visitor controller used to update player prestige
+     * @throws NullPointerException if the owner or visitor is null
+     * @throws IllegalArgumentException if a multiplier effect has no character
+     *                                  type
      */
     public void effect(ModelController visitor) {
         if (prestige_bonus != 0) {
@@ -112,22 +145,47 @@ public class BuildingEndGame extends BuildingCard {
         visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 
+    /**
+     * Checks whether this building doubles builder end-game prestige.
+     *
+     * @return true when the double-builder effect is active
+     */
     public boolean isDoubleBuildersPrestige() {
         return double_builders_pp;
     }
 
+    /**
+     * Returns the prestige granted for each complete character set.
+     *
+     * @return set bonus prestige, or zero when inactive
+     */
     public int getCharacterSetBonusPrestige() {
         return character_set_bonus_prestige;
     }
 
+    /**
+     * Returns the prestige multiplier for the configured character type.
+     *
+     * @return character multiplier, or zero when inactive
+     */
     public int getCharacterMultiplier() {
         return character_multiplier;
     }
 
+    /**
+     * Returns the character type used by multiplier effects.
+     *
+     * @return character type, or null when this building does not use one
+     */
     public Class<? extends CharacterCard> getCharacterType() {
         return character_type;
     }
 
+    /**
+     * Returns the fixed prestige bonus.
+     *
+     * @return fixed prestige bonus, or zero when inactive
+     */
     public int getPrestigeBonus() {
         return prestige_bonus;
     }

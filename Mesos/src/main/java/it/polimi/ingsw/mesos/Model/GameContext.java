@@ -17,6 +17,17 @@ public class GameContext {
     private final GameTable game_table;
     private Map<Color, Player> players;
 
+    /**
+     * Creates a game context with round zero, the first era, and an empty player
+     * registry.
+     *
+     * @param game_name non-blank game name
+     * @param game_size expected number of players
+     * @param game_table table used by this game
+     * @throws IllegalArgumentException if the name is null or blank, the game
+     *                                  size is outside the allowed range, or
+     *                                  the table is null
+     */
     public GameContext(String game_name, int game_size, GameTable game_table) {
         if (game_name == null || game_name.isBlank()) {
             throw new IllegalArgumentException("game_name cannot be null or blank");
@@ -39,9 +50,14 @@ public class GameContext {
 
     /**
      * Registers the players for this game and places their totems on the turn
-     * order tile in the insertion order provided by the players map.
+     * order tile in the iteration order provided by the players map.
      *
      * @param players the players keyed by their color
+     * @throws IllegalArgumentException if the map is null, has a size different
+     *                                  from the configured game size, or
+     *                                  contains a null player value
+     * @throws IllegalStateException if the turn-order tile has no free space
+     *                               for a player totem
      */
     public void setupPlayers(Map<Color, Player> players) {
         if (players == null)
@@ -61,26 +77,57 @@ public class GameContext {
         }
     }
 
+    /**
+     * Returns the configured game name.
+     *
+     * @return game name
+     */
     public String getGameName() {
         return this.game_name;
     }
 
+    /**
+     * Returns the number of players this game expects.
+     *
+     * @return configured game size
+     */
     public int getGameSize() {
         return this.game_size;
     }
 
+    /**
+     * Returns the current round counter.
+     *
+     * @return round number, starting from zero before the first round advance
+     */
     public int getRoundNumber() {
         return this.round_number;
     }
 
+    /**
+     * Returns the era currently active for the game.
+     *
+     * @return current era
+     */
     public Era getCurrentEra() {
         return this.current_era;
     }
 
+    /**
+     * Returns the table associated with this context.
+     *
+     * @return game table
+     */
     public GameTable getGameTable() {
         return this.game_table;
     }
 
+    /**
+     * Returns an immutable snapshot of registered players.
+     *
+     * @return players currently registered in this context
+     * @throws IllegalStateException if the player registry is unexpectedly null
+     */
     public List<Player> getPlayers() {
         if (this.players == null)
             throw new IllegalStateException("players cannot be null");
@@ -88,6 +135,14 @@ public class GameContext {
         return List.copyOf(this.players.values());
     }
 
+    /**
+     * Finds a registered player by color.
+     *
+     * @param color player color to look up
+     * @return the player registered with the given color
+     * @throws IllegalStateException if the player registry is unexpectedly null
+     * @throws IllegalArgumentException if the color is null or not registered
+     */
     public Player getPlayer(Color color) {
         if (players == null)
             throw new IllegalStateException("players cannot be null");
@@ -106,6 +161,8 @@ public class GameContext {
 
     /**
      * Moves the game to the next era according to {@link Era#next()}.
+     *
+     * @throws IllegalStateException if the current era is already the last one
      */
     public void newEra() {
         this.current_era = this.current_era.next();

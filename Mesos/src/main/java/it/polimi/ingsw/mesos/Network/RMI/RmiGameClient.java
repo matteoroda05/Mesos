@@ -28,6 +28,18 @@ public class RmiGameClient implements GameClient {
     private volatile String heartbeatNickname;
     private volatile String heartbeatGameName;
 
+    /**
+     * Creates an RMI client by looking up the remote Mesos service in the RMI
+     * registry.
+     *
+     * @param host registry host
+     * @param registryPort registry port
+     * @param serviceName bound service name
+     * @throws IllegalArgumentException if host or service name is null/blank,
+     *                                  or the port is outside 1 to 65535
+     * @throws IOException if the remote service cannot be found or the lookup
+     *                     fails
+     */
     public RmiGameClient(String host, int registryPort, String serviceName) throws IOException {
         if (host == null || host.isBlank()) {
             throw new IllegalArgumentException("host cannot be null or blank");
@@ -52,11 +64,25 @@ public class RmiGameClient implements GameClient {
         }
     }
 
+    /**
+     * Retrieves the current lobby through RMI.
+     *
+     * @return operation result containing lobby data on success
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult getLobby() throws IOException {
         return remoteServer.getLobby();
     }
 
+    /**
+     * Registers or validates a nickname and starts lobby heartbeat when the
+     * nickname is accepted without an immediate rejoin path.
+     *
+     * @param request nickname request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult nickname(NicknameRequest request) throws IOException {
         GameOperationResult result = remoteServer.nickname(request);
@@ -69,11 +95,25 @@ public class RmiGameClient implements GameClient {
         return result;
     }
 
+    /**
+     * Creates a game through RMI.
+     *
+     * @param request creation request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult createGame(CreateGameRequest request) throws IOException {
         return remoteServer.createGame(request);
     }
 
+    /**
+     * Joins a game and starts heartbeat for the joined game when successful.
+     *
+     * @param request join request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult joinGame(JoinGameRequest request) throws IOException {
         GameOperationResult result = remoteServer.joinGame(request);
@@ -86,21 +126,54 @@ public class RmiGameClient implements GameClient {
         return result;
     }
 
+    /**
+     * Retrieves a game snapshot through RMI.
+     *
+     * @param request snapshot request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult getSnapshot(SnapshotRequest request) throws IOException {
         return remoteServer.getSnapshot(request);
     }
 
+    /**
+     * Sends an offer choice through RMI.
+     *
+     * @param request offer-choice request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult chooseOffer(ChooseOfferRequest request) throws IOException {
         return remoteServer.chooseOffer(request);
     }
 
+    /**
+     * Sends a card choice through RMI.
+     *
+     * @param request card-choice request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
     @Override
     public GameOperationResult chooseCard(ChooseCardRequest request) throws IOException {
         return remoteServer.chooseCard(request);
     }
 
+    /**
+     * Subscribes to game updates by exporting a local RMI listener.
+     * Any existing subscription is removed before the new listener is
+     * registered. If server subscription fails, the exported listener is
+     * unexported before returning.
+     *
+     * @param request subscription request
+     * @param listener local listener delegate
+     * @return operation result from the server
+     * @throws IllegalArgumentException if the listener is null
+     * @throws IOException if the remote call or listener export/unexport fails
+     */
     @Override
     public GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateListener listener) throws IOException {
         if (listener == null) {
@@ -130,6 +203,14 @@ public class RmiGameClient implements GameClient {
         }
     }
 
+    /**
+     * Unsubscribes the currently exported remote listener.
+     * When no listener is active, this returns a successful no-op result.
+     *
+     * @param request unsubscription request
+     * @return operation result from the server, or a successful no-op result
+     * @throws IOException if the remote unsubscription fails
+     */
     @Override
     public GameOperationResult unsubscribe(UnsubscribeGameRequest request) throws IOException {
         if (remoteListener == null) {
@@ -150,6 +231,12 @@ public class RmiGameClient implements GameClient {
         }
     }
 
+    /**
+     * Closes the client, removing any active subscription, stopping heartbeat,
+     * and shutting down the heartbeat executor.
+     *
+     * @throws IOException if active unsubscription fails before shutdown
+     */
     @Override
     public void close() throws IOException {
         if (activeSubscription != null) {
@@ -171,6 +258,9 @@ public class RmiGameClient implements GameClient {
         heartbeatExecutor.shutdownNow();
     }
 
+    /**
+     * Starts periodic heartbeat after cancelling any previous heartbeat task.
+     */
     private void startHeartbeat() {
         stopHeartbeat();
         heartbeatTask = heartbeatExecutor.scheduleAtFixedRate(
@@ -181,6 +271,9 @@ public class RmiGameClient implements GameClient {
         );
     }
 
+    /**
+     * Cancels the current heartbeat task, if one exists.
+     */
     private void stopHeartbeat() {
         if (heartbeatTask != null) {
             heartbeatTask.cancel(true);
@@ -188,6 +281,10 @@ public class RmiGameClient implements GameClient {
         }
     }
 
+    /**
+     * Sends one heartbeat if heartbeat is enabled and a nickname is known.
+     * Remote failures are ignored so that the scheduled task keeps running.
+     */
     private void sendHeartbeat() {
         String nickname = heartbeatNickname;
         String gameName = heartbeatGameName;
@@ -208,11 +305,22 @@ public class RmiGameClient implements GameClient {
     private static final class RemoteGameUpdateListenerAdapter extends UnicastRemoteObject implements RemoteGameUpdateListener {
         private final GameUpdateListener delegate;
 
+        /**
+         * Exports an RMI callback that forwards updates to a local listener.
+         *
+         * @param delegate local listener receiving forwarded updates
+         * @throws RemoteException if the callback cannot be exported
+         */
         private RemoteGameUpdateListenerAdapter(GameUpdateListener delegate) throws RemoteException {
             super();
             this.delegate = delegate;
         }
 
+        /**
+         * Forwards a remote update to the local listener.
+         *
+         * @param update update payload
+         */
         @Override
         public void onUpdate(GameViewUpdate update) {
             delegate.onUpdate(update);

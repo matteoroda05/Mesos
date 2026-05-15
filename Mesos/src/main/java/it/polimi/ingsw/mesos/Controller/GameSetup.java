@@ -47,6 +47,12 @@ public class GameSetup {
      * @param player_count number of players in the match
      * @param card_data loaded card and tile definitions
      * @return initialized game context without players assigned yet
+     * @throws IllegalArgumentException if the game name is null or blank, the
+     *                                  player count is outside the supported
+     *                                  range, card data is null, or a required
+     *                                  card/tile list is null
+     * @throws IllegalStateException if there are not enough eligible building
+     *                               cards for one era
      */
     public GameContext createGame(String game_name, int player_count, CardLoader.CardData card_data) {
         if (game_name == null || game_name.isBlank()) {
@@ -81,6 +87,10 @@ public class GameSetup {
      *
      * @param game_context game context to populate
      * @param nicknames player nicknames in seating order
+     * @throws IllegalArgumentException if the context or nickname list is null,
+     *                                  the nickname count does not match the
+     *                                  game size, or any nickname is null or
+     *                                  blank
      */
     public void createMapOfPlayers(GameContext game_context, List<String> nicknames) {
         if (nicknames == null) {
@@ -122,6 +132,11 @@ public class GameSetup {
      * @param all_cards complete building-card pool
      * @param player_count number of players in the match
      * @return selected building cards grouped by era order
+     * @throws IllegalArgumentException if the card pool is null or the player
+     *                                  count is unsupported
+     * @throws NullPointerException if the card pool contains null entries
+     * @throws IllegalStateException if an era does not have enough eligible
+     *                               building cards
      */
     private List<BuildingCard> selectBuildingCards(List<BuildingCard> all_cards, int player_count) {
         if (all_cards == null) {
@@ -169,6 +184,8 @@ public class GameSetup {
      * @param all_tiles complete offer-tile pool
      * @param player_count number of players in the match
      * @return offer tiles usable in this match
+     * @throws IllegalArgumentException if the tile pool is null
+     * @throws NullPointerException if the tile pool contains null entries
      */
     private List<OfferTile> selectOfferTiles(List<OfferTile> all_tiles, int player_count) {
         if (all_tiles == null) {
@@ -186,6 +203,7 @@ public class GameSetup {
      *
      * @param player_count number of players in the match
      * @return turn-order spaces used by the game table
+     * @throws IllegalArgumentException if the player count is unsupported
      */
     private List<TurnOrderSpace> createTurnOrderSpaces(int player_count) {
         List<Integer> food_bonuses = FOOD_BONUS_BY_PLAYER_COUNT.get(player_count);
@@ -207,6 +225,8 @@ public class GameSetup {
      * @param cards complete tribe-card pool
      * @param player_count number of players in the match
      * @return ordered tribe deck compatible with {@link TribeDeck#drawTopRow()}
+     * @throws IllegalArgumentException if the card pool is null
+     * @throws NullPointerException if the card pool contains null entries
      */
     static List<TribeCard> selectTribeCards(List<TribeCard> cards, int player_count) {
         if (cards == null) {
@@ -250,6 +270,7 @@ public class GameSetup {
      *
      * @param card card to inspect
      * @return true when the card is a final event
+     * @throws NullPointerException if the card is null
      */
     private static boolean isFinalEvent(Card card) {
         return card.isEvent() &&

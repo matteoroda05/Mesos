@@ -25,8 +25,11 @@ public class ActionState extends GameState {
 
     /**
      * Creates the action state for the next occupied offer tile.
+     * If no occupied offer tile exists, the state marks itself for automatic
+     * transition to event resolution.
      *
      * @param controller model controller used to read and apply game state
+     * @throws NullPointerException if the controller is null
      */
     public ActionState(ModelController controller) {
         super(controller);
@@ -45,6 +48,9 @@ public class ActionState extends GameState {
      * @param color player receiving the extra action
      * @param extra_picks number of extra card choices granted
      * @param top_row true when the extra choices apply to the top row
+     * @implNote This constructor does not validate the player color or
+     *           {@code extra_picks}; callers are expected to pass a valid
+     *           player and a non-negative number of picks.
      */
     public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
         super(controller);
@@ -56,12 +62,17 @@ public class ActionState extends GameState {
     }
 
     /**
-     * Handles the selection of one card by the specified player: checks that the request is valid (if not send specific
-     * error message to the clients), activates interested buildings and adds card to the player's tribe
-     * @param player_color: color of the player that is trying to pick a card
-     * @param card: index of the requested card
-     * @param is_top: row from which the player is picking
-     * @return next game state
+     * Handles one card choice by the active player, applies any
+     * on-character-acquired building effects, and advances when the action is
+     * complete.
+     *
+     * @param player_color color of the player choosing a card
+     * @param card index of the selected card in the chosen row
+     * @param is_top true when selecting from the top market row
+     * @return this state if more choices remain, otherwise the next state
+     * @throws RuntimeException if the command is issued by a non-active player
+     *                          or from a row with no remaining choices
+     * @throws IllegalArgumentException if the model rejects the selected card
      */
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
@@ -93,6 +104,16 @@ public class ActionState extends GameState {
         return this;
     }
 
+    /**
+     * Skips the active player's remaining actions and advances the action flow.
+     * Non-extra actions also clear the player's offer tile.
+     *
+     * @param player_color color of the player whose action is skipped
+     * @return next state after the skip is applied
+     * @throws RuntimeException if the command is issued by a non-active player
+     * @throws IllegalStateException if the model cannot skip the current offer
+     *                               action
+     */
     @Override
     public GameState skipTurn(Color player_color) {
         if (p != player_color) {
@@ -110,8 +131,12 @@ public class ActionState extends GameState {
     }
 
     /**
-     * If the current player chose the offer with the food then give the food to him and end is turn, otherwise do nothing
-     * @return next state
+     * Performs automatic action-state work.
+     * Food-only offers grant their food immediately and end the turn; states
+     * with no available remaining choices also end the turn.
+     *
+     * @return this state when player input is still needed, otherwise the next
+     *         state
      */
     @Override
     public GameState process() {
@@ -131,8 +156,12 @@ public class ActionState extends GameState {
     }
 
     /**
-     * Checks if the player can take any cards and, if the offer consist of food, if it got the food already
-     * @return true if the player has completed all the actions
+     * Checks whether the active player has no usable choices left and has
+     * already received any pending food gain.
+     *
+     * @return true if the player has completed all actions
+     * @throws IllegalArgumentException if the active player is null or not
+     *                                  registered
      */
     private boolean hasFinished() {
         final int max_top_picks = controller.getAvailableCards(p, true);
@@ -142,10 +171,11 @@ public class ActionState extends GameState {
     }
 
     /**
-     * Ends the turn of the player (activates buildings and position the totem to the turn order tile). The next state is
-     * another player's turn or the resolution of events. If this is the last player then activate buildings for after everyone.
-     * If this is already a bonus action then skips the standard end turn procedure.
-     * @return new game state
+     * Ends the active player's action.
+     * Standard actions return the player's totem and apply end-turn buildings;
+     * extra actions skip that standard end-turn procedure.
+     *
+     * @return next action, extra-action, or event-resolution state
      */
     private GameState endTurn() {
         if (!is_extra) {
@@ -156,6 +186,12 @@ public class ActionState extends GameState {
         return advance();
     }
 
+    /**
+     * Applies every owned building that reacts to the end-turn trigger.
+     *
+     * @throws IllegalStateException if an end-turn building owner has not
+     *                               returned to the turn-order tile
+     */
     private void applyEndTurnBuildings(){
         List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
                 .stream().map(building -> ((BuildingEndTurn) building)).toList();
@@ -163,6 +199,13 @@ public class ActionState extends GameState {
         buildings.forEach(building -> building.effect(tile, controller));
     }
 
+    /**
+     * Loads the next occupied offer tile, starts extra actions after all offers
+     * are resolved, or advances to event resolution when no extra action exists.
+     *
+     * @return this state when another normal action starts, an extra-action
+     *         state, or an event-resolution state
+     */
     private GameState advance() {
         OfferTile next = controller.getNextPlayerOfferTile();
         if (next == null) {
@@ -179,8 +222,13 @@ public class ActionState extends GameState {
     }
 
     /**
-     * Handles the extra actions (granted by buildings) that take place after everyone has completed their turn
-     * @return null if there are no extra actions, the state with the extra actions otherwise
+     * Finds the first available extra action granted by after-everyone
+     * buildings.
+     * When no extra action is available, all such buildings are reset for the
+     * next round.
+     *
+     * @return null if there are no extra actions, otherwise the state that
+     *         handles the extra action
      */
     private ActionState extras() {
         List<BuildingAfterEveryone> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_AFTER_EVERYONE)
@@ -200,8 +248,10 @@ public class ActionState extends GameState {
     }
 
     /**
-     * Construct the state based on the contents of the tile
-     * @param tile: offer tile to load
+     * Configures this state from an occupied offer tile.
+     *
+     * @param tile offer tile to load
+     * @throws NullPointerException if the tile is null
      */
     private void loadTile(OfferTile tile) {
         p = tile.getOccupant();
@@ -210,21 +260,42 @@ public class ActionState extends GameState {
         food_gain = tile.getFoodGain();
     }
 
+    /**
+     * Reports that the game is waiting for card choices or automatic action
+     * resolution.
+     *
+     * @return round-actions status
+     */
     @Override
     public GameStatus getStatus() {
         return GameStatus.ROUND_ACTIONS;
     }
 
+    /**
+     * Returns the player currently resolving an action.
+     *
+     * @return active player color, or null when no offer tile is loaded
+     */
     @Override
     public Color getActivePlayer() {
         return p;
     }
 
+    /**
+     * Returns the active player's remaining top-row choices.
+     *
+     * @return remaining top-row choices
+     */
     @Override
     public int getRemainingTopChoices() {
         return pick_top_row;
     }
 
+    /**
+     * Returns the active player's remaining bottom-row choices.
+     *
+     * @return remaining bottom-row choices
+     */
     @Override
     public int getRemainingBottomChoices() {
         return pick_bottom_row;

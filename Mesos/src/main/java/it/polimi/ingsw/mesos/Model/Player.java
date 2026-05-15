@@ -11,6 +11,14 @@ public final class Player {
     private int food;
     private int prestige_points;
 
+    /**
+     * Creates a player with a fresh tribe, zero prestige, and connected status.
+     *
+     * @param name player nickname
+     * @param color player color
+     * @param food initial food supply
+     * @throws IllegalArgumentException if the initial food is negative
+     */
     public Player(String name, Color color, int food) {
         this.nickname = name;
         this.color = color;
@@ -23,30 +31,69 @@ public final class Player {
         this.tribe = new Tribe();
     }
 
+    /**
+     * Returns the player's nickname.
+     *
+     * @return player nickname
+     */
     public String getNickname() {
         return nickname;
     }
 
+    /**
+     * Returns the player's color.
+     *
+     * @return player color
+     */
     public Color getColor() {
         return color;
     }
 
+    /**
+     * Returns the player's tribe.
+     *
+     * @return mutable tribe owned by this player
+     */
     public Tribe getTribe() {
         return tribe;
     }
 
+    /**
+     * Returns the current food supply.
+     *
+     * @return current food amount
+     */
     public int getFood() {
         return food;
     }
     
+    /**
+     * Returns the current prestige score.
+     *
+     * @return current prestige points
+     */
     public int getPrestigePoints() {
         return prestige_points;
     }
 
+    /**
+     * Returns the player's current connection status.
+     *
+     * @return connection status
+     */
     public ConnectionStatus getConnectionStatus() {
         return connection_status;
     }
 
+    /**
+     * Updates the connection status if the transition is valid.
+     * Setting the same status again is a no-op.
+     *
+     * @param status new connection status
+     * @throws IllegalArgumentException if the status is null
+     * @throws IllegalStateException if the transition is not allowed from the
+     *                               current status
+     */
     public void setConnectionStatus(ConnectionStatus status) {
         if (status == null) {
             throw new IllegalArgumentException("connection status cannot be null");
@@ -73,6 +120,7 @@ public final class Player {
      * Adds food to the player's supply.
      *
      * @param amount non-negative amount of food to add
+     * @throws IllegalArgumentException if the amount is negative
      */
     public void gainFood(int amount) {
         if (amount < 0) {
@@ -89,6 +137,7 @@ public final class Player {
      *
      * @param amount non-negative amount of food to remove
      * @return the amount that could not be paid because the player lacked food
+     * @throws IllegalArgumentException if the amount is negative
      */
     public int loseFood(int amount) {
         if (amount < 0) {
@@ -103,6 +152,7 @@ public final class Player {
 
     /**
      * Applies a prestige-point delta to the player score.
+     * Negative deltas are allowed and no lower bound is enforced.
      *
      * @param points points to add, or a negative value to subtract
      */

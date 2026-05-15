@@ -7,12 +7,28 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Turn-order track made of ordered spaces.
+ *
+ * @param spaces spaces stored from top to bottom
+ */
 public record TurnOrderTile(List<TurnOrderSpace> spaces) {
 
+    /**
+     * Returns the mutable list of turn-order spaces backing this tile.
+     *
+     * @return turn-order spaces
+     */
     public List<TurnOrderSpace> getSpaces() {
         return spaces;
     }
 
+    /**
+     * Creates a turn-order tile by copying the provided space list.
+     *
+     * @param spaces spaces from top to bottom
+     * @throws IllegalArgumentException if the space list is null
+     */
     public TurnOrderTile(List<TurnOrderSpace> spaces) {
         if (spaces == null) {
             throw new IllegalArgumentException("spaces cannot be null");
@@ -26,6 +42,8 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
      * setup.
      *
      * @param player player whose totem is placed
+     * @throws IllegalArgumentException if the player is null
+     * @throws IllegalStateException if no free space exists
      */
     public void setupTotem(Player player) {
         if (player == null) {
@@ -48,6 +66,8 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
      *
      * @param player color of the returning player
      * @return result containing the turn-order space bonus or penalty
+     * @throws IllegalArgumentException if the player color is null
+     * @throws IllegalStateException if no free space exists
      */
     public Result placeTotem(Color player) {
         if (player == null) {
@@ -72,7 +92,8 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
      * Reads the current turn order by scanning occupied spaces from top to
      * bottom.
      *
-     * @return player colors in current turn order
+     * @return player colors in current turn order, or an empty list if no space
+     *         is occupied
      */
     public List<Color> currentOrderTopToBottom() {
         List<Color> order = new ArrayList<>();
@@ -89,6 +110,8 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
     /**
      * Clears the first occupied turn-order space, preserving the order of the
      * remaining occupants.
+     *
+     * @throws IllegalStateException if all spaces are already free
      */
     public void clearFirst() {
         for (TurnOrderSpace space : spaces) {
@@ -113,7 +136,8 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
     /**
      * Checks whether every turn-order space is occupied.
      *
-     * @return true when no free spaces remain
+     * @return true when no free spaces remain; also true for an empty space
+     *         list
      */
     public boolean isFull() {
         for (TurnOrderSpace space : spaces) {

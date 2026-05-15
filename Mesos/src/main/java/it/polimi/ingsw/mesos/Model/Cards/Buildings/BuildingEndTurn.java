@@ -15,6 +15,17 @@ import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 public class BuildingEndTurn extends BuildingCard {
     private final int food_bonus;
 
+    /**
+     * Creates an end-turn building from JSON data.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param food_bonus food granted by the effect
+     * @throws IllegalArgumentException if the base card data is invalid or the
+     *                                  food bonus is not 1
+     */
     @JsonCreator
     public BuildingEndTurn(
             @JsonProperty("era")            Era era,
@@ -36,6 +47,9 @@ public class BuildingEndTurn extends BuildingCard {
      *
      * @param order turn order tile to inspect
      * @param visitor controller used to grant food
+     * @throws NullPointerException if the owner, order, or visitor is null
+     * @throws IllegalStateException if the owner's totem is not on the
+     *                               turn-order tile
      */
     public void effect(TurnOrderTile order, ModelController visitor) {
         List<TurnOrderSpace> spaces = order.spaces();
@@ -54,6 +68,11 @@ public class BuildingEndTurn extends BuildingCard {
         if (!found) throw new IllegalStateException("Called effect before player returns to order tile!");
     }
 
+    /**
+     * Returns the food granted by this building.
+     *
+     * @return food bonus
+     */
     public int getFoodBonus() {
         return food_bonus;
     }

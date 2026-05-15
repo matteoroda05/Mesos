@@ -21,6 +21,20 @@ public class BuildingOnCard extends BuildingCard {
     private final boolean inventors_pair;
     private Set<InventionIcon> inventor_icons;
 
+    /**
+     * Creates an on-character-acquired building from JSON data.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param food_bonus food granted when the configured condition is met
+     * @param set_completion true for set-completion scoring
+     * @param inventors_pair true for repeated-invention scoring
+     * @throws IllegalArgumentException if the food bonus is outside 1 to 5 or
+     *                                  the two effect flags are both true or
+     *                                  both false
+     */
     @JsonCreator
     public BuildingOnCard(
             @JsonProperty("era")            Era era,
@@ -43,6 +57,9 @@ public class BuildingOnCard extends BuildingCard {
     /**
      * Captures the owner's current invention icons when this building tracks
      * repeated inventor icons.
+     *
+     * @throws NullPointerException if this building is an inventor-pair
+     *                              building and the owner has not been set
      */
     @Override
     protected void onAssignment() {
@@ -58,6 +75,8 @@ public class BuildingOnCard extends BuildingCard {
      *
      * @param card character card just acquired by the owner
      * @param visitor controller used to grant food
+     * @throws NullPointerException if the owner, card, visitor, or inventor
+     *                              icon cache is null when required
      */
     public void effect(CharacterCard card, ModelController visitor) {
         if (inventors_pair) {
@@ -91,15 +110,30 @@ public class BuildingOnCard extends BuildingCard {
         }
     }
 
+    /**
+     * Returns the food granted by this building effect.
+     *
+     * @return food bonus
+     */
     public int getFoodBonus() {
         return food_bonus;
     }
 
     // TODO: remove this method??
+    /**
+     * Checks whether this building rewards repeated inventor icons.
+     *
+     * @return true for inventor-pair buildings
+     */
     public boolean isInventorsPair() {
         return inventors_pair;
     }
 
+    /**
+     * Checks whether this building rewards completing character sets.
+     *
+     * @return true for set-completion buildings
+     */
     public boolean isSetCompletion() {
         return !inventors_pair;
     }

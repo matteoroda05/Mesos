@@ -25,16 +25,31 @@ public final class MesosCliClient {
     private String gameName;
     private GameSnapshot snapshot;
 
+    /**
+     * Creates a CLI client bound to standard input and a terminal printer.
+     */
     public MesosCliClient() {
         this.reader = new BufferedReader(new InputStreamReader(System.in));
         this.printer = new CliPrinter();
         this.consoleLock = new Object();
     }
 
+    /**
+     * Starts the CLI client.
+     *
+     * @param args ignored command-line arguments
+     * @throws Exception if connection setup or interactive I/O fails
+     */
     public static void main(String[] args) throws Exception {
         new MesosCliClient().run();
     }
 
+    /**
+     * Runs connection setup, nickname selection, and lobby/game interaction.
+     * If nickname selection rejoins an active game, the lobby flow is skipped.
+     *
+     * @throws Exception if the client cannot complete required I/O
+     */
     private void run() throws Exception {
         printBanner();
 
@@ -45,6 +60,12 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prompts for transport and host until a connection succeeds.
+     *
+     * @return connected game client
+     * @throws IOException if reading prompt input fails
+     */
     private GameClient connectWithRetry() throws IOException {
         while (true) {
             ConnectionType connectionType = promptConnectionType();
@@ -62,6 +83,15 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Registers a nickname, handling duplicate-name retries and optional
+     * rejoin of an existing disconnected session.
+     *
+     * @param client connected game client
+     * @return true if the method already entered a rejoined game, false when
+     *         the caller should continue to the lobby
+     * @throws IOException if prompt input or network calls fail
+     */
     private boolean chooseNickname(GameClient client) throws IOException {
         while (true) {
             String candidateNickname = promptRequired("Nickname");
@@ -110,6 +140,15 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Handles a duplicate nickname or game name by either appending a numeric
+     * suffix or prompting for a replacement.
+     *
+     * @param nameBase name that was rejected
+     * @param nameLabel label used in prompts
+     * @return next candidate name
+     * @throws IOException if prompt input fails
+     */
     private String handleTakenName(String nameBase, String nameLabel) throws IOException {
         if (promptYesNo("Il " + nameLabel + " e' gia' in uso. Vuoi mantenerlo con un suffisso automatico")) {
             int suffix = 1;
@@ -123,6 +162,13 @@ public final class MesosCliClient {
         return promptRequired(nameLabel);
     }
 
+    /**
+     * Repeatedly shows the lobby and prompts the user to join or create a game
+     * until a game is entered.
+     *
+     * @param client connected game client
+     * @throws IOException if prompt input or network calls fail
+     */
     private void lobbyLoop(GameClient client) throws IOException {
         while (true) {
             LobbySnapshot lobby = fetchLobby(client);
@@ -137,6 +183,15 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Handles the create-game path and joins the newly created game.
+     *
+     * @param client connected game client
+     * @param requestedGameName requested game name
+     * @return true if the client entered the created game, false if creation
+     *         was abandoned
+     * @throws IOException if prompt input or network calls fail
+     */
     private boolean handleCreateFlow(GameClient client, String requestedGameName) throws IOException {
         int playerCount = promptPlayerCount();
         String createdGameName = createGameWithUniqueName(client, requestedGameName, playerCount);
@@ -147,6 +202,16 @@ public final class MesosCliClient {
         return joinSelectedGame(client, createdGameName, false);
     }
 
+    /**
+     * Handles the join-game path and optionally warns when the requested game
+     * is not present in the latest lobby snapshot.
+     *
+     * @param client connected game client
+     * @param lobby latest lobby snapshot
+     * @param requestedGameName requested game name
+     * @return true if the client entered a game, false otherwise
+     * @throws IOException if prompt input or network calls fail
+     */
     private boolean handleJoinFlow(GameClient client, LobbySnapshot lobby, String requestedGameName) throws IOException {
         if (lobby.openGames().stream().noneMatch(game -> game.gameName().equals(requestedGameName))) {
             printLine("La partita '" + requestedGameName + "' non compare tra quelle disponibili.");
@@ -155,6 +220,17 @@ public final class MesosCliClient {
         return joinSelectedGame(client, requestedGameName, true);
     }
 
+    /**
+     * Attempts to join a selected game, optionally offering to create it when
+     * the server reports that it does not exist.
+     *
+     * @param client connected game client
+     * @param requestedGameName game name to join
+     * @param offerCreateFallback whether to offer creation on missing game
+     * @return true if the client entered a game, false if the flow should
+     *         return to the lobby
+     * @throws IOException if prompt input or network calls fail
+     */
     private boolean joinSelectedGame( GameClient client, String requestedGameName, boolean offerCreateFallback) throws IOException {
         String selectedGameName = requestedGameName;
 
@@ -193,6 +269,16 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Creates a game, retrying with new names when the requested name is taken.
+     *
+     * @param client connected game client
+     * @param requestedGameName initial game name
+     * @param playerCount requested player count
+     * @return created game name, or null if creation fails for a non-duplicate
+     *         reason
+     * @throws IOException if prompt input or network calls fail
+     */
     private String createGameWithUniqueName(GameClient client, String requestedGameName, int playerCount) throws IOException {
         String candidateGameName = requestedGameName;
 
@@ -213,12 +299,27 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Subscribes to game updates, enters the in-game command loop, then
+     * unsubscribes when the loop exits.
+     *
+     * @param client connected game client
+     * @throws IOException if subscription, unsubscription, or command I/O fails
+     */
     private void enterGame(GameClient client) throws IOException {
         handleResult(client.subscribe(new SubscribeGameRequest(gameName, nickname), this::handleRemoteUpdate), false);
         mainLoop(client);
         client.unsubscribe(new UnsubscribeGameRequest(gameName, nickname));
     }
 
+    /**
+     * Fetches and prints the lobby snapshot.
+     *
+     * @param client connected game client
+     * @return lobby snapshot, or an empty lobby snapshot when the response is
+     *         unsuccessful or missing lobby data
+     * @throws IOException if the network call fails
+     */
     private LobbySnapshot fetchLobby(GameClient client) throws IOException {
         GameOperationResult lobbyResult = client.getLobby();
         if (!lobbyResult.success()) {
@@ -234,6 +335,12 @@ public final class MesosCliClient {
         return lobbySnapshot;
     }
 
+    /**
+     * Prompts until the user chooses whether to join or create a game.
+     *
+     * @return true for create, false for join
+     * @throws IOException if prompt input fails
+     */
     private boolean promptLobbyAction() throws IOException {
         while (true) {
             String raw = promptRequired("Vuoi join o create").toLowerCase(Locale.ROOT);
@@ -249,10 +356,24 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Appends a numeric suffix to a base name.
+     *
+     * @param baseName base name
+     * @param suffix numeric suffix
+     * @return suffixed name
+     */
     private String appendNumericSuffix(String baseName, int suffix) {
         return baseName + "-" + suffix;
     }
 
+    /**
+     * Produces a readable connection error.
+     *
+     * @param exception connection exception
+     * @return exception message, or the exception class name when the message
+     *         is null or blank
+     */
     private String describeConnectionError(IOException exception) {
         if (exception.getMessage() == null || exception.getMessage().isBlank()) {
             return exception.getClass().getSimpleName();
@@ -260,6 +381,14 @@ public final class MesosCliClient {
         return exception.getMessage();
     }
 
+    /**
+     * Runs the in-game command prompt until the user quits.
+     * Empty commands are rejected in this loop even though the help text
+     * describes refresh behavior for Enter.
+     *
+     * @param client connected game client
+     * @throws IOException if command input or network calls fail
+     */
     private void mainLoop(GameClient client) throws IOException {
         printSnapshotIfAvailable();
 
@@ -309,6 +438,14 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Parses and dispatches one in-game command.
+     *
+     * @param client connected game client
+     * @param command raw command text
+     * @throws IOException if the network command fails
+     * @throws IllegalArgumentException if the command is unknown or malformed
+     */
     private void handleGameCommand(GameClient client, String command) throws IOException {
         String[] tokens = command.split("\\s+");
         if (tokens.length == 0) {
@@ -335,6 +472,13 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Parses a market-row token.
+     *
+     * @param token row token entered by the user
+     * @return true for the top row, false for the bottom row
+     * @throws IllegalArgumentException if the token is not a supported row name
+     */
     private boolean parseRow(String token) {
         return switch (token.toLowerCase(Locale.ROOT)) {
             case "top", "alto" -> true;
@@ -343,6 +487,14 @@ public final class MesosCliClient {
         };
     }
 
+    /**
+     * Parses an integer command argument.
+     *
+     * @param token raw numeric token
+     * @param label label used in the validation error
+     * @return parsed integer
+     * @throws IllegalArgumentException if the token is not numeric
+     */
     private int parseInt(String token, String label) {
         try {
             return Integer.parseInt(token);
@@ -351,6 +503,14 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Handles a wait command by sleeping for the requested number of seconds.
+     * Missing seconds default to two.
+     *
+     * @param command raw wait command
+     * @throws IllegalArgumentException if the seconds argument is non-numeric
+     *                                  or negative
+     */
     private void handleWait(String command) {
         String[] tokens = command.split("\\s+");
         int seconds = 2;
@@ -367,14 +527,33 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Requests a fresh game snapshot from the server and stores it if present.
+     *
+     * @param client connected game client
+     * @throws IOException if the network call fails
+     */
     private void refreshSnapshot(GameClient client) throws IOException {
         handleResult(client.getSnapshot(new SnapshotRequest(gameName)), false);
     }
 
+    /**
+     * Handles a game operation result and prints its message.
+     *
+     * @param result operation result, ignored when null
+     */
     private void handleResult(GameOperationResult result) {
         handleResult(result, true);
     }
 
+    /**
+     * Handles a game operation result, optionally printing successful messages,
+     * and updates the cached snapshot when the result contains one.
+     *
+     * @param result operation result, ignored when null
+     * @param printMessage whether to print successful messages; errors are
+     *                     always printed
+     */
     private void handleResult(GameOperationResult result, boolean printMessage) {
         if (result == null) {
             return;
@@ -387,6 +566,12 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Handles an asynchronous server view update.
+     * Null updates are ignored.
+     *
+     * @param update remote update payload
+     */
     private void handleRemoteUpdate(GameViewUpdate update) {
         if (update == null) {
             return;
@@ -401,6 +586,9 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prints the cached snapshot when one is available.
+     */
     private void printSnapshotIfAvailable() {
         if (snapshot == null) {
             return;
@@ -408,12 +596,20 @@ public final class MesosCliClient {
         printLine(printer.renderSnapshot(snapshot, nickname));
     }
 
+    /**
+     * Prints one line while holding the console lock.
+     *
+     * @param text text to print, forwarded to {@link System#out}
+     */
     private void printLine(String text) {
         synchronized (consoleLock) {
             System.out.println(text);
         }
     }
 
+    /**
+     * Prints the CLI startup banner.
+     */
     private void printBanner() {
         System.out.println("MESOS CLI");
         System.out.println("Avvia il server in un terminale separato con MesosServerLauncher.");
@@ -423,6 +619,12 @@ public final class MesosCliClient {
         System.out.println();
     }
 
+    /**
+     * Prompts until the user chooses socket or RMI transport.
+     *
+     * @return selected connection type
+     * @throws IOException if prompt input fails
+     */
     private ConnectionType promptConnectionType() throws IOException {
         while (true) {
             String raw = promptRequired("Tipo connessione (socket/rmi)").toLowerCase(Locale.ROOT);
@@ -438,6 +640,13 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prompts until a non-blank value is entered.
+     *
+     * @param label prompt label
+     * @return trimmed non-blank input
+     * @throws IOException if input cannot be read
+     */
     private String promptRequired(String label) throws IOException {
         while (true) {
             String value = promptRaw(label + ": ").trim();
@@ -448,6 +657,13 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prompts until a valid integer is entered.
+     *
+     * @param label prompt label
+     * @return parsed integer
+     * @throws IOException if input cannot be read
+     */
     private int promptInt(String label) throws IOException {
         while (true) {
             String value = promptRequired(label);
@@ -459,6 +675,12 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prompts until a player count within the supported range is entered.
+     *
+     * @return valid player count
+     * @throws IOException if input cannot be read
+     */
     private int promptPlayerCount() throws IOException {
         while (true) {
             int value = promptInt("Numero giocatori");
@@ -470,6 +692,14 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prompts until the user answers yes/no.
+     * Blank answers are rejected.
+     *
+     * @param label prompt label
+     * @return true for yes/y, false for no/n
+     * @throws IOException if input cannot be read
+     */
     private boolean promptYesNo(String label) throws IOException {
         while (true) {
             String value = promptRaw(label + ": ").trim().toLowerCase(Locale.ROOT);
@@ -487,6 +717,13 @@ public final class MesosCliClient {
         }
     }
 
+    /**
+     * Prints a prompt and reads one raw line from standard input.
+     *
+     * @param prompt prompt text
+     * @return line read from the input stream
+     * @throws IOException if the input stream is closed or cannot be read
+     */
     private String promptRaw(String prompt) throws IOException {
         synchronized (consoleLock) {
             System.out.print(prompt);

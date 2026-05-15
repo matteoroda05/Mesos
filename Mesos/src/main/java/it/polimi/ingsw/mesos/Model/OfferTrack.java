@@ -10,6 +10,19 @@ import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 public class OfferTrack {
     private final List<OfferTile> tiles;
 
+    /**
+     * Creates an offer track with the tiles usable for the current player
+     * count.
+     *
+     * @param offer_tiles tiles to place on the track
+     * @param num_players number of players in the game
+     * @throws IllegalArgumentException if the tile list is null, the player
+     *                                  count is invalid, the number of tiles
+     *                                  is not {@code num_players + 2}, a tile
+     *                                  is null, tile ids are duplicated, or a
+     *                                  tile requires more players than the game
+     *                                  has
+     */
     public OfferTrack(List<OfferTile> offer_tiles, int num_players) {
         if (offer_tiles == null) {
             throw new IllegalArgumentException("Offer track tiles cannot be null");
@@ -42,7 +55,7 @@ public class OfferTrack {
     /**
      * Returns the offer tiles that can still be occupied this round.
      *
-     * @return available offer tiles
+     * @return available offer tiles in track order
      * @throws IllegalStateException if no tile is available, which should not
      *                               happen during a valid offer phase
      */
@@ -64,7 +77,8 @@ public class OfferTrack {
     /**
      * Returns the offer tiles that already contain a player totem.
      *
-     * @return occupied offer tiles
+     * @return occupied offer tiles in track order, or an empty list if none are
+     *         occupied
      */
     public List<OfferTile> getOccupiedTiles() {
         ensureTilesInitialized();
@@ -80,6 +94,9 @@ public class OfferTrack {
      *
      * @param index tile position in the offer track
      * @return the offer tile at the requested index
+     * @throws IndexOutOfBoundsException if the index is outside the track
+     * @throws IllegalStateException if the tile list is unexpectedly null or
+     *                               the requested entry is null
      */
     public OfferTile getTile(int index){
         ensureTilesInitialized();
@@ -97,6 +114,11 @@ public class OfferTrack {
     }
     
     // TODO: remove since constructor ensures tiles is never null since its never modified
+    /**
+     * Verifies that the track storage has been initialized.
+     *
+     * @throws IllegalStateException if the tile list is unexpectedly null
+     */
     private void ensureTilesInitialized() {
         if (tiles == null) {
             throw new IllegalStateException("Offer track tiles are not initialized");

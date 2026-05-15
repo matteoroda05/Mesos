@@ -16,6 +16,15 @@ public final class SustenanceEvent extends EventCard {
     private final int food_per_character;
     private final int points_penalty;
 
+    /**
+     * Creates a sustenance event from JSON data.
+     *
+     * @param era era this event belongs to
+     * @param points_penalty prestige penalty per unpaid food
+     * @param food_per_character food required for each character
+     * @throws IllegalArgumentException if the penalty is outside -3 to -1, or
+     *                                  food per character is not 1
+     */
     @JsonCreator
     public SustenanceEvent(
             @JsonProperty("era")              Era era,
@@ -34,9 +43,14 @@ public final class SustenanceEvent extends EventCard {
     /**
      * Calculates each player's food requirement from tribe size, reduced by any
      * gatherer discount, and records the penalty conversion for unpaid food.
+     * Food in the result is never positive; a sufficient gatherer discount
+     * produces zero required food.
      *
      * @param players_tribes tribes keyed by player color
-     * @return sustenance costs keyed by player color
+     * @return sustenance costs keyed by player color, or an empty map if no
+     *         tribes are provided
+     * @throws NullPointerException if the input map or one of its tribe values
+     *                              is null
      */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
@@ -65,10 +79,20 @@ public final class SustenanceEvent extends EventCard {
 
     // Utils for view
 
+    /**
+     * Returns the food required for each character.
+     *
+     * @return food per character
+     */
     public int getFoodPerCharacter() {
         return food_per_character;
     }
 
+    /**
+     * Returns the prestige penalty applied per unpaid food.
+     *
+     * @return negative point penalty value
+     */
     public int getPointPenalty() {
         return points_penalty;
     }

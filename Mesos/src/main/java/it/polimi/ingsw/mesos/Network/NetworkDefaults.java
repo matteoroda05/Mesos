@@ -6,6 +6,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
+/**
+ * Shared network defaults and host-detection helpers.
+ */
 public final class NetworkDefaults {
     public static final String DEFAULT_RMI_HOST = "127.0.0.1";
     public static final int DEFAULT_SOCKET_PORT = 12_345;
@@ -15,9 +18,20 @@ public final class NetworkDefaults {
     public static final long HEARTBEAT_TIMEOUT_MILLIS = 8_000;
     public static final long SINGLE_PLAYER_WIN_TIMEOUT_MILLIS = 60_000;
 
+    /**
+     * Prevents instantiation of the constants utility.
+     */
     private NetworkDefaults() {
     }
 
+    /**
+     * Resolves the host advertised by the RMI server.
+     * A non-blank configured value wins after trimming; otherwise the first
+     * usable local IPv4 address is used, with loopback as a fallback.
+     *
+     * @param configuredHost optional configured host
+     * @return host to advertise to RMI clients
+     */
     public static String resolveRmiServerHost(String configuredHost) {
         if (configuredHost != null && !configuredHost.isBlank()) {
             return configuredHost.trim();
@@ -26,10 +40,22 @@ public final class NetworkDefaults {
         return detectLocalNetworkHost();
     }
 
+    /**
+     * Sets the JVM RMI hostname property using the resolved server host.
+     *
+     * @param configuredHost optional configured host
+     */
     public static void configureRmiServerHostname(String configuredHost) {
         System.setProperty("java.rmi.server.hostname", resolveRmiServerHost(configuredHost));
     }
 
+    /**
+     * Detects a usable non-loopback IPv4 address for LAN clients.
+     * Virtual, loopback and down interfaces are skipped. If interface
+     * enumeration fails or no suitable address exists, loopback is returned.
+     *
+     * @return detected host address, or {@link #DEFAULT_RMI_HOST}
+     */
     public static String detectLocalNetworkHost() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -53,6 +79,13 @@ public final class NetworkDefaults {
         return DEFAULT_RMI_HOST;
     }
 
+    /**
+     * Checks whether an address is a usable advertised IPv4 address.
+     *
+     * @param address address to inspect
+     * @return true when the address is IPv4 and not any-local, loopback or
+     *         link-local
+     */
     private static boolean isUsableIpv4Address(InetAddress address) {
         return address instanceof Inet4Address
                 && !address.isAnyLocalAddress()

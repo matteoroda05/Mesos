@@ -24,6 +24,7 @@ public class EventState extends GameState {
      * normal round or all visible events during the final round.
      *
      * @param controller model controller used to resolve events
+     * @throws NullPointerException if the controller is null
      */
     public EventState(ModelController controller) {
         super(controller);
@@ -39,6 +40,9 @@ public class EventState extends GameState {
      *
      * @return the end-game state after final events, otherwise the end-round
      *         state
+     * @throws NullPointerException if a visible event, tribe, event outcome, or
+     *                              event-triggered building is unexpectedly
+     *                              null
      */
     @Override
     public GameState process() {
@@ -83,6 +87,13 @@ public class EventState extends GameState {
         }
     }
 
+    /**
+     * Reports whether this state is resolving normal round events or final
+     * events.
+     *
+     * @return final-events status in the last round, otherwise round-events
+     *         status
+     */
     @Override
     public GameStatus getStatus() {
         return last_round ? GameStatus.FINAL_EVENTS : GameStatus.ROUND_EVENTS;
