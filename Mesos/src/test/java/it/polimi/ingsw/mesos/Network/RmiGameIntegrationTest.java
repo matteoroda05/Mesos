@@ -4,7 +4,15 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.RMI.RmiGameServer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RmiGameIntegrationTest {
     @Test
@@ -47,6 +55,27 @@ class RmiGameIntegrationTest {
                     "rmi-open-room",
                     "rmi-full-room"
             );
+        }
+    }
+
+    @Test
+    void rmiClientHandlesSubscriptionGuardsAndFailures() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        int rmiPort = NetworkTestSupport.findFreePort();
+
+        try (RmiGameServer rmiServer = new RmiGameServer(serverCore, rmiPort, "MesosTestServiceGuards");
+             GameClient client = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceGuards"))) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> client.subscribe(new SubscribeGameRequest("rmi-guard-room", "Alice"), null));
+
+            assertTrue(client.unsubscribe(new UnsubscribeGameRequest("rmi-guard-room", "Alice")).success());
+            assertTrue(client.createGame(new CreateGameRequest("rmi-guard-room", 2)).success());
+
+            var failedSubscription = client.subscribe(
+                    new SubscribeGameRequest("rmi-guard-room", "Alice"),
+                    update -> { });
+            assertFalse(failedSubscription.success());
+            assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, failedSubscription.errorCode());
         }
     }
 }

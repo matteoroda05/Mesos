@@ -9,7 +9,6 @@ public class TurnOrderSpaceTest {
 
 	@Test
 	void constructorSetsBonusAndStartsFreeWithNoOccupant() {
-		// Verifies that a new space exposes the configured bonus and starts unoccupied.
 		TurnOrderSpace space = new TurnOrderSpace(2);
 
 		assertEquals(2, space.getBonus());
@@ -19,7 +18,6 @@ public class TurnOrderSpaceTest {
 
 	@Test
 	void constructorPreservesNegativeBonusValue() {
-		// Verifies that a negative malus value is kept as configured.
 		TurnOrderSpace space = new TurnOrderSpace(-1);
 
 		assertEquals(-1, space.getBonus());
@@ -27,7 +25,6 @@ public class TurnOrderSpaceTest {
 
 	@Test
 	void setOccupantMarksSpaceAsOccupiedAndStoresPlayerColor() {
-		// Verifies that assigning a player color occupies the space.
 		TurnOrderSpace space = new TurnOrderSpace(0);
 
 		space.setOccupant(Color.BLUE);
@@ -38,7 +35,6 @@ public class TurnOrderSpaceTest {
 
 	@Test
 	void setOccupantCanReplaceAnExistingOccupant() {
-		// Verifies that setting a new occupant updates the space to the latest color.
 		TurnOrderSpace space = new TurnOrderSpace(1);
 
 		space.setOccupant(Color.BLUE);
@@ -50,7 +46,6 @@ public class TurnOrderSpaceTest {
 
 	@Test
 	void setOccupantWithNullFreesTheSpace() {
-		// Verifies that assigning null clears occupancy consistently.
 		TurnOrderSpace space = new TurnOrderSpace(1);
 		space.setOccupant(Color.ORANGE);
 
@@ -62,7 +57,6 @@ public class TurnOrderSpaceTest {
 
 	@Test
 	void clearRemovesOccupantAndRestoresFreeState() {
-		// Verifies that clear always returns the space to a free state.
 		TurnOrderSpace space = new TurnOrderSpace(3);
 		space.setOccupant(Color.WHITE);
 

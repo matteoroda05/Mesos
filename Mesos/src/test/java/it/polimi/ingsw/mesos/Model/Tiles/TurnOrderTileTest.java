@@ -4,7 +4,6 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Player;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +22,11 @@ public class TurnOrderTileTest {
         assertEquals(0, spaces.get(2).getBonus());
         assertEquals(-1, spaces.get(3).getBonus());
         assertTrue(spaces.stream().allMatch(TurnOrderSpace::isFree));
+    }
+
+    @Test
+    void constructorRejectsNullSpaceList() {
+        assertThrows(IllegalArgumentException.class, () -> new TurnOrderTile(null));
     }
 
     @Test
@@ -64,6 +68,28 @@ public class TurnOrderTileTest {
     }
 
     @Test
+    void setupTotemValidatesPlayerAndUsesFirstFreeSpace() {
+        TurnOrderTile tile = new TurnOrderTile(createSpaces(1, -1));
+        Player player = new Player("Alice", Color.BLUE, 0);
+
+        assertThrows(IllegalArgumentException.class, () -> tile.setupTotem(null));
+
+        tile.setupTotem(player);
+
+        assertEquals(List.of(Color.BLUE), tile.currentOrderTopToBottom());
+        assertEquals(Color.BLUE, tile.getSpaces().getFirst().getOccupant());
+    }
+
+    @Test
+    void setupTotemThrowsWhenNoFreeSpaceExists() {
+        TurnOrderTile tile = new TurnOrderTile(createSpaces(1));
+        tile.setupTotem(new Player("Alice", Color.BLUE, 0));
+
+        assertThrows(IllegalStateException.class,
+                () -> tile.setupTotem(new Player("Bob", Color.YELLOW, 0)));
+    }
+
+    @Test
     void placeTotemOccupiesFirstFreeSpacesInOrder() {
         TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 1, 0, -1));
         Player firstPlayer = new Player("Alice", Color.BLUE, 2);
@@ -79,20 +105,6 @@ public class TurnOrderTileTest {
         assertEquals(Color.ORANGE, tile.getSpaces().get(2).getOccupant());
         assertNull(tile.getSpaces().get(3).getOccupant());
         assertEquals(List.of(Color.BLUE, Color.YELLOW, Color.ORANGE), tile.currentOrderTopToBottom());
-    }
-
-    @Test
-    void placeTotemOnLastSpace() {
-        TurnOrderTile tile = new TurnOrderTile(createSpaces(2, 0, -1));
-        Player firstPlayer = new Player("Alice", Color.BLUE, 0);
-        Player secondPlayer = new Player("Bob", Color.YELLOW, 0);
-        Player thirdPlayer = new Player("Carol", Color.ORANGE, 2);
-
-        tile.placeTotem(firstPlayer.getColor());
-        tile.placeTotem(secondPlayer.getColor());
-        tile.placeTotem(thirdPlayer.getColor());
-
-        assertEquals(Color.ORANGE, tile.getSpaces().get(2).getOccupant());
     }
 
     @Test
