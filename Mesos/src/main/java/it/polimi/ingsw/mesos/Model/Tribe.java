@@ -17,6 +17,10 @@ public class Tribe {
     private final Map<Class<? extends CharacterCard>, List<CharacterCard>> characters;
     private final List<BuildingCard> buildings;
 
+    /**
+     * Creates an empty tribe with one character bucket for each supported
+     * character type and no buildings.
+     */
     public Tribe() {
         this.characters = Map.of(
             InventorCard.class, new ArrayList<>(),
@@ -50,6 +54,8 @@ public class Tribe {
      *
      * @param type concrete character card class to count
      * @return number of owned cards of that type
+     * @throws IllegalArgumentException if the type is null
+     * @throws IllegalStateException if the type is not tracked by this tribe
      */
     public int getNumCharacterOfType(Class<? extends CharacterCard> type) {
         if (type == null) {
@@ -80,6 +86,7 @@ public class Tribe {
      *
      * @param trigger trigger to match
      * @return buildings that react to the given trigger
+     * @throws IllegalArgumentException if the trigger is null
      */
     public List<BuildingCard> getBuildingsWithTrigger(BuildingTrigger trigger) {
         if (trigger == null) {
@@ -95,6 +102,11 @@ public class Tribe {
         return triggered_buildings;
     }
 
+    /**
+     * Counts buildings currently owned by the tribe.
+     *
+     * @return number of owned buildings
+     */
     public int getNumBuildings() {
         return this.buildings.size();
     }
@@ -249,6 +261,9 @@ public class Tribe {
      *
      * @param card character card to add
      * @return the concrete character class used as the bucket key
+     * @throws IllegalArgumentException if the card is null
+     * @throws NullPointerException if the card class is not one of the tracked
+     *                              character types
      */
     public Class<? extends CharacterCard> addCard(CharacterCard card) {
         if (card == null) {
@@ -266,6 +281,7 @@ public class Tribe {
      * Adds a building card to the tribe's owned buildings.
      *
      * @param card building card to add
+     * @throws IllegalArgumentException if the card is null
      */
     public void addCard(BuildingCard card) {
         if (card == null) {

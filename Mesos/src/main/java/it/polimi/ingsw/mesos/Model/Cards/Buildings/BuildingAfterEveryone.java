@@ -12,6 +12,15 @@ import it.polimi.ingsw.mesos.Model.GameTable;
 public class BuildingAfterEveryone extends BuildingCard {
     private boolean to_apply = true;
 
+    /**
+     * Creates an after-everyone building from JSON data.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @throws IllegalArgumentException if the base card data is invalid
+     */
     @JsonCreator
     public BuildingAfterEveryone(
             @JsonProperty("era")            Era era,
@@ -26,11 +35,14 @@ public class BuildingAfterEveryone extends BuildingCard {
     /**
      * Consumes this once-per-round building effect and, when the owner can take
      * at least one top-row card, creates an action state for the extra pick.
+     * The caller is responsible for checking {@link #isActive()} before
+     * invoking this method.
      *
      * @param table game table used to inspect top-row availability
      * @param controller controller that will drive the generated action state
      * @return an action state for the extra pick, or null when no card can be
      *         taken
+     * @throws NullPointerException if the owner, table, or controller is null
      */
     public ActionState effect(GameTable table, ModelController controller) {
         to_apply = false;  // effect applied this round, waits reset for new round
@@ -43,6 +55,11 @@ public class BuildingAfterEveryone extends BuildingCard {
         return null;
     }
 
+    /**
+     * Checks whether this once-per-round effect is still available.
+     *
+     * @return true before the effect has been consumed for the round
+     */
     public boolean isActive() {
         return to_apply;
     }

@@ -12,6 +12,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class EndGameState extends GameState {
+    /**
+     * Creates the end-game automatic state.
+     *
+     * @param controller model controller used to apply final scoring
+     */
     public EndGameState(ModelController controller) {
         super(controller);
     }
@@ -21,6 +26,7 @@ public class EndGameState extends GameState {
      * the state machine.
      *
      * @return null to mark the game as finished
+     * @throws NullPointerException if an end-game building is missing an owner
      */
     @Override
     public GameState process() {
@@ -37,6 +43,11 @@ public class EndGameState extends GameState {
         return null; // game finished, declare winner
     }
 
+    /**
+     * Reports that final scoring is being resolved.
+     *
+     * @return end-game status
+     */
     @Override
     public GameStatus getStatus() {
         return GameStatus.END_GAME;

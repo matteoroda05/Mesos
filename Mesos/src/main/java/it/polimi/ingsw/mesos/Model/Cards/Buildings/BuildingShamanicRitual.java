@@ -16,6 +16,19 @@ public class BuildingShamanicRitual extends BuildingCard {
     private final int win_multiplier;
     private final EventPhase phase;
 
+    /**
+     * Creates a shamanic-ritual building from JSON data.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param star_bonus star bonus used before the ritual
+     * @param win_multiplier multiplier used after a sole win
+     * @throws IllegalArgumentException if both effects are configured, the star
+     *                                  bonus is not 0 or 3, or the win
+     *                                  multiplier is not 0 or 2
+     */
     @JsonCreator
     public BuildingShamanicRitual(
             @JsonProperty("era")            Era era,
@@ -41,6 +54,8 @@ public class BuildingShamanicRitual extends BuildingCard {
      * doubles a sole winner's prestige or cancels the owner's prestige loss.
      *
      * @param points mutable ritual outcomes keyed by player color
+     * @throws NullPointerException if the owner, points map, or owner result is
+     *                              null
      */
     public void effect(Map<Color, Result> points) {
         if (win_multiplier != 0) {
@@ -76,12 +91,27 @@ public class BuildingShamanicRitual extends BuildingCard {
         points.replace(owner.getColor(), new_points);
     }
 
+    /**
+     * Returns when this building effect applies relative to the event.
+     *
+     * @return pre-event for star bonuses, post-event for result modifiers
+     */
     public EventPhase getPhase() {
         return phase;
     }
 
+    /**
+     * Returns the star bonus configured for this building.
+     *
+     * @return star bonus, or zero for post-event multiplier buildings
+     */
     public int getStarBonus() { return star_bonus; }
 
+    /**
+     * Returns the winning-prestige multiplier configured for this building.
+     *
+     * @return win multiplier, or zero for pre-event star-bonus buildings
+     */
     public int getWinMultiplier() {
         return win_multiplier;
     }

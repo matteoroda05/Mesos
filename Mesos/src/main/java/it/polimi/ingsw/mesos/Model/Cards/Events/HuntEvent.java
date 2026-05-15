@@ -17,6 +17,15 @@ public class HuntEvent extends EventCard {
     private final int prestige_per_hunter;
     private final int food_per_hunter;
 
+    /**
+     * Creates a hunt event from JSON data.
+     *
+     * @param era era this event belongs to
+     * @param prestige_per_hunter prestige gained for each hunter
+     * @param food_per_hunter food gained for each hunter
+     * @throws IllegalArgumentException if prestige per hunter is outside 1 to
+     *                                  3, or food per hunter is not 1
+     */
     @JsonCreator
     public HuntEvent(
             @JsonProperty("era")               Era era,
@@ -42,10 +51,20 @@ public class HuntEvent extends EventCard {
         return (float) food_per_hunter / prestige_per_hunter;
     }
 
+    /**
+     * Returns the prestige gained for each hunter.
+     *
+     * @return prestige per hunter
+     */
     public int getPrestigePerHunter() {
         return prestige_per_hunter;
     }
 
+    /**
+     * Returns the food gained for each hunter.
+     *
+     * @return food per hunter
+     */
     public int getFoodPerHunter() {
         return food_per_hunter;
     }
@@ -55,7 +74,10 @@ public class HuntEvent extends EventCard {
      * in their tribe.
      *
      * @param players_tribes tribes keyed by player color
-     * @return hunt rewards keyed by player color
+     * @return hunt rewards keyed by player color, or an empty map if no tribes
+     *         are provided
+     * @throws NullPointerException if the input map or one of its tribe values
+     *                              is null
      */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {

@@ -8,6 +8,12 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 public class ChooseOfferState extends GameState {
     private Color p;
 
+    /**
+     * Creates the offer-choice state and selects the first player in turn
+     * order as active.
+     *
+     * @param controller model controller used to apply choices
+     */
     public ChooseOfferState(ModelController controller) {
         super(controller);
         p = controller.getNextPlayerTurn();
@@ -21,6 +27,10 @@ public class ChooseOfferState extends GameState {
      * @param offer_tile selected offer-tile index
      * @return this state if more offers must be chosen, otherwise the first
      *         action state
+     * @throws RuntimeException if the command is issued by a non-active player
+     * @throws IllegalArgumentException if the selected offer tile is invalid
+     * @throws IllegalStateException if the selected tile is unavailable or turn
+     *                               order is inconsistent
      */
     @Override
     public GameState chooseOffer(Color player_color, int offer_tile) {
@@ -34,16 +44,48 @@ public class ChooseOfferState extends GameState {
         if (p == null) {
             return new ActionState(controller);
         }
-
-        p = controller.getNextPlayerTurn();
         return this;
     }
 
+    /**
+     * Skips the active player's offer choice and advances to the next player or
+     * to the action phase when no offer choices remain.
+     *
+     * @param player_color color of the player whose offer choice is skipped
+     * @return this state if more offers must be chosen, otherwise the first
+     *         action state
+     * @throws RuntimeException if the command is issued by a non-active player
+     * @throws IllegalStateException if turn order is inconsistent
+     */
+    @Override
+    public GameState skipTurn(Color player_color) {
+        if (p != player_color) {
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
+        }
+
+        controller.playerSkipOffer(player_color);
+        p = controller.getNextPlayerTurn();
+        if (p == null) {
+            return new ActionState(controller);
+        }
+        return this;
+    }
+
+    /**
+     * Reports that the game is waiting for offer choices.
+     *
+     * @return offer-round status
+     */
     @Override
     public GameStatus getStatus() {
         return GameStatus.ROUND_OFFER;
     }
 
+    /**
+     * Returns the player currently expected to choose an offer.
+     *
+     * @return active player color, or null if no offer choices remain
+     */
     @Override
     public Color getActivePlayer() {
         return p;

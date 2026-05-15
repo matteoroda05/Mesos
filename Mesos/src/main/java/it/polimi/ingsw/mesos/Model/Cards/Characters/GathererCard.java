@@ -6,6 +6,14 @@ import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public final class GathererCard extends CharacterCard {
+    /**
+     * Creates a gatherer card from JSON data.
+     *
+     * @param era era this card belongs to
+     * @param min_players minimum players required to use this card
+     * @throws IllegalArgumentException if the minimum player count is outside
+     *                                  the range accepted by the base card
+     */
     @JsonCreator
     public GathererCard(
             @JsonProperty("era") Era era,
@@ -14,6 +22,11 @@ public final class GathererCard extends CharacterCard {
         super(era, min_players);
     }
 
+    /**
+     * Returns the fixed sustenance discount granted by this gatherer.
+     *
+     * @return food requirement discount
+     */
     public int getDiscount() {
         return 3;
     }

@@ -7,6 +7,14 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public final class ArtistCard extends CharacterCard {
 
+    /**
+     * Creates an artist card from JSON data.
+     *
+     * @param era era this card belongs to
+     * @param min_players minimum players required to use this card
+     * @throws IllegalArgumentException if the minimum player count is outside
+     *                                  the range accepted by the base card
+     */
     @JsonCreator
     public ArtistCard(
             @JsonProperty("era")        Era era,

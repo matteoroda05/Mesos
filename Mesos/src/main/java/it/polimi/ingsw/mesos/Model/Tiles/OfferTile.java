@@ -15,6 +15,17 @@ public class OfferTile {
     private final int food_gain;
     private final int min_num_players;
 
+    /**
+     * Creates an offer tile from JSON data and leaves it unoccupied.
+     *
+     * @param offer_tile_id tile identifier within the configured id range
+     * @param pick_top_row number of cards selectable from the top row
+     * @param pick_bottom_row number of cards selectable from the bottom row
+     * @param food_gain food granted by the tile
+     * @param min_num_players minimum player count required for this tile
+     * @throws IllegalArgumentException if any numeric value is outside its
+     *                                  allowed range
+     */
     @JsonCreator
     public OfferTile(
             @JsonProperty("offer_tile_id") char offer_tile_id,
@@ -48,30 +59,65 @@ public class OfferTile {
         this.min_num_players = min_num_players;
     }
 
+    /**
+     * Returns how many cards this tile allows taking from the top row.
+     *
+     * @return top-row picks
+     */
     public int getTopPicks() {
         return pick_top_row;
     }
 
+    /**
+     * Returns how many cards this tile allows taking from the bottom row.
+     *
+     * @return bottom-row picks
+     */
     public int getBottomPicks() {
         return pick_bottom_row;
     }
 
+    /**
+     * Returns the food gained from choosing this tile.
+     *
+     * @return food gain
+     */
     public int getFoodGain() {
         return food_gain;
     }
 
+    /**
+     * Returns this tile's identifier.
+     *
+     * @return offer tile id
+     */
     public char getOfferTileId() {
         return id;
     }
 
+    /**
+     * Returns the occupying player color, if any.
+     *
+     * @return occupant color, or null when the tile is free
+     */
     public Color getOccupant() {
         return occupant;
     }
 
+    /**
+     * Returns the minimum player count required for this tile to be used.
+     *
+     * @return minimum number of players
+     */
     public int getMinNumPlayers() {
         return min_num_players;
     }
 
+    /**
+     * Checks whether this tile has no occupying totem.
+     *
+     * @return true when no player occupies the tile
+     */
     public boolean isAvailable() {
         return occupant == null;
     }
@@ -80,6 +126,8 @@ public class OfferTile {
      * Marks this offer tile as occupied by a player's totem.
      *
      * @param player_color color of the occupying player
+     * @throws IllegalArgumentException if the player color is null
+     * @throws IllegalStateException if the tile is already occupied
      */
     public void occupy(Color player_color) {
         if (player_color == null) {

@@ -18,6 +18,17 @@ public class CavePaintingEvent extends EventCard {
     private final int points_per_artist;
     private final int penalty;
 
+    /**
+     * Creates a cave-painting event from JSON data.
+     *
+     * @param era era this event belongs to
+     * @param threshold artists needed to avoid the penalty
+     * @param points_per_artist prestige gained for each artist at or above the
+     *                          threshold
+     * @param penalty prestige penalty for missing the threshold
+     * @throws IllegalArgumentException if the threshold or points per artist is
+     *                                  outside 1 to 3, or the penalty is not -2
+     */
     @JsonCreator
     public CavePaintingEvent(
             @JsonProperty("era")             Era era,
@@ -39,9 +50,13 @@ public class CavePaintingEvent extends EventCard {
     /**
      * Awards prestige to tribes that meet the artist threshold and applies the
      * event penalty to tribes below it.
+     * Matching the threshold exactly counts as success.
      *
      * @param players_tribes tribes keyed by player color
-     * @return cave-painting outcome keyed by player color
+     * @return cave-painting outcome keyed by player color, or an empty map if
+     *         no tribes are provided
+     * @throws NullPointerException if the input map or one of its tribe values
+     *                              is null
      */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
@@ -61,14 +76,29 @@ public class CavePaintingEvent extends EventCard {
         return player_outcomes;
     }
 
+    /**
+     * Returns the artist threshold needed to avoid the penalty.
+     *
+     * @return artist threshold
+     */
     public int getThreshold() {
         return threshold;
     }
 
+    /**
+     * Returns the prestige awarded for each artist on a successful outcome.
+     *
+     * @return points per artist
+     */
     public int getPointsPerArtist() {
         return points_per_artist;
     }
 
+    /**
+     * Returns the penalty applied when the threshold is missed.
+     *
+     * @return negative prestige penalty
+     */
     public int getPenalty() {
         return penalty;
     }
