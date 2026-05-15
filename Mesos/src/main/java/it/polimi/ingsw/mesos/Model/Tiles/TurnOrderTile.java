@@ -123,4 +123,32 @@ public record TurnOrderTile(List<TurnOrderSpace> spaces) {
         }
         return true;
     }
+
+
+//    public Result placeTotemLast(Color player) {
+//        if (player == null) {
+//            throw new IllegalArgumentException("player cannot be null");
+//        }
+//        for (int i = spaces.size() - 1; i >= 0; i--) {
+//            TurnOrderSpace space = spaces.get(i);
+//            if (space.isFree()) {
+//                space.setOccupant(player);
+//
+//                int bonus = space.getBonus();
+//                final int penalty = bonus < 0 ? 2 : 0;
+//            }
+//        }
+//
+//        for (TurnOrderSpace space : spaces) {
+//            if (space.isFree()) {
+//                space.setOccupant(player);
+//
+//                int bonus = space.getBonus();
+//                final int penalty = bonus < 0 ? 2 : 0;  // penalty for not having enough food to pay is always 2
+//                return new Result(bonus, 0, penalty);
+//            }
+//        }
+//
+//        throw new IllegalStateException("No free spaces in TurnOrderTile");
+//    }
 }

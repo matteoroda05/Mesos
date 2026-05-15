@@ -20,6 +20,7 @@ public class EndRoundState extends GameState {
     @Override
     public GameState process() {
         controller.endRound();
+        controller.restoreRejoinedPlayers();
 
         return new ChooseOfferState(controller);
     }

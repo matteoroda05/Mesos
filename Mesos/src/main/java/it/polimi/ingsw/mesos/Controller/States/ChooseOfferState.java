@@ -34,8 +34,6 @@ public class ChooseOfferState extends GameState {
         if (p == null) {
             return new ActionState(controller);
         }
-
-        p = controller.getNextPlayerTurn();
         return this;
     }
 

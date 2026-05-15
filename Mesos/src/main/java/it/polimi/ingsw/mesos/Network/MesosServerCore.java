@@ -15,6 +15,7 @@ import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameFlowController;
 import it.polimi.ingsw.mesos.Controller.GameSetup;
 import it.polimi.ingsw.mesos.Controller.GameState;
+import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
@@ -36,6 +37,7 @@ import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 import it.polimi.ingsw.mesos.Model.GameContext;
 import it.polimi.ingsw.mesos.Model.MarketRow;
 import it.polimi.ingsw.mesos.Model.Player;
@@ -298,6 +300,10 @@ public class MesosServerCore implements MesosServerService {
     private void markConnected(String nickname) {
         lastHeartbeatByNickname.put(nickname, System.currentTimeMillis());
         disconnectedGameByNickname.remove(nickname);
+        GameSession session = getSessionByNickname(nickname);
+        if (session != null) {
+            session.markPlayerConnected(nickname);
+        }
     }
 
     private void markDisconnected(String nickname) {
@@ -305,6 +311,7 @@ public class MesosServerCore implements MesosServerService {
         GameSession session = getSessionByNickname(nickname);
         if (session != null && !session.finished()) {
             disconnectedGameByNickname.put(nickname, session.context.getGameName());
+            session.markPlayerDisconnected(nickname);
             session.publishAndSnapshot("Giocatore disconnesso: " + nickname);
         } else if (session == null) {
             disconnectedGameByNickname.put(nickname, null);
@@ -350,10 +357,10 @@ public class MesosServerCore implements MesosServerService {
 
     private final class GameSession {
         private final GameContext context;
+        private GameFlowController controller;
         private final List<String> joinedNicknames;
         private final Map<String, Color> colorsByNickname;
         private final Set<GameUpdateSink> subscribers;
-        private GameFlowController controller;
         private long singleConnectedSince;
         private String forcedWinnerNickname;
 
@@ -586,7 +593,38 @@ public class MesosServerCore implements MesosServerService {
                     return;
                 }
                 controller.skipCurrentTurn(activeColor);
+                new ModelController(context).changePlayerConnectionStatus(activeColor, ConnectionStatus.SKIPPED);
                 publishAndSnapshot("Turno saltato: " + activeNickname + " e' disconnesso");
+            }
+        }
+
+        private void markPlayerConnected(String nickname) {
+            Color color = colorsByNickname.get(nickname);
+            if (color == null) {
+                return;
+            }
+
+            ModelController modelController = new ModelController(context);
+            ConnectionStatus status = modelController.getPlayerConnectionStatus(color);
+            if (status == ConnectionStatus.DISCONNECTED) {
+                modelController.changePlayerConnectionStatus(color, ConnectionStatus.CONNECTED);
+            } else if (status == ConnectionStatus.SKIPPED) {
+                modelController.changePlayerConnectionStatus(color, ConnectionStatus.REJOINED);
+            }
+        }
+
+        private void markPlayerDisconnected(String nickname) {
+            Color color = colorsByNickname.get(nickname);
+            if (color == null) {
+                return;
+            }
+
+            ModelController modelController = new ModelController(context);
+            ConnectionStatus status = modelController.getPlayerConnectionStatus(color);
+            if (status == ConnectionStatus.CONNECTED) {
+                modelController.changePlayerConnectionStatus(color, ConnectionStatus.DISCONNECTED);
+            } else if (status == ConnectionStatus.REJOINED) {
+                modelController.changePlayerConnectionStatus(color, ConnectionStatus.SKIPPED);
             }
         }
 

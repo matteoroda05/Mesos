@@ -102,7 +102,11 @@ public class ActionState extends GameState {
         pick_top_row = 0;
         pick_bottom_row = 0;
         food_gain = 0;
-        return endTurn();
+
+        if (!is_extra) {
+            controller.playerSkipAction(player_color);
+        }
+        return advance();
     }
 
     /**
@@ -146,13 +150,20 @@ public class ActionState extends GameState {
     private GameState endTurn() {
         if (!is_extra) {
             controller.playerEndTurn();
-
-            List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
-                    .stream().map(building -> ((BuildingEndTurn) building)).toList();
-            TurnOrderTile tile = controller.getTurnOrderTile();
-            buildings.forEach(building -> building.effect(tile, controller));
+            applyEndTurnBuildings();
         }
 
+        return advance();
+    }
+
+    private void applyEndTurnBuildings(){
+        List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
+                .stream().map(building -> ((BuildingEndTurn) building)).toList();
+        TurnOrderTile tile = controller.getTurnOrderTile();
+        buildings.forEach(building -> building.effect(tile, controller));
+    }
+
+    private GameState advance() {
         OfferTile next = controller.getNextPlayerOfferTile();
         if (next == null) {
             ActionState next_state = extras();

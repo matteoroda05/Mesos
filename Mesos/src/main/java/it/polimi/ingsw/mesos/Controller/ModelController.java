@@ -12,6 +12,7 @@ import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import it.polimi.ingsw.mesos.Result;
@@ -126,7 +127,25 @@ public class ModelController {
         return game_context.getGameTable();
     }
 
-    // PLAYER ACTIONS
+    public void changePlayerConnectionStatus(Color player_color, ConnectionStatus status) {
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        game_context.getPlayer(player_color).setConnectionStatus(status);
+    }
+
+    public ConnectionStatus getPlayerConnectionStatus(Color player_color) {
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        return game_context.getPlayer(player_color).getConnectionStatus();
+    }
+
+    public void restoreRejoinedPlayers() {
+        game_context.getPlayers().stream()
+                .filter(player -> player.getConnectionStatus() == ConnectionStatus.REJOINED)
+                .forEach(player -> {
+                    restoreSkippedPlayer(player.getColor());
+                    player.setConnectionStatus(ConnectionStatus.CONNECTED);
+                });
+    }
+
     /**
      * Ends the action phase for the player occupying the first offer tile:
      * clears that offer tile, places the player's totem back on the turn-order
@@ -205,6 +224,11 @@ public class ModelController {
         game_table.getOfferTrack().getTile(offer_tile).occupy(player_color);
     }
 
+    /**
+     * Skips the offer choice for a disconnected player by removing it from the offer tile
+     *
+     * @param player_color color of the disconnected player
+     */
     public void playerSkipOffer(Color player_color) {
         GameTable game_table = this.game_context.getGameTable();
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
@@ -213,6 +237,28 @@ public class ModelController {
         }
         game_table.getTurnOrderTile().clearFirst();
     }
+
+    /**
+     * Skips the action state for a (current) disconnected player by clearing
+     * them from the offer track and not putting them back into the offer tile
+     *
+     * @param player_color color of the disconnected player
+     */
+    public void playerSkipAction(Color player_color){
+        GameTable game_table = this.game_context.getGameTable();
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        if (!game_table.getOfferTrack().getOccupiedTiles().getFirst().getOccupant().equals(player_color)) {
+            throw new IllegalStateException("Player " + player_color + " is not the first player in the offer ordetrack");
+        }
+        game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
+    }
+
+    public void restoreSkippedPlayer(Color player_color) {
+        if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
+        Result placing_result = this.game_context.getGameTable().getTurnOrderTile().placeTotem(player_color);
+        playerApplyOutcome(placing_result, player_color);
+    }
+
 
     /**
      * Grants food to a player.

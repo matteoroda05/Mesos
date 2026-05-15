@@ -1,11 +1,13 @@
 package it.polimi.ingsw.mesos.Model;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 
 public final class Player {
     private final String nickname;
     private final Color color;
     private final Tribe tribe;
+    private ConnectionStatus connection_status;
     private int food;
     private int prestige_points;
 
@@ -17,6 +19,7 @@ public final class Player {
         }
         this.food = food;
         this.prestige_points = 0;
+        this.connection_status = ConnectionStatus.CONNECTED;
         this.tribe = new Tribe();
     }
 
@@ -38,6 +41,32 @@ public final class Player {
     
     public int getPrestigePoints() {
         return prestige_points;
+    }
+
+    public ConnectionStatus getConnectionStatus() {
+        return connection_status;
+    }
+
+    public void setConnectionStatus(ConnectionStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("connection status cannot be null");
+        }
+        if (status == connection_status) {
+            return;
+        }
+
+        boolean valid = switch (connection_status) {
+            case CONNECTED -> status == ConnectionStatus.DISCONNECTED;
+            case DISCONNECTED -> status == ConnectionStatus.CONNECTED || status == ConnectionStatus.SKIPPED;
+            case SKIPPED -> status == ConnectionStatus.REJOINED;
+            case REJOINED -> status == ConnectionStatus.CONNECTED || status == ConnectionStatus.SKIPPED;
+        };
+
+        if (!valid) {
+            throw new IllegalStateException(
+                    "Invalid connection status transition: " + connection_status + " -> " + status);
+        }
+        connection_status = status;
     }
 
     /**
