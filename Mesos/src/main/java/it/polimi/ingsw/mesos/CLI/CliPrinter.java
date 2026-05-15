@@ -31,6 +31,15 @@ final class CliPrinter {
     private static final int MAX_OFFER_TILE_WIDTH = 24;
     private static final String COLUMN_GAP = "  ";
 
+    /**
+     * Renders the full game snapshot for the terminal.
+     *
+     * @param snapshot snapshot to render
+     * @param localNickname nickname of the local player, or null when unknown
+     * @return formatted snapshot text
+     * @throws NullPointerException if the snapshot or one of its required lists
+     *                              is null
+     */
     String renderSnapshot(GameSnapshot snapshot, String localNickname) {
         int boardWidth = resolveBoardWidth();
         StringBuilder builder = new StringBuilder();
@@ -65,6 +74,14 @@ final class CliPrinter {
         return builder.toString();
     }
 
+    /**
+     * Renders the lobby game list grouped by player count.
+     *
+     * @param lobbySnapshot lobby data to render
+     * @return formatted lobby text, including an empty-lobby message when no
+     *         games are open
+     * @throws NullPointerException if the snapshot or its game list is null
+     */
     String renderLobby(LobbySnapshot lobbySnapshot) {
         int boardWidth = Math.min(resolveBoardWidth(), 120);
         StringBuilder builder = new StringBuilder();
@@ -115,6 +132,11 @@ final class CliPrinter {
         return builder.toString();
     }
 
+    /**
+     * Renders the static CLI command help.
+     *
+     * @return help text with supported commands
+     */
     String renderHelp() {
         return String.join(NEW_LINE,
                 "",
@@ -129,6 +151,14 @@ final class CliPrinter {
                 "  quit | esci | exit    chiude il client");
     }
 
+    /**
+     * Builds the command hint shown below a snapshot.
+     *
+     * @param snapshot current game snapshot
+     * @param localNickname nickname of the local player
+     * @return context-sensitive command hint
+     * @throws NullPointerException if the snapshot is null
+     */
     private String commandsHint(GameSnapshot snapshot, String localNickname) {
         if (!snapshot.started()) {
             return "Lobby aperta: premi Invio per aggiornare mentre gli altri giocatori entrano.";
@@ -146,6 +176,14 @@ final class CliPrinter {
         };
     }
 
+    /**
+     * Builds the short status message shown below the snapshot header.
+     *
+     * @param snapshot current game snapshot
+     * @param localNickname nickname of the local player, or null when unknown
+     * @return scene message that describes the current phase and active player
+     * @throws NullPointerException if the snapshot or its player list is null
+     */
     private String sceneMessage(GameSnapshot snapshot, String localNickname) {
         String youAre = "";
         if (localNickname != null) {
@@ -182,6 +220,18 @@ final class CliPrinter {
         return youAre + "Sta giocando " + currentPlayer + ".";
     }
 
+    /**
+     * Appends the player summary list.
+     * Finished games are sorted by prestige, while active games keep the
+     * snapshot order.
+     *
+     * @param builder destination builder
+     * @param players player summaries to render
+     * @param localNickname nickname to mark as local
+     * @param finished whether the game is finished
+     * @param currentPlayerNickname nickname to mark as active
+     * @throws NullPointerException if the builder or player list is null
+     */
     private void appendPlayers(
             StringBuilder builder,
             List<PlayerSummary> players,
@@ -226,6 +276,15 @@ final class CliPrinter {
         }
     }
 
+    /**
+     * Appends the board rows, turn order, and offer track to the output.
+     *
+     * @param builder destination builder
+     * @param snapshot snapshot containing board data
+     * @param boardWidth target board width
+     * @throws NullPointerException if the builder, snapshot, or required board
+     *                              lists are null
+     */
     private void appendBoard(StringBuilder builder, GameSnapshot snapshot, int boardWidth) {
         builder.append(NEW_LINE).append(repeat("-", boardWidth)).append(NEW_LINE);
         builder.append("Tavolo di gioco").append(NEW_LINE);
@@ -235,6 +294,16 @@ final class CliPrinter {
         appendRow(builder, "RIGA BASSA", snapshot.bottomRow(), "bottom", boardWidth);
     }
 
+    /**
+     * Appends the turn-order and offer-track panels side by side when they fit,
+     * otherwise stacks them vertically.
+     *
+     * @param builder destination builder
+     * @param turnOrder turn-order spaces
+     * @param offerTiles offer tiles
+     * @param boardWidth available board width
+     * @throws NullPointerException if the builder or either list is null
+     */
     private void appendCenterArea(
             StringBuilder builder,
             List<TurnOrderSpaceSummary> turnOrder,
@@ -254,6 +323,13 @@ final class CliPrinter {
         appendLines(builder, offerTrackPanel);
     }
 
+    /**
+     * Renders the turn-order panel.
+     *
+     * @param turnOrder turn-order spaces to render
+     * @return panel lines, including an empty message when no spaces exist
+     * @throws NullPointerException if the turn-order list is null
+     */
     private List<String> renderTurnOrderPanel(List<TurnOrderSpaceSummary> turnOrder) {
         List<String> body = new ArrayList<>();
         for (TurnOrderSpaceSummary space : turnOrder) {
@@ -268,6 +344,13 @@ final class CliPrinter {
         return createPanel("ORDINE DI TURNO", body, 34);
     }
 
+    /**
+     * Renders the offer-track panel.
+     *
+     * @param offerTiles offer tiles to render
+     * @return panel lines, including an empty message when no tiles exist
+     * @throws NullPointerException if the offer-tile list is null
+     */
     private List<String> renderOfferTrackPanel(List<OfferTileSummary> offerTiles) {
         if (offerTiles.isEmpty()) {
             return createPanel("TESSERE OFFERTA", List.of("Nessuna tessera disponibile."), 24);
@@ -293,6 +376,17 @@ final class CliPrinter {
         return createPanel("TESSERE OFFERTA", body, lineWidth(body) + 4);
     }
 
+    /**
+     * Appends one market row, arranging cards into shelves that fit the board
+     * width.
+     *
+     * @param builder destination builder
+     * @param title row title
+     * @param cards cards visible in the row
+     * @param rowToken command token used for card selection
+     * @param boardWidth target board width
+     * @throws NullPointerException if the builder or cards list is null
+     */
     private void appendRow(StringBuilder builder, String title, List<CardSummary> cards, String rowToken, int boardWidth) {
         builder.append(NEW_LINE).append(title).append(NEW_LINE);
         if (cards.isEmpty()) {
@@ -314,6 +408,13 @@ final class CliPrinter {
         }
     }
 
+    /**
+     * Appends the final ranking sorted by prestige descending.
+     *
+     * @param builder destination builder
+     * @param players players to rank
+     * @throws NullPointerException if the builder or player list is null
+     */
     private void appendFinalRanking(StringBuilder builder, List<PlayerSummary> players) {
         builder.append(NEW_LINE).append("Classifica finale").append(NEW_LINE);
         List<PlayerSummary> ranking = players.stream()
@@ -332,6 +433,15 @@ final class CliPrinter {
         }
     }
 
+    /**
+     * Creates the fixed-height text box for a visible card.
+     *
+     * @param card card summary to render
+     * @param rowToken command token for the row containing the card
+     * @param cardWidth target card width
+     * @return card box lines
+     * @throws NullPointerException if the card is null
+     */
     private List<String> createCardBox(CardSummary card, String rowToken, int cardWidth) {
         List<String> content = new ArrayList<>();
         content.add(card.type());
@@ -348,18 +458,39 @@ final class CliPrinter {
         );
     }
 
+    /**
+     * Chooses how many cards should be placed on one visual shelf.
+     *
+     * @param cardCount number of cards to render
+     * @param boardWidth target board width
+     * @return at least one column and, for positive card counts, never more
+     *         than the number of cards
+     */
     private int preferredCardsPerShelf(int cardCount, int boardWidth) {
         int maxColumns = Math.max(1, (boardWidth + COLUMN_GAP.length()) / (MIN_CARD_WIDTH + COLUMN_GAP.length()));
         int preferredColumns = Math.max(1, (boardWidth + COLUMN_GAP.length()) / (PREFERRED_CARD_WIDTH + COLUMN_GAP.length()));
         return Math.max(1, Math.min(cardCount, Math.min(maxColumns, preferredColumns)));
     }
 
+    /**
+     * Computes card width for the selected shelf layout.
+     *
+     * @param cardsPerShelf cards rendered on one shelf
+     * @param boardWidth target board width
+     * @return width clamped between the minimum and maximum card widths
+     */
     private int cardWidthFor(int cardsPerShelf, int boardWidth) {
         int availableWidth = boardWidth - ((cardsPerShelf - 1) * COLUMN_GAP.length());
         int computedWidth = availableWidth / cardsPerShelf;
         return clamp(computedWidth, MIN_CARD_WIDTH, MAX_CARD_WIDTH);
     }
 
+    /**
+     * Chooses offer-tile box width for a row of offer tiles.
+     *
+     * @param tilesInRow number of tiles in the rendered row
+     * @return width clamped between the minimum and maximum offer-tile widths
+     */
     private int offerTileWidthFor(int tilesInRow) {
         if (tilesInRow <= 0) {
             return MIN_OFFER_TILE_WIDTH;
@@ -375,6 +506,14 @@ final class CliPrinter {
         return clamp(targetWidth, MIN_OFFER_TILE_WIDTH, MAX_OFFER_TILE_WIDTH);
     }
 
+    /**
+     * Creates the text box for one offer tile.
+     *
+     * @param tile offer tile summary
+     * @param tileWidth target tile width
+     * @return offer tile box lines
+     * @throws NullPointerException if the tile is null
+     */
     private List<String> createOfferTileBox(OfferTileSummary tile, int tileWidth) {
         List<String> body = new ArrayList<>();
         body.add("Alto  : " + tile.topPicks());
@@ -387,6 +526,15 @@ final class CliPrinter {
         return createPanel("[" + tile.index() + "/" + tile.id() + "]", body, tileWidth);
     }
 
+    /**
+     * Creates a bordered panel and pads each body line to the panel width.
+     *
+     * @param title panel title
+     * @param body body lines to include
+     * @param requestedWidth preferred panel width
+     * @return panel lines with a width large enough for the title
+     * @throws NullPointerException if the body list is null
+     */
     private List<String> createPanel(String title, List<String> body, int requestedWidth) {
         int width = Math.max(requestedWidth, title.length() + 4);
         List<String> lines = new ArrayList<>();
@@ -400,6 +548,17 @@ final class CliPrinter {
         return lines;
     }
 
+    /**
+     * Fits a list of lines to a fixed count and width.
+     * Extra lines are represented with an ellipsis on the last output line;
+     * missing lines are padded with blanks.
+     *
+     * @param lines source lines
+     * @param targetLines number of output lines
+     * @param width maximum line width
+     * @return fitted line list
+     * @throws NullPointerException if the source line list is null
+     */
     private List<String> fitLines(List<String> lines, int targetLines, int width) {
         List<String> fitted = new ArrayList<>();
         for (String line : lines) {
@@ -417,6 +576,14 @@ final class CliPrinter {
         return fitted;
     }
 
+    /**
+     * Merges multiple rendered columns row by row, padding shorter columns.
+     *
+     * @param columns columns to merge
+     * @param gap text inserted between columns
+     * @return merged lines, or an empty list when no columns are provided
+     * @throws NullPointerException if the columns list or any column is null
+     */
     private List<String> mergeColumns(List<List<String>> columns, String gap) {
         if (columns.isEmpty()) {
             return List.of();
@@ -441,12 +608,28 @@ final class CliPrinter {
         return merged;
     }
 
+    /**
+     * Appends each line followed by the platform newline.
+     *
+     * @param builder destination builder
+     * @param lines lines to append
+     * @throws NullPointerException if the builder or line list is null
+     */
     private void appendLines(StringBuilder builder, List<String> lines) {
         for (String line : lines) {
             builder.append(line).append(NEW_LINE);
         }
     }
 
+    /**
+     * Wraps text on whitespace within the requested width.
+     * Null or blank input returns a single empty line; words longer than the
+     * width are truncated.
+     *
+     * @param text text to wrap
+     * @param width maximum line width
+     * @return wrapped lines
+     */
     private List<String> wrap(String text, int width) {
         if (text == null || text.isBlank()) {
             return List.of("");
@@ -485,10 +668,24 @@ final class CliPrinter {
         return wrapped;
     }
 
+    /**
+     * Finds the maximum width among lines.
+     *
+     * @param lines lines to measure
+     * @return longest line length, or zero for an empty list
+     * @throws NullPointerException if the line list is null
+     */
     private int lineWidth(List<String> lines) {
         return lines.stream().mapToInt(String::length).max().orElse(0);
     }
 
+    /**
+     * Returns the broad display category for a card.
+     *
+     * @param card card summary
+     * @return event, building, or tribe label
+     * @throws NullPointerException if the card is null
+     */
     private String cardKind(CardSummary card) {
         if (card.event()) {
             return "Evento";
@@ -499,10 +696,23 @@ final class CliPrinter {
         return "Tribu";
     }
 
+    /**
+     * Formats an optional integer value for compact display.
+     *
+     * @param value value to format
+     * @return the value text, or {@code "-"} when the value is null
+     */
     private String valueOrDash(Integer value) {
         return value == null ? "-" : String.valueOf(value);
     }
 
+    /**
+     * Formats a player nickname with its color when available.
+     *
+     * @param nickname player nickname
+     * @param color player color, or null
+     * @return nickname alone when color is null, otherwise nickname plus color
+     */
     private String playerLabel(String nickname, Object color) {
         if (color == null) {
             return nickname;
@@ -510,6 +720,13 @@ final class CliPrinter {
         return nickname + " [" + color + "]";
     }
 
+    /**
+     * Converts a game status into an Italian CLI label.
+     *
+     * @param status status to format
+     * @return display label
+     * @throws NullPointerException if the status is null
+     */
     private String statusLabel(GameStatus status) {
         return switch (status) {
             case LOADING -> "Caricamento";
@@ -524,15 +741,37 @@ final class CliPrinter {
         };
     }
 
+    /**
+     * Formats an integer with an explicit plus sign for non-negative values.
+     *
+     * @param value value to format
+     * @return signed value text
+     */
     private String signed(int value) {
         return value >= 0 ? "+" + value : String.valueOf(value);
     }
 
+    /**
+     * Pads a value on the right after truncating it to the target width.
+     *
+     * @param value value to pad, treated as empty when null
+     * @param width target width
+     * @return padded value; an empty string when width is non-positive
+     */
     private String padRight(String value, int width) {
         String safeValue = truncate(value == null ? "" : value, width);
         return safeValue + repeat(" ", width - safeValue.length());
     }
 
+    /**
+     * Truncates text to the requested width.
+     * Widths of three or less use a hard substring without ellipsis.
+     *
+     * @param value value to truncate
+     * @param width maximum width
+     * @return truncated text, or an empty string for null values or
+     *         non-positive widths
+     */
     private String truncate(String value, int width) {
         if (value == null || width <= 0) {
             return "";
@@ -546,6 +785,13 @@ final class CliPrinter {
         return value.substring(0, width - 3) + "...";
     }
 
+    /**
+     * Repeats a string a non-negative number of times.
+     *
+     * @param value string to repeat
+     * @param times number of repetitions
+     * @return repeated string, or an empty string when {@code times <= 0}
+     */
     private String repeat(String value, int times) {
         if (times <= 0) {
             return "";
@@ -553,6 +799,12 @@ final class CliPrinter {
         return value.repeat(times);
     }
 
+    /**
+     * Resolves the board width from system property, environment, terminal
+     * query, or default width in that order.
+     *
+     * @return board width clamped to the supported range
+     */
     private int resolveBoardWidth() {
         Integer configuredWidth = parsePositiveInt(System.getProperty("mesos.cli.width"));
         if (configuredWidth != null) {
@@ -572,6 +824,11 @@ final class CliPrinter {
         return DEFAULT_BOARD_WIDTH;
     }
 
+    /**
+     * Attempts to detect the terminal width using common shell commands.
+     *
+     * @return detected width, or null when detection fails
+     */
     private Integer detectTerminalWidth() {
         Integer tputWidth = runTerminalQuery("tput cols");
         if (tputWidth != null) {
@@ -585,6 +842,15 @@ final class CliPrinter {
         return null;
     }
 
+    /**
+     * Runs a terminal-width query command and parses its output.
+     * The process is forcibly stopped after a short timeout, and failures are
+     * treated as unavailable terminal width.
+     *
+     * @param command command to run
+     * @return parsed positive width, or null when the command fails or cannot
+     *         be parsed
+     */
     private Integer runTerminalQuery(String command) {
         try {
             Process process = new ProcessBuilder("sh", "-lc", command)
@@ -620,6 +886,13 @@ final class CliPrinter {
         }
     }
 
+    /**
+     * Parses a positive integer from text.
+     *
+     * @param rawValue raw text to parse
+     * @return parsed positive integer, or null for null, blank, non-numeric, or
+     *         non-positive values
+     */
     private Integer parsePositiveInt(String rawValue) {
         if (rawValue == null || rawValue.isBlank()) {
             return null;
@@ -632,6 +905,14 @@ final class CliPrinter {
         }
     }
 
+    /**
+     * Clamps a value between two bounds.
+     *
+     * @param value value to clamp
+     * @param min lower bound
+     * @param max upper bound
+     * @return value constrained to the inclusive range
+     */
     private int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }

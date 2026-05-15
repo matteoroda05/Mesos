@@ -21,6 +21,15 @@ public class ShamanicRitualEvent extends EventCard {
     private final int winner_bonus;
     private final int loser_penalty;
 
+    /**
+     * Creates a shamanic ritual event from JSON data.
+     *
+     * @param era era this event belongs to
+     * @param winner_bonus prestige gained by players tied for most stars
+     * @param loser_penalty prestige lost by players tied for fewest stars
+     * @throws IllegalArgumentException if the winner bonus is outside 5 to 15
+     *                                  or the loser penalty is outside -7 to -3
+     */
     @JsonCreator
     public ShamanicRitualEvent(
             @JsonProperty("era")          Era era,
@@ -37,12 +46,17 @@ public class ShamanicRitualEvent extends EventCard {
     }
 
     /**
-     * Resolves the ritual by comparing shaman stars, including eligible
-     * shamanic-ritual building bonuses before assigning winner bonuses and
-     * loser penalties.
+     * Resolves the ritual by comparing shaman stars and assigning winner
+     * bonuses and loser penalties.
+     * Ties are inclusive: every player tied for most stars gains the winner
+     * bonus, every player tied for fewest stars suffers the loser penalty, and
+     * players receive both effects when all star totals are equal.
      *
      * @param players_tribes tribes keyed by player color
-     * @return ritual outcome keyed by player color
+     * @return ritual outcome keyed by player color, or an empty map if no
+     *         tribes are provided
+     * @throws NullPointerException if the input map or one of its tribe values
+     *                              is null
      */
     @Override
     public Map<Color, Result> calculateOutcome(Map<Color, Tribe> players_tribes) {
@@ -89,10 +103,20 @@ public class ShamanicRitualEvent extends EventCard {
         return player_outcomes;
     }
 
+    /**
+     * Returns the prestige bonus for players tied for most stars.
+     *
+     * @return winner bonus
+     */
     public int getWinnerBonus() {
         return winner_bonus;
     }
 
+    /**
+     * Returns the prestige penalty for players tied for fewest stars.
+     *
+     * @return loser penalty
+     */
     public int getLoserPenalty() {
         return loser_penalty;
     }

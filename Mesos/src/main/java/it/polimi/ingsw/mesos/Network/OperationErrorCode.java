@@ -1,5 +1,8 @@
 package it.polimi.ingsw.mesos.Network;
 
+/**
+ * Structured error codes returned by network operations.
+ */
 public enum OperationErrorCode {
     NONE,
     GAME_NAME_TAKEN,
@@ -7,5 +10,6 @@ public enum OperationErrorCode {
     GAME_FULL,
     PLAYER_NAME_TAKEN,
     PLAYER_NOT_IN_GAME,
-    INVALID_LISTENER
+    INVALID_LISTENER,
+    NICKNAME_DISCONNECTED
 }

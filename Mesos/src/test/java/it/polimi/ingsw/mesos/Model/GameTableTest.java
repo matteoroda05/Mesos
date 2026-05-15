@@ -211,7 +211,7 @@ class GameTableTest {
 				first_era_tribes.get(1),
 				first_era_tribes.get(0));
 
-		boolean new_era_started = game_table.newRound();
+		boolean new_era_started = game_table.newRound(Era.FIRST);
 
 		assertFalse(new_era_started);
 		assertIterableEquals(expected_moved_to_bottom, game_table.getBottomRow().getTribeCards());
@@ -231,7 +231,7 @@ class GameTableTest {
 						new BuildingAfterEveryone(Era.SECOND, 0, 2, 2),
 						new BuildingAfterEveryone(Era.THIRD, 0, 3, 3)));
 
-		boolean new_era_started = game_table.newRound();
+		boolean new_era_started = game_table.newRound(Era.FIRST);
 
 		assertTrue(new_era_started);
 	}

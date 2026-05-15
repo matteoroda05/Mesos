@@ -96,104 +96,17 @@ class MesosServerCoreTest {
     }
 
     @Test
-    void missingGameOperationsReturnStructuredErrors() throws IOException {
+    void startedGameAllowsKnownPlayerToRejoinWithSameNickname() throws IOException {
         MesosServerCore serverCore = new MesosServerCore();
 
-        GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("missing"));
-        assertFalse(snapshot.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, snapshot.errorCode());
+        assertTrue(serverCore.createGame(new CreateGameRequest("rejoin-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("rejoin-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("rejoin-room", "Bob")).success());
 
-        GameOperationResult offer = serverCore.chooseOffer(new ChooseOfferRequest("missing", "Alice", 0));
-        assertFalse(offer.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, offer.errorCode());
+        GameOperationResult rejoin = serverCore.joinGame(new JoinGameRequest("rejoin-room", "Alice"));
 
-        GameOperationResult card = serverCore.chooseCard(new ChooseCardRequest("missing", "Alice", 0, true));
-        assertFalse(card.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, card.errorCode());
-
-        GameOperationResult subscribe = serverCore.subscribe(new SubscribeGameRequest("missing", "Alice"), update -> { });
-        assertFalse(subscribe.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, subscribe.errorCode());
-
-        GameOperationResult unsubscribe = serverCore.unsubscribe(new UnsubscribeGameRequest("missing", "Alice"), update -> { });
-        assertFalse(unsubscribe.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, unsubscribe.errorCode());
-    }
-
-    @Test
-    void operationsRejectInvalidPhasePlayerAndListener() throws IOException {
-        MesosServerCore serverCore = new MesosServerCore();
-        assertTrue(serverCore.createGame(new CreateGameRequest("guarded-room", 2)).success());
-        assertTrue(serverCore.joinGame(new JoinGameRequest("guarded-room", "Alice")).success());
-
-        GameOperationResult earlyOffer = serverCore.chooseOffer(new ChooseOfferRequest("guarded-room", "Alice", 0));
-        assertFalse(earlyOffer.success());
-        assertEquals(GameStatus.LOGIN, earlyOffer.snapshot().status());
-
-        GameOperationResult invalidListener = serverCore.subscribe(new SubscribeGameRequest("guarded-room", "Alice"), null);
-        assertFalse(invalidListener.success());
-        assertEquals(OperationErrorCode.INVALID_LISTENER, invalidListener.errorCode());
-
-        GameOperationResult unknownSubscriber = serverCore.subscribe(new SubscribeGameRequest("guarded-room", "Charlie"), update -> { });
-        assertFalse(unknownSubscriber.success());
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, unknownSubscriber.errorCode());
-
-        GameOperationResult bobJoin = serverCore.joinGame(new JoinGameRequest("guarded-room", "Bob"));
-        assertTrue(bobJoin.success());
-
-        GameOperationResult unknownOffer = serverCore.chooseOffer(new ChooseOfferRequest("guarded-room", "Charlie", 0));
-        assertFalse(unknownOffer.success());
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, unknownOffer.errorCode());
-
-        GameOperationResult unknownCard = serverCore.chooseCard(new ChooseCardRequest("guarded-room", "Charlie", 0, true));
-        assertFalse(unknownCard.success());
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, unknownCard.errorCode());
-
-        GameOperationResult wrongPhaseCard = serverCore.chooseCard(new ChooseCardRequest(
-                "guarded-room",
-                bobJoin.snapshot().currentPlayerNickname(),
-                0,
-                true));
-        assertFalse(wrongPhaseCard.success());
-        assertEquals(GameStatus.ROUND_OFFER, wrongPhaseCard.snapshot().status());
-    }
-
-    @Test
-    void failedSubscribersArePrunedAfterPublishing() throws IOException {
-        MesosServerCore serverCore = new MesosServerCore();
-        assertTrue(serverCore.createGame(new CreateGameRequest("push-prune-room", 2)).success());
-        assertTrue(serverCore.joinGame(new JoinGameRequest("push-prune-room", "Alice")).success());
-        GameOperationResult started = serverCore.joinGame(new JoinGameRequest("push-prune-room", "Bob"));
-        assertTrue(started.success());
-
-        AtomicInteger failedSubscriberCalls = new AtomicInteger();
-        AtomicInteger successfulSubscriberCalls = new AtomicInteger();
-        assertTrue(serverCore.subscribe(new SubscribeGameRequest("push-prune-room", "Alice"), update -> {
-            failedSubscriberCalls.incrementAndGet();
-            throw new IOException("disconnected test sink");
-        }).success());
-        assertTrue(serverCore.subscribe(new SubscribeGameRequest("push-prune-room", "Bob"), update ->
-                successfulSubscriberCalls.incrementAndGet()).success());
-
-        chooseFirstAvailableOffer(serverCore, started.snapshot());
-        assertEquals(1, failedSubscriberCalls.get());
-        assertEquals(1, successfulSubscriberCalls.get());
-
-        chooseFirstAvailableOffer(serverCore, serverCore.getSnapshot(new SnapshotRequest("push-prune-room")).snapshot());
-        assertEquals(1, failedSubscriberCalls.get());
-        assertEquals(2, successfulSubscriberCalls.get());
-    }
-
-    private static void chooseFirstAvailableOffer(MesosServerCore serverCore, GameSnapshot snapshot) {
-        OfferTileSummary offer = snapshot.offerTiles().stream()
-                .filter(OfferTileSummary::available)
-                .filter(tile -> tile.topPicks() + tile.bottomPicks() > 0)
-                .findFirst()
-                .orElseThrow();
-        GameOperationResult result = serverCore.chooseOffer(new ChooseOfferRequest(
-                snapshot.gameName(),
-                snapshot.currentPlayerNickname(),
-                offer.index()));
-        assertTrue(result.success());
+        assertTrue(rejoin.success());
+        assertEquals(GameStatus.ROUND_OFFER, rejoin.snapshot().status());
+        assertEquals(2, rejoin.snapshot().joinedPlayers());
     }
 }

@@ -9,6 +9,15 @@ import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 public final class InventorCard extends CharacterCard {
     private final InventionIcon invention_icon;
 
+    /**
+     * Creates an inventor card from JSON data.
+     *
+     * @param era era this card belongs to
+     * @param min_players minimum players required to use this card
+     * @param invention_icon icon represented by this inventor
+     * @throws IllegalArgumentException if the minimum player count is invalid
+     *                                  or the invention icon is null
+     */
     @JsonCreator
     public InventorCard(
             @JsonProperty("era")           Era era,
@@ -20,6 +29,11 @@ public final class InventorCard extends CharacterCard {
         this.invention_icon = invention_icon;
     }
 
+    /**
+     * Returns the invention icon represented by this inventor.
+     *
+     * @return invention icon
+     */
     public InventionIcon getInventionIcon() {
         return this.invention_icon;
     }

@@ -28,6 +28,19 @@ public class BuildingBonusEvent extends BuildingCard {
             "GATHERER", GathererCard.class
     );
 
+    /**
+     * Creates an event-bonus building from JSON data, converting the character
+     * type string into the matching character class.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param food_bonus food change per matching character
+     * @param pp_bonus prestige bonus per matching character
+     * @param character_type_str character type name from JSON
+     * @param trigger event trigger this building reacts to
+     */
     @JsonCreator
     private BuildingBonusEvent(
             @JsonProperty("era")            Era era,
@@ -45,6 +58,23 @@ public class BuildingBonusEvent extends BuildingCard {
                 trigger);
     }
 
+    /**
+     * Creates an event-bonus building.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param food_bonus food change per matching character
+     * @param pp_bonus prestige bonus per matching character
+     * @param character_type character class counted for the bonus
+     * @param trigger event trigger this building reacts to
+     * @throws IllegalArgumentException if the trigger is not one of the
+     *                                  supported event triggers, both bonuses
+     *                                  are zero, the food bonus is outside -1
+     *                                  to 1, or the prestige bonus is outside
+     *                                  0 to 1
+     */
     public BuildingBonusEvent(
             Era era,
             int min_players,
@@ -77,6 +107,11 @@ public class BuildingBonusEvent extends BuildingCard {
      *
      * @param output base event results keyed by player color
      * @param visitor controller used to mutate the owner's resources and score
+     * @throws NullPointerException if the owner, output entry for the owner,
+     *                              or visitor is null
+     * @throws IllegalArgumentException if the computed food change is negative
+     *                                  and the controller rejects it, or if the
+     *                                  character type is null
      */
     public void effect(Map<Color, Result> output, ModelController visitor) {
         final int multiplier = owner.getTribe().getNumCharacterOfType(character_type);
@@ -88,14 +123,29 @@ public class BuildingBonusEvent extends BuildingCard {
         visitor.playerChangePrestige(prestige_bonus, owner.getColor());
     }
 
+    /**
+     * Returns the food change applied per matching character.
+     *
+     * @return food bonus, which may be negative
+     */
     public int getFoodBonus() {
         return food_bonus;
     }
 
+    /**
+     * Returns the prestige bonus applied per matching character.
+     *
+     * @return prestige bonus
+     */
     public int getPrestigeBonus() {
         return pp_bonus;
     }
 
+    /**
+     * Returns the character class counted by this building.
+     *
+     * @return character type
+     */
     public Class<? extends CharacterCard> getCharacterType() {
         return character_type;
     }
