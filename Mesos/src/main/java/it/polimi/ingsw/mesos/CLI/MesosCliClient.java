@@ -468,6 +468,12 @@ public final class MesosCliClient {
                 int cardIndex = parseInt(tokens[2], "l'indice carta");
                 handleResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
             }
+            case "pass", "passa" -> {
+                if (tokens.length != 1) {
+                    throw new IllegalArgumentException("usa: pass");
+                }
+                handleResult(client.pass(new PassRequest(gameName, nickname)));
+            }
             default -> throw new IllegalArgumentException("comando sconosciuto '" + tokens[0] + "'");
         }
     }

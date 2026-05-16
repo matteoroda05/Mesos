@@ -295,6 +295,25 @@ public class MesosServerCore implements MesosServerService {
     }
 
     /**
+     * Applies a pass command to a game session.
+     *
+     * @param request pass request
+     * @return operation result, including GAME_NOT_FOUND for missing games
+     */
+    @Override
+    public synchronized GameOperationResult pass(PassRequest request) {
+        GameSession session = sessions.get(request.gameName());
+        if (session == null) {
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
+        }
+        return session.pass(request.nickname());
+    }
+
+    /**
      * Registers an update sink for a game.
      *
      * @param request subscription request
@@ -656,6 +675,42 @@ public class MesosServerCore implements MesosServerService {
                 return GameOperationResult.success(
                         "Carta scelta",
                         publishAndSnapshot("Carta scelta")
+                );
+            } catch (RuntimeException exception) {
+                return GameOperationResult.failure(exception.getMessage(), toSnapshot());
+            }
+        }
+
+        /**
+         * Applies a pass command after checking game state, player membership
+         * and resilience blocking rules.
+         *
+         * @param nickname requesting player nickname
+         * @return operation result with updated snapshot or validation failure
+         */
+        private GameOperationResult pass(String nickname) {
+            if (!started()) {
+                return GameOperationResult.failure("La partita non e' ancora iniziata", toSnapshot());
+            }
+
+            Color playerColor = colorsByNickname.get(nickname);
+            if (playerColor == null) {
+                return GameOperationResult.failure(
+                        "Giocatore sconosciuto '" + nickname + "'",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        toSnapshot()
+                );
+            }
+            GameOperationResult blocked = updateConnectionBeforeCommand(nickname);
+            if (blocked != null) {
+                return blocked;
+            }
+
+            try {
+                controller.pass(playerColor);
+                return GameOperationResult.success(
+                        "Turno passato",
+                        publishAndSnapshot("Turno passato")
                 );
             } catch (RuntimeException exception) {
                 return GameOperationResult.failure(exception.getMessage(), toSnapshot());

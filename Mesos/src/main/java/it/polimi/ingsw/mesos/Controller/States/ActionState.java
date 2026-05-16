@@ -131,6 +131,28 @@ public class ActionState extends GameState {
     }
 
     /**
+     * Lets the active player decline an extra card pick granted after everyone
+     * has taken their normal action.
+     *
+     * @param player_color color of the player passing the extra action
+     * @return next state after the extra action is passed
+     * @throws RuntimeException if the command is issued by a non-active player
+     *                          or during a normal action state
+     */
+    @Override
+    public GameState pass(Color player_color) {
+        if (p != player_color) {
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
+        }
+
+        if (is_extra) {
+            return advance();
+        }
+
+        throw new RuntimeException("Impossible to pass the turn: normal action state");
+    }
+
+    /**
      * Performs automatic action-state work.
      * Food-only offers grant their food immediately and end the turn; states
      * with no available remaining choices also end the turn.

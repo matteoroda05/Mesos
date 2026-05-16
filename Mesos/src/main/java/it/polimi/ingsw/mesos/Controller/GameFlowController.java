@@ -92,6 +92,21 @@ public class GameFlowController {
     }
 
     /**
+     * Applies a pass command to the current state and resolves any automatic
+     * transitions that follow it.
+     *
+     * @param player_color color of the player issuing the command
+     * @throws IllegalStateException if the game has already finished
+     * @throws RuntimeException if the current state does not accept passing or
+     *                          rejects the command
+     */
+    public void pass(Color player_color) {
+        ensureGameIsRunning();
+        current_state = current_state.pass(player_color);
+        advance();
+    }
+
+    /**
      * Applies a skip-turn command to the current state and resolves any
      * automatic transitions that follow it.
      *

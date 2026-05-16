@@ -146,6 +146,7 @@ final class CliPrinter {
                 "  offer <indice>        scegli una tessera offerta",
                 "  card top <indice>     prendi una carta dalla riga alta",
                 "  card bottom <indice>  prendi una carta dalla riga bassa",
+                "  pass | passa          salta il turno quando hai carte extra da prendere",
                 "  wait [secondi]        aspetta un po' e aggiorna",
                 "  help | aiuto          mostra questo aiuto",
                 "  quit | esci | exit    chiude il client");
@@ -171,7 +172,7 @@ final class CliPrinter {
         }
         return switch (snapshot.status()) {
             case ROUND_OFFER -> "Tocca a te: scegli una tessera con 'offer <indice>'.";
-            case ROUND_ACTIONS -> "Tocca a te: usa 'card top <indice>' o 'card bottom <indice>'.";
+            case ROUND_ACTIONS -> "Tocca a te: usa 'card top <indice>', 'card bottom <indice>' o 'pass' per la carta extra.";
             default -> "Fase automatica in corso: premi Invio per aggiornare.";
         };
     }

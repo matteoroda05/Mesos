@@ -16,6 +16,8 @@ public interface MesosServerService {
 
     GameOperationResult chooseCard(ChooseCardRequest request);
 
+    GameOperationResult pass(PassRequest request);
+
     GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink);
 
     GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink);

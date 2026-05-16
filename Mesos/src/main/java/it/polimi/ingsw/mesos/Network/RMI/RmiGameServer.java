@@ -210,6 +210,17 @@ public class RmiGameServer implements AutoCloseable {
         }
 
         /**
+         * Delegates pass requests to the server service.
+         *
+         * @param request pass request
+         * @return operation result from the service
+         */
+        @Override
+        public GameOperationResult pass(PassRequest request) {
+            return serverService.pass(request);
+        }
+
+        /**
          * Subscribes an RMI listener by wrapping it in a local update sink.
          * Reusing the same listener reuses the same sink instance.
          *

@@ -163,6 +163,18 @@ public class RmiGameClient implements GameClient {
     }
 
     /**
+     * Sends a pass request through RMI.
+     *
+     * @param request pass request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
+    @Override
+    public GameOperationResult pass(PassRequest request) throws IOException {
+        return remoteServer.pass(request);
+    }
+
+    /**
      * Subscribes to game updates by exporting a local RMI listener.
      * Any existing subscription is removed before the new listener is
      * registered. If server subscription fails, the exported listener is

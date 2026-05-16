@@ -55,6 +55,18 @@ abstract public class GameState {
     }
 
     /**
+     * Handles a pass command for this state.
+     *
+     * @param player_color color of the player passing the turn
+     * @return the next state after handling the pass
+     * @throws RuntimeException by default because this base state does not
+     *                          accept passing
+     */
+    public GameState pass(Color player_color) throws RuntimeException {
+        throw new RuntimeException("Unable to pass the turn: wrong game state");
+    }
+
+    /**
      * Performs automatic work for this state when no immediate player input is
      * required.
      *
