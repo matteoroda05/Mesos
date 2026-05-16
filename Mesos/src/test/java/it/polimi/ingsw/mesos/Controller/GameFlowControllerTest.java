@@ -35,6 +35,7 @@ class GameFlowControllerTest {
         assertTrue(controller.isGameFinished());
         assertThrows(IllegalStateException.class, () -> controller.chooseOffer(Color.BLUE, 0));
         assertThrows(IllegalStateException.class, () -> controller.chooseCard(Color.BLUE, 0, true));
+        assertThrows(IllegalStateException.class, () -> controller.pass(Color.BLUE));
         assertThrows(IllegalStateException.class, () -> controller.skipCurrentTurn(Color.BLUE));
     }
 
@@ -96,12 +97,33 @@ class GameFlowControllerTest {
     }
 
     @Test
+    void passStoresReturnedStateAndAdvancesUntilInputIsNeeded() throws Exception {
+        GameFlowController controller = controllerWithPlayers("FlowPass");
+        ModelController modelController = new ModelController(controller.getCurrentState().controller.getGameContext());
+        StubState commandState = new StubState(modelController, GameStatus.ROUND_ACTIONS);
+        StubState automaticState = new StubState(modelController, GameStatus.ROUND_END);
+        StubState waitingState = new StubState(modelController, GameStatus.ROUND_ACTIONS);
+        commandState.passNext = automaticState;
+        automaticState.processNext = waitingState;
+        waitingState.processNext = waitingState;
+        setCurrentState(controller, commandState);
+
+        controller.pass(Color.BLUE);
+
+        assertSame(waitingState, controller.getCurrentState());
+        assertTrue(commandState.passCalled);
+        assertTrue(automaticState.processCalled);
+        assertTrue(waitingState.processCalled);
+    }
+
+    @Test
     void baseGameStateRejectsUnsupportedCommandsAndProvidesDefaultViewData() throws Exception {
         ModelController modelController = new ModelController(controllerWithPlayers("BaseState").getCurrentState().controller.getGameContext());
         BaseState state = new BaseState(modelController);
 
         assertThrows(RuntimeException.class, () -> state.chooseOffer(Color.BLUE, 0));
         assertThrows(RuntimeException.class, () -> state.chooseCard(Color.BLUE, 0, true));
+        assertThrows(RuntimeException.class, () -> state.pass(Color.BLUE));
         assertThrows(RuntimeException.class, () -> state.skipTurn(Color.BLUE));
         assertSame(state, state.process());
         assertTrue(state.getActivePlayer() == null);
@@ -126,10 +148,12 @@ class GameFlowControllerTest {
         private final GameStatus status;
         private GameState offerNext;
         private GameState cardNext;
+        private GameState passNext;
         private GameState skipNext;
         private GameState processNext = this;
         private boolean chooseOfferCalled;
         private boolean chooseCardCalled;
+        private boolean passCalled;
         private boolean skipTurnCalled;
         private boolean processCalled;
 
@@ -148,6 +172,12 @@ class GameFlowControllerTest {
         public GameState chooseCard(Color player_color, int card, boolean is_top) {
             chooseCardCalled = true;
             return cardNext;
+        }
+
+        @Override
+        public GameState pass(Color player_color) {
+            passCalled = true;
+            return passNext;
         }
 
         @Override

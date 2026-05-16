@@ -19,6 +19,7 @@ import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -163,6 +164,17 @@ class MesosServerCoreTest {
         GameOperationResult wrongPlayerHeartbeat = serverCore.heartbeat(new HeartbeatRequest("heartbeat-room", "Bob", true));
         assertFalse(wrongPlayerHeartbeat.success());
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, wrongPlayerHeartbeat.errorCode());
+    }
+
+    @Test
+    void passReturnsGameNotFoundForMissingSession() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        GameOperationResult result = serverCore.pass(new PassRequest("missing-pass-room", "Alice"));
+
+        assertFalse(result.success());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND, result.errorCode());
+        assertNull(result.snapshot());
     }
 
     @SuppressWarnings("unchecked")

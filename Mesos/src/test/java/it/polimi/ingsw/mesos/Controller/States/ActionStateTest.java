@@ -148,6 +148,39 @@ class ActionStateTest extends StateTestSupport {
     }
 
     @Test
+    void passRejectsWrongPlayer() {
+        Color activePlayer = state.getActivePlayer();
+        Color otherPlayer = player_colors.stream().filter(color -> color != activePlayer).findFirst().orElseThrow();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> new ActionState(model_controller, activePlayer, 1, true).pass(otherPlayer));
+
+        assertTrue(exception.getMessage().contains("Wrong turn"));
+    }
+
+    @Test
+    void passRejectsNormalActionState() {
+        Color activePlayer = state.getActivePlayer();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> state.pass(activePlayer));
+
+        assertTrue(exception.getMessage().contains("normal action state"));
+    }
+
+    @Test
+    void passOnExtraActionAdvancesWithoutClearingCurrentOfferTile() {
+        Color activePlayer = state.getActivePlayer();
+        OfferTile occupiedTile = game_context.getGameTable().getOfferTrack().getTile(0);
+
+        GameState nextState = new ActionState(model_controller, activePlayer, 1, true)
+                .pass(activePlayer);
+
+        assertInstanceOf(ActionState.class, nextState);
+        assertEquals(activePlayer, occupiedTile.getOccupant());
+    }
+
+    @Test
     void processWithFoodGainAddsFoodAndTransitions() throws Exception {
         java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
         customTiles.add(new OfferTile('A', 0, 0, 3, 2));

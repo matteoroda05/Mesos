@@ -8,6 +8,7 @@ import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -39,6 +40,9 @@ class NetworkRequestTest {
         assertThrows(IllegalArgumentException.class, () -> new ChooseCardRequest("game", null, 0, true));
         assertThrows(IllegalArgumentException.class, () -> new ChooseCardRequest("game", "Alice", -1, true));
 
+        assertThrows(IllegalArgumentException.class, () -> new PassRequest(null, "Alice"));
+        assertThrows(IllegalArgumentException.class, () -> new PassRequest("game", null));
+
         assertThrows(IllegalArgumentException.class, () -> new SnapshotRequest(null));
         assertThrows(IllegalArgumentException.class, () -> new SnapshotRequest(" "));
         assertThrows(IllegalArgumentException.class, () -> new SubscribeGameRequest(null, "Alice"));
@@ -68,6 +72,7 @@ class NetworkRequestTest {
         assertEquals("snapshot", new SnapshotRequest("game").requestToService(service, null).message());
         assertEquals("offer", new ChooseOfferRequest("game", "Alice", 0).requestToService(service, null).message());
         assertEquals("card", new ChooseCardRequest("game", "Alice", 0, true).requestToService(service, null).message());
+        assertEquals("pass", new PassRequest("game", "Alice").requestToService(service, null).message());
         assertEquals("heartbeat", new HeartbeatRequest("Alice").requestToService(service, null).message());
         assertEquals("heartbeat", new HeartbeatRequest("game", "Alice", true).requestToService(service, null).message());
 
@@ -84,6 +89,7 @@ class NetworkRequestTest {
         @Override public GameOperationResult getSnapshot(SnapshotRequest request) { return GameOperationResult.success("snapshot", null); }
         @Override public GameOperationResult chooseOffer(ChooseOfferRequest request) { return GameOperationResult.success("offer", null); }
         @Override public GameOperationResult chooseCard(ChooseCardRequest request) { return GameOperationResult.success("card", null); }
+        @Override public GameOperationResult pass(PassRequest request) { return GameOperationResult.success("pass", null); }
         @Override public GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink) { return GameOperationResult.failure("subscribe", null); }
         @Override public GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink) { return GameOperationResult.failure("unsubscribe", null); }
         @Override public GameOperationResult heartbeat(HeartbeatRequest request) { return GameOperationResult.success("heartbeat", null); }

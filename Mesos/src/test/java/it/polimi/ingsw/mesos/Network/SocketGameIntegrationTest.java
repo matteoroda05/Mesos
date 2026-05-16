@@ -26,6 +26,7 @@ import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -131,6 +132,22 @@ class SocketGameIntegrationTest {
         }
 
         assertEquals(2, service.unsubscribeCalls);
+    }
+
+    @Test
+    void socketClientSendsPassRequests() throws IOException {
+        RecordingServerService service = new RecordingServerService();
+
+        try (SocketGameServer socketServer = new SocketGameServer(service, 0);
+             GameClient client = GameClientFactory.connect(ServerEndpoint.socket("127.0.0.1", socketServer.getPort()))) {
+            GameOperationResult result = client.pass(new PassRequest("pass-room", "Alice"));
+
+            assertTrue(result.success());
+            assertEquals("pass", result.message());
+            assertEquals(1, service.passCalls);
+            assertEquals("pass-room", service.lastPass.gameName());
+            assertEquals("Alice", service.lastPass.nickname());
+        }
     }
 
     @Test
@@ -304,8 +321,10 @@ class SocketGameIntegrationTest {
     private static final class RecordingServerService implements MesosServerService {
         private volatile int subscribeCalls;
         private volatile int unsubscribeCalls;
+        private volatile int passCalls;
         private volatile boolean unsubscribeSuccess = true;
         private volatile UnsubscribeGameRequest lastUnsubscribe;
+        private volatile PassRequest lastPass;
 
         @Override
         public GameOperationResult getLobby() {
@@ -340,6 +359,13 @@ class SocketGameIntegrationTest {
         @Override
         public GameOperationResult chooseCard(ChooseCardRequest request) {
             return GameOperationResult.success("card", null);
+        }
+
+        @Override
+        public GameOperationResult pass(PassRequest request) {
+            passCalls++;
+            lastPass = request;
+            return GameOperationResult.success("pass", null);
         }
 
         @Override
