@@ -209,14 +209,17 @@ public class ActionState extends GameState {
     }
 
     /**
-     * Applies every owned building that reacts to the end-turn trigger.
+     * Applies active-player buildings that react to the end-turn trigger.
      *
-     * @throws IllegalStateException if an end-turn building owner has not
-     *                               returned to the turn-order tile
+     * @throws IllegalStateException if the active player has not returned to
+     *                               the turn-order tile
      */
     private void applyEndTurnBuildings(){
         List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
-                .stream().map(building -> ((BuildingEndTurn) building)).toList();
+                .stream()
+                .filter(building -> building.getOwner().getColor() == this.p)
+                .map(building -> ((BuildingEndTurn) building))
+                .toList();
         TurnOrderTile tile = controller.getTurnOrderTile();
         buildings.forEach(building -> building.effect(tile, controller));
     }

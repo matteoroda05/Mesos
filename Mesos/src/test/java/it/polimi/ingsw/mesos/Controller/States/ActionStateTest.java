@@ -250,7 +250,7 @@ class ActionStateTest extends StateTestSupport {
     }
 
     @Test
-    void processEndsStandardTurnRunsEndTurnBuildingsAndLoadsNextOfferTile() throws Exception {
+    void processEndsStandardTurnRunsOnlyActivePlayerEndTurnBuildingsAndLoadsNextOfferTile() throws Exception {
         java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
         for (int i = 0; i < 5; i++) {
             customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
@@ -272,16 +272,21 @@ class ActionStateTest extends StateTestSupport {
         game_context.getGameTable().getOfferTrack().getTile(0).occupy(first);
         game_context.getGameTable().getOfferTrack().getTile(1).occupy(second);
 
-        CountingEndTurnBuilding building = new CountingEndTurnBuilding();
-        building.setOwner(game_context.getPlayer(first));
-        game_context.getPlayer(first).getTribe().addCard(building);
+        CountingEndTurnBuilding firstBuilding = new CountingEndTurnBuilding();
+        firstBuilding.setOwner(game_context.getPlayer(first));
+        game_context.getPlayer(first).getTribe().addCard(firstBuilding);
+
+        CountingEndTurnBuilding secondBuilding = new CountingEndTurnBuilding();
+        secondBuilding.setOwner(game_context.getPlayer(second));
+        game_context.getPlayer(second).getTribe().addCard(secondBuilding);
 
         state = new ActionState(model_controller);
         GameState nextState = state.process();
 
         assertSame(state, nextState);
         assertEquals(second, state.getActivePlayer());
-        assertEquals(1, building.calls);
+        assertEquals(1, firstBuilding.calls);
+        assertEquals(0, secondBuilding.calls);
         assertTrue(game_context.getGameTable().getOfferTrack().getTile(0).isAvailable());
         assertEquals(first, game_context.getGameTable().getTurnOrderTile().currentOrderTopToBottom().getFirst());
     }
