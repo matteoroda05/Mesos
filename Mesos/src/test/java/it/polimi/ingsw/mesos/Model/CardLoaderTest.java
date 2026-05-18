@@ -3,7 +3,6 @@ package it.polimi.ingsw.mesos.Model;
 import it.polimi.ingsw.mesos.Model.Cards.*;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,17 +22,6 @@ class CardLoaderTest {
         data = CardLoader.load();
     }
 
-
-    @Test
-    void tribeCardListIsNotEmpty() {
-        assertFalse(data.tribe_cards().isEmpty());
-    }
-
-    @Test
-    void buildingCardListIsNotEmpty() {
-        assertFalse(data.building_cards().isEmpty());
-    }
-
     @Test
     void tribeCardsTotalCountMatchesExpected() {
         assertEquals(96, data.tribe_cards().size());
@@ -42,17 +30,6 @@ class CardLoaderTest {
     @Test
     void buildingCardsTotalCountMatchesExpected() {
         assertEquals(21, data.building_cards().size());
-    }
-
-
-    @Test
-    void hunterCardsAreDeserializedToCorrectType() {
-        data.tribe_cards().stream()
-                .filter(c -> c instanceof HunterCard)
-                .map(c -> (HunterCard) c)
-                .forEach(h ->
-                        assertEquals(HunterCard.class, h.getClass())
-                );
     }
 
     @Test
@@ -117,8 +94,6 @@ class CardLoaderTest {
 
     @Test
     void huntEventsHaveNegativePenaltyByConstruction() {
-        // SustenanceEvent stores a negative penalty; loading from JSON must
-        // preserve the sign
         data.tribe_cards().stream()
                 .filter(c -> c instanceof SustenanceEvent)
                 .map(c -> (SustenanceEvent) c)
@@ -191,7 +166,6 @@ class CardLoaderTest {
                 .map(c -> (CharacterCard) c)
                 .forEach(tribe::addCard);
 
-        // Every character card loaded from JSON must end up in the tribe
         long expected = data.tribe_cards().stream()
                 .filter(c -> c instanceof CharacterCard)
                 .count();

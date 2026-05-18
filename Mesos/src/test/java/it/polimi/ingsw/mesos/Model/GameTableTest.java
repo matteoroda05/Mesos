@@ -156,6 +156,15 @@ class GameTableTest {
 	}
 
 	@Test
+	void beginNewEraThrowsWhenNoLaterBuildingEraCanBeDrawn() {
+		GameTable game_table = createGameTable(
+				createHunters(Era.FIRST, 12),
+				List.of(new BuildingAfterEveryone(Era.FIRST, 0, 1, 1)));
+
+		assertThrows(IllegalAccessError.class, game_table::beginNewEra);
+	}
+
+	@Test
 	void visibleEventsReturnsOnlyBottomRowEventsWhenTopRowIsExcluded() {
 		GameTable game_table = createGameTable(
 				createHunters(Era.FIRST, 12),
@@ -211,7 +220,7 @@ class GameTableTest {
 				first_era_tribes.get(1),
 				first_era_tribes.get(0));
 
-		boolean new_era_started = game_table.newRound();
+		boolean new_era_started = game_table.newRound(Era.FIRST);
 
 		assertFalse(new_era_started);
 		assertIterableEquals(expected_moved_to_bottom, game_table.getBottomRow().getTribeCards());
@@ -231,7 +240,7 @@ class GameTableTest {
 						new BuildingAfterEveryone(Era.SECOND, 0, 2, 2),
 						new BuildingAfterEveryone(Era.THIRD, 0, 3, 3)));
 
-		boolean new_era_started = game_table.newRound();
+		boolean new_era_started = game_table.newRound(Era.FIRST);
 
 		assertTrue(new_era_started);
 	}

@@ -10,27 +10,24 @@ import it.polimi.ingsw.mesos.Result;
 
 
 abstract public class EventCard extends TribeCard {
+    /**
+     * Creates an event card, which is available regardless of player count.
+     *
+     * @param era era this event belongs to
+     */
     public EventCard(Era era) {
         super(era, 0);
     }
 
-    /**
-     * Calculates the resource and prestige outcome of this event for every
-     * participating tribe without directly mutating player state.
-     *
-     * @param player_tribes tribes keyed by player color
-     * @return event outcome keyed by player color
-     */
     abstract public Map<Color, Result> calculateOutcome(Map<Color, Tribe> player_tribes);
 
-    /**
-     * Converts this event type to the building trigger used by buildings that
-     * react to the event.
-     *
-     * @return matching building trigger
-     */
     abstract public BuildingTrigger asTrigger();
 
+    /**
+     * Identifies this card as an event card.
+     *
+     * @return true for every event card
+     */
     @Override
     public boolean isEvent() {
         return true;

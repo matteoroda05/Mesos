@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 
 class PlayerTest {
 
@@ -25,6 +26,7 @@ class PlayerTest {
         assertEquals(Color.YELLOW,player.getColor());
         assertEquals(3, player.getFood());
         assertEquals(0, player.getPrestigePoints());
+        assertEquals(ConnectionStatus.CONNECTED, player.getConnectionStatus());
         assertNotNull(player.getTribe());
     }
 
@@ -84,6 +86,36 @@ class PlayerTest {
         Tribe firstCall = player.getTribe();
         Tribe secondCall = player.getTribe();
         assertSame(firstCall, secondCall);
+    }
+
+    @Test
+    void setConnectionStatusAcceptsValidTransitionsAndRepeatedAssignments() {
+        player.setConnectionStatus(ConnectionStatus.CONNECTED);
+        assertEquals(ConnectionStatus.CONNECTED, player.getConnectionStatus());
+
+        player.setConnectionStatus(ConnectionStatus.DISCONNECTED);
+        assertEquals(ConnectionStatus.DISCONNECTED, player.getConnectionStatus());
+
+        player.setConnectionStatus(ConnectionStatus.SKIPPED);
+        assertEquals(ConnectionStatus.SKIPPED, player.getConnectionStatus());
+
+        player.setConnectionStatus(ConnectionStatus.REJOINED);
+        assertEquals(ConnectionStatus.REJOINED, player.getConnectionStatus());
+
+        player.setConnectionStatus(ConnectionStatus.CONNECTED);
+        assertEquals(ConnectionStatus.CONNECTED, player.getConnectionStatus());
+    }
+
+    @Test
+    void setConnectionStatusRejectsNullAndInvalidTransitions() {
+        assertThrows(IllegalArgumentException.class,
+                () -> player.setConnectionStatus(null));
+        assertThrows(IllegalStateException.class,
+                () -> player.setConnectionStatus(ConnectionStatus.SKIPPED));
+
+        player.setConnectionStatus(ConnectionStatus.DISCONNECTED);
+        assertThrows(IllegalStateException.class,
+                () -> player.setConnectionStatus(ConnectionStatus.REJOINED));
     }
 
 }

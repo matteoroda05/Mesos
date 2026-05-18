@@ -18,11 +18,17 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+/**
+ * Simple Swing-backed console for running console programs without a terminal.
+ */
 public final class SwingConsoleWindow {
     private final JTextArea outputArea;
     private final JTextField inputField;
     private final PipedOutputStream inputWriter;
 
+    /**
+     * Creates the window and redirects standard streams to it.
+     */
     private SwingConsoleWindow(String title, PipedInputStream inputReader, PipedOutputStream inputWriter) {
         this.outputArea = new JTextArea();
         this.inputField = new JTextField();
@@ -59,6 +65,13 @@ public final class SwingConsoleWindow {
         System.setErr(consoleStream);
     }
 
+    /**
+     * Opens a Swing console and runs the program on a background thread.
+     *
+     * @param title window title
+     * @param program program to run
+     * @throws Exception if Swing initialization fails
+     */
     public static void open(String title, ConsoleProgram program) throws Exception {
         PipedInputStream inputReader = new PipedInputStream();
         PipedOutputStream inputWriter = new PipedOutputStream(inputReader);
@@ -75,6 +88,9 @@ public final class SwingConsoleWindow {
         programThread.start();
     }
 
+    /**
+     * Sends the current input field contents to the redirected standard input.
+     */
     private void submitInput() {
         String input = inputField.getText();
         inputField.setText("");
@@ -87,6 +103,9 @@ public final class SwingConsoleWindow {
         }
     }
 
+    /**
+     * Appends text and keeps the caret at the end.
+     */
     private void append(String text) {
         outputArea.append(text);
         outputArea.setCaretPosition(outputArea.getDocument().getLength());
@@ -97,27 +116,42 @@ public final class SwingConsoleWindow {
         void run() throws Exception;
     }
 
+    /**
+     * Output stream that forwards text to a Swing text area.
+     */
     private static final class TextAreaOutputStream extends OutputStream {
         private final JTextArea textArea;
         private final StringBuilder buffer;
 
+        /**
+         * Creates an output stream bound to a text area.
+         */
         private TextAreaOutputStream(JTextArea textArea) {
             this.textArea = textArea;
             this.buffer = new StringBuilder();
         }
 
+        /**
+         * Writes one byte as a character and flushes it to Swing.
+         */
         @Override
         public synchronized void write(int value) {
             buffer.append((char) value);
             flush();
         }
 
+        /**
+         * Writes UTF-8 bytes and flushes them to Swing.
+         */
         @Override
         public synchronized void write(byte[] bytes, int offset, int length) {
             buffer.append(new String(bytes, offset, length, StandardCharsets.UTF_8));
             flush();
         }
 
+        /**
+         * Moves buffered output to the text area on the Swing event thread.
+         */
         @Override
         public synchronized void flush() {
             if (buffer.isEmpty()) {

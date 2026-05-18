@@ -7,6 +7,34 @@ import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Serializable immutable view of the current game state.
+ *
+ * @param gameName game name
+ * @param playerCount configured number of players
+ * @param joinedPlayers number of players currently joined
+ * @param started true after the controller has been created
+ * @param finished true when the game is complete or a resilience winner exists
+ * @param status current game status
+ * @param currentRound current round number
+ * @param currentEra current era, when available
+ * @param currentPlayerNickname active player's nickname, or null when no turn
+ *                              is active
+ * @param currentPlayerColor active player's color, or null when no turn is
+ *                           active
+ * @param remainingTopChoices remaining choices from the top row
+ * @param remainingBottomChoices remaining choices from the bottom row
+ * @param players player summaries, normalized to an immutable empty list when
+ *                null
+ * @param offerTiles offer tile summaries, normalized to an immutable empty list
+ *                   when null
+ * @param turnOrder turn order summaries, normalized to an immutable empty list
+ *                  when null
+ * @param topRow top market row summaries, normalized to an immutable empty list
+ *               when null
+ * @param bottomRow bottom market row summaries, normalized to an immutable
+ *                  empty list when null
+ */
 public record GameSnapshot(
         String gameName,
         int playerCount,
@@ -27,6 +55,14 @@ public record GameSnapshot(
         List<CardSummary> bottomRow
 ) implements Serializable {
 
+    /**
+     * Validates required snapshot fields and defensively copies list fields.
+     *
+     * @throws IllegalArgumentException if game name is null/blank, player count
+     *                                  is not positive, joined players is
+     *                                  outside {@code [0, playerCount]}, status
+     *                                  is null, or current round is negative
+     */
     public GameSnapshot {
         if (gameName == null || gameName.isBlank()) {
             throw new IllegalArgumentException("gameName cannot be null or blank");

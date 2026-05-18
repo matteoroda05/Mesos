@@ -11,6 +11,13 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 public class BuildingDeck {
     private Map<Era, List<BuildingCard>> deck;
 
+    /**
+     * Builds a deck grouped by building era.
+     *
+     * @param buildingCards building cards to include
+     * @throws IllegalArgumentException if the list is null or contains a null
+     *                                  card
+     */
     public BuildingDeck(List<BuildingCard> buildingCards) {
         if (buildingCards == null) {
             throw new IllegalArgumentException("buildingCards cannot be null");
@@ -32,6 +39,8 @@ public class BuildingDeck {
      * in the deck, then removes that era from future draws.
      *
      * @return the building cards for the next available era
+     * @throws IllegalStateException if the deck storage is unexpectedly null
+     * @throws IllegalAccessError if no era still has building cards
      */
     public List<BuildingCard> drawBuildingCards() {
         if (deck == null) {
@@ -56,6 +65,12 @@ public class BuildingDeck {
         return output;
     }
 
+    /**
+     * Checks whether every era group has already been drawn.
+     *
+     * @return true when no building cards remain in the deck
+     * @throws IllegalStateException if the deck storage is unexpectedly null
+     */
     public boolean isEmpty() {
         if (deck == null) {
             throw new IllegalStateException("Building deck is not initialized");

@@ -29,6 +29,15 @@ public class SocketGameServer implements AutoCloseable {
     private final AtomicBoolean running;
     private final Set<Socket> clientSockets;
 
+    /**
+     * Opens a socket server and starts the background accept loop.
+     *
+     * @param serverService service used to handle incoming requests
+     * @param port port to bind, or 0 for an ephemeral port
+     * @throws IllegalArgumentException if the service is null or the port is
+     *                                  outside 0 to 65535
+     * @throws IOException if the server socket cannot be opened
+     */
     public SocketGameServer(MesosServerService serverService, int port) throws IOException {
         if (serverService == null) {
             throw new IllegalArgumentException("serverService cannot be null");
@@ -46,10 +55,23 @@ public class SocketGameServer implements AutoCloseable {
         executorService.execute(this::acceptLoop);
     }
 
+    /**
+     * Returns the actual bound server port.
+     *
+     * @return local server socket port
+     */
     public int getPort() {
         return serverSocket.getLocalPort();
     }
 
+    /**
+     * Accepts client sockets while the server is running and dispatches each
+     * client to the executor.
+     * Socket exceptions after shutdown are treated as normal termination.
+     *
+     * @throws IllegalStateException if accepting a connection fails while the
+     *                               server is still running
+     */
     private void acceptLoop() {
         while (running.get()) {
             try {
@@ -70,6 +92,15 @@ public class SocketGameServer implements AutoCloseable {
         }
     }
 
+    /**
+     * Handles one socket client until the socket closes or the server stops.
+     * Unsupported payload types are returned as failure results, and active
+     * subscriptions are cleaned up when the client disconnects.
+     *
+     * @param clientSocket accepted client socket
+     * @throws IllegalStateException if request handling fails while the server
+     *                               is still running
+     */
     private void handleClient(Socket clientSocket) {
         ClientConnection connection = null;
         try (Socket socket = clientSocket;
@@ -105,6 +136,12 @@ public class SocketGameServer implements AutoCloseable {
         }
     }
 
+    /**
+     * Stops accepting clients, closes connected sockets, closes the server
+     * socket, and interrupts executor tasks.
+     *
+     * @throws IOException if closing a socket fails
+     */
     @Override
     public void close() throws IOException {
         running.set(false);
@@ -119,21 +156,45 @@ public class SocketGameServer implements AutoCloseable {
         private final ObjectOutputStream output;
         private SubscribeGameRequest activeSubscription;
 
+        /**
+         * Creates a per-client connection wrapper around the output stream.
+         *
+         * @param output object output stream used to send responses and updates
+         */
         private ClientConnection(ObjectOutputStream output) {
             this.output = output;
         }
 
+        /**
+         * Sends an asynchronous game update to this client.
+         *
+         * @param update update payload
+         * @throws IOException if writing to the socket fails
+         */
         @Override
         public void accept(GameViewUpdate update) throws IOException {
             sendMessage(update);
         }
 
+        /**
+         * Sends one serializable server message over the object stream.
+         *
+         * @param message response or update to send
+         * @throws IOException if serialization or socket writing fails
+         */
         private synchronized void sendMessage(Serializable message) throws IOException {
             output.writeObject(message);
             output.flush();
             output.reset();
         }
 
+        /**
+         * Records this client's active subscription.
+         * If the client was subscribed to a different game or nickname, the old
+         * subscription is removed before replacing it.
+         *
+         * @param request subscription request
+         */
         public void subscribe(SubscribeGameRequest request) {
             if (activeSubscription != null
                     && (!activeSubscription.gameName().equals(request.gameName())
@@ -146,6 +207,12 @@ public class SocketGameServer implements AutoCloseable {
             activeSubscription = request;
         }
 
+        /**
+         * Clears the active subscription when the request matches it.
+         * Non-matching requests leave the current subscription unchanged.
+         *
+         * @param request unsubscription request
+         */
         public void unsubscribe(UnsubscribeGameRequest request) {
             if (activeSubscription != null
                     && activeSubscription.gameName().equals(request.gameName())
@@ -154,6 +221,10 @@ public class SocketGameServer implements AutoCloseable {
             }
         }
 
+        /**
+         * Removes any active subscription during client disconnect cleanup.
+         * Calling cleanup with no active subscription is a no-op.
+         */
         private void cleanup() {
             if (activeSubscription == null) {
                 return;

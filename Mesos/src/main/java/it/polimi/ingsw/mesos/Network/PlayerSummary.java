@@ -5,6 +5,16 @@ import java.util.List;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
+/**
+ * Serializable summary of a player exposed to clients.
+ *
+ * @param nickname player nickname
+ * @param color player color, null before the game starts
+ * @param food current food amount
+ * @param prestigePoints current prestige points
+ * @param characterCount number of character cards owned
+ * @param buildingCount number of building cards owned
+ */
 public record PlayerSummary(
         String nickname,
         Color color,
@@ -27,6 +37,11 @@ public record PlayerSummary(
         this(nickname, color, food, prestigePoints, characterCount, buildingCount, List.of(), List.of());
     }
 
+    /**
+     * Validates player identity.
+     *
+     * @throws IllegalArgumentException if nickname is null or blank
+     */
     public PlayerSummary {
         if (nickname == null || nickname.isBlank()) {
             throw new IllegalArgumentException("nickname cannot be null or blank");

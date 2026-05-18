@@ -19,10 +19,13 @@ public class CardLoader {
     private static final String RESOURCE_PATH = "/Cards.json";
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /**
+     * Utility class; instances are not allowed.
+     */
     private CardLoader() {}
 
     /**
-     * Loads all card and tiles from the bundled JSON resource.
+     * Loads all cards and tiles from the bundled JSON resource.
      *
      * @return parsed card and offer-tile data
      * @throws IOException if the resource is missing or cannot be parsed
@@ -42,6 +45,7 @@ public class CardLoader {
      * @param in stream containing the card JSON document
      * @return parsed tribe cards, building cards, and offer tiles
      * @throws IOException if the stream cannot be read or parsed
+     * @throws IllegalArgumentException if the input stream is null
      */
     public static CardData load(InputStream in) throws IOException {
         JsonNode root = MAPPER.readTree(in);
@@ -91,6 +95,13 @@ public class CardLoader {
         return card.getClass().getSimpleName() + "(era=" + card.getEra() + ", minPlayers=" + card.getMinPlayers() + ")";
     }
 
+    /**
+     * Parsed card resource data.
+     *
+     * @param tribe_cards loaded tribe cards
+     * @param building_cards loaded building cards
+     * @param offer_tiles loaded offer tiles
+     */
     public record CardData(
             List<TribeCard> tribe_cards,
             List<BuildingCard> building_cards,

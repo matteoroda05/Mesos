@@ -255,6 +255,33 @@ class MarketRowTest {
     }
 
     @Test
+    void typedTakeHelpersRemoveSelectedCardsAndRejectInvalidChoices() {
+        TribeDeck tribe_deck = new TribeDeck(2, List.of(tribe_card_one, tribe_card_two, tribe_card_three));
+        MarketRow market_row = new MarketRow(false, tribe_deck, null);
+        market_row.placeCard(building_card_low_cost);
+
+        assertSame(tribe_card_three, market_row.takeCharacterCard(0));
+        assertSame(building_card_low_cost, market_row.takeBuildingCard(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeCharacterCard(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeBuildingCard(0));
+
+        market_row.placeCard(event_card_one);
+        assertThrows(IllegalArgumentException.class,
+                () -> market_row.takeCharacterCard(market_row.getTribeCards().size() - 1));
+    }
+
+    @Test
+    void getBuildingCostReturnsPrintedCostAndValidatesIndex() {
+        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
+        MarketRow market_row = new MarketRow(false, tribe_deck, null);
+        market_row.placeCard(building_card_medium_cost);
+
+        assertEquals(3, market_row.getBuildingCost(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> market_row.getBuildingCost(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> market_row.getBuildingCost(1));
+    }
+
+    @Test
     void placeCardPutsCardsInTheCorrectComponentList() {
         TribeDeck tribe_deck = new TribeDeck(2, List.of(tribe_card_one, tribe_card_two, tribe_card_three));
         MarketRow market_row = new MarketRow(false, tribe_deck, null);

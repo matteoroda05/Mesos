@@ -24,6 +24,17 @@ public abstract class BuildingCard extends Card {
     protected Player owner;
     private final BuildingTrigger trigger;
 
+    /**
+     * Creates a building card with its printed cost, prestige, and trigger.
+     *
+     * @param era era this building belongs to
+     * @param min_players minimum players required to use this building
+     * @param food_cost printed food cost
+     * @param prestige_points printed prestige points
+     * @param trigger effect trigger for this building
+     * @throws IllegalArgumentException if the minimum player count is outside
+     *                                  the range accepted by {@link Card}
+     */
     @JsonCreator
     public BuildingCard(
             @JsonProperty("era")            Era era,
@@ -38,14 +49,29 @@ public abstract class BuildingCard extends Card {
         this.trigger = trigger;
     }
 
+    /**
+     * Returns the printed food cost.
+     *
+     * @return food cost before discounts
+     */
     public int getFoodCost() {
         return food_cost;
     }
 
+    /**
+     * Returns the printed prestige value.
+     *
+     * @return prestige points printed on the building
+     */
     public int getPrestigePoints() {
         return prestige_points;
     }
 
+    /**
+     * Returns the player who owns this building.
+     *
+     * @return owner, or null until the building is assigned
+     */
     public Player getOwner() {
         return owner;
     }
@@ -55,6 +81,8 @@ public abstract class BuildingCard extends Card {
      * required by subclasses.
      *
      * @param owner player who acquired the building
+     * @throws NullPointerException if a subclass requires a non-null owner in
+     *                              {@link #onAssignment()} and null is passed
      */
     public void setOwner(Player owner) {
         this.owner = owner;
@@ -67,6 +95,11 @@ public abstract class BuildingCard extends Card {
      */
     protected void onAssignment() {}
 
+    /**
+     * Returns the trigger that activates this building.
+     *
+     * @return building trigger
+     */
     public BuildingTrigger getTrigger() {
         return trigger;
     }

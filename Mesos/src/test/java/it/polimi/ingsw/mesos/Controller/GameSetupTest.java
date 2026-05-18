@@ -3,6 +3,9 @@ package it.polimi.ingsw.mesos.Controller;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -18,6 +21,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GameSetupTest {
@@ -39,6 +43,23 @@ class GameSetupTest {
     }
 
     @Test
+    void selectTribeCardsPlacesFinalEventsWhereTribeDeckDrawsThemLast() {
+        SustenanceEvent finalSustenance = new SustenanceEvent(Era.THIRD, -1, 1);
+        ShamanicRitualEvent finalRitual = new ShamanicRitualEvent(Era.THIRD, 5, -3);
+        HuntEvent regularThirdEraEvent = new HuntEvent(Era.THIRD, 1, 1);
+        TestTribeCard firstEraCard = new TestTribeCard(Era.FIRST);
+        TestTribeCard secondEraCard = new TestTribeCard(Era.SECOND);
+
+        List<TribeCard> output = GameSetup.selectTribeCards(
+                List.of(firstEraCard, finalSustenance, secondEraCard, finalRitual, regularThirdEraEvent),
+                5);
+
+        assertSameCards(List.of(firstEraCard, finalSustenance, secondEraCard, finalRitual, regularThirdEraEvent), output);
+        assertTrue(output.subList(0, 2).containsAll(List.of(finalSustenance, finalRitual)));
+        assertEquals(firstEraCard, output.getLast());
+    }
+
+    @Test
     void createGameInitializesCoreComponentsForSupportedPlayerCounts() throws Exception {
         GameSetup setup = new GameSetup();
         CardLoader.CardData cardData = CardLoader.load();
@@ -55,6 +76,24 @@ class GameSetupTest {
             assertNotNull(context.getGameTable().getBottomRow());
             assertEquals(playerCount, context.getGameTable().getTurnOrderTile().spaces().size());
         }
+    }
+
+    @Test
+    void createGameRejectsInvalidInputsAndMalformedCardData() throws Exception {
+        GameSetup setup = new GameSetup();
+        CardLoader.CardData validData = CardLoader.load();
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame(null, 2, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame(" ", 2, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame("Game", 1, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame("Game", 6, validData));
+        assertThrows(IllegalArgumentException.class, () -> setup.createGame("Game", 2, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> setup.createGame("Game", 2, new CardLoader.CardData(null, validData.building_cards(), validData.offer_tiles())));
+        assertThrows(IllegalArgumentException.class,
+                () -> setup.createGame("Game", 2, new CardLoader.CardData(validData.tribe_cards(), null, validData.offer_tiles())));
+        assertThrows(IllegalArgumentException.class,
+                () -> setup.createGame("Game", 2, new CardLoader.CardData(validData.tribe_cards(), validData.building_cards(), null)));
     }
 
     @Test
@@ -86,6 +125,26 @@ class GameSetupTest {
                     assignedColors,
                     context.getGameTable().getTurnOrderTile().currentOrderTopToBottom());
         }
+    }
+
+    @Test
+    void createMapOfPlayersRejectsInvalidInputs() throws Exception {
+        GameSetup setup = new GameSetup();
+        GameContext context = setup.createGame("PlayerValidation", 2, CardLoader.load());
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, null));
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(null, List.of("Alice", "Bob")));
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, List.of("Alice")));
+        List<String> nullNickname = new ArrayList<>();
+        nullNickname.add("Alice");
+        nullNickname.add(null);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, nullNickname));
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(context, List.of("Alice", " ")));
+    }
+
+    @Test
+    void selectTribeCardsRejectsNullCardList() {
+        assertThrows(IllegalArgumentException.class, () -> GameSetup.selectTribeCards(null, 2));
     }
 
     @Test

@@ -70,6 +70,35 @@ class ChooseOfferStateTest extends StateTestSupport {
     }
 
     @Test
+    void skipTurnMovesToNextPlayerAndEventuallyActionState() {
+        Color firstPlayer = state.getActivePlayer();
+        GameState nextState = state.skipTurn(firstPlayer);
+
+        assertSame(state, nextState);
+        assertNotEquals(firstPlayer, state.getActivePlayer());
+
+        while (nextState instanceof ChooseOfferState) {
+            nextState = nextState.skipTurn(nextState.getActivePlayer());
+        }
+
+        assertInstanceOf(ActionState.class, nextState);
+    }
+
+    @Test
+    void skipTurnInvalidPlayerThrows() {
+        Color firstPlayer = state.getActivePlayer();
+        Color otherPlayer = player_colors.stream().filter(c -> c != firstPlayer).findFirst().orElseThrow();
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> state.skipTurn(otherPlayer)
+        );
+
+        assertTrue(exception.getMessage().contains("Wrong turn"));
+        assertEquals(firstPlayer, state.getActivePlayer());
+    }
+
+    @Test
     void chooseCardThrowsBecauseWrongGameState() {
         RuntimeException exception = assertThrows(
                 RuntimeException.class,

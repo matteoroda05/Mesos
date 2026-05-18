@@ -8,6 +8,15 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 public final class ShamanCard extends CharacterCard {
     private final int num_stars;
 
+    /**
+     * Creates a shaman card from JSON data.
+     *
+     * @param era era this card belongs to
+     * @param min_players minimum players required to use this card
+     * @param num_stars ritual stars printed on this shaman
+     * @throws IllegalArgumentException if the minimum player count is invalid
+     *                                  or the number of stars is outside 1 to 3
+     */
     @JsonCreator
     public ShamanCard(
             @JsonProperty("era")        Era era,
@@ -21,6 +30,11 @@ public final class ShamanCard extends CharacterCard {
         this.num_stars = num_stars;
     }
 
+    /**
+     * Returns the ritual stars printed on this shaman.
+     *
+     * @return number of stars
+     */
     public int getStars() {
         return num_stars;
     }

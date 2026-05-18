@@ -73,6 +73,7 @@ class CliPrinterTest {
             assertTrue(rendering.contains("card top 0"));
             assertTrue(rendering.contains("card top 7"));
             assertTrue(rendering.contains("offer 1"));
+            assertTrue(rendering.contains("'pass'"));
             assertTrue(rendering.contains("cacciatore attivo"));
             assertTrue(rendering.contains("Shamanic Ritual Event"));
             assertTrue(rendering.contains("2 cibo per personaggio"));
@@ -87,5 +88,12 @@ class CliPrinterTest {
                 System.setProperty("mesos.cli.width", previousWidth);
             }
         }
+    }
+
+    @Test
+    void renderHelpIncludesPassCommand() {
+        CliPrinter printer = new CliPrinter();
+
+        assertTrue(printer.renderHelp().contains("pass | passa"));
     }
 }
