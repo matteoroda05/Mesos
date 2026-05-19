@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import it.polimi.ingsw.mesos.Model.Cards.*;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import org.junit.jupiter.api.BeforeAll;
