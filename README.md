@@ -6,7 +6,7 @@ From the repository root:
 
 ```bash
 cd Mesos
-./mvnw clean package
+./mvnw -q -DskipTests package
 ```
 
 This creates two runnable jars. You can double-click them to open a small game window, or run them from a terminal:
@@ -18,14 +18,14 @@ Open the server jar first:
 
 ```bash
 cd Mesos
-java -jar target/Mesos-1.0-SNAPSHOT-server.jar
+java -jar ./target/Mesos-1.0-SNAPSHOT-server.jar
 ```
 
 Then open the client jar:
 
 ```bash
 cd Mesos
-java -jar target/Mesos-1.0-SNAPSHOT-client.jar
+java -jar ./target/Mesos-1.0-SNAPSHOT-client.jar
 ```
 
 By default the server listens on socket port `12345` and RMI port `1099`.
