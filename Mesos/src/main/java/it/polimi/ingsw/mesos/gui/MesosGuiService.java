@@ -10,6 +10,7 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -76,9 +77,32 @@ public final class MesosGuiService implements AutoCloseable {
         return runAsync(() -> requireClient().getLobby());
     }
 
-    public CompletableFuture<GameOperationResult> createAndJoinGame(String gameName, int playerCount, String nickname) {
+    public CompletableFuture<GameOperationResult> chooseNickname(String nickname) {
+        return runAsync(() -> {
+            GameOperationResult nicknameResult = requireClient().nickname(new NicknameRequest(nickname));
+            if (nicknameResult.success() && !nicknameResult.rejoinAvailable()) {
+                currentGameName = null;
+                currentNickname = nickname;
+            }
+            return nicknameResult;
+        });
+    }
+
+    public CompletableFuture<GameOperationResult> rejoinGame(String nickname) {
+        return runAsync(() -> rejoinAndSubscribeInternal(requireClient(), nickname));
+    }
+
+    public void clearCurrentNickname() {
+        synchronized (stateLock) {
+            currentGameName = null;
+            currentNickname = null;
+        }
+    }
+
+    public CompletableFuture<GameOperationResult> createAndJoinGame(String gameName, int playerCount) {
         return runAsync(() -> {
             GameClient activeClient = requireClient();
+            String nickname = requireNickname();
             GameOperationResult createResult = activeClient.createGame(new CreateGameRequest(gameName, playerCount));
             if (!createResult.success()) {
                 return createResult;
@@ -88,8 +112,8 @@ public final class MesosGuiService implements AutoCloseable {
         });
     }
 
-    public CompletableFuture<GameOperationResult> joinGame(String gameName, String nickname) {
-        return runAsync(() -> joinAndSubscribeInternal(requireClient(), gameName, nickname));
+    public CompletableFuture<GameOperationResult> joinGame(String gameName) {
+        return runAsync(() -> joinAndSubscribeInternal(requireClient(), gameName, requireNickname()));
     }
 
     public CompletableFuture<GameOperationResult> refreshSnapshot() {
@@ -137,6 +161,31 @@ public final class MesosGuiService implements AutoCloseable {
             return joinResult;
         }
 
+        return subscribeToJoinedGame(activeClient, gameName, nickname, joinResult);
+    }
+
+    private GameOperationResult rejoinAndSubscribeInternal(GameClient activeClient, String nickname)
+            throws IOException {
+        GameOperationResult rejoinResult = activeClient.joinGame(new JoinGameRequest(null, nickname, true));
+        if (!rejoinResult.success()) {
+            return rejoinResult;
+        }
+
+        if (rejoinResult.snapshot() != null) {
+            return subscribeToJoinedGame(activeClient, rejoinResult.snapshot().gameName(), nickname, rejoinResult);
+        }
+
+        currentGameName = null;
+        currentNickname = nickname;
+        return rejoinResult;
+    }
+
+    private GameOperationResult subscribeToJoinedGame(
+            GameClient activeClient,
+            String gameName,
+            String nickname,
+            GameOperationResult joinResult
+    ) throws IOException {
         currentGameName = gameName;
         currentNickname = nickname;
 
@@ -146,7 +195,7 @@ public final class MesosGuiService implements AutoCloseable {
         );
         if (subscribeResult.success()) {
             GameSnapshot snapshot = snapshotOrFallback(subscribeResult, joinResult);
-            return GameOperationResult.success("Joined game", snapshot);
+            return GameOperationResult.success(joinResult.message(), snapshot, joinResult.lobbySnapshot());
         }
 
         GameSnapshot snapshot = snapshotOrFallback(subscribeResult, joinResult);
@@ -156,6 +205,14 @@ public final class MesosGuiService implements AutoCloseable {
                 snapshot,
                 subscribeResult.lobbySnapshot()
         );
+    }
+
+    private String requireNickname() {
+        String nickname = currentNickname;
+        if (nickname == null || nickname.isBlank()) {
+            throw new IllegalStateException("No nickname has been selected");
+        }
+        return nickname;
     }
 
     private GameSnapshot snapshotOrFallback(GameOperationResult preferred, GameOperationResult fallback) {

@@ -83,6 +83,7 @@ public final class MesosUserMessageMapper {
             case PLAYER_NAME_TAKEN -> "This nickname is already in use.";
             case PLAYER_NOT_IN_GAME -> "This player is not registered in the selected game.";
             case INVALID_LISTENER -> "Live updates could not be enabled. You can still use manual refresh.";
+            case NICKNAME_DISCONNECTED -> "This nickname belongs to a disconnected session.";
             case NONE -> null;
         };
     }

@@ -30,6 +30,11 @@
     -fx-background-color: transparent;
 }
 
+.board-top-bar {
+    -fx-alignment: center-left;
+    -fx-padding: 12 0 10 0;
+}
+
 .screen-shell {
     -fx-alignment: top-center;
     -fx-spacing: 22;
@@ -401,6 +406,12 @@
     -fx-background-color: transparent;
     -fx-padding: 0;
     -fx-spacing: 6;
+}
+
+.board-info-box {
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-padding: 14 16 14 16;
 }
 
 .deck-dock {

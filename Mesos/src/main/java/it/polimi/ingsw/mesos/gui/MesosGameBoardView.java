@@ -42,11 +42,6 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double MARKET_CARD_HEIGHT = 130;
     private static final double OFFER_TILE_WIDTH = 85;
     private static final double OFFER_TILE_HEIGHT = 130;
-    private static final double PREVIEW_CARD_WIDTH = 76;
-    private static final double PREVIEW_CARD_HEIGHT = 116;
-    private static final double TRACK_WIDTH = 232;
-    private static final double TRACK_HEIGHT = 204;
-
     private final String localNickname;
     private final MesosAssetResolver assetResolver;
     private final Runnable onRefresh;
@@ -63,12 +58,9 @@ public final class MesosGameBoardView extends BorderPane {
     private final Label phaseBadgeLabel;
     private final Label currentBadgeLabel;
     private final Label picksBadgeLabel;
-    private final StackPane tribeDockPane;
-    private final StackPane buildingDockPane;
     private final HBox topRowPane;
     private final HBox bottomRowPane;
     private final HBox offerTilesPane;
-    private final StackPane turnOrderTrackPane;
     private final VBox rankingBox;
     private final VBox minimalTurnBarPane;
     private final VBox totemWrapper;
@@ -113,15 +105,6 @@ public final class MesosGameBoardView extends BorderPane {
         this.currentBadgeLabel = badgeLabel("Active -");
         this.picksBadgeLabel = badgeLabel("Picks -");
 
-        this.tribeDockPane = new StackPane();
-        this.buildingDockPane = new StackPane();
-        this.tribeDockPane.getStyleClass().add("deck-dock-slot");
-        this.buildingDockPane.getStyleClass().add("deck-dock-slot");
-        this.tribeDockPane.setMinWidth(108);
-        this.tribeDockPane.setPrefWidth(108);
-        this.buildingDockPane.setMinWidth(108);
-        this.buildingDockPane.setPrefWidth(108);
-
         this.topRowPane = new HBox(4);
         this.bottomRowPane = new HBox(4);
         this.topRowPane.setAlignment(Pos.CENTER);
@@ -131,12 +114,6 @@ public final class MesosGameBoardView extends BorderPane {
 
         this.offerTilesPane = new HBox(0);
         this.offerTilesPane.setAlignment(Pos.CENTER_LEFT);
-
-        this.turnOrderTrackPane = new StackPane();
-        this.turnOrderTrackPane.getStyleClass().add("track-stage");
-        this.turnOrderTrackPane.setMinSize(TRACK_WIDTH, TRACK_HEIGHT);
-        this.turnOrderTrackPane.setPrefSize(TRACK_WIDTH, TRACK_HEIGHT);
-        this.turnOrderTrackPane.setMaxSize(TRACK_WIDTH, TRACK_HEIGHT);
 
         this.rankingBox = new VBox(8);
         this.rankingBox.getStyleClass().add("ranking-box");
@@ -175,7 +152,6 @@ public final class MesosGameBoardView extends BorderPane {
 
         rebuildMarketRows();
         rebuildOfferTiles();
-        rebuildTurnOrder();
         rebuildRanking();
         rebuildMinimalTurnBar();
         rebuildTotemWrapper();
@@ -358,18 +334,6 @@ public final class MesosGameBoardView extends BorderPane {
         return badge;
     }
 
-    private Label statusPill(String text) {
-        Label badge = new Label(text);
-        badge.getStyleClass().add("status-pill");
-        return badge;
-    }
-
-    private Label offerDetailPill(String text) {
-        Label badge = new Label(text);
-        badge.getStyleClass().add("offer-detail-pill");
-        return badge;
-    }
-
     private void rebuildMarketRows() {
         renderSnapshotRow(topRowPane, snapshot.topRow(), true);
         renderSnapshotRow(bottomRowPane, snapshot.bottomRow(), false);
@@ -396,52 +360,6 @@ public final class MesosGameBoardView extends BorderPane {
         if (targetRow.getChildren().isEmpty()) {
             targetRow.getChildren().add(buildEmptyState("No cards available."));
         }
-    }
-
-    private Node buildDeckDock(boolean topRow) {
-        StackPane stack = new StackPane();
-        stack.getStyleClass().add("deck-stack");
-        stack.setPrefSize(100, 126);
-
-        Optional<Image> mainBack = topRow
-                ? assetResolver.resolveTribeBack(snapshot.currentEra())
-                : assetResolver.resolveBuildingBack(snapshot.currentEra());
-        Optional<Image> infoCard = topRow
-                ? assetResolver.resolveRoundEventInfo()
-                : assetResolver.resolveEndGameInfo();
-
-        Node front = buildOffsetCard(mainBack,
-                topRow ? "Tribe deck" : "Building deck",
-                PREVIEW_CARD_WIDTH,
-                PREVIEW_CARD_HEIGHT,
-                10,
-                0);
-        Node back = buildOffsetCard(infoCard,
-                topRow ? "Round event" : "End-game info",
-                62,
-                90,
-                -12,
-                -12);
-
-        stack.getChildren().addAll(back, front);
-        VBox dock = new VBox(stack);
-        dock.getStyleClass().add("deck-dock");
-        dock.setAlignment(Pos.CENTER);
-        return dock;
-    }
-
-    private Node buildOffsetCard(
-            Optional<Image> image,
-            String placeholderTitle,
-            double width,
-            double height,
-            double translateX,
-            double translateY
-    ) {
-        StackPane card = buildSurfaceArt(image, width, height, placeholderTitle, "");
-        card.setTranslateX(translateX);
-        card.setTranslateY(translateY);
-        return card;
     }
 
     private void rebuildOfferTiles() {
@@ -489,14 +407,6 @@ public final class MesosGameBoardView extends BorderPane {
                 + "\nFood gain: " + tile.foodGain()
                 + "\n" + (tile.available() ? "Available" : "Chosen by " + safeText(tile.occupantNickname()))));
         return tileNode;
-    }
-
-    private void rebuildTurnOrder() {
-        if (turnOrderTrackPane.getParent() != null) {
-            // Legacy code - turn order track is no longer used in minimal bar design
-            turnOrderTrackPane.getChildren().clear();
-        }
-        // Minimal turn order bar is rebuilt dynamically in buildCenterBand when snapshot updates
     }
 
     private VBox buildMinimalTurnOrderBar() {
@@ -575,78 +485,6 @@ public final class MesosGameBoardView extends BorderPane {
 
         entry.getChildren().add(nameLabel);
         return entry;
-    }
-
-    private Node buildTurnOrderRow(TurnOrderSpaceSummary space) {
-        boolean active = space.occupantNickname() != null
-                && space.occupantNickname().equals(snapshot.currentPlayerNickname());
-        boolean localSeat = space.occupantNickname() != null
-                && space.occupantNickname().equals(localNickname);
-
-        HBox row = new HBox(8);
-        row.getStyleClass().add("turn-order-row");
-        if (active) {
-            row.getStyleClass().add("turn-order-row-active");
-        }
-        if (space.occupantNickname() == null) {
-            row.getStyleClass().add("turn-order-row-empty");
-        }
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMinWidth(TRACK_WIDTH);
-        row.setPrefWidth(TRACK_WIDTH);
-
-        Label slotLabel = new Label(Integer.toString(space.index() + 1));
-        slotLabel.getStyleClass().add("turn-order-index");
-
-        Node token = space.occupantNickname() == null
-                ? buildEmptyTurnToken(24)
-                : buildTotem(space.occupantColor(), 24);
-
-        String nickname = space.occupantNickname() == null
-                ? "Empty slot"
-                : space.occupantNickname() + (localSeat ? " | You" : "");
-        Label nameLabel = new Label(nickname);
-        nameLabel.getStyleClass().add(space.occupantNickname() == null ? "details-label" : "card-title");
-        nameLabel.setMaxWidth(86);
-        nameLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        row.getChildren().addAll(
-                slotLabel,
-                token,
-                nameLabel,
-                spacer,
-                offerDetailPill(signed(space.foodBonus()) + " F")
-        );
-        if (active) {
-            row.getChildren().add(statusPill("Turn"));
-        }
-
-        Tooltip.install(row, new Tooltip("Turn order slot #" + (space.index() + 1)
-                + "\nFood bonus: " + signed(space.foodBonus())
-                + "\nOccupant: " + safeText(space.occupantNickname())));
-        return row;
-    }
-
-    private Node buildMiniPlaceholder(String text) {
-        Label label = new Label(text);
-        label.getStyleClass().add("details-label");
-
-        StackPane pane = new StackPane(label);
-        pane.getStyleClass().add("empty-state");
-        pane.setPadding(new Insets(8, 10, 8, 10));
-        return pane;
-    }
-
-    private Node buildEmptyTurnToken(double size) {
-        StackPane token = new StackPane();
-        token.getStyleClass().addAll("track-token", "track-token-empty");
-        token.setMinSize(size, size);
-        token.setPrefSize(size, size);
-        token.setMaxSize(size, size);
-        return token;
     }
 
     private void rebuildRanking() {
@@ -898,7 +736,4 @@ public final class MesosGameBoardView extends BorderPane {
         return spacer;
     }
 
-    private String signed(int value) {
-        return value >= 0 ? "+" + value : Integer.toString(value);
-    }
 }
