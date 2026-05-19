@@ -63,7 +63,7 @@ public class EventState extends GameState {
                 } else {
                     buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
                 }
-                outcome.forEach((player, result) -> {controller.playerApplyOutcome(result, player);});
+                outcome.forEach((player, result) -> controller.playerApplyOutcome(result, player));
             }
         }
 

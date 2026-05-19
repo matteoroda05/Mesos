@@ -151,6 +151,16 @@ public class ModelController {
     }
 
     /**
+     * Finds the buildings of the player with the specified trigger
+     * @param c player color
+     * @param trigger building trigger
+     * @return list of buildings
+     */
+    public List<BuildingCard> getPlayerBuildings(Color c, BuildingTrigger trigger) {
+        return game_context.getPlayer(c).getTribe().getBuildingsWithTrigger(trigger);
+    }
+
+    /**
      * Returns the turn-order tile for this game.
      *
      * @return turn-order tile
