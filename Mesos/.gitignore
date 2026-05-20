@@ -39,7 +39,3 @@ build/
 ### Mac OS ###
 .DS_Store
 
-### Local generated notes ###
-GUI_DEBUG_GUIDE.txt
-GUI_SPIEGAZIONE_COMPLETA.txt
-MODIFIED_FILES_GUI_SUMMARY.txt
