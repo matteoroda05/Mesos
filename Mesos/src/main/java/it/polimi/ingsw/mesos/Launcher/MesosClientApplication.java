@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Launcher;
 
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.gui.MesosAssetResolver;
 import it.polimi.ingsw.mesos.gui.MesosGuiFlowController;
 import it.polimi.ingsw.mesos.gui.MesosGuiScreenFactory;
@@ -10,14 +11,27 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 public final class MesosClientApplication extends Application implements MesosGuiFlowController.Host {
     private final MesosGuiService guiService = new MesosGuiService();
@@ -115,6 +129,65 @@ public final class MesosClientApplication extends Application implements MesosGu
         return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 
+    @Override
+    public Color showTotemSelection(String title, String gameName, Set<Color> takenColors, Color selectedColor) {
+        Dialog<Color> dialog = new Dialog<>();
+        dialog.initOwner(stage);
+        dialog.setTitle("MESOS");
+        dialog.setHeaderText(title);
+        dialog.getDialogPane().getStyleClass().add("totem-dialog-pane");
+        applyStylesheet(dialog.getDialogPane());
+
+        ButtonType confirmType = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(confirmType, ButtonType.CANCEL);
+
+        Label intro = new Label("Choose a totem for " + gameName + ". Unavailable colors are disabled and the list refreshes if another player reserves one first.");
+        intro.getStyleClass().add("details-label");
+        intro.setWrapText(true);
+
+        ToggleGroup toggleGroup = new ToggleGroup();
+        Map<ToggleButton, Color> colorsByButton = new LinkedHashMap<>();
+        FlowPane choices = new FlowPane(12, 12);
+        choices.getStyleClass().add("totem-dialog-grid");
+        choices.setAlignment(Pos.CENTER);
+
+        for (Color color : Color.values()) {
+            ToggleButton button = buildTotemChoiceButton(color);
+            button.setToggleGroup(toggleGroup);
+            button.setDisable(takenColors != null && takenColors.contains(color));
+            if (color == selectedColor && !button.isDisable()) {
+                button.setSelected(true);
+            }
+            colorsByButton.put(button, color);
+            choices.getChildren().add(button);
+        }
+
+        Label footer = new Label("You can choose a different totem in another match.");
+        footer.getStyleClass().add("details-label");
+        footer.setWrapText(true);
+
+        VBox content = new VBox(14, intro, choices, footer);
+        content.getStyleClass().add("totem-dialog-content");
+        dialog.getDialogPane().setContent(content);
+
+        Button confirmButton = (Button) dialog.getDialogPane().lookupButton(confirmType);
+        confirmButton.getStyleClass().add("primary-button");
+        confirmButton.disableProperty().bind(toggleGroup.selectedToggleProperty().isNull());
+
+        Button cancelButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL);
+        cancelButton.getStyleClass().add("secondary-button");
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType != confirmType) {
+                return null;
+            }
+            ToggleButton selectedButton = (ToggleButton) toggleGroup.getSelectedToggle();
+            return colorsByButton.get(selectedButton);
+        });
+
+        return dialog.showAndWait().orElse(null);
+    }
+
     private Node buildStatusBar() {
         HBox bar = new HBox(statusBarLabel);
         bar.setAlignment(Pos.CENTER_LEFT);
@@ -138,9 +211,57 @@ public final class MesosClientApplication extends Application implements MesosGu
     }
 
     private void applyStylesheet(Scene scene) {
+        if (scene == null) {
+            return;
+        }
         var stylesheet = MesosClientApplication.class.getResource("/it/polimi/ingsw/mesos/gui/mesos-gui.css");
         if (stylesheet != null) {
             scene.getStylesheets().add(stylesheet.toExternalForm());
         }
+    }
+
+    private void applyStylesheet(DialogPane dialogPane) {
+        if (dialogPane == null) {
+            return;
+        }
+        var stylesheet = MesosClientApplication.class.getResource("/it/polimi/ingsw/mesos/gui/mesos-gui.css");
+        if (stylesheet != null && !dialogPane.getStylesheets().contains(stylesheet.toExternalForm())) {
+            dialogPane.getStylesheets().add(stylesheet.toExternalForm());
+        }
+    }
+
+    private ToggleButton buildTotemChoiceButton(Color color) {
+        Label nameLabel = new Label(formatTotemName(color));
+        nameLabel.getStyleClass().add("subsection-title");
+
+        VBox graphic = new VBox(8);
+        graphic.setAlignment(Pos.CENTER);
+        assetResolver.resolveTotem(color).ifPresent(image -> {
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(58);
+            imageView.setFitHeight(58);
+            imageView.setPreserveRatio(true);
+            graphic.getChildren().add(imageView);
+        });
+        graphic.getChildren().add(nameLabel);
+
+        ToggleButton button = new ToggleButton();
+        button.getStyleClass().add("totem-option-button");
+        button.setGraphic(graphic);
+        button.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        button.setMinWidth(112);
+        button.setPrefWidth(112);
+        button.setMinHeight(112);
+        return button;
+    }
+
+    private String formatTotemName(Color color) {
+        return switch (color) {
+            case BLUE -> "Blue";
+            case ORANGE -> "Orange";
+            case BLACK -> "Purple";
+            case WHITE -> "White";
+            case YELLOW -> "Yellow";
+        };
     }
 }

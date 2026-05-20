@@ -163,6 +163,18 @@ public class RmiGameClient implements GameClient {
     }
 
     /**
+     * Sends a color choice through RMI.
+     *
+     * @param request color-choice request
+     * @return operation result from the server
+     * @throws IOException if the remote call fails
+     */
+    @Override
+    public GameOperationResult chooseColor(ChooseColorRequest request) throws IOException {
+        return remoteServer.chooseColor(request);
+    }
+
+    /**
      * Sends a pass request through RMI.
      *
      * @param request pass request

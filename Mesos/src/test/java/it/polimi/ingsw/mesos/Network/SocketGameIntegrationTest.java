@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
@@ -74,6 +75,23 @@ class SocketGameIntegrationTest {
                     observerClient,
                     "socket-open-room",
                     "socket-full-room"
+            );
+        }
+    }
+
+    @Test
+    void socketClientsHonorWaitingRoomColorSelectionBeforeGameStart() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        try (SocketGameServer socketServer = new SocketGameServer(serverCore, 0);
+             GameClient aliceClient = GameClientFactory.connect(ServerEndpoint.socket("127.0.0.1", socketServer.getPort()));
+             GameClient bobClient = GameClientFactory.connect(ServerEndpoint.socket("127.0.0.1", socketServer.getPort()));
+             GameClient carolClient = GameClientFactory.connect(ServerEndpoint.socket("127.0.0.1", socketServer.getPort()))) {
+            NetworkTestSupport.assertWaitingRoomColorSelection(
+                    aliceClient,
+                    bobClient,
+                    carolClient,
+                    "socket-color-room"
             );
         }
     }
@@ -359,6 +377,11 @@ class SocketGameIntegrationTest {
         @Override
         public GameOperationResult chooseCard(ChooseCardRequest request) {
             return GameOperationResult.success("card", null);
+        }
+
+        @Override
+        public GameOperationResult chooseColor(ChooseColorRequest request) {
+            return GameOperationResult.success("color", null);
         }
 
         @Override

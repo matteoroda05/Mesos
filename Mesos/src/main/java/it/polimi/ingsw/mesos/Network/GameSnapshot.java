@@ -24,6 +24,8 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
  *                           active
  * @param remainingTopChoices remaining choices from the top row
  * @param remainingBottomChoices remaining choices from the bottom row
+ * @param reservedColors colors already reserved in this game before start,
+ *                       normalized to an immutable empty list when null
  * @param players player summaries, normalized to an immutable empty list when
  *                null
  * @param offerTiles offer tile summaries, normalized to an immutable empty list
@@ -48,6 +50,7 @@ public record GameSnapshot(
         Color currentPlayerColor,
         int remainingTopChoices,
         int remainingBottomChoices,
+        List<Color> reservedColors,
         List<PlayerSummary> players,
         List<OfferTileSummary> offerTiles,
         List<TurnOrderSpaceSummary> turnOrder,
@@ -79,6 +82,7 @@ public record GameSnapshot(
         if (currentRound < 0) {
             throw new IllegalArgumentException("currentRound cannot be negative");
         }
+        reservedColors = reservedColors == null ? List.of() : List.copyOf(reservedColors);
         players = players == null ? List.of() : List.copyOf(players);
         offerTiles = offerTiles == null ? List.of() : List.copyOf(offerTiles);
         turnOrder = turnOrder == null ? List.of() : List.copyOf(turnOrder);

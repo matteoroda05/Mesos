@@ -12,6 +12,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.Tooltip;
@@ -321,11 +322,22 @@ public final class MesosGameBoardView extends BorderPane {
         VBox statsSection = new VBox(6, metaWrap);
         statsSection.setMaxWidth(650);
 
-        VBox infoPanel = new VBox(12, titleSection, statsSection, turnLabel, actionHintLabel);
+        FlowPane actionRow = new FlowPane(8, 8, buildInfoActionButton("Refresh", onRefresh), buildInfoActionButton("Disconnect", onDisconnect));
+        actionRow.getStyleClass().add("board-action-row");
+        actionRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox infoPanel = new VBox(12, titleSection, statsSection, turnLabel, actionHintLabel, actionRow);
         infoPanel.getStyleClass().add("info-panel");
         infoPanel.setAlignment(Pos.TOP_LEFT);
         infoPanel.setMaxWidth(650);
         return infoPanel;
+    }
+
+    private Button buildInfoActionButton(String text, Runnable action) {
+        Button button = new Button(text);
+        button.getStyleClass().addAll("secondary-button", "board-action-button");
+        button.setOnAction(event -> action.run());
+        return button;
     }
 
     private Label badgeLabel(String text) {

@@ -6,7 +6,14 @@ import java.io.InputStreamReader;
 import java.util.Locale;
 
 import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
@@ -383,8 +390,7 @@ public final class MesosCliClient {
 
     /**
      * Runs the in-game command prompt until the user quits.
-     * Empty commands are rejected in this loop even though the help text
-     * describes refresh behavior for Enter.
+     * Pressing Enter with no command refreshes the latest snapshot.
      *
      * @param client connected game client
      * @throws IOException if command input or network calls fail
@@ -395,7 +401,8 @@ public final class MesosCliClient {
         while (true) {
             String command = promptRaw("mesos> ").trim();
             if (command.isEmpty()) {
-                printLine("Comando non puo' essere vuoto.");
+                refreshSnapshot(client);
+                printSnapshotIfAvailable();
                 continue;
             }
             if (command.equalsIgnoreCase("refresh") || command.equalsIgnoreCase("poll")) {
@@ -467,12 +474,6 @@ public final class MesosCliClient {
                 boolean topRow = parseRow(tokens[1]);
                 int cardIndex = parseInt(tokens[2], "l'indice carta");
                 handleResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
-            }
-            case "pass", "passa" -> {
-                if (tokens.length != 1) {
-                    throw new IllegalArgumentException("usa: pass");
-                }
-                handleResult(client.pass(new PassRequest(gameName, nickname)));
             }
             default -> throw new IllegalArgumentException("comando sconosciuto '" + tokens[0] + "'");
         }

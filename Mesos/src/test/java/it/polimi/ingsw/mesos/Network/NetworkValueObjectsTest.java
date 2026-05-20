@@ -41,8 +41,9 @@ class NetworkValueObjectsTest {
         assertThrows(IllegalArgumentException.class, () -> snapshot("game", 2, 0, GameStatus.LOGIN, -1));
 
         GameSnapshot snapshot = new GameSnapshot("game", 2, 1, false, false, GameStatus.LOGIN, 0,
-                Era.FIRST, null, null, 0, 0, null, null, null, null, null);
+                Era.FIRST, null, null, 0, 0, null, null, null, null, null, null);
 
+        assertTrue(snapshot.reservedColors().isEmpty());
         assertTrue(snapshot.players().isEmpty());
         assertTrue(snapshot.offerTiles().isEmpty());
         assertTrue(snapshot.turnOrder().isEmpty());
@@ -56,9 +57,10 @@ class NetworkValueObjectsTest {
         players.add(new PlayerSummary("Alice", Color.BLUE, 1, 2, 3, 4));
 
         GameSnapshot snapshot = new GameSnapshot("game", 2, 1, false, false, GameStatus.LOGIN, 0,
-                Era.FIRST, null, null, 0, 0, players, List.of(), List.of(), List.of(), List.of());
+                Era.FIRST, null, null, 0, 0, List.of(Color.BLUE), players, List.of(), List.of(), List.of(), List.of());
 
         players.add(new PlayerSummary("Bob", Color.YELLOW, 0, 0, 0, 0));
+        assertEquals(List.of(Color.BLUE), snapshot.reservedColors());
         assertEquals(1, snapshot.players().size());
         assertThrows(UnsupportedOperationException.class,
                 () -> snapshot.players().add(new PlayerSummary("Carol", Color.ORANGE, 0, 0, 0, 0)));
@@ -171,6 +173,6 @@ class NetworkValueObjectsTest {
 
     private static GameSnapshot snapshot(String gameName, int playerCount, int joinedPlayers, GameStatus status, int round) {
         return new GameSnapshot(gameName, playerCount, joinedPlayers, false, false, status, round, Era.FIRST,
-                null, null, 0, 0, List.of(), List.of(), List.of(), List.of(), List.of());
+                null, null, 0, 0, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
     }
 }

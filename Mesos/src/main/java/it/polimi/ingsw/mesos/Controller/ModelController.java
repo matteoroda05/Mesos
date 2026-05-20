@@ -354,7 +354,9 @@ public class ModelController {
      */
     public void restoreSkippedPlayer(Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        Result placing_result = this.game_context.getGameTable().getTurnOrderTile().placeTotem(player_color);
+        GameTable gameTable = this.game_context.getGameTable();
+        gameTable.getOfferTrack().clearOccupantByColor(player_color);
+        Result placing_result = gameTable.getTurnOrderTile().placeTotem(player_color);
         playerApplyOutcome(placing_result, player_color);
     }
 

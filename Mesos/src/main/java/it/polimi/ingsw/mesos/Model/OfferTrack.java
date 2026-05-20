@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import it.polimi.ingsw.mesos.Globals;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 
 public class OfferTrack {
@@ -111,6 +112,28 @@ public class OfferTrack {
         }
 
         return tile;
+    }
+
+    /**
+     * Clears the first occupied offer tile that contains the given player
+     * color, if present.
+     *
+     * @param playerColor color to remove from the offer track
+     * @throws IllegalArgumentException if the player color is null
+     */
+    public void clearOccupantByColor(Color playerColor) {
+        ensureTilesInitialized();
+
+        if (playerColor == null) {
+            throw new IllegalArgumentException("playerColor cannot be null");
+        }
+
+        for (OfferTile tile : tiles) {
+            if (playerColor.equals(tile.getOccupant())) {
+                tile.clear();
+                return;
+            }
+        }
     }
     
     // TODO: remove since constructor ensures tiles is never null since its never modified

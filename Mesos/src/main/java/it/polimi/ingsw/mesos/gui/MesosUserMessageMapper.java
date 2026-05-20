@@ -82,6 +82,8 @@ public final class MesosUserMessageMapper {
             case GAME_FULL -> "The selected game is already full.";
             case PLAYER_NAME_TAKEN -> "This nickname is already in use.";
             case PLAYER_NOT_IN_GAME -> "This player is not registered in the selected game.";
+            case COLOR_ALREADY_TAKEN -> "That color has already been chosen by another player.";
+            case COLOR_SELECTION_CLOSED -> "Color selection is closed because the game has already started.";
             case INVALID_LISTENER -> "Live updates could not be enabled. You can still use manual refresh.";
             case NICKNAME_DISCONNECTED -> "This nickname belongs to a disconnected session.";
             case NONE -> null;
@@ -131,6 +133,12 @@ public final class MesosUserMessageMapper {
         }
         if (lower.contains("carta scelta")) {
             return "Card selected.";
+        }
+        if (lower.contains("colore riservato") && lower.contains("partita inizia")) {
+            return "Color selected. The match is starting.";
+        }
+        if (lower.contains("colore riservato")) {
+            return "Color selected.";
         }
         if (lower.contains("iscrizione agli aggiornamenti attiva")) {
             return "Live updates enabled.";

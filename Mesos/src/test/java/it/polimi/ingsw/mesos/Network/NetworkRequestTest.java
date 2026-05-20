@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Network;
 
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
@@ -12,6 +13,7 @@ import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +41,10 @@ class NetworkRequestTest {
         assertThrows(IllegalArgumentException.class, () -> new ChooseCardRequest(null, "Alice", 0, true));
         assertThrows(IllegalArgumentException.class, () -> new ChooseCardRequest("game", null, 0, true));
         assertThrows(IllegalArgumentException.class, () -> new ChooseCardRequest("game", "Alice", -1, true));
+
+        assertThrows(IllegalArgumentException.class, () -> new ChooseColorRequest(null, "Alice", Color.BLUE));
+        assertThrows(IllegalArgumentException.class, () -> new ChooseColorRequest("game", null, Color.BLUE));
+        assertThrows(IllegalArgumentException.class, () -> new ChooseColorRequest("game", "Alice", null));
 
         assertThrows(IllegalArgumentException.class, () -> new PassRequest(null, "Alice"));
         assertThrows(IllegalArgumentException.class, () -> new PassRequest("game", null));
@@ -72,6 +78,7 @@ class NetworkRequestTest {
         assertEquals("snapshot", new SnapshotRequest("game").requestToService(service, null).message());
         assertEquals("offer", new ChooseOfferRequest("game", "Alice", 0).requestToService(service, null).message());
         assertEquals("card", new ChooseCardRequest("game", "Alice", 0, true).requestToService(service, null).message());
+        assertEquals("color", new ChooseColorRequest("game", "Alice", Color.BLUE).requestToService(service, null).message());
         assertEquals("pass", new PassRequest("game", "Alice").requestToService(service, null).message());
         assertEquals("heartbeat", new HeartbeatRequest("Alice").requestToService(service, null).message());
         assertEquals("heartbeat", new HeartbeatRequest("game", "Alice", true).requestToService(service, null).message());
@@ -89,6 +96,7 @@ class NetworkRequestTest {
         @Override public GameOperationResult getSnapshot(SnapshotRequest request) { return GameOperationResult.success("snapshot", null); }
         @Override public GameOperationResult chooseOffer(ChooseOfferRequest request) { return GameOperationResult.success("offer", null); }
         @Override public GameOperationResult chooseCard(ChooseCardRequest request) { return GameOperationResult.success("card", null); }
+        @Override public GameOperationResult chooseColor(ChooseColorRequest request) { return GameOperationResult.success("color", null); }
         @Override public GameOperationResult pass(PassRequest request) { return GameOperationResult.success("pass", null); }
         @Override public GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateSink updateSink) { return GameOperationResult.failure("subscribe", null); }
         @Override public GameOperationResult unsubscribe(UnsubscribeGameRequest request, GameUpdateSink updateSink) { return GameOperationResult.failure("unsubscribe", null); }

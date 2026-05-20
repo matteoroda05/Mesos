@@ -150,6 +150,10 @@
     -fx-alignment: top-left;
 }
 
+.board-action-row {
+    -fx-alignment: top-left;
+}
+
 .field-box {
     -fx-min-width: 170;
 }
@@ -641,4 +645,53 @@
 .waiting-player-row {
     -fx-background-color: rgba(30, 18, 40, 0.88);
     -fx-border-color: rgba(255, 176, 92, 0.12);
+}
+
+.board-action-button {
+    -fx-padding: 8 14 8 14;
+}
+
+.totem-dialog-pane {
+    -fx-background-color: rgba(18, 12, 28, 0.98);
+}
+
+.totem-dialog-pane > *.header-panel {
+    -fx-background-color: linear-gradient(to right, rgba(255, 158, 66, 0.18), rgba(76, 194, 200, 0.14));
+}
+
+.totem-dialog-pane .header-panel .label {
+    -fx-text-fill: -mesos-text;
+}
+
+.totem-dialog-pane .content.label {
+    -fx-text-fill: -mesos-muted;
+}
+
+.totem-dialog-content {
+    -fx-padding: 4 0 2 0;
+}
+
+.totem-dialog-grid {
+    -fx-alignment: center;
+}
+
+.totem-option-button {
+    -fx-background-color: rgba(30, 18, 40, 0.96);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 12;
+}
+
+.totem-option-button:hover {
+    -fx-background-color: rgba(46, 28, 58, 1.0);
+}
+
+.totem-option-button:selected {
+    -fx-background-color: linear-gradient(to right, -mesos-primary, -mesos-primary-soft);
+    -fx-border-color: rgba(255, 224, 184, 0.40);
+}
+
+.totem-option-button:disabled {
+    -fx-opacity: 0.42;
 }

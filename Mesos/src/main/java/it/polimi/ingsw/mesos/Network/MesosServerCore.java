@@ -234,7 +234,7 @@ public class MesosServerCore implements MesosServerService {
             );
         }
 
-        return session.join(request.nickname(), gameSetup);
+        return session.join(request.nickname());
     }
 
     /**
@@ -295,7 +295,27 @@ public class MesosServerCore implements MesosServerService {
     }
 
     /**
-     * Applies a pass command to a game session.
+     * Reserves a pre-game color for a joined player.
+     *
+     * @param request color-choice request
+     * @return operation result, including GAME_NOT_FOUND for missing games
+     */
+    @Override
+    public synchronized GameOperationResult chooseColor(ChooseColorRequest request) {
+        GameSession session = sessions.get(request.gameName());
+        if (session == null) {
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
+        }
+        return session.chooseColor(request.nickname(), request.color());
+    }
+
+    /**
+     * Rejects manual pass requests; only resilience may skip turns
+     * automatically for disconnected players.
      *
      * @param request pass request
      * @return operation result, including GAME_NOT_FOUND for missing games
@@ -527,25 +547,16 @@ public class MesosServerCore implements MesosServerService {
          * becomes full.
          *
          * @param nickname joining nickname
-         * @param gameSetup setup helper used to create players at start
          * @return operation result with a snapshot and update publication
          */
-        private GameOperationResult join(String nickname, GameSetup gameSetup) {
+        private GameOperationResult join(String nickname) {
             joinedNicknames.add(nickname);
             markConnected(nickname);
-
-            if (joinedNicknames.size() == context.getGameSize()) {
-                gameSetup.createMapOfPlayers(context, joinedNicknames);
-                controller = new GameFlowController(context);
-                colorsByNickname.clear();
-                for (Player player : context.getPlayers()) {
-                    colorsByNickname.put(player.getNickname(), player.getColor());
-                }
-            }
+            boolean startedNow = startGameIfFull();
 
             return GameOperationResult.success(
-                    started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby",
-                    publishAndSnapshot(started() ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby")
+                    startedNow ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby",
+                    publishAndSnapshot(startedNow ? "Giocatore entrato: la partita inizia" : "Giocatore entrato nella lobby")
             );
         }
 
@@ -593,6 +604,34 @@ public class MesosServerCore implements MesosServerService {
         }
 
         /**
+         * Builds model players from the joined lobby and creates the game
+         * controller exactly once.
+         *
+         * @return true when the controller was created by this call
+         */
+        private boolean startGameIfFull() {
+            if (started() || !isFull()) {
+                return false;
+            }
+
+            Map<String, Color> joinedReservedColors = new LinkedHashMap<>();
+            for (String joinedNickname : joinedNicknames) {
+                Color reservedColor = colorsByNickname.get(joinedNickname);
+                if (reservedColor != null) {
+                    joinedReservedColors.put(joinedNickname, reservedColor);
+                }
+            }
+
+            gameSetup.createMapOfPlayers(context, joinedNicknames, joinedReservedColors);
+            controller = new GameFlowController(context);
+            colorsByNickname.clear();
+            for (Player player : context.getPlayers()) {
+                colorsByNickname.put(player.getNickname(), player.getColor());
+            }
+            return true;
+        }
+
+        /**
          * Builds a lobby summary for this not-yet-started game.
          *
          * @return lobby game summary with available seats
@@ -603,6 +642,57 @@ public class MesosServerCore implements MesosServerService {
                     context.getGameSize(),
                     joinedNicknames.size(),
                     context.getGameSize() - joinedNicknames.size()
+            );
+        }
+
+        /**
+         * Reserves or changes a player's pre-game color selection.
+         * Joined players may update their color while the lobby is open, and a
+         * nickname already reserved through the nickname flow may also reserve
+         * a color before joining the waiting room.
+         *
+         * @param nickname player making the request
+         * @param color requested color
+         * @return operation result with the updated pre-start snapshot
+         */
+        private GameOperationResult chooseColor(String nickname, Color color) {
+            if (started()) {
+                return GameOperationResult.failure(
+                        "La scelta del colore e' chiusa",
+                        OperationErrorCode.COLOR_SELECTION_CLOSED,
+                        toSnapshot()
+                );
+            }
+            boolean joinedPlayer = joinedNicknames.contains(nickname);
+            boolean waitingRoomReservation = !joinedPlayer
+                    && takenNicknames.contains(nickname)
+                    && !hasNicknameJoined(nickname)
+                    && !disconnectedGameByNickname.containsKey(nickname)
+                    && !isFull();
+            if (!joinedPlayer && !waitingRoomReservation) {
+                return GameOperationResult.failure(
+                        "Il giocatore '" + nickname + "' non e' presente nella partita",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        toSnapshot()
+                );
+            }
+
+            markConnected(nickname);
+
+            for (Map.Entry<String, Color> entry : colorsByNickname.entrySet()) {
+                if (!entry.getKey().equals(nickname) && entry.getValue() == color) {
+                    return GameOperationResult.failure(
+                        "Il colore '" + color + "' e' gia' stato scelto",
+                            OperationErrorCode.COLOR_ALREADY_TAKEN,
+                            toSnapshot()
+                    );
+                }
+            }
+
+            colorsByNickname.put(nickname, color);
+            return GameOperationResult.success(
+                    "Colore riservato",
+                    publishAndSnapshot("Colore riservato: " + nickname)
             );
         }
 
@@ -682,8 +772,8 @@ public class MesosServerCore implements MesosServerService {
         }
 
         /**
-         * Applies a pass command after checking game state, player membership
-         * and resilience blocking rules.
+         * Rejects manual pass commands after checking game state and player
+         * membership.
          *
          * @param nickname requesting player nickname
          * @return operation result with updated snapshot or validation failure
@@ -706,15 +796,10 @@ public class MesosServerCore implements MesosServerService {
                 return blocked;
             }
 
-            try {
-                controller.pass(playerColor);
-                return GameOperationResult.success(
-                        "Turno passato",
-                        publishAndSnapshot("Turno passato")
-                );
-            } catch (RuntimeException exception) {
-                return GameOperationResult.failure(exception.getMessage(), toSnapshot());
-            }
+            return GameOperationResult.failure(
+                    "Il turno non puo' essere passato manualmente: il server salta turni solo automaticamente per giocatori disconnessi.",
+                    toSnapshot()
+            );
         }
 
         /**
@@ -896,6 +981,9 @@ public class MesosServerCore implements MesosServerService {
          * @param nickname connected nickname
          */
         private void markPlayerConnected(String nickname) {
+            if (!started()) {
+                return;
+            }
             Color color = colorsByNickname.get(nickname);
             if (color == null) {
                 return;
@@ -917,6 +1005,9 @@ public class MesosServerCore implements MesosServerService {
          * @param nickname disconnected nickname
          */
         private void markPlayerDisconnected(String nickname) {
+            if (!started()) {
+                return;
+            }
             Color color = colorsByNickname.get(nickname);
             if (color == null) {
                 return;
@@ -987,12 +1078,17 @@ public class MesosServerCore implements MesosServerService {
                     activeColor,
                     currentState == null ? 0 : currentState.getRemainingTopChoices(),
                     currentState == null ? 0 : currentState.getRemainingBottomChoices(),
+                    reservedColors(),
                     summarizePlayers(),
                     summarizeOfferTiles(),
                     summarizeTurnOrder(),
                     summarizeRow(context.getGameTable().getTopRow()),
                     summarizeRow(context.getGameTable().getBottomRow())
             );
+        }
+
+        private List<Color> reservedColors() {
+            return colorsByNickname.values().stream().distinct().toList();
         }
 
         /**
@@ -1050,7 +1146,7 @@ public class MesosServerCore implements MesosServerService {
         private List<PlayerSummary> summarizePlayers() {
             if (!started()) {
                 return joinedNicknames.stream()
-                        .map(nickname -> new PlayerSummary(nickname, null, 0, 0, 0, 0))
+                        .map(nickname -> new PlayerSummary(nickname, colorsByNickname.get(nickname), 0, 0, 0, 0))
                         .toList();
             }
 

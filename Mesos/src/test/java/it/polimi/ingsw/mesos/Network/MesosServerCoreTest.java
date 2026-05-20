@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
@@ -27,6 +28,7 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 class MesosServerCoreTest {
     @Test
@@ -60,6 +62,34 @@ class MesosServerCoreTest {
         GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("local-core"));
         assertTrue(snapshot.success());
         assertEquals(2, snapshot.snapshot().players().size());
+    }
+
+    @Test
+    void reservedColorBeforeFinalJoinIsAppliedWhenTheGameStarts() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("color-start-room", 2)).success());
+        assertTrue(serverCore.nickname(new NicknameRequest("Alice")).success());
+        assertTrue(serverCore.nickname(new NicknameRequest("Bob")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("color-start-room", "Alice")).success());
+
+        GameOperationResult reserveColor =
+                serverCore.chooseColor(new ChooseColorRequest("color-start-room", "Bob", Color.BLACK));
+
+        assertTrue(reserveColor.success());
+        assertEquals(GameStatus.LOGIN, reserveColor.snapshot().status());
+        assertEquals(1, reserveColor.snapshot().joinedPlayers());
+        assertEquals(java.util.List.of(Color.BLACK), reserveColor.snapshot().reservedColors());
+
+        GameOperationResult finalJoin = serverCore.joinGame(new JoinGameRequest("color-start-room", "Bob"));
+
+        assertTrue(finalJoin.success());
+        assertEquals(GameStatus.ROUND_OFFER, finalJoin.snapshot().status());
+        assertEquals(Color.BLACK, finalJoin.snapshot().players().stream()
+                .filter(player -> "Bob".equals(player.nickname()))
+                .findFirst()
+                .orElseThrow()
+                .color());
     }
 
     @Test
@@ -175,6 +205,88 @@ class MesosServerCoreTest {
         assertFalse(result.success());
         assertEquals(OperationErrorCode.GAME_NOT_FOUND, result.errorCode());
         assertNull(result.snapshot());
+    }
+
+    @Test
+    void passRejectsManualPassForStartedGamesWithFailureSnapshot() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("pass-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("pass-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("pass-room", "Bob")).success());
+
+        GameOperationResult result = serverCore.pass(new PassRequest("pass-room", "Alice"));
+
+        assertFalse(result.success());
+        assertNotNull(result.snapshot());
+        assertEquals(GameStatus.ROUND_OFFER, result.snapshot().status());
+        assertTrue(result.message().contains("disconness"));
+        assertTrue(result.message().contains("automatic"));
+    }
+
+    @Test
+    void chooseColorReservesWaitingRoomColorRejectsDuplicatesAndAppearsInPreStartSnapshot() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("color-room", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("color-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("color-room", "Bob")).success());
+
+        GameOperationResult chooseColor = serverCore.chooseColor(new ChooseColorRequest("color-room", "Alice", Color.BLACK));
+
+        assertTrue(chooseColor.success());
+        assertEquals(Color.BLACK, chooseColor.snapshot().players().stream()
+                .filter(player -> "Alice".equals(player.nickname()))
+                .findFirst()
+                .orElseThrow()
+                .color());
+        assertEquals(java.util.List.of(Color.BLACK), chooseColor.snapshot().reservedColors());
+
+        GameOperationResult duplicateColor = serverCore.chooseColor(new ChooseColorRequest("color-room", "Bob", Color.BLACK));
+
+        assertFalse(duplicateColor.success());
+        assertEquals(OperationErrorCode.COLOR_ALREADY_TAKEN, duplicateColor.errorCode());
+        assertEquals(java.util.List.of(Color.BLACK), duplicateColor.snapshot().reservedColors());
+    }
+
+    @Test
+    void chooseColorRejectsSelectionAfterGameStart() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("started-color-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("started-color-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("started-color-room", "Bob")).success());
+
+        GameOperationResult lateChoice = serverCore.chooseColor(new ChooseColorRequest("started-color-room", "Alice", Color.YELLOW));
+
+        assertFalse(lateChoice.success());
+        assertEquals(OperationErrorCode.COLOR_SELECTION_CLOSED, lateChoice.errorCode());
+    }
+
+    @Test
+    void chooseColorMarksDisconnectedNicknameAsConnectedAgain() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("liveness-room", 3)).success());
+        assertTrue(serverCore.nickname(new NicknameRequest("Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("liveness-room", "Alice")).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("liveness-room", "Alice", true)).success());
+
+        expireHeartbeat(serverCore, "Alice");
+        checkDisconnectedClients(serverCore);
+
+        GameOperationResult rejoinAvailable = serverCore.nickname(new NicknameRequest("Alice"));
+        assertTrue(rejoinAvailable.success());
+        assertTrue(rejoinAvailable.rejoinAvailable());
+
+        GameOperationResult chooseColor =
+                serverCore.chooseColor(new ChooseColorRequest("liveness-room", "Alice", Color.YELLOW));
+
+        assertTrue(chooseColor.success());
+
+        GameOperationResult takenAgain = serverCore.nickname(new NicknameRequest("Alice"));
+        assertFalse(takenAgain.success());
+        assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, takenAgain.errorCode());
     }
 
     @SuppressWarnings("unchecked")

@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.gui;
 
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
@@ -10,7 +11,11 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -24,6 +29,7 @@ public final class MesosGuiFlowController {
     private String connectedHost;
     private MesosGameBoardView gameBoardView;
     private MesosGuiScreenFactory.NicknameScreen nicknameScreen;
+    private final Map<String, Color> preJoinColorByGame;
 
     public MesosGuiFlowController(
             Host host,
@@ -35,6 +41,7 @@ public final class MesosGuiFlowController {
         this.guiService = Objects.requireNonNull(guiService, "guiService cannot be null");
         this.assetResolver = Objects.requireNonNull(assetResolver, "assetResolver cannot be null");
         this.screenFactory = Objects.requireNonNull(screenFactory, "screenFactory cannot be null");
+        this.preJoinColorByGame = new LinkedHashMap<>();
     }
 
     public void start() {
@@ -277,11 +284,22 @@ public final class MesosGuiFlowController {
         if (!validateLobbyActionFields(gameName)) {
             return;
         }
+        String normalizedGameName = gameName.trim();
+        Color selectedColor = host.showTotemSelection(
+                "Choose your totem",
+                normalizedGameName,
+                Set.of(),
+                preJoinColorByGame.get(normalizedGameName)
+        );
+        if (selectedColor == null) {
+            host.updateStatus("Game creation cancelled.");
+            return;
+        }
 
         withBusy(
                 "Creating game...",
-                guiService.createAndJoinGame(gameName.trim(), playerCount),
-                result -> handleJoinFlowResult(result, "Game created."),
+                guiService.createGame(normalizedGameName, playerCount),
+                result -> handleCreateGameResult(normalizedGameName, selectedColor, result),
                 "Game creation failed"
         );
     }
@@ -290,12 +308,12 @@ public final class MesosGuiFlowController {
         if (!validateLobbyActionFields(gameName)) {
             return;
         }
-
+        String normalizedGameName = gameName.trim();
         withBusy(
-                "Joining game...",
-                guiService.joinGame(gameName.trim()),
-                result -> handleJoinFlowResult(result, "Joined game."),
-                "Could not join the selected game"
+                "Loading match details...",
+                guiService.fetchGameSnapshot(normalizedGameName),
+                result -> handlePreJoinSnapshot(normalizedGameName, result),
+                "Could not open the totem picker"
         );
     }
 
@@ -320,6 +338,7 @@ public final class MesosGuiFlowController {
         }
 
         if (result.snapshot() != null && guiService.hasJoinedGame()) {
+            preJoinColorByGame.remove(result.snapshot().gameName());
             renderSnapshot(result.snapshot(), message);
             if (!result.success()) {
                 host.showAlert("Live updates unavailable", message);
@@ -377,15 +396,18 @@ public final class MesosGuiFlowController {
     private void handleMutatingGameActionResult(GameOperationResult result, String successMessage) {
         String message = MesosUserMessageMapper.describeResult(result, successMessage);
         host.updateStatus(message);
-
-        if (result != null && !result.success() && result.snapshot() != null) {
-            renderSnapshot(result.snapshot(), message);
-        }
+        // Render the direct operation result immediately for responsiveness.
+        // Later subscribed updates remain the authoritative refresh path.
+        renderResultSnapshot(result, message);
     }
 
     private void handleSnapshotResult(GameOperationResult result, String successMessage) {
         String message = MesosUserMessageMapper.describeResult(result, successMessage);
         host.updateStatus(message);
+        renderResultSnapshot(result, message);
+    }
+
+    private void renderResultSnapshot(GameOperationResult result, String message) {
         if (result != null && result.snapshot() != null) {
             renderSnapshot(result.snapshot(), message);
         }
@@ -400,6 +422,7 @@ public final class MesosGuiFlowController {
                     connectedHost = null;
                     gameBoardView = null;
                     nicknameScreen = null;
+                    preJoinColorByGame.clear();
                     showConnectionScreen();
                     host.updateStatus("Disconnected.");
                 },
@@ -452,6 +475,106 @@ public final class MesosGuiFlowController {
         return baseName + "-" + suffix;
     }
 
+    private void handleCreateGameResult(String gameName, Color selectedColor, GameOperationResult result) {
+        String message = MesosUserMessageMapper.describeResult(result, "Game created.");
+        host.updateStatus(message);
+        if (result == null) {
+            return;
+        }
+        if (!result.success()) {
+            host.showAlert("Game creation failed", message);
+            return;
+        }
+        reserveColorThenJoin(gameName, selectedColor, true);
+    }
+
+    private void handlePreJoinSnapshot(String gameName, GameOperationResult result) {
+        String message = MesosUserMessageMapper.describeResult(result, "Board refreshed.");
+        host.updateStatus(message);
+        if (result == null || !result.success() || result.snapshot() == null) {
+            host.showAlert("Could not open the totem picker", message);
+            return;
+        }
+
+        Color selectedColor = host.showTotemSelection(
+                "Choose your totem",
+                gameName,
+                unavailableColors(result.snapshot()),
+                preJoinColorByGame.get(gameName)
+        );
+        if (selectedColor == null) {
+            host.updateStatus("Join cancelled.");
+            return;
+        }
+        reserveColorThenJoin(gameName, selectedColor, true);
+    }
+
+    private void reserveColorThenJoin(String gameName, Color selectedColor, boolean allowRetry) {
+        withBusy(
+                "Reserving totem...",
+                guiService.reserveColorForGame(gameName, selectedColor),
+                result -> handleReserveColorResult(gameName, selectedColor, result, allowRetry),
+                "Color selection failed"
+        );
+    }
+
+    private void handleReserveColorResult(
+            String gameName,
+            Color selectedColor,
+            GameOperationResult result,
+            boolean allowRetry
+    ) {
+        String message = MesosUserMessageMapper.describeResult(result, "Color selected.");
+        host.updateStatus(message);
+        if (result == null) {
+            return;
+        }
+        if (!result.success()) {
+            if (allowRetry && result.errorCode() == OperationErrorCode.COLOR_ALREADY_TAKEN && result.snapshot() != null) {
+                Color retryColor = host.showTotemSelection(
+                        "Choose your totem",
+                        gameName,
+                        unavailableColors(result.snapshot()),
+                        preJoinColorByGame.get(gameName)
+                );
+                if (retryColor != null) {
+                    reserveColorThenJoin(gameName, retryColor, true);
+                } else {
+                    host.updateStatus("Join cancelled.");
+                }
+                return;
+            }
+            host.showAlert("Color selection failed", message);
+            return;
+        }
+
+        preJoinColorByGame.put(gameName, selectedColor);
+        withBusy(
+                "Joining game...",
+                guiService.joinGame(gameName),
+                joinResult -> handleJoinFlowResult(joinResult, "Joined game."),
+                "Could not join the selected game"
+        );
+    }
+
+    private Set<Color> unavailableColors(GameSnapshot snapshot) {
+        Set<Color> unavailableColors = new LinkedHashSet<>();
+        if (snapshot == null) {
+            return unavailableColors;
+        }
+
+        if (!snapshot.reservedColors().isEmpty()) {
+            unavailableColors.addAll(snapshot.reservedColors());
+            return unavailableColors;
+        }
+
+        snapshot.players().stream()
+                .map(player -> player.color())
+                .filter(Objects::nonNull)
+                .forEach(unavailableColors::add);
+        return unavailableColors;
+    }
+
     public interface Host {
         void setContent(Node node);
 
@@ -462,5 +585,7 @@ public final class MesosGuiFlowController {
         void showAlert(String title, String message);
 
         boolean showConfirmation(String title, String message);
+
+        Color showTotemSelection(String title, String gameName, Set<Color> takenColors, Color selectedColor);
     }
 }

@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.CLI;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -35,6 +36,7 @@ class CliPrinterTest {
                     Color.BLUE,
                     1,
                     2,
+                    List.of(Color.BLUE, Color.YELLOW),
                     List.of(
                             new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
                             new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)
@@ -73,7 +75,8 @@ class CliPrinterTest {
             assertTrue(rendering.contains("card top 0"));
             assertTrue(rendering.contains("card top 7"));
             assertTrue(rendering.contains("offer 1"));
-            assertTrue(rendering.contains("'pass'"));
+            assertTrue(rendering.contains("card bottom <indice>"));
+            assertFalse(rendering.contains("pass"));
             assertTrue(rendering.contains("cacciatore attivo"));
             assertTrue(rendering.contains("Shamanic Ritual Event"));
             assertTrue(rendering.contains("2 cibo per personaggio"));
@@ -91,9 +94,9 @@ class CliPrinterTest {
     }
 
     @Test
-    void renderHelpIncludesPassCommand() {
+    void renderHelpDoesNotAdvertisePassCommand() {
         CliPrinter printer = new CliPrinter();
 
-        assertTrue(printer.renderHelp().contains("pass | passa"));
+        assertFalse(printer.renderHelp().contains("pass | passa"));
     }
 }

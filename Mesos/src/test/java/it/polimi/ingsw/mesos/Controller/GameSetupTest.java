@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -163,6 +164,32 @@ class GameSetupTest {
         }
 
         assertTrue(observedOrders.stream().anyMatch(order -> !order.equals(enumOrder)));
+    }
+
+    @Test
+    void createMapOfPlayersHonorsReservedColorsAndAssignsUniqueFallbacks() throws Exception {
+        GameSetup setup = new GameSetup();
+        GameContext context = setup.createGame("ReservedColors", 4, CardLoader.load());
+        List<String> nicknames = List.of("Alice", "Bob", "Charlie", "Dana");
+        Map<String, Color> reservedColors = Map.of(
+                "Alice", Color.BLACK,
+                "Charlie", Color.YELLOW
+        );
+
+        setup.createMapOfPlayers(context, nicknames, reservedColors);
+
+        Map<String, Color> assignedColors = new java.util.LinkedHashMap<>();
+        for (Player player : context.getPlayers()) {
+            assignedColors.put(player.getNickname(), player.getColor());
+        }
+
+        assertEquals(Color.BLACK, assignedColors.get("Alice"));
+        assertEquals(Color.YELLOW, assignedColors.get("Charlie"));
+        assertEquals(4, new HashSet<>(assignedColors.values()).size());
+        assertTrue(assignedColors.get("Bob") != Color.BLACK);
+        assertTrue(assignedColors.get("Bob") != Color.YELLOW);
+        assertTrue(assignedColors.get("Dana") != Color.BLACK);
+        assertTrue(assignedColors.get("Dana") != Color.YELLOW);
     }
 
     private static List<String> createNicknames(int playerCount) {

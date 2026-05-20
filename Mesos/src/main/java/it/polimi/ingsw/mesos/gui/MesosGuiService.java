@@ -7,6 +7,7 @@ import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
@@ -14,6 +15,7 @@ import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -99,21 +101,16 @@ public final class MesosGuiService implements AutoCloseable {
         }
     }
 
-    public CompletableFuture<GameOperationResult> createAndJoinGame(String gameName, int playerCount) {
-        return runAsync(() -> {
-            GameClient activeClient = requireClient();
-            String nickname = requireNickname();
-            GameOperationResult createResult = activeClient.createGame(new CreateGameRequest(gameName, playerCount));
-            if (!createResult.success()) {
-                return createResult;
-            }
-
-            return joinAndSubscribeInternal(activeClient, gameName, nickname);
-        });
+    public CompletableFuture<GameOperationResult> createGame(String gameName, int playerCount) {
+        return runAsync(() -> requireClient().createGame(new CreateGameRequest(gameName, playerCount)));
     }
 
     public CompletableFuture<GameOperationResult> joinGame(String gameName) {
         return runAsync(() -> joinAndSubscribeInternal(requireClient(), gameName, requireNickname()));
+    }
+
+    public CompletableFuture<GameOperationResult> fetchGameSnapshot(String gameName) {
+        return runAsync(() -> requireClient().getSnapshot(new SnapshotRequest(gameName)));
     }
 
     public CompletableFuture<GameOperationResult> refreshSnapshot() {
@@ -129,6 +126,11 @@ public final class MesosGuiService implements AutoCloseable {
     public CompletableFuture<GameOperationResult> chooseCard(int cardIndex, boolean topRow) {
         return runAsync(() -> requireJoinedClient()
                 .chooseCard(new ChooseCardRequest(currentGameName, currentNickname, cardIndex, topRow)));
+    }
+
+    public CompletableFuture<GameOperationResult> reserveColorForGame(String gameName, Color color) {
+        return runAsync(() -> requireClient()
+                .chooseColor(new ChooseColorRequest(gameName, requireNickname(), color)));
     }
 
     public CompletableFuture<Void> disconnect() {
