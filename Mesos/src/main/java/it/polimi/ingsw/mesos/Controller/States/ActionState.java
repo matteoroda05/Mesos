@@ -92,8 +92,8 @@ public class ActionState extends GameState {
         }
 
         if (chosen.isPresent()) {
-            List<BuildingOnCard> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_ACQUIRE_CHARACTER)
-                    .stream().filter(building -> building.getOwner().getColor() == this.p).map(building -> ((BuildingOnCard) building)).toList();
+            List<BuildingOnCard> buildings = controller.getPlayerBuildings(this.p, BuildingTrigger.ON_ACQUIRE_CHARACTER)
+                    .stream().map(building -> ((BuildingOnCard) building)).toList();
             buildings.forEach(building -> building.effect(chosen.get(), controller));
         }
 
@@ -215,9 +215,8 @@ public class ActionState extends GameState {
      *                               the turn-order tile
      */
     private void applyEndTurnBuildings(){
-        List<BuildingEndTurn> buildings = controller.getBuildingsWithTrigger(BuildingTrigger.ON_END_TURN)
+        List<BuildingEndTurn> buildings = controller.getPlayerBuildings(this.p, BuildingTrigger.ON_END_TURN)
                 .stream()
-                .filter(building -> building.getOwner().getColor() == this.p)
                 .map(building -> ((BuildingEndTurn) building))
                 .toList();
         TurnOrderTile tile = controller.getTurnOrderTile();
