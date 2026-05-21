@@ -169,15 +169,52 @@ class ActionStateTest extends StateTestSupport {
     }
 
     @Test
-    void passOnExtraActionAdvancesWithoutClearingCurrentOfferTile() {
+    void passRejectsNonOptionalExtraAction() {
         Color activePlayer = state.getActivePlayer();
-        OfferTile occupiedTile = game_context.getGameTable().getOfferTrack().getTile(0);
 
-        GameState nextState = new ActionState(model_controller, activePlayer, 1, true)
-                .pass(activePlayer);
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> new ActionState(model_controller, activePlayer, 1, true).pass(activePlayer)
+        );
 
-        assertInstanceOf(ActionState.class, nextState);
-        assertEquals(activePlayer, occupiedTile.getOccupant());
+        assertTrue(exception.getMessage().contains("normal action state"));
+    }
+
+    @Test
+    void passSkipsOptionalAfterEveryoneExtraPickAndContinuesNormally() throws Exception {
+        java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
+        }
+
+        CardLoader.CardData baseData = CardLoader.load();
+        CardLoader.CardData customData = new CardLoader.CardData(
+                baseData.tribe_cards(), baseData.building_cards(), customTiles);
+
+        it.polimi.ingsw.mesos.Controller.GameSetup setup = new it.polimi.ingsw.mesos.Controller.GameSetup();
+        game_context = setup.createGame("OptionalPassFlow", 3, customData);
+        setup.createMapOfPlayers(game_context, java.util.List.of("N", "M", "E"));
+        model_controller = new it.polimi.ingsw.mesos.Controller.ModelController(game_context);
+        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
+        game_context.getGameTable().getTurnOrderTile().clear();
+
+        Color player = player_colors.getFirst();
+        game_context.getGameTable().getOfferTrack().getTile(0).occupy(player);
+
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 0, 0);
+        building.setOwner(game_context.getPlayer(player));
+        game_context.getPlayer(player).getTribe().addCard(building);
+
+        state = new ActionState(model_controller);
+        GameState extraState = state.process();
+
+        assertInstanceOf(ActionState.class, extraState);
+        assertEquals(false, building.isActive());
+
+        GameState nextState = extraState.pass(player);
+
+        assertInstanceOf(EventState.class, nextState);
+        assertEquals(true, building.isActive());
     }
 
     @Test

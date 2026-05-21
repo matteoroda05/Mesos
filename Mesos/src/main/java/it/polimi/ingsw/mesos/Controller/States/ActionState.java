@@ -22,6 +22,7 @@ public class ActionState extends GameState {
     private int food_gain;
     private boolean is_extra = false;
     private boolean skip = false;
+    private boolean optional_pass = false;
 
     /**
      * Creates the action state for the next occupied offer tile.
@@ -53,10 +54,30 @@ public class ActionState extends GameState {
      *           player and a non-negative number of picks.
      */
     public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
+        this(controller, color, extra_picks, top_row, false);
+    }
+
+    /**
+     * Creates an action state for bonus picks granted by a building effect.
+     *
+     * @param controller model controller used to apply the extra action
+     * @param color player receiving the extra action
+     * @param extra_picks number of extra card choices granted
+     * @param top_row true when the extra choices apply to the top row
+     * @param optional_pass true when the player may decline the extra choice
+     */
+    public ActionState(
+            ModelController controller,
+            Color color,
+            int extra_picks,
+            boolean top_row,
+            boolean optional_pass
+    ) {
         super(controller);
         p = color;
         food_gain = 0;
         is_extra = true;
+        this.optional_pass = optional_pass;
         if (top_row) pick_top_row = extra_picks;
         else pick_bottom_row = extra_picks;
     }
@@ -145,7 +166,7 @@ public class ActionState extends GameState {
             throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
         }
 
-        if (is_extra) {
+        if (isPassAvailable()) {
             return advance();
         }
 
@@ -259,6 +280,9 @@ public class ActionState extends GameState {
                 .stream().map(building -> ((BuildingAfterEveryone) building)).toList();
 
         for (BuildingAfterEveryone building : buildings) {
+            if (!building.isActive()) {
+                continue;
+            }
             ActionState next_state = building.effect(controller.getGameTable(), controller);
             if (next_state != null) {
                 return next_state;
@@ -323,5 +347,10 @@ public class ActionState extends GameState {
     @Override
     public int getRemainingBottomChoices() {
         return pick_bottom_row;
+    }
+
+    @Override
+    public boolean isPassAvailable() {
+        return optional_pass && is_extra && pick_top_row > 0 && pick_bottom_row == 0;
     }
 }

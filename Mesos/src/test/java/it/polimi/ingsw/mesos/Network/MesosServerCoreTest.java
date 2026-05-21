@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Map;
 
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
@@ -28,7 +29,13 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Model.CardLoader;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Model.GameContext;
+import it.polimi.ingsw.mesos.Model.Player;
+import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 
 class MesosServerCoreTest {
     @Test
@@ -208,7 +215,7 @@ class MesosServerCoreTest {
     }
 
     @Test
-    void passRejectsManualPassForStartedGamesWithFailureSnapshot() throws IOException {
+    void passRejectsPassOutsideOptionalAfterEveryoneState() throws IOException {
         MesosServerCore serverCore = new MesosServerCore();
 
         assertTrue(serverCore.createGame(new CreateGameRequest("pass-room", 2)).success());
@@ -220,8 +227,110 @@ class MesosServerCoreTest {
         assertFalse(result.success());
         assertNotNull(result.snapshot());
         assertEquals(GameStatus.ROUND_OFFER, result.snapshot().status());
-        assertTrue(result.message().contains("disconness"));
-        assertTrue(result.message().contains("automatic"));
+        assertTrue(result.message().toLowerCase().contains("pass"));
+    }
+
+    @Test
+    void passSucceedsDuringOptionalAfterEveryoneChoice() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore(singleTopPickCardData(2));
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("pass-extra-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("pass-extra-room", "Alice")).success());
+        GameOperationResult secondJoin = serverCore.joinGame(new JoinGameRequest("pass-extra-room", "Bob"));
+        assertTrue(secondJoin.success());
+
+        String firstPlayer = secondJoin.snapshot().currentPlayerNickname();
+        String secondPlayer = "Alice".equals(firstPlayer) ? "Bob" : "Alice";
+        giveAfterEveryoneBuilding(serverCore, "pass-extra-room", firstPlayer);
+        giveFood(serverCore, "pass-extra-room", 20);
+
+        GameOperationResult firstOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("pass-extra-room", firstPlayer, 0));
+        assertTrue(firstOffer.success());
+
+        GameOperationResult secondOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("pass-extra-room", secondPlayer, 1));
+        assertTrue(secondOffer.success());
+        assertNotNull(secondOffer.snapshot());
+        assertEquals(GameStatus.ROUND_ACTIONS, secondOffer.snapshot().status());
+        assertEquals(1, secondOffer.snapshot().currentRound());
+        assertFalse(secondOffer.snapshot().passAvailable());
+
+        GameOperationResult firstAction =
+                serverCore.chooseCard(new ChooseCardRequest("pass-extra-room", firstPlayer, 0, true));
+        assertTrue(firstAction.success());
+        assertNotNull(firstAction.snapshot());
+        assertEquals(secondPlayer, firstAction.snapshot().currentPlayerNickname());
+        assertFalse(firstAction.snapshot().passAvailable());
+
+        GameOperationResult secondAction =
+                serverCore.chooseCard(new ChooseCardRequest("pass-extra-room", secondPlayer, 0, true));
+        assertTrue(secondAction.success());
+        assertNotNull(secondAction.snapshot());
+        assertEquals(GameStatus.ROUND_ACTIONS, secondAction.snapshot().status());
+        assertEquals(firstPlayer, secondAction.snapshot().currentPlayerNickname());
+        assertEquals(1, secondAction.snapshot().currentRound());
+        assertTrue(secondAction.snapshot().passAvailable());
+        String extraPlayer = secondAction.snapshot().currentPlayerNickname();
+        String otherPlayer = "Alice".equals(extraPlayer) ? "Bob" : "Alice";
+
+        GameOperationResult wrongPlayerPass =
+                serverCore.pass(new PassRequest("pass-extra-room", otherPlayer));
+        assertFalse(wrongPlayerPass.success());
+
+        GameOperationResult passResult =
+                serverCore.pass(new PassRequest("pass-extra-room", extraPlayer));
+
+        assertTrue(passResult.success());
+        assertNotNull(passResult.snapshot());
+        assertEquals(GameStatus.ROUND_OFFER, passResult.snapshot().status());
+        assertEquals(2, passResult.snapshot().currentRound());
+        assertFalse(passResult.snapshot().passAvailable());
+    }
+
+    @Test
+    void disconnectedActivePlayerIsSkippedThroughResiliencePipelineDuringRoundActions() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore(singleTopPickCardData(3));
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("disconnect-actions-room", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("disconnect-actions-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("disconnect-actions-room", "Bob")).success());
+        GameOperationResult thirdJoin =
+                serverCore.joinGame(new JoinGameRequest("disconnect-actions-room", "Carol"));
+        assertTrue(thirdJoin.success());
+
+        String firstPlayer = thirdJoin.snapshot().currentPlayerNickname();
+
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("disconnect-actions-room", "Alice", true)).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("disconnect-actions-room", "Bob", true)).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("disconnect-actions-room", "Carol", true)).success());
+
+        GameOperationResult firstOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("disconnect-actions-room", firstPlayer, 0));
+        assertTrue(firstOffer.success());
+        String secondPlayer = firstOffer.snapshot().currentPlayerNickname();
+
+        GameOperationResult secondOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("disconnect-actions-room", secondPlayer, 1));
+        assertTrue(secondOffer.success());
+        String thirdPlayer = secondOffer.snapshot().currentPlayerNickname();
+
+        GameOperationResult thirdOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("disconnect-actions-room", thirdPlayer, 2));
+        assertTrue(thirdOffer.success());
+        assertEquals(GameStatus.ROUND_ACTIONS, thirdOffer.snapshot().status());
+        assertEquals(firstPlayer, thirdOffer.snapshot().currentPlayerNickname());
+
+        expireHeartbeat(serverCore, firstPlayer);
+        checkDisconnectedClients(serverCore);
+
+        GameOperationResult snapshot =
+                serverCore.getSnapshot(new SnapshotRequest("disconnect-actions-room"));
+        assertTrue(snapshot.success());
+        assertNotNull(snapshot.snapshot());
+        assertEquals(GameStatus.ROUND_ACTIONS, snapshot.snapshot().status());
+        assertEquals(secondPlayer, snapshot.snapshot().currentPlayerNickname());
+        assertFalse(snapshot.snapshot().passAvailable());
     }
 
     @Test
@@ -314,5 +423,41 @@ class MesosServerCoreTest {
             }
             throw new AssertionError(cause);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static GameContext contextForGame(MesosServerCore serverCore, String gameName) throws Exception {
+        Field sessions = MesosServerCore.class.getDeclaredField("sessions");
+        sessions.setAccessible(true);
+        Object session = ((Map<String, Object>) sessions.get(serverCore)).get(gameName);
+        Field context = session.getClass().getDeclaredField("context");
+        context.setAccessible(true);
+        return (GameContext) context.get(session);
+    }
+
+    private static void giveAfterEveryoneBuilding(MesosServerCore serverCore, String gameName, String nickname)
+            throws Exception {
+        GameContext context = contextForGame(serverCore, gameName);
+        Player player = context.getPlayers().stream()
+                .filter(candidate -> nickname.equals(candidate.getNickname()))
+                .findFirst()
+                .orElseThrow();
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 0, 0);
+        building.setOwner(player);
+        player.getTribe().addCard(building);
+    }
+
+    private static void giveFood(MesosServerCore serverCore, String gameName, int amount) throws Exception {
+        GameContext context = contextForGame(serverCore, gameName);
+        context.getPlayers().forEach(player -> player.gainFood(amount));
+    }
+
+    private static CardLoader.CardData singleTopPickCardData(int playerCount) throws IOException {
+        CardLoader.CardData baseData = CardLoader.load();
+        ArrayList<OfferTile> customTiles = new ArrayList<>();
+        for (int index = 0; index < playerCount + 2; index++) {
+            customTiles.add(new OfferTile((char) ('A' + index), 1, 0, 0, 2));
+        }
+        return new CardLoader.CardData(baseData.tribe_cards(), baseData.building_cards(), customTiles);
     }
 }

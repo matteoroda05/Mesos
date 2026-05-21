@@ -47,6 +47,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final MesosAssetResolver assetResolver;
     private final Runnable onRefresh;
     private final Runnable onDisconnect;
+    private final Runnable onPass;
     private final IntConsumer onChooseOffer;
     private final BiConsumer<Integer, Boolean> onChooseCard;
 
@@ -59,6 +60,8 @@ public final class MesosGameBoardView extends BorderPane {
     private final Label phaseBadgeLabel;
     private final Label currentBadgeLabel;
     private final Label picksBadgeLabel;
+    private final FlowPane actionRow;
+    private final Button passButton;
     private final HBox topRowPane;
     private final HBox bottomRowPane;
     private final HBox offerTilesPane;
@@ -77,7 +80,8 @@ public final class MesosGameBoardView extends BorderPane {
             Runnable onRefresh,
             Runnable onDisconnect,
             IntConsumer onChooseOffer,
-            BiConsumer<Integer, Boolean> onChooseCard
+            BiConsumer<Integer, Boolean> onChooseCard,
+            Runnable onPass
     ) {
         this.localNickname = localNickname;
         this.assetResolver = assetResolver;
@@ -85,6 +89,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.onDisconnect = onDisconnect;
         this.onChooseOffer = onChooseOffer;
         this.onChooseCard = onChooseCard;
+        this.onPass = onPass;
 
         this.titleLabel = new Label("MESOS");
         this.titleLabel.getStyleClass().add("view-title");
@@ -105,6 +110,18 @@ public final class MesosGameBoardView extends BorderPane {
         this.phaseBadgeLabel = badgeLabel("Phase -");
         this.currentBadgeLabel = badgeLabel("Active -");
         this.picksBadgeLabel = badgeLabel("Picks -");
+        this.passButton = buildInfoActionButton("Pass", this.onPass);
+        this.passButton.setVisible(false);
+        this.passButton.setManaged(false);
+        this.actionRow = new FlowPane(
+                8,
+                8,
+                buildInfoActionButton("Refresh", onRefresh),
+                passButton,
+                buildInfoActionButton("Disconnect", onDisconnect)
+        );
+        this.actionRow.getStyleClass().add("board-action-row");
+        this.actionRow.setAlignment(Pos.CENTER_LEFT);
 
         this.topRowPane = new HBox(4);
         this.bottomRowPane = new HBox(4);
@@ -150,6 +167,9 @@ public final class MesosGameBoardView extends BorderPane {
         actionHintLabel.setText(updateMessage == null || updateMessage.isBlank()
                 ? buildActionHint(snapshot)
                 : updateMessage);
+        boolean showPass = canUsePass();
+        passButton.setVisible(showPass);
+        passButton.setManaged(showPass);
 
         rebuildMarketRows();
         rebuildOfferTiles();
@@ -321,10 +341,6 @@ public final class MesosGameBoardView extends BorderPane {
 
         VBox statsSection = new VBox(6, metaWrap);
         statsSection.setMaxWidth(650);
-
-        FlowPane actionRow = new FlowPane(8, 8, buildInfoActionButton("Refresh", onRefresh), buildInfoActionButton("Disconnect", onDisconnect));
-        actionRow.getStyleClass().add("board-action-row");
-        actionRow.setAlignment(Pos.CENTER_LEFT);
 
         VBox infoPanel = new VBox(12, titleSection, statsSection, turnLabel, actionHintLabel, actionRow);
         infoPanel.getStyleClass().add("info-panel");
@@ -697,6 +713,10 @@ public final class MesosGameBoardView extends BorderPane {
                 && snapshot.currentPlayerNickname().equals(localNickname);
     }
 
+    private boolean canUsePass() {
+        return snapshot != null && isLocalTurn() && snapshot.passAvailable();
+    }
+
     private String buildTurnLine(GameSnapshot snapshot) {
         if (snapshot.status() == GameStatus.LOGIN) {
             return "Waiting for " + Math.max(0, snapshot.playerCount() - snapshot.joinedPlayers()) + " more player(s).";
@@ -720,7 +740,9 @@ public final class MesosGameBoardView extends BorderPane {
         }
         return switch (snapshot.status()) {
             case ROUND_OFFER -> "Select one available offer tile from the central strip.";
-            case ROUND_ACTIONS -> "Choose a card from the upper or lower row, depending on your remaining picks.";
+            case ROUND_ACTIONS -> snapshot.passAvailable()
+                    ? "Choose one top-row card or use Pass to skip the optional extra pick."
+                    : "Choose a card from the upper or lower row, depending on your remaining picks.";
             case ROUND_EVENTS, ROUND_END, FINAL_EVENTS -> "The server is resolving automatic effects. Watch the board update.";
             case LOGIN -> "Waiting for the lobby to fill before the match starts.";
             default -> "Observe the board or use Refresh if you need a fresh snapshot.";

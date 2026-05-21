@@ -314,8 +314,8 @@ public class MesosServerCore implements MesosServerService {
     }
 
     /**
-     * Rejects manual pass requests; only resilience may skip turns
-     * automatically for disconnected players.
+     * Applies the optional manual pass request used to decline the extra
+     * top-row pick granted by the after-everyone building.
      *
      * @param request pass request
      * @return operation result, including GAME_NOT_FOUND for missing games
@@ -772,8 +772,8 @@ public class MesosServerCore implements MesosServerService {
         }
 
         /**
-         * Rejects manual pass commands after checking game state and player
-         * membership.
+         * Applies the optional pass command after checking game state and
+         * player membership.
          *
          * @param nickname requesting player nickname
          * @return operation result with updated snapshot or validation failure
@@ -796,10 +796,15 @@ public class MesosServerCore implements MesosServerService {
                 return blocked;
             }
 
-            return GameOperationResult.failure(
-                    "Il turno non puo' essere passato manualmente: il server salta turni solo automaticamente per giocatori disconnessi.",
-                    toSnapshot()
-            );
+            try {
+                controller.pass(playerColor);
+                return GameOperationResult.success(
+                        "Carta extra saltata",
+                        publishAndSnapshot("Carta extra saltata")
+                );
+            } catch (RuntimeException exception) {
+                return GameOperationResult.failure(exception.getMessage(), toSnapshot());
+            }
         }
 
         /**
@@ -1083,7 +1088,8 @@ public class MesosServerCore implements MesosServerService {
                     summarizeOfferTiles(),
                     summarizeTurnOrder(),
                     summarizeRow(context.getGameTable().getTopRow()),
-                    summarizeRow(context.getGameTable().getBottomRow())
+                    summarizeRow(context.getGameTable().getBottomRow()),
+                    currentState != null && currentState.isPassAvailable()
             );
         }
 

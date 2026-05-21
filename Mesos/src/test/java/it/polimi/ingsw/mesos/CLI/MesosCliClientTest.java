@@ -311,25 +311,27 @@ class MesosCliClientTest {
     }
 
     @Test
-    void handleGameCommandRejectsPassAndValidatesArgumentCounts() throws Exception {
+    void handleGameCommandForwardsPassAndValidatesArgumentCounts() throws Exception {
         MesosCliClient cli = newCli("");
         FakeClient client = new FakeClient();
         client.offerResults.add(GameOperationResult.success("offer", snapshot(GameStatus.ROUND_OFFER)));
         client.cardResults.add(GameOperationResult.success("card", snapshot(GameStatus.ROUND_ACTIONS)));
+        client.passResults.add(GameOperationResult.success("pass", snapshot(GameStatus.ROUND_ACTIONS)));
         setField(cli, "gameName", "Room");
         setField(cli, "nickname", "Alice");
 
         invoke(cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "offerta 2");
         invoke(cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "carta alto 3");
+        invoke(cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "pass");
 
         assertEquals(List.of(2), client.offerIndexes);
         assertEquals(List.of(3), client.cardIndexes);
+        assertEquals(List.of("Room"), client.passGameNames);
+        assertEquals(List.of("Alice"), client.passNicknames);
         assertThrows(IllegalArgumentException.class, () -> invokeUnchecked(
                 cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "offer"));
         assertThrows(IllegalArgumentException.class, () -> invokeUnchecked(
                 cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "card top"));
-        assertThrows(IllegalArgumentException.class, () -> invokeUnchecked(
-                cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "pass"));
         assertThrows(IllegalArgumentException.class, () -> invokeUnchecked(
                 cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class}, client, "passa"));
         assertThrows(IllegalArgumentException.class, () -> invokeUnchecked(

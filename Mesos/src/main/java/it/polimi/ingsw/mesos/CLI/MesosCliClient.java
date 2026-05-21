@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -474,6 +475,12 @@ public final class MesosCliClient {
                 boolean topRow = parseRow(tokens[1]);
                 int cardIndex = parseInt(tokens[2], "l'indice carta");
                 handleResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
+            }
+            case "pass" -> {
+                if (tokens.length != 1) {
+                    throw new IllegalArgumentException("usa: pass");
+                }
+                handleResult(client.pass(new PassRequest(gameName, nickname)));
             }
             default -> throw new IllegalArgumentException("comando sconosciuto '" + tokens[0] + "'");
         }

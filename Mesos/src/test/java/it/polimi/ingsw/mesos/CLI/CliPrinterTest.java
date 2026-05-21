@@ -99,4 +99,37 @@ class CliPrinterTest {
 
         assertFalse(printer.renderHelp().contains("pass | passa"));
     }
+
+    @Test
+    void renderSnapshotMentionsPassOnlyForOptionalExtraPick() {
+        CliPrinter printer = new CliPrinter();
+        GameSnapshot snapshot = new GameSnapshot(
+                "pass-room",
+                2,
+                2,
+                true,
+                false,
+                GameStatus.ROUND_ACTIONS,
+                3,
+                Era.SECOND,
+                "Alice",
+                Color.BLUE,
+                1,
+                0,
+                List.of(Color.BLUE, Color.YELLOW),
+                List.of(
+                        new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
+                        new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)
+                ),
+                List.of(new OfferTileSummary(0, 'A', 0, 0, 0, true, null, null)),
+                List.of(new TurnOrderSpaceSummary(0, 0, Color.BLUE, "Alice")),
+                List.of(new CardSummary(0, "Building After Everyone", Era.SECOND, false, "carta extra opzionale", 2, 4)),
+                List.of(),
+                true
+        );
+
+        String rendering = printer.renderSnapshot(snapshot, "Alice");
+
+        assertTrue(rendering.contains("usa 'pass'"));
+    }
 }

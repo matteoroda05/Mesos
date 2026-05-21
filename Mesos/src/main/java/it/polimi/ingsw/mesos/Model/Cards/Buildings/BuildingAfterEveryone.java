@@ -50,7 +50,7 @@ public class BuildingAfterEveryone extends BuildingCard {
         final boolean cards_available = !table.getTopRow()
                 .getTakeableCards(owner.getFood(), owner.getTribe().buildersDiscount()).isEmpty();
         if (cards_available) {
-            return new ActionState(controller, owner.getColor(), 1, true);
+            return new ActionState(controller, owner.getColor(), 1, true, true);
         }
         return null;
     }

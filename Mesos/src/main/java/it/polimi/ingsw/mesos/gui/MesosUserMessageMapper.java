@@ -134,6 +134,9 @@ public final class MesosUserMessageMapper {
         if (lower.contains("carta scelta")) {
             return "Card selected.";
         }
+        if (lower.contains("carta extra saltata")) {
+            return "Optional extra pick skipped.";
+        }
         if (lower.contains("colore riservato") && lower.contains("partita inizia")) {
             return "Color selected. The match is starting.";
         }

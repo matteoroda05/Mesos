@@ -12,6 +12,7 @@ import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
 import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -126,6 +127,11 @@ public final class MesosGuiService implements AutoCloseable {
     public CompletableFuture<GameOperationResult> chooseCard(int cardIndex, boolean topRow) {
         return runAsync(() -> requireJoinedClient()
                 .chooseCard(new ChooseCardRequest(currentGameName, currentNickname, cardIndex, topRow)));
+    }
+
+    public CompletableFuture<GameOperationResult> pass() {
+        return runAsync(() -> requireJoinedClient()
+                .pass(new PassRequest(currentGameName, currentNickname)));
     }
 
     public CompletableFuture<GameOperationResult> reserveColorForGame(String gameName, Color color) {

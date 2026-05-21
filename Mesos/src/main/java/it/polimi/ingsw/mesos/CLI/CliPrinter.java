@@ -171,7 +171,9 @@ final class CliPrinter {
         }
         return switch (snapshot.status()) {
             case ROUND_OFFER -> "Tocca a te: scegli una tessera con 'offer <indice>'.";
-            case ROUND_ACTIONS -> "Tocca a te: usa 'card top <indice>' o 'card bottom <indice>'.";
+            case ROUND_ACTIONS -> snapshot.passAvailable()
+                    ? "Tocca a te: prendi una carta dalla riga alta con 'card top <indice>' oppure usa 'pass'."
+                    : "Tocca a te: usa 'card top <indice>' o 'card bottom <indice>'.";
             default -> "Fase automatica in corso: premi Invio per aggiornare.";
         };
     }
@@ -206,7 +208,9 @@ final class CliPrinter {
         if (Objects.equals(snapshot.currentPlayerNickname(), localNickname)) {
             return switch (snapshot.status()) {
                 case ROUND_OFFER -> youAre + "E' il tuo turno: scegli la tessera offerta per preparare il round.";
-                case ROUND_ACTIONS -> youAre + "E' il tuo turno: raccogli le carte che la tua tessera ti permette di prendere.";
+                case ROUND_ACTIONS -> snapshot.passAvailable()
+                        ? youAre + "E' il tuo turno: puoi prendere la carta extra opzionale dalla riga alta oppure usare 'pass'."
+                        : youAre + "E' il tuo turno: raccogli le carte che la tua tessera ti permette di prendere.";
                 default -> youAre + "E' il tuo turno, ma il gioco sta risolvendo una fase automatica.";
             };
         }

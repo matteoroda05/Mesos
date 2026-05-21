@@ -106,7 +106,8 @@ public final class MesosGuiFlowController {
                     this::refreshCurrentSnapshot,
                     this::disconnectToConnectionScreen,
                     this::chooseOffer,
-                    this::chooseCard
+                    this::chooseCard,
+                    this::choosePass
             );
         }
         gameBoardView.updateSnapshot(snapshot, message);
@@ -381,6 +382,15 @@ public final class MesosGuiFlowController {
                 guiService.chooseCard(cardIndex, topRow),
                 result -> handleMutatingGameActionResult(result, "Card selected."),
                 "Card selection failed"
+        );
+    }
+
+    private void choosePass() {
+        withBusy(
+                "Skipping optional extra pick...",
+                guiService.pass(),
+                result -> handleMutatingGameActionResult(result, "Optional extra pick skipped."),
+                "Pass request failed"
         );
     }
 
