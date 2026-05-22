@@ -172,6 +172,14 @@ class MesosCliClientTest {
 
         assertNull(invoke(failCli, "createGameWithUniqueName",
                 new Class<?>[] {GameClient.class, String.class, int.class}, failClient, "Room", 2));
+
+        MesosCliClient reservedCli = newCli("Valid\n");
+        FakeClient reservedClient = new FakeClient();
+        reservedClient.createResults.add(GameOperationResult.success("created", snapshot(GameStatus.LOGIN)));
+
+        assertEquals("Valid", invoke(reservedCli, "createGameWithUniqueName",
+                new Class<?>[] {GameClient.class, String.class, int.class}, reservedClient, "R", 2));
+        assertEquals(List.of("Valid"), reservedClient.createdGameNames);
     }
 
     @Test
@@ -276,16 +284,20 @@ class MesosCliClientTest {
         ByteArrayOutputStream output = captureOutput();
 
         assertEquals(true, invoke(createCli, "promptLobbyAction"));
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Scegli 'join' oppure 'create'."));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Digita 'refresh' o 'r'"));
 
         MesosCliClient joinCli = newCli("entra\n");
 
         assertEquals(false, invoke(joinCli, "promptLobbyAction"));
+
+        MesosCliClient refreshCli = newCli("R\n");
+
+        assertNull(invoke(refreshCli, "promptLobbyAction"));
     }
 
     @Test
     void mainLoopCoversCommandsAndInvalidCommands() throws Exception {
-        MesosCliClient cli = newCli("\nhelp\nshow\nwait 0\nrefresh\npoll\noffer 1\ncard top 0\ncarta basso 0\npass\nunknown\ncard middle 1\nexit\n");
+        MesosCliClient cli = newCli("\nhelp\nshow\nwait 0\nR\npoll\noffer 1\ncard top 0\ncarta basso 0\npass\nunknown\ncard middle 1\nexit\n");
         FakeClient client = new FakeClient();
         client.snapshotResults.add(GameOperationResult.success("snapshot", snapshot(GameStatus.ROUND_OFFER)));
         client.snapshotResults.add(GameOperationResult.success("snapshot", snapshot(GameStatus.ROUND_ACTIONS)));
@@ -298,7 +310,7 @@ class MesosCliClientTest {
         setField(cli, "snapshot", snapshot(GameStatus.ROUND_OFFER));
         ByteArrayOutputStream output = captureOutput();
 
-        invoke(cli, "mainLoop", GameClient.class, client);
+        assertEquals("QUIT_CLIENT", invoke(cli, "mainLoop", GameClient.class, client).toString());
 
         assertEquals(List.of(1), client.offerIndexes);
         assertEquals(List.of(true, false), client.cardRows);
@@ -307,6 +319,42 @@ class MesosCliClientTest {
         assertTrue(text.contains("Comando non puo' essere vuoto."));
         assertTrue(text.contains("Comando non valido"));
         assertTrue(text.contains("Chiusura del client CLI."));
+    }
+
+    @Test
+    void mainLoopPromptsForFinishedGameExitChoice() throws Exception {
+        MesosCliClient lobbyCli = newCli("yes\n");
+        setField(lobbyCli, "gameName", "Room");
+        setField(lobbyCli, "snapshot", snapshot(GameStatus.END_GAME, true));
+
+        assertEquals("RETURN_TO_LOBBY", invoke(lobbyCli, "mainLoop", GameClient.class, new FakeClient()).toString());
+        assertNull(field(lobbyCli, "gameName"));
+        assertNull(field(lobbyCli, "snapshot"));
+
+        MesosCliClient quitCli = newCli("no\n");
+        ByteArrayOutputStream output = captureOutput();
+        setField(quitCli, "gameName", "Room");
+        setField(quitCli, "snapshot", snapshot(GameStatus.END_GAME, true));
+
+        assertEquals("QUIT_CLIENT", invoke(quitCli, "mainLoop", GameClient.class, new FakeClient()).toString());
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Chiusura del client CLI."));
+    }
+
+    @Test
+    void lobbyLoopRefreshesWhileChoosingGameName() throws Exception {
+        MesosCliClient cli = newCli("join\nrefresh\nRoom\nquit\n");
+        FakeClient client = new FakeClient();
+        client.lobbyResults.add(GameOperationResult.successLobby("empty", new LobbySnapshot(null)));
+        client.lobbyResults.add(GameOperationResult.successLobby("updated", new LobbySnapshot(List.of(
+                new LobbyGameSummary("Room", 2, 1, 1)))));
+        client.joinResults.add(GameOperationResult.success("joined", snapshot(GameStatus.LOGIN)));
+        client.subscribeResults.add(GameOperationResult.success("subscribed", snapshot(GameStatus.LOGIN)));
+        setField(cli, "nickname", "Alice");
+
+        invoke(cli, "lobbyLoop", GameClient.class, client);
+
+        assertEquals(2, client.lobbyRequests);
+        assertEquals(List.of("Alice"), client.joinNicknames);
     }
 
     @Test
@@ -371,12 +419,16 @@ class MesosCliClientTest {
     }
 
     private static GameSnapshot snapshot(GameStatus status) {
+        return snapshot(status, false);
+    }
+
+    private static GameSnapshot snapshot(GameStatus status, boolean finished) {
         return new GameSnapshot(
                 "Room",
                 2,
                 2,
                 true,
-                false,
+                finished,
                 status,
                 1,
                 Era.FIRST,
@@ -434,6 +486,7 @@ class MesosCliClientTest {
     }
 
     private static final class FakeClient implements GameClient {
+        private int lobbyRequests;
         private final Queue<GameOperationResult> lobbyResults = new ArrayDeque<>();
         private final Queue<GameOperationResult> createResults = new ArrayDeque<>();
         private final Queue<GameOperationResult> joinResults = new ArrayDeque<>();
@@ -455,6 +508,7 @@ class MesosCliClientTest {
 
         @Override
         public GameOperationResult getLobby() {
+            lobbyRequests++;
             return poll(lobbyResults, GameOperationResult.successLobby("lobby", new LobbySnapshot(null)));
         }
 

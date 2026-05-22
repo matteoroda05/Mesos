@@ -296,6 +296,7 @@ class ActionStateTest extends StateTestSupport {
         Color player = player_colors.getFirst();
         CountingOnCardBuilding building = new CountingOnCardBuilding();
         building.setOwner(game_context.getPlayer(player));
+        game_context.getPlayer(player).getTribe().addCard(building);
         ActionSpyController spy = new ActionSpyController(
                 game_context,
                 Optional.of(new HunterCard(Era.FIRST, 2, false)),
