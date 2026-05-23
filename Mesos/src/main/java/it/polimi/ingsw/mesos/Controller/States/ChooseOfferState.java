@@ -35,7 +35,7 @@ public class ChooseOfferState extends GameState {
     @Override
     public GameState chooseOffer(Color player_color, int offer_tile) {
         if (p != player_color) {
-            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
         }
 
         controller.playerChoseOffer(player_color, offer_tile);

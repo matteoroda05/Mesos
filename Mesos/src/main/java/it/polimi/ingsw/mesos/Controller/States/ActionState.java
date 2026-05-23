@@ -77,7 +77,7 @@ public class ActionState extends GameState {
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
         if (p != player_color) {
-            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
         }
 
         Optional<CharacterCard> chosen;

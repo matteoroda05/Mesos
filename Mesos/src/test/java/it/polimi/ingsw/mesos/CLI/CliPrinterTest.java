@@ -48,38 +48,38 @@ class CliPrinterTest {
                             new TurnOrderSpaceSummary(1, 1, Color.YELLOW, "Bob")
                     ),
                     List.of(
-                            new CardSummary(0, "Hunter", Era.SECOND, false, "cacciatore attivo", null, null),
-                            new CardSummary(1, "Building End Game", Era.SECOND, false, "fine partita: +4 pp", 2, 4),
-                            new CardSummary(2, "Shaman", Era.SECOND, false, "2 stelle sciamaniche", null, null),
-                            new CardSummary(3, "Builder", Era.SECOND, false, "sconto edifici 1", null, null),
-                            new CardSummary(4, "Inventor", Era.SECOND, false, "icona BOAT", null, null),
-                            new CardSummary(5, "Sustenance Event", Era.SECOND, true, "2 cibo per personaggio", null, null),
-                            new CardSummary(6, "Building Bonus Event", Era.SECOND, false, "su hunt: hunter da' +1 cibo", 3, 1),
-                            new CardSummary(7, "Gatherer", Era.SECOND, false, "sconto sostentamento 1 cibo", null, null)
+                            new CardSummary(0, "Hunter", Era.SECOND, false, "active hunter", null, null),
+                            new CardSummary(1, "Building End Game", Era.SECOND, false, "end game: +4 pp", 2, 4),
+                            new CardSummary(2, "Shaman", Era.SECOND, false, "2 shamanic stars", null, null),
+                            new CardSummary(3, "Builder", Era.SECOND, false, "building discount 1", null, null),
+                            new CardSummary(4, "Inventor", Era.SECOND, false, "icon BOAT", null, null),
+                            new CardSummary(5, "Sustenance Event", Era.SECOND, true, "2 food per character", null, null),
+                            new CardSummary(6, "Building Bonus Event", Era.SECOND, false, "on hunt: hunter gives +1 food", 3, 1),
+                            new CardSummary(7, "Gatherer", Era.SECOND, false, "sustenance discount 1 food", null, null)
                     ),
                     List.of(
-                            new CardSummary(0, "Shamanic Ritual Event", Era.SECOND, true, "vincitori +6 pp", null, null)
+                            new CardSummary(0, "Shamanic Ritual Event", Era.SECOND, true, "winners +6 pp", null, null)
                     )
             );
 
             String rendering = printer.renderSnapshot(snapshot, "Alice");
 
             assertTrue(rendering.contains("MESOS | test-room"));
-            assertTrue(rendering.contains("Tavolo di gioco"));
-            assertTrue(rendering.contains("RIGA ALTA"));
-            assertTrue(rendering.contains("RIGA BASSA"));
-            assertTrue(rendering.contains("ORDINE DI TURNO"));
-            assertTrue(rendering.contains("TESSERE OFFERTA"));
+            assertTrue(rendering.contains("Game table"));
+            assertTrue(rendering.contains("TOP ROW"));
+            assertTrue(rendering.contains("BOTTOM ROW"));
+            assertTrue(rendering.contains("TURN ORDER"));
+            assertTrue(rendering.contains("OFFER TILES"));
             assertTrue(rendering.contains("card top 0"));
             assertTrue(rendering.contains("card top 7"));
             assertTrue(rendering.contains("offer 1"));
             assertTrue(rendering.contains("'pass'"));
-            assertTrue(rendering.contains("cacciatore attivo"));
+            assertTrue(rendering.contains("active hunter"));
             assertTrue(rendering.contains("Shamanic Ritual Event"));
-            assertTrue(rendering.contains("2 cibo per personaggio"));
-            assertTrue(rendering.contains("Alto  : 0"));
-            assertTrue(rendering.contains("Basso : 2"));
-            assertTrue(rendering.contains("Cibo  : +1"));
+            assertTrue(rendering.contains("2 food per character"));
+            assertTrue(rendering.contains("Top   : 0"));
+            assertTrue(rendering.contains("Bottom: 2"));
+            assertTrue(rendering.contains("Food  : +1"));
             assertTrue(rendering.lines().mapToInt(String::length).max().orElse(0) <= 180);
         } finally {
             if (previousWidth == null) {

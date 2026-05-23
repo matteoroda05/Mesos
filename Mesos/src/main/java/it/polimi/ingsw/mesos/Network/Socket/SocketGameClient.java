@@ -223,7 +223,7 @@ public class SocketGameClient implements GameClient {
     public GameOperationResult unsubscribe(UnsubscribeGameRequest request) throws IOException {
         if (activeSubscription == null) {
             context = new SocketClientContext(responses, null);
-            return GameOperationResult.success("Nessuna sottoscrizione attiva", null);
+            return GameOperationResult.success("No active subscription", null);
         }
 
         GameOperationResult result = exchange(request);
@@ -353,7 +353,7 @@ public class SocketGameClient implements GameClient {
         } catch (SocketException ignored) {
         } catch (ClassNotFoundException | IOException exception) {
             if (running) {
-                context.responses().offer(GameOperationResult.failure("Connessione socket chiusa: " + exception.getMessage(), null));
+                context.responses().offer(GameOperationResult.failure("Socket connection closed: " + exception.getMessage(), null));
             }
         } finally {
             running = false;

@@ -74,16 +74,16 @@ public final class MesosCliClient {
     private GameClient connectWithRetry() throws IOException {
         while (true) {
             ConnectionType connectionType = promptConnectionType();
-            String host = promptRequired("Host del server");
+            String host = promptRequired("Server host");
 
             try {
                 GameClient client = GameClientFactory.connect(connectionType, host);
                 String transport = connectionType.name().toLowerCase(Locale.ROOT);
-                printLine("[ok] Connessione " + transport + " attiva verso " + host + ".");
+                printLine("[ok] " + transport + " connection active to " + host + ".");
                 return client;
             } catch (IOException exception) {
-                printLine("[error] Connessione fallita: " + describeConnectionError(exception));
-                printLine("Controlla l'indirizzo del server e riprova.");
+                printLine("[error] Connection failed: " + describeConnectionError(exception));
+                printLine("Check the server address and try again.");
             }
         }
     }
@@ -123,7 +123,7 @@ public final class MesosCliClient {
                     return false;
                 }
 
-                if (promptYesNo("Esiste una sessione disconnessa con questo nickname. Vuoi riconnetterti?")) {
+                if (promptYesNo("A disconnected session exists for this nickname. Do you want to reconnect?")) {
                     GameOperationResult rejoinResult =
                             client.joinGame(new JoinGameRequest(null, nickname, true));
 
@@ -154,11 +154,11 @@ public final class MesosCliClient {
      * @throws IOException if prompt input fails
      */
     private String handleTakenName(String nameBase, String nameLabel) throws IOException {
-        if (promptYesNo("Il " + nameLabel + " e' gia' in uso. Vuoi mantenerlo con un suffisso automatico")) {
+        if (promptYesNo("The " + nameLabel + " is already in use. Do you want to keep it with an automatic suffix")) {
             int suffix = 1;
             while (true) {
                 String candidate = appendNumericSuffix(nameBase, suffix++);
-                printLine("Provo automaticamente con il " + nameLabel + " '" + candidate + "'.");
+                printLine("Trying automatically with " + nameLabel + " '" + candidate + "'.");
                 return candidate;
             }
         }
@@ -186,7 +186,7 @@ public final class MesosCliClient {
                 requestedGameName = promptCreatableGameName();
             } else {
                 while (true) {
-                    requestedGameName = promptRequired("Nome partita");
+                    requestedGameName = promptRequired("Game name");
                     if (!isRefreshCommand(requestedGameName)) {
                         break;
                     }
@@ -234,7 +234,7 @@ public final class MesosCliClient {
      */
     private boolean handleJoinFlow(GameClient client, LobbySnapshot lobby, String requestedGameName) throws IOException {
         if (lobby.openGames().stream().noneMatch(game -> game.gameName().equals(requestedGameName))) {
-            printLine("La partita '" + requestedGameName + "' non compare tra quelle disponibili.");
+            printLine("Game '" + requestedGameName + "' does not appear among the available games.");
         }
 
         return joinSelectedGame(client, requestedGameName, true);
@@ -266,7 +266,7 @@ public final class MesosCliClient {
             switch (joinResult.errorCode()) {
                 case GAME_NOT_FOUND -> {
                     if (offerCreateFallback
-                            && promptYesNo("La partita non esiste. Vuoi crearla con questo nome")) {
+                            && promptYesNo("The game does not exist. Do you want to create it with this name")) {
                         int playerCount = promptPlayerCount();
                         String createdGameName = createGameWithUniqueName(client, selectedGameName, playerCount);
                         if (createdGameName == null) {
@@ -278,7 +278,7 @@ public final class MesosCliClient {
                     return false;
                 }
                 case GAME_FULL -> {
-                    printLine("Scegli un'altra partita dalla lobby.");
+                    printLine("Choose another game from the lobby.");
                     return false;
                 }
                 default -> {
@@ -303,7 +303,7 @@ public final class MesosCliClient {
 
         while (true) {
             while (isRefreshCommand(candidateGameName)) {
-                printLine("Il nome partita 'refresh' e' riservato al refresh della lobby.");
+                printLine("The game name 'refresh' is reserved for lobby refresh.");
                 candidateGameName = promptCreatableGameName();
             }
 
@@ -319,7 +319,7 @@ public final class MesosCliClient {
                 return null;
             }
 
-            candidateGameName = handleTakenName(candidateGameName, "Nome partita");
+            candidateGameName = handleTakenName(candidateGameName, "game name");
         }
     }
 
@@ -371,7 +371,7 @@ public final class MesosCliClient {
      */
     private Boolean promptLobbyAction() throws IOException {
         while (true) {
-            String raw = promptRequired("Vuoi join o create");
+            String raw = promptRequired("Do you want to join or create");
             if (isRefreshCommand(raw)) {
                 return null;
             }
@@ -383,7 +383,7 @@ public final class MesosCliClient {
                 case "create", "c", "crea" -> {
                     return true;
                 }
-                default -> printLine("Scegli 'join' oppure 'create'. Digita 'refresh' o 'r' per aggiornare la lobby.");
+                default -> printLine("Choose 'join' or 'create'. Type 'refresh' or 'r' to refresh the lobby.");
             }
         }
     }
@@ -396,11 +396,11 @@ public final class MesosCliClient {
      */
     private String promptCreatableGameName() throws IOException {
         while (true) {
-            String requestedGameName = promptRequired("Nome partita");
+            String requestedGameName = promptRequired("Game name");
             if (!isRefreshCommand(requestedGameName)) {
                 return requestedGameName;
             }
-            printLine("Il nome partita 'refresh' e' riservato al refresh della lobby.");
+            printLine("The game name 'refresh' is reserved for lobby refresh.");
         }
     }
 
@@ -462,7 +462,7 @@ public final class MesosCliClient {
                 return promptFinishedGameExit();
             }
             if (command.isEmpty()) {
-                printLine("Comando non puo' essere vuoto.");
+                printLine("Command cannot be empty.");
                 continue;
             }
             if (isRefreshCommand(command) || command.equalsIgnoreCase("poll")) {
@@ -471,7 +471,7 @@ public final class MesosCliClient {
                 continue;
             }
             if (command.equalsIgnoreCase("quit") || command.equalsIgnoreCase("exit") || command.equalsIgnoreCase("esci")) {
-                printLine("Chiusura del client CLI.");
+                printLine("Closing the CLI client.");
                 return GameLoopExit.QUIT_CLIENT;
             }
             if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("aiuto")) {
@@ -492,14 +492,14 @@ public final class MesosCliClient {
             }
 
             if (snapshot == null) {
-                printLine("Nessuno snapshot disponibile al momento. Premi Invio per aggiornare.");
+                printLine("No snapshot is currently available. Press Enter to refresh.");
                 continue;
             }
 
             try {
                 handleGameCommand(client, command);
             } catch (IllegalArgumentException exception) {
-                printLine("Comando non valido: " + exception.getMessage());
+                printLine("Invalid command: " + exception.getMessage());
                 printLine(printer.renderHelp());
             }
         }
@@ -512,13 +512,13 @@ public final class MesosCliClient {
      * @throws IOException if prompt input fails
      */
     private GameLoopExit promptFinishedGameExit() throws IOException {
-        if (promptYesNo("La partita e' finita. Vuoi tornare alla lobby per un'altra partita")) {
+        if (promptYesNo("The game is over. Do you want to return to the lobby for another game")) {
             gameName = null;
             snapshot = null;
             return GameLoopExit.RETURN_TO_LOBBY;
         }
 
-        printLine("Chiusura del client CLI.");
+        printLine("Closing the CLI client.");
         return GameLoopExit.QUIT_CLIENT;
     }
 
@@ -539,26 +539,26 @@ public final class MesosCliClient {
         switch (tokens[0].toLowerCase(Locale.ROOT)) {
             case "offer", "offerta" -> {
                 if (tokens.length != 2) {
-                    throw new IllegalArgumentException("usa: offer <indice>");
+                    throw new IllegalArgumentException("use: offer <index>");
                 }
-                int offerIndex = parseInt(tokens[1], "l'indice offerta");
+                int offerIndex = parseInt(tokens[1], "the offer index");
                 handleResult(client.chooseOffer(new ChooseOfferRequest(gameName, nickname, offerIndex)));
             }
             case "card", "carta" -> {
                 if (tokens.length != 3) {
-                    throw new IllegalArgumentException("usa: card top <indice> oppure card bottom <indice>");
+                    throw new IllegalArgumentException("use: card top <index> or card bottom <index>");
                 }
                 boolean topRow = parseRow(tokens[1]);
-                int cardIndex = parseInt(tokens[2], "l'indice carta");
+                int cardIndex = parseInt(tokens[2], "the card index");
                 handleResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
             }
             case "pass", "passa" -> {
                 if (tokens.length != 1) {
-                    throw new IllegalArgumentException("usa: pass");
+                    throw new IllegalArgumentException("use: pass");
                 }
                 handleResult(client.pass(new PassRequest(gameName, nickname)));
             }
-            default -> throw new IllegalArgumentException("comando sconosciuto '" + tokens[0] + "'");
+            default -> throw new IllegalArgumentException("unknown command '" + tokens[0] + "'");
         }
     }
 
@@ -573,7 +573,7 @@ public final class MesosCliClient {
         return switch (token.toLowerCase(Locale.ROOT)) {
             case "top", "alto" -> true;
             case "bottom", "basso" -> false;
-            default -> throw new IllegalArgumentException("la riga deve essere 'top' oppure 'bottom'");
+            default -> throw new IllegalArgumentException("the row must be 'top' or 'bottom'");
         };
     }
 
@@ -589,7 +589,7 @@ public final class MesosCliClient {
         try {
             return Integer.parseInt(token);
         } catch (NumberFormatException exception) {
-            throw new IllegalArgumentException(label + " deve essere un numero");
+            throw new IllegalArgumentException(label + " must be a number");
         }
     }
 
@@ -605,10 +605,10 @@ public final class MesosCliClient {
         String[] tokens = command.split("\\s+");
         int seconds = 2;
         if (tokens.length == 2) {
-            seconds = parseInt(tokens[1], "i secondi");
+            seconds = parseInt(tokens[1], "seconds");
         }
         if (seconds < 0) {
-            throw new IllegalArgumentException("i secondi non possono essere negativi");
+            throw new IllegalArgumentException("seconds cannot be negative");
         }
         try {
             Thread.sleep(seconds * 1000L);
@@ -702,10 +702,10 @@ public final class MesosCliClient {
      */
     private void printBanner() {
         System.out.println("MESOS CLI");
-        System.out.println("Avvia il server in un terminale separato con MesosServerLauncher.");
-        System.out.println("Scegli socket o rmi, poi inserisci solo l'indirizzo del server.");
-        System.out.println("Il client usa automaticamente le porte di default e, per RMI, il servizio MesosGameService.");
-        System.out.println("Dentro il client usa 'help' oppure 'aiuto' per vedere tutti i comandi.");
+        System.out.println("Start the server in a separate terminal with MesosServerLauncher.");
+        System.out.println("Choose socket or rmi, then enter only the server address.");
+        System.out.println("The client automatically uses the default ports and, for RMI, the MesosGameService service.");
+        System.out.println("Inside the client, use 'help' or 'aiuto' to see all commands.");
         System.out.println();
     }
 
@@ -717,7 +717,7 @@ public final class MesosCliClient {
      */
     private ConnectionType promptConnectionType() throws IOException {
         while (true) {
-            String raw = promptRequired("Tipo connessione (socket/rmi)").toLowerCase(Locale.ROOT);
+            String raw = promptRequired("Connection type (socket/rmi)").toLowerCase(Locale.ROOT);
             switch (raw) {
                 case "socket", "s" -> {
                     return ConnectionType.SOCKET;
@@ -725,7 +725,7 @@ public final class MesosCliClient {
                 case "rmi", "r" -> {
                     return ConnectionType.RMI;
                 }
-                default -> printLine("Scegli 'socket' oppure 'rmi'.");
+                default -> printLine("Choose 'socket' or 'rmi'.");
             }
         }
     }
@@ -743,7 +743,7 @@ public final class MesosCliClient {
             if (!value.isBlank()) {
                 return value;
             }
-            printLine(label + " non puo' essere vuoto.");
+            printLine(label + " cannot be empty.");
         }
     }
 
@@ -760,7 +760,7 @@ public final class MesosCliClient {
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException exception) {
-                printLine(label + " deve essere un numero valido.");
+                printLine(label + " must be a valid number.");
             }
         }
     }
@@ -773,12 +773,12 @@ public final class MesosCliClient {
      */
     private int promptPlayerCount() throws IOException {
         while (true) {
-            int value = promptInt("Numero giocatori");
+            int value = promptInt("Number of players");
             if (value >= Globals.MIN_NUM_PLAYERS && value <= Globals.MAX_NUM_PLAYERS) {
                 return value;
             }
-            printLine("Numero giocatori deve essere compreso tra "
-                    + Globals.MIN_NUM_PLAYERS + " e " + Globals.MAX_NUM_PLAYERS + ".");
+            printLine("Number of players must be between "
+                    + Globals.MIN_NUM_PLAYERS + " and " + Globals.MAX_NUM_PLAYERS + ".");
         }
     }
 
@@ -794,7 +794,7 @@ public final class MesosCliClient {
         while (true) {
             String value = promptRaw(label + ": ").trim().toLowerCase(Locale.ROOT);
             if (value.isBlank()) {
-                printLine(label + " non puo' essere vuoto.");
+                printLine(label + " cannot be empty.");
                 continue;
             }
             if (value.equals("y") || value.equals("yes")) {
@@ -803,7 +803,7 @@ public final class MesosCliClient {
             if (value.equals("n") || value.equals("no")) {
                 return false;
             }
-            printLine("Rispondi con yes/no oppure y/n.");
+            printLine("Answer with yes/no or y/n.");
         }
     }
 

@@ -64,18 +64,18 @@ class MesosCliClientTest {
         ByteArrayOutputStream output = captureOutput();
 
         assertEquals(ConnectionType.RMI, invoke(cli, "promptConnectionType"));
-        assertEquals("value", invoke(cli, "promptRequired", String.class, "Campo"));
-        assertEquals(3, invoke(cli, "promptInt", String.class, "Numero"));
+        assertEquals("value", invoke(cli, "promptRequired", String.class, "Field"));
+        assertEquals(3, invoke(cli, "promptInt", String.class, "Number"));
         assertEquals(5, invoke(cli, "promptPlayerCount"));
-        assertEquals(true, invoke(cli, "promptYesNo", String.class, "Confermi"));
-        assertEquals(false, invoke(cli, "promptYesNo", String.class, "Confermi"));
+        assertEquals(true, invoke(cli, "promptYesNo", String.class, "Confirm"));
+        assertEquals(false, invoke(cli, "promptYesNo", String.class, "Confirm"));
 
         String text = output.toString(StandardCharsets.UTF_8);
-        assertTrue(text.contains("Scegli 'socket' oppure 'rmi'."));
-        assertTrue(text.contains("Campo non puo' essere vuoto."));
-        assertTrue(text.contains("Numero deve essere un numero valido."));
-        assertTrue(text.contains("Numero giocatori deve essere compreso"));
-        assertTrue(text.contains("Rispondi con yes/no"));
+        assertTrue(text.contains("Choose 'socket' or 'rmi'."));
+        assertTrue(text.contains("Field cannot be empty."));
+        assertTrue(text.contains("Number must be a valid number."));
+        assertTrue(text.contains("Number of players must be between"));
+        assertTrue(text.contains("Answer with yes/no"));
     }
 
     @Test
@@ -284,7 +284,7 @@ class MesosCliClientTest {
         ByteArrayOutputStream output = captureOutput();
 
         assertEquals(true, invoke(createCli, "promptLobbyAction"));
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Digita 'refresh' o 'r'"));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Type 'refresh' or 'r'"));
 
         MesosCliClient joinCli = newCli("entra\n");
 
@@ -316,9 +316,9 @@ class MesosCliClientTest {
         assertEquals(List.of(true, false), client.cardRows);
         assertEquals(List.of("Alice"), client.passNicknames);
         String text = output.toString(StandardCharsets.UTF_8);
-        assertTrue(text.contains("Comando non puo' essere vuoto."));
-        assertTrue(text.contains("Comando non valido"));
-        assertTrue(text.contains("Chiusura del client CLI."));
+        assertTrue(text.contains("Command cannot be empty."));
+        assertTrue(text.contains("Invalid command"));
+        assertTrue(text.contains("Closing the CLI client."));
     }
 
     @Test
@@ -337,7 +337,7 @@ class MesosCliClientTest {
         setField(quitCli, "snapshot", snapshot(GameStatus.END_GAME, true));
 
         assertEquals("QUIT_CLIENT", invoke(quitCli, "mainLoop", GameClient.class, new FakeClient()).toString());
-        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Chiusura del client CLI."));
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("Closing the CLI client."));
     }
 
     @Test

@@ -55,7 +55,7 @@ final class CliPrinter {
                 .append(" | ")
                 .append(statusLabel(snapshot.status()))
                 .append(NEW_LINE);
-        builder.append("Giocatori in lobby: ")
+        builder.append("Players in lobby: ")
                 .append(snapshot.joinedPlayers())
                 .append("/")
                 .append(snapshot.playerCount())
@@ -89,11 +89,11 @@ final class CliPrinter {
         builder.append(NEW_LINE);
         builder.append(repeat("=", boardWidth)).append(NEW_LINE);
         builder.append("LOBBY MESOS").append(NEW_LINE);
-        builder.append("Partite disponibili: ").append(lobbySnapshot.openGames().size()).append(NEW_LINE);
+        builder.append("Available games: ").append(lobbySnapshot.openGames().size()).append(NEW_LINE);
         builder.append(repeat("=", boardWidth)).append(NEW_LINE);
 
         if (lobbySnapshot.openGames().isEmpty()) {
-            builder.append("Nessuna partita aperta al momento. Puoi crearne una nuova.")
+            builder.append("No open games right now. You can create a new one.")
                     .append(NEW_LINE);
         } else {
             for (int playerCount = Globals.MIN_NUM_PLAYERS; playerCount <= Globals.MAX_NUM_PLAYERS; playerCount++) {
@@ -107,7 +107,7 @@ final class CliPrinter {
 
                 builder.append(NEW_LINE)
                         .append(currentPlayerCount)
-                        .append(" giocatori")
+                        .append(" players")
                         .append(NEW_LINE);
 
                 for (LobbyGameSummary game : gamesForPlayerCount) {
@@ -117,7 +117,7 @@ final class CliPrinter {
                             .append(game.joinedPlayers())
                             .append("/")
                             .append(game.playerCount())
-                            .append(" | posti liberi ")
+                            .append(" | free seats ")
                             .append(game.availableSeats())
                             .append(NEW_LINE);
                 }
@@ -125,9 +125,9 @@ final class CliPrinter {
         }
 
         builder.append(NEW_LINE)
-                .append("Scegli 'join' per entrare in una partita esistente oppure 'create' per crearne una nuova.")
+                .append("Choose 'join' to enter an existing game or 'create' to create a new one.")
                 .append(NEW_LINE)
-                .append("Quando fai join devi digitare solo il nome della partita.")
+                .append("When joining, enter only the game name.")
                 .append(NEW_LINE);
         return builder.toString();
     }
@@ -140,16 +140,16 @@ final class CliPrinter {
     String renderHelp() {
         return String.join(NEW_LINE,
                 "",
-                "Comandi disponibili:",
-                "  <invio>               aggiorna il tavolo",
-                "  show | mostra         ristampa lo snapshot corrente",
-                "  offer <indice>        scegli una tessera offerta",
-                "  card top <indice>     prendi una carta dalla riga alta",
-                "  card bottom <indice>  prendi una carta dalla riga bassa",
-                "  pass | passa          salta il turno quando hai carte extra da prendere",
-                "  wait [secondi]        aspetta un po' e aggiorna",
-                "  help | aiuto          mostra questo aiuto",
-                "  quit | esci | exit    chiude il client");
+                "Available commands:",
+                "  <enter>               refreshes the table",
+                "  show | mostra         prints the current snapshot again",
+                "  offer <index>         chooses an offer tile",
+                "  card top <index>      takes a card from the top row",
+                "  card bottom <index>   takes a card from the bottom row",
+                "  pass | passa          skips the turn when you have extra cards to take",
+                "  wait [seconds]        waits briefly and refreshes",
+                "  help | aiuto          shows this help",
+                "  quit | esci | exit    closes the client");
     }
 
     /**
@@ -162,18 +162,18 @@ final class CliPrinter {
      */
     private String commandsHint(GameSnapshot snapshot, String localNickname) {
         if (!snapshot.started()) {
-            return "Lobby aperta: premi Invio per aggiornare mentre gli altri giocatori entrano.";
+            return "Open lobby: press Enter to refresh while the other players join.";
         }
         if (snapshot.finished()) {
-            return "Partita conclusa: usa 'quit' per uscire oppure premi Invio per rivedere il risultato.";
+            return "Game finished: use 'quit' to exit or press Enter to review the result.";
         }
         if (!Objects.equals(snapshot.currentPlayerNickname(), localNickname)) {
-            return "Non e' il tuo turno: premi Invio per aggiornare o usa 'wait 2'.";
+            return "It is not your turn: press Enter to refresh or use 'wait 2'.";
         }
         return switch (snapshot.status()) {
-            case ROUND_OFFER -> "Tocca a te: scegli una tessera con 'offer <indice>'.";
-            case ROUND_ACTIONS -> "Tocca a te: usa 'card top <indice>', 'card bottom <indice>' o 'pass' per la carta extra.";
-            default -> "Fase automatica in corso: premi Invio per aggiornare.";
+            case ROUND_OFFER -> "Your turn: choose a tile with 'offer <index>'.";
+            case ROUND_ACTIONS -> "Your turn: use 'card top <index>', 'card bottom <index>', or 'pass' for the extra card.";
+            default -> "Automatic phase in progress: press Enter to refresh.";
         };
     }
 
@@ -191,34 +191,33 @@ final class CliPrinter {
             youAre = snapshot.players().stream()
                     .filter(player -> localNickname.equals(player.nickname()))
                     .findFirst()
-                    .map(player -> "Tu sei " + playerLabel(player.nickname(), player.color()) + ". ")
-                    .orElse("Tu sei " + localNickname + ". ");
+                    .map(player -> "You are " + playerLabel(player.nickname(), player.color()) + ". ")
+                    .orElse("You are " + localNickname + ". ");
         }
 
         if (!snapshot.started()) {
-            return youAre + "La partita non e' ancora iniziata.";
+            return youAre + "The game has not started yet.";
         }
         if (snapshot.finished()) {
-            return youAre + "La partita e' terminata. Controlla la classifica finale qui sotto.";
+            return youAre + "The game is over. Check the final ranking below.";
         }
         if (snapshot.currentPlayerNickname() == null) {
-            return youAre + "Il tavolo e' in aggiornamento.";
+            return youAre + "The table is updating.";
         }
         if (Objects.equals(snapshot.currentPlayerNickname(), localNickname)) {
             return switch (snapshot.status()) {
-                case ROUND_OFFER -> youAre + "E' il tuo turno: scegli la tessera offerta per preparare il round.";
-                case ROUND_ACTIONS -> youAre + "E' il tuo turno: raccogli le carte che la tua tessera ti permette di prendere.";
-                default -> youAre + "E' il tuo turno, ma il gioco sta risolvendo una fase automatica.";
+                case ROUND_OFFER -> youAre + "It is your turn: choose the offer tile to prepare the round.";
+                case ROUND_ACTIONS -> youAre + "It is your turn: collect the cards your tile lets you take.";
+                default -> youAre + "It is your turn, but the game is resolving an automatic phase.";
             };
         }
 
         String currentPlayer = playerLabel(snapshot.currentPlayerNickname(), snapshot.currentPlayerColor());
         if (snapshot.status() == GameStatus.ROUND_ACTIONS) {
-            return youAre + "Sta giocando " + currentPlayer
-                    + ". Scelte rimaste: alto=" + snapshot.remainingTopChoices()
-                    + ", basso=" + snapshot.remainingBottomChoices() + ".";
+            return youAre + currentPlayer + " is playing. Remaining choices: top=" + snapshot.remainingTopChoices()
+                    + ", bottom=" + snapshot.remainingBottomChoices() + ".";
         }
-        return youAre + "Sta giocando " + currentPlayer + ".";
+        return youAre + currentPlayer + " is playing.";
     }
 
     /**
@@ -240,9 +239,9 @@ final class CliPrinter {
             boolean finished,
             String currentPlayerNickname
     ) {
-        builder.append(NEW_LINE).append("Clan in partita").append(NEW_LINE);
+        builder.append(NEW_LINE).append("Clans in game").append(NEW_LINE);
         if (players.isEmpty()) {
-            builder.append("  Nessun giocatore presente.").append(NEW_LINE);
+            builder.append("  No players present.").append(NEW_LINE);
             return;
         }
 
@@ -265,13 +264,13 @@ final class CliPrinter {
                 builder.append("  ");
             }
             builder.append(playerLabel(player.nickname(), player.color()))
-                    .append(" | cibo ")
+                    .append(" | food ")
                     .append(player.food())
-                    .append(" | prestigio ")
+                    .append(" | prestige ")
                     .append(player.prestigePoints())
-                    .append(" | tribu ")
+                    .append(" | tribe ")
                     .append(player.characterCount())
-                    .append(" | edifici ")
+                    .append(" | buildings ")
                     .append(player.buildingCount())
                     .append(NEW_LINE);
         }
@@ -288,11 +287,11 @@ final class CliPrinter {
      */
     private void appendBoard(StringBuilder builder, GameSnapshot snapshot, int boardWidth) {
         builder.append(NEW_LINE).append(repeat("-", boardWidth)).append(NEW_LINE);
-        builder.append("Tavolo di gioco").append(NEW_LINE);
+        builder.append("Game table").append(NEW_LINE);
         builder.append(repeat("-", boardWidth)).append(NEW_LINE);
-        appendRow(builder, "RIGA ALTA", snapshot.topRow(), "top", boardWidth);
+        appendRow(builder, "TOP ROW", snapshot.topRow(), "top", boardWidth);
         appendCenterArea(builder, snapshot.turnOrder(), snapshot.offerTiles(), boardWidth);
-        appendRow(builder, "RIGA BASSA", snapshot.bottomRow(), "bottom", boardWidth);
+        appendRow(builder, "BOTTOM ROW", snapshot.bottomRow(), "bottom", boardWidth);
     }
 
     /**
@@ -335,14 +334,14 @@ final class CliPrinter {
         List<String> body = new ArrayList<>();
         for (TurnOrderSpaceSummary space : turnOrder) {
             String occupant = space.occupantNickname() == null
-                    ? "vuoto"
+                    ? "empty"
                     : playerLabel(space.occupantNickname(), space.occupantColor());
             body.add("[" + space.index() + "] bonus " + signed(space.foodBonus()) + " -> " + occupant);
         }
         if (body.isEmpty()) {
-            body.add("Nessuno spazio turno disponibile.");
+            body.add("No turn spaces available.");
         }
-        return createPanel("ORDINE DI TURNO", body, 34);
+        return createPanel("TURN ORDER", body, 34);
     }
 
     /**
@@ -354,7 +353,7 @@ final class CliPrinter {
      */
     private List<String> renderOfferTrackPanel(List<OfferTileSummary> offerTiles) {
         if (offerTiles.isEmpty()) {
-            return createPanel("TESSERE OFFERTA", List.of("Nessuna tessera disponibile."), 24);
+            return createPanel("OFFER TILES", List.of("No tiles available."), 24);
         }
 
         int splitIndex = offerTiles.size() <= 4 ? offerTiles.size() : (offerTiles.size() + 1) / 2;
@@ -374,7 +373,7 @@ final class CliPrinter {
                     " "
             ));
         }
-        return createPanel("TESSERE OFFERTA", body, lineWidth(body) + 4);
+        return createPanel("OFFER TILES", body, lineWidth(body) + 4);
     }
 
     /**
@@ -391,7 +390,7 @@ final class CliPrinter {
     private void appendRow(StringBuilder builder, String title, List<CardSummary> cards, String rowToken, int boardWidth) {
         builder.append(NEW_LINE).append(title).append(NEW_LINE);
         if (cards.isEmpty()) {
-            builder.append("  Nessuna carta visibile.").append(NEW_LINE);
+            builder.append("  No visible cards.").append(NEW_LINE);
             return;
         }
 
@@ -417,7 +416,7 @@ final class CliPrinter {
      * @throws NullPointerException if the builder or player list is null
      */
     private void appendFinalRanking(StringBuilder builder, List<PlayerSummary> players) {
-        builder.append(NEW_LINE).append("Classifica finale").append(NEW_LINE);
+        builder.append(NEW_LINE).append("Final ranking").append(NEW_LINE);
         List<PlayerSummary> ranking = players.stream()
                 .sorted(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
                 .toList();
@@ -429,7 +428,7 @@ final class CliPrinter {
                     .append(playerLabel(player.nickname(), player.color()))
                     .append(" -> ")
                     .append(player.prestigePoints())
-                    .append(" prestigio")
+                    .append(" prestige")
                     .append(NEW_LINE);
         }
     }
@@ -447,8 +446,8 @@ final class CliPrinter {
         List<String> content = new ArrayList<>();
         content.add(card.type());
         content.add(cardKind(card) + " | Era " + card.era());
-        content.add("Costo " + valueOrDash(card.foodCost()) + " | PP " + valueOrDash(card.prestigePoints()));
-        content.addAll(wrap(card.details().isBlank() ? "Nessun dettaglio aggiuntivo." : card.details(), cardWidth - 4));
+        content.add("Cost " + valueOrDash(card.foodCost()) + " | PP " + valueOrDash(card.prestigePoints()));
+        content.addAll(wrap(card.details().isBlank() ? "No additional details." : card.details(), cardWidth - 4));
 
         List<String> body = fitLines(content, CARD_BODY_HEIGHT - 1, cardWidth - 4);
         body.add("card " + rowToken + " " + card.selectionIndex());
@@ -517,12 +516,12 @@ final class CliPrinter {
      */
     private List<String> createOfferTileBox(OfferTileSummary tile, int tileWidth) {
         List<String> body = new ArrayList<>();
-        body.add("Alto  : " + tile.topPicks());
-        body.add("Basso : " + tile.bottomPicks());
-        body.add("Cibo  : " + signed(tile.foodGain()));
+        body.add("Top   : " + tile.topPicks());
+        body.add("Bottom: " + tile.bottomPicks());
+        body.add("Food  : " + signed(tile.foodGain()));
         body.add(tile.available()
-                ? "Stato : Libera"
-                : "Stato : " + playerLabel(tile.occupantNickname(), tile.occupantColor()));
+                ? "Status: Free"
+                : "Status: " + playerLabel(tile.occupantNickname(), tile.occupantColor()));
         body.add("offer " + tile.index());
         return createPanel("[" + tile.index() + "/" + tile.id() + "]", body, tileWidth);
     }
@@ -689,12 +688,12 @@ final class CliPrinter {
      */
     private String cardKind(CardSummary card) {
         if (card.event()) {
-            return "Evento";
+            return "Event";
         }
         if (card.foodCost() != null) {
-            return "Edificio";
+            return "Building";
         }
-        return "Tribu";
+        return "Tribe";
     }
 
     /**
@@ -722,7 +721,7 @@ final class CliPrinter {
     }
 
     /**
-     * Converts a game status into an Italian CLI label.
+     * Converts a game status into an English CLI label.
      *
      * @param status status to format
      * @return display label
@@ -730,15 +729,15 @@ final class CliPrinter {
      */
     private String statusLabel(GameStatus status) {
         return switch (status) {
-            case LOADING -> "Caricamento";
+            case LOADING -> "Loading";
             case LOGIN -> "Lobby";
             case SETUP -> "Setup";
-            case ROUND_OFFER -> "Scelta tessere";
-            case ROUND_ACTIONS -> "Scelta carte";
-            case ROUND_EVENTS -> "Eventi di round";
-            case ROUND_END -> "Fine round";
-            case FINAL_EVENTS -> "Eventi finali";
-            case END_GAME, END_SCREEN -> "Fine partita";
+            case ROUND_OFFER -> "Offer tile choice";
+            case ROUND_ACTIONS -> "Card choice";
+            case ROUND_EVENTS -> "Round events";
+            case ROUND_END -> "Round end";
+            case FINAL_EVENTS -> "Final events";
+            case END_GAME, END_SCREEN -> "Game over";
         };
     }
 
