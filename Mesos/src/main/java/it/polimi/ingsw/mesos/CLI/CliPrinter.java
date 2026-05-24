@@ -5,8 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
@@ -27,9 +29,33 @@ final class CliPrinter {
     private static final int MAX_CARD_WIDTH = 40;
     private static final int PREFERRED_CARD_WIDTH = 28;
     private static final int CARD_BODY_HEIGHT = 7;
-    private static final int MIN_OFFER_TILE_WIDTH = 18;
-    private static final int MAX_OFFER_TILE_WIDTH = 24;
+    private static final int OFFER_TILE_BODY_HEIGHT = 6;
+    private static final int TURN_ORDER_MAX_WIDTH = 44;
+    private static final int MIN_OFFER_TILE_WIDTH = 26;
+    private static final int MAX_OFFER_TILE_WIDTH = 32;
+    private static final int SECTION_HORIZONTAL_PADDING = 3;
+    private static final int BOX_HORIZONTAL_PADDING = 2;
     private static final String COLUMN_GAP = "  ";
+    private static final String CENTER_AREA_GAP = "      ";
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final Pattern ANSI_PATTERN = Pattern.compile("\u001B\\[[;\\d]*m");
+    private static final String COLOR_BUILDING = "#B88A44";
+    private static final String COLOR_INVENTOR = "#62B2A0";
+    private static final String COLOR_GATHERER = "#D77C45";
+    private static final String COLOR_SHAMAN = "#764152";
+    private static final String COLOR_BUILDER = "#31121A";
+    private static final String COLOR_ARTIST = "#F2D058";
+    private static final String COLOR_HUNTER = "#CD5244";
+    private static final String COLOR_SUSTENANCE = "#FF9354";
+    private static final String COLOR_SHAMANIC_RITUAL = "#FF8DB4";
+    private static final String COLOR_CAVE_PAINTING = "#FFD616";
+    private static final String COLOR_HUNT = "#FF4656";
+    private static final String COLOR_TILE = "#A68A64";
+    private static final String COLOR_PLAYER_BLACK = "#393934";
+    private static final String COLOR_PLAYER_WHITE = "#DDD8CB";
+    private static final String COLOR_PLAYER_BLUE = "#5894A1";
+    private static final String COLOR_PLAYER_ORANGE = "#D16544";
+    private static final String COLOR_PLAYER_YELLOW = "#DFB95B";
 
     /**
      * Renders the full game snapshot for the terminal.
@@ -45,32 +71,28 @@ final class CliPrinter {
         StringBuilder builder = new StringBuilder();
 
         builder.append(NEW_LINE);
-        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
-        builder.append("MESOS | ")
-                .append(snapshot.gameName())
-                .append(" | Round ")
-                .append(snapshot.currentRound())
-                .append(" | Era ")
-                .append(snapshot.currentEra())
-                .append(" | ")
-                .append(statusLabel(snapshot.status()))
-                .append(NEW_LINE);
-        builder.append("Players in lobby: ")
-                .append(snapshot.joinedPlayers())
-                .append("/")
-                .append(snapshot.playerCount())
-                .append(NEW_LINE);
-        builder.append(sceneMessage(snapshot, localNickname)).append(NEW_LINE);
-        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
+        appendSection(builder, "Game table - game information", createGameInfoBox(snapshot, localNickname, boardWidth));
+        appendRow(builder, "TOP ROW", snapshot.topRow(), "top", boardWidth);
+        appendSection(
+                builder,
+                "TURN ORDER TILE AND OFFER TRACK / OFFER TILES",
+                renderCenterArea(snapshot.turnOrder(), snapshot.offerTiles(), snapshot.playerCount(), boardWidth)
+        );
+        appendRow(builder, "BOTTOM ROW", snapshot.bottomRow(), "bottom", boardWidth);
+        appendSection(
+                builder,
+                snapshot.finished() ? "PLAYERS / FINAL RANKING" : "PLAYERS",
+                createPlayersBox(
+                        snapshot.players(),
+                        snapshot.playerCount(),
+                        localNickname,
+                        snapshot.finished(),
+                        snapshot.currentPlayerNickname(),
+                        boardWidth
+                )
+        );
+        appendSection(builder, "COMMAND HINT", createAutoDoubleBox(List.of(commandsHint(snapshot, localNickname)), boardWidth, null));
 
-        appendPlayers(builder, snapshot.players(), localNickname, snapshot.finished(), snapshot.currentPlayerNickname());
-        appendBoard(builder, snapshot, boardWidth);
-
-        if (snapshot.finished()) {
-            appendFinalRanking(builder, snapshot.players());
-        }
-
-        builder.append(NEW_LINE).append(commandsHint(snapshot, localNickname));
         return builder.toString();
     }
 
@@ -232,17 +254,18 @@ final class CliPrinter {
      * @param currentPlayerNickname nickname to mark as active
      * @throws NullPointerException if the builder or player list is null
      */
-    private void appendPlayers(
-            StringBuilder builder,
+    private List<String> createPlayersBox(
             List<PlayerSummary> players,
+            int playerCount,
             String localNickname,
             boolean finished,
-            String currentPlayerNickname
+            String currentPlayerNickname,
+            int boardWidth
     ) {
-        builder.append(NEW_LINE).append("Clans in game").append(NEW_LINE);
+        List<String> body = new ArrayList<>();
         if (players.isEmpty()) {
-            builder.append("  No players present.").append(NEW_LINE);
-            return;
+            body.add("No players present.");
+            return createAutoDoubleBox(fitLines(body, playerSlots(playerCount), boardWidth - boxFixedContentWidth()), boardWidth, null);
         }
 
         List<PlayerSummary> orderedPlayers = finished
@@ -252,18 +275,18 @@ final class CliPrinter {
                 : players;
 
         for (PlayerSummary player : orderedPlayers) {
-            builder.append("  ");
+            StringBuilder line = new StringBuilder();
             if (player.nickname().equals(currentPlayerNickname)) {
-                builder.append("> ");
+                line.append("> ");
             } else {
-                builder.append("  ");
+                line.append("  ");
             }
             if (player.nickname().equals(localNickname)) {
-                builder.append("* ");
+                line.append("* ");
             } else {
-                builder.append("  ");
+                line.append("  ");
             }
-            builder.append(playerLabel(player.nickname(), player.color()))
+            line.append(playerLabel(player.nickname(), player.color()))
                     .append(" | food ")
                     .append(player.food())
                     .append(" | prestige ")
@@ -271,27 +294,11 @@ final class CliPrinter {
                     .append(" | tribe ")
                     .append(player.characterCount())
                     .append(" | buildings ")
-                    .append(player.buildingCount())
-                    .append(NEW_LINE);
+                    .append(player.buildingCount());
+            body.add(line.toString());
         }
-    }
 
-    /**
-     * Appends the board rows, turn order, and offer track to the output.
-     *
-     * @param builder destination builder
-     * @param snapshot snapshot containing board data
-     * @param boardWidth target board width
-     * @throws NullPointerException if the builder, snapshot, or required board
-     *                              lists are null
-     */
-    private void appendBoard(StringBuilder builder, GameSnapshot snapshot, int boardWidth) {
-        builder.append(NEW_LINE).append(repeat("-", boardWidth)).append(NEW_LINE);
-        builder.append("Game table").append(NEW_LINE);
-        builder.append(repeat("-", boardWidth)).append(NEW_LINE);
-        appendRow(builder, "TOP ROW", snapshot.topRow(), "top", boardWidth);
-        appendCenterArea(builder, snapshot.turnOrder(), snapshot.offerTiles(), boardWidth);
-        appendRow(builder, "BOTTOM ROW", snapshot.bottomRow(), "bottom", boardWidth);
+        return createAutoDoubleBox(fitLines(body, playerSlots(playerCount), boardWidth - boxFixedContentWidth()), boardWidth, null);
     }
 
     /**
@@ -304,23 +311,23 @@ final class CliPrinter {
      * @param boardWidth available board width
      * @throws NullPointerException if the builder or either list is null
      */
-    private void appendCenterArea(
-            StringBuilder builder,
+    private List<String> renderCenterArea(
             List<TurnOrderSpaceSummary> turnOrder,
             List<OfferTileSummary> offerTiles,
+            int playerCount,
             int boardWidth
     ) {
-        List<String> turnOrderPanel = renderTurnOrderPanel(turnOrder);
+        List<String> turnOrderPanel = renderTurnOrderPanel(turnOrder, playerCount);
         List<String> offerTrackPanel = renderOfferTrackPanel(offerTiles);
 
-        if (lineWidth(turnOrderPanel) + lineWidth(offerTrackPanel) + 3 <= boardWidth) {
-            appendLines(builder, mergeColumns(List.of(turnOrderPanel, offerTrackPanel), "   "));
-            return;
+        if (lineWidth(turnOrderPanel) + lineWidth(offerTrackPanel) + CENTER_AREA_GAP.length() <= boardWidth) {
+            return mergeColumns(List.of(turnOrderPanel, offerTrackPanel), CENTER_AREA_GAP);
         }
 
-        appendLines(builder, turnOrderPanel);
-        builder.append(NEW_LINE);
-        appendLines(builder, offerTrackPanel);
+        List<String> stacked = new ArrayList<>(turnOrderPanel);
+        stacked.add("");
+        stacked.addAll(offerTrackPanel);
+        return stacked;
     }
 
     /**
@@ -330,7 +337,7 @@ final class CliPrinter {
      * @return panel lines, including an empty message when no spaces exist
      * @throws NullPointerException if the turn-order list is null
      */
-    private List<String> renderTurnOrderPanel(List<TurnOrderSpaceSummary> turnOrder) {
+    private List<String> renderTurnOrderPanel(List<TurnOrderSpaceSummary> turnOrder, int playerCount) {
         List<String> body = new ArrayList<>();
         for (TurnOrderSpaceSummary space : turnOrder) {
             String occupant = space.occupantNickname() == null
@@ -338,10 +345,12 @@ final class CliPrinter {
                     : playerLabel(space.occupantNickname(), space.occupantColor());
             body.add("[" + space.index() + "] bonus " + signed(space.foodBonus()) + " -> " + occupant);
         }
-        if (body.isEmpty()) {
+        if (turnOrder.isEmpty()) {
             body.add("No turn spaces available.");
         }
-        return createPanel("TURN ORDER", body, 34);
+        int targetLines = playerSlots(playerCount);
+        List<String> fitted = fitLines(body, targetLines, TURN_ORDER_MAX_WIDTH - boxFixedContentWidth());
+        return createAutoDoubleBox(fitted, TURN_ORDER_MAX_WIDTH, COLOR_TILE);
     }
 
     /**
@@ -353,7 +362,7 @@ final class CliPrinter {
      */
     private List<String> renderOfferTrackPanel(List<OfferTileSummary> offerTiles) {
         if (offerTiles.isEmpty()) {
-            return createPanel("OFFER TILES", List.of("No tiles available."), 24);
+            return createDoubleBox(List.of("OFFER TILES", "No tiles available."), 24, COLOR_TILE);
         }
 
         int splitIndex = offerTiles.size() <= 4 ? offerTiles.size() : (offerTiles.size() + 1) / 2;
@@ -373,7 +382,7 @@ final class CliPrinter {
                     " "
             ));
         }
-        return createPanel("OFFER TILES", body, lineWidth(body) + 4);
+        return body;
     }
 
     /**
@@ -388,9 +397,9 @@ final class CliPrinter {
      * @throws NullPointerException if the builder or cards list is null
      */
     private void appendRow(StringBuilder builder, String title, List<CardSummary> cards, String rowToken, int boardWidth) {
-        builder.append(NEW_LINE).append(title).append(NEW_LINE);
+        appendLines(builder, createSectionHeader(title));
         if (cards.isEmpty()) {
-            builder.append("  No visible cards.").append(NEW_LINE);
+            appendLines(builder, createAutoDoubleBox(List.of("No visible cards."), boardWidth, null));
             return;
         }
 
@@ -406,31 +415,7 @@ final class CliPrinter {
                 builder.append(NEW_LINE);
             }
         }
-    }
-
-    /**
-     * Appends the final ranking sorted by prestige descending.
-     *
-     * @param builder destination builder
-     * @param players players to rank
-     * @throws NullPointerException if the builder or player list is null
-     */
-    private void appendFinalRanking(StringBuilder builder, List<PlayerSummary> players) {
-        builder.append(NEW_LINE).append("Final ranking").append(NEW_LINE);
-        List<PlayerSummary> ranking = players.stream()
-                .sorted(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
-                .toList();
-        for (int index = 0; index < ranking.size(); index++) {
-            PlayerSummary player = ranking.get(index);
-            builder.append("  ")
-                    .append(index + 1)
-                    .append(". ")
-                    .append(playerLabel(player.nickname(), player.color()))
-                    .append(" -> ")
-                    .append(player.prestigePoints())
-                    .append(" prestige")
-                    .append(NEW_LINE);
-        }
+        builder.append(NEW_LINE);
     }
 
     /**
@@ -444,18 +429,15 @@ final class CliPrinter {
      */
     private List<String> createCardBox(CardSummary card, String rowToken, int cardWidth) {
         List<String> content = new ArrayList<>();
-        content.add(card.type());
-        content.add(cardKind(card) + " | Era " + card.era());
+        content.add(cardBadge(card));
+        content.add("Name: " + card.type());
+        content.add("Era " + card.era());
         content.add("Cost " + valueOrDash(card.foodCost()) + " | PP " + valueOrDash(card.prestigePoints()));
-        content.addAll(wrap(card.details().isBlank() ? "No additional details." : card.details(), cardWidth - 4));
+        content.addAll(wrap(card.details().isBlank() ? "No additional details." : card.details(), cardWidth - boxFixedContentWidth()));
 
-        List<String> body = fitLines(content, CARD_BODY_HEIGHT - 1, cardWidth - 4);
+        List<String> body = fitLines(content, CARD_BODY_HEIGHT - 1, cardWidth - boxFixedContentWidth());
         body.add("card " + rowToken + " " + card.selectionIndex());
-        return createPanel(
-                "[" + card.selectionIndex() + "]",
-                body,
-                cardWidth
-        );
+        return createDoubleBox(body, cardWidth, cardColor(card));
     }
 
     /**
@@ -497,11 +479,11 @@ final class CliPrinter {
         }
         int targetWidth = 21;
         if (tilesInRow >= 5) {
-            targetWidth = 18;
+            targetWidth = 26;
         } else if (tilesInRow == 4) {
-            targetWidth = 19;
+            targetWidth = 28;
         } else if (tilesInRow <= 3) {
-            targetWidth = 22;
+            targetWidth = 30;
         }
         return clamp(targetWidth, MIN_OFFER_TILE_WIDTH, MAX_OFFER_TILE_WIDTH);
     }
@@ -516,6 +498,7 @@ final class CliPrinter {
      */
     private List<String> createOfferTileBox(OfferTileSummary tile, int tileWidth) {
         List<String> body = new ArrayList<>();
+        body.add("[" + tile.index() + "/" + tile.id() + "] OFFER TILE");
         body.add("Top   : " + tile.topPicks());
         body.add("Bottom: " + tile.bottomPicks());
         body.add("Food  : " + signed(tile.foodGain()));
@@ -523,29 +506,115 @@ final class CliPrinter {
                 ? "Status: Free"
                 : "Status: " + playerLabel(tile.occupantNickname(), tile.occupantColor()));
         body.add("offer " + tile.index());
-        return createPanel("[" + tile.index() + "/" + tile.id() + "]", body, tileWidth);
+        return createDoubleBox(fitLines(body, OFFER_TILE_BODY_HEIGHT, tileWidth - boxFixedContentWidth()), tileWidth, COLOR_TILE);
     }
 
     /**
-     * Creates a bordered panel and pads each body line to the panel width.
+     * Appends a fixed-width section title and its already-rendered body.
      *
-     * @param title panel title
-     * @param body body lines to include
-     * @param requestedWidth preferred panel width
-     * @return panel lines with a width large enough for the title
-     * @throws NullPointerException if the body list is null
+     * @param builder destination builder
+     * @param title section title
+     * @param body rendered section content
      */
-    private List<String> createPanel(String title, List<String> body, int requestedWidth) {
-        int width = Math.max(requestedWidth, title.length() + 4);
+    private void appendSection(StringBuilder builder, String title, List<String> body) {
+        appendLines(builder, createSectionHeader(title));
+        appendLines(builder, body);
+        builder.append(NEW_LINE);
+    }
+
+    /**
+     * Creates a fixed-width ASCII section header.
+     *
+     * @param title section title
+     * @return section header lines
+     */
+    private List<String> createSectionHeader(String title) {
+        int width = visibleWidth(title) + 2 + (SECTION_HORIZONTAL_PADDING * 2);
+        String padding = repeat(" ", SECTION_HORIZONTAL_PADDING);
+        return List.of(
+                "+" + repeat("-", width - 2) + "+",
+                "|" + padding + title + padding + "|",
+                "+" + repeat("-", width - 2) + "+"
+        );
+    }
+
+    /**
+     * Creates a double-bordered fixed-width box.
+     *
+     * @param body body lines to include
+     * @param requestedWidth target width
+     * @param colorHex optional ANSI truecolor hex color
+     * @return double-bordered box lines
+     */
+    private List<String> createDoubleBox(List<String> body, int requestedWidth, String colorHex) {
+        int bodyWidth = body.stream().mapToInt(this::visibleWidth).max().orElse(0);
+        int width = Math.max(requestedWidth, bodyWidth + boxFixedContentWidth());
+        int contentWidth = Math.max(0, width - boxFixedContentWidth());
+        String padding = repeat(" ", BOX_HORIZONTAL_PADDING);
         List<String> lines = new ArrayList<>();
-        lines.add("+" + repeat("-", width - 2) + "+");
-        lines.add("| " + padRight(title, width - 4) + " |");
-        lines.add("+" + repeat("-", width - 2) + "+");
+        lines.add(colorize("╔" + repeat("═", width - 2) + "╗", colorHex));
         for (String line : body) {
-            lines.add("| " + padRight(line, width - 4) + " |");
+            lines.add(colorize("║" + padding + padRight(line, contentWidth) + padding + "║", colorHex));
         }
-        lines.add("+" + repeat("-", width - 2) + "+");
+        lines.add(colorize("╚" + repeat("═", width - 2) + "╝", colorHex));
         return lines;
+    }
+
+    /**
+     * Creates a double-bordered box sized to its contents up to a maximum.
+     *
+     * @param body body lines to include
+     * @param maxWidth maximum target width
+     * @param colorHex optional ANSI truecolor hex color
+     * @return double-bordered box lines
+     */
+    private List<String> createAutoDoubleBox(List<String> body, int maxWidth, String colorHex) {
+        int bodyWidth = body.stream().mapToInt(this::visibleWidth).max().orElse(0);
+        int width = Math.min(maxWidth, bodyWidth + boxFixedContentWidth());
+        int contentWidth = Math.max(0, width - boxFixedContentWidth());
+        List<String> fitted = body.stream()
+                .map(line -> truncate(line, contentWidth))
+                .toList();
+        return createDoubleBox(fitted, width, colorHex);
+    }
+
+    /**
+     * Returns the visible line slots required for game-size-bound structures.
+     *
+     * @param playerCount configured game size
+     * @return at least one slot
+     */
+    private int playerSlots(int playerCount) {
+        return Math.max(1, playerCount);
+    }
+
+    /**
+     * Computes the fixed non-content width added by a double-bordered box.
+     *
+     * @return border width plus horizontal padding
+     */
+    private int boxFixedContentWidth() {
+        return 2 + (BOX_HORIZONTAL_PADDING * 2);
+    }
+
+    /**
+     * Creates the fixed-width game information box shown above the board.
+     *
+     * @param snapshot snapshot to describe
+     * @param localNickname nickname of the local player, or null
+     * @param boardWidth target width
+     * @return game information box lines
+     */
+    private List<String> createGameInfoBox(GameSnapshot snapshot, String localNickname, int boardWidth) {
+        List<String> body = List.of(
+                "MESOS | " + snapshot.gameName()
+                        + " | Round " + snapshot.currentRound()
+                        + " | Era " + snapshot.currentEra()
+                        + " | " + statusLabel(snapshot.status()),
+                "Players in lobby: " + snapshot.joinedPlayers() + "/" + snapshot.playerCount(),
+                sceneMessage(snapshot, localNickname)
+        );
+        return createAutoDoubleBox(fitLines(body, 3, boardWidth - boxFixedContentWidth()), boardWidth, null);
     }
 
     /**
@@ -676,24 +745,73 @@ final class CliPrinter {
      * @throws NullPointerException if the line list is null
      */
     private int lineWidth(List<String> lines) {
-        return lines.stream().mapToInt(String::length).max().orElse(0);
+        return lines.stream().mapToInt(this::visibleWidth).max().orElse(0);
     }
 
     /**
-     * Returns the broad display category for a card.
+     * Builds the compact type label shown at the top of a card.
      *
      * @param card card summary
-     * @return event, building, or tribe label
+     * @return uppercase card label with a category emoji
      * @throws NullPointerException if the card is null
      */
-    private String cardKind(CardSummary card) {
+    private String cardBadge(CardSummary card) {
+        String label = card.type().toUpperCase(Locale.ROOT);
         if (card.event()) {
-            return "Event";
+            return label + " ⚡";
         }
         if (card.foodCost() != null) {
-            return "Building";
+            return label + " 🏠";
         }
-        return "Tribe";
+        return label + " 👥";
+    }
+
+    /**
+     * Chooses the configured display color for a card.
+     *
+     * @param card card summary
+     * @return hex color, or null for unknown card types
+     * @throws NullPointerException if the card is null
+     */
+    private String cardColor(CardSummary card) {
+        String type = card.type().toLowerCase(Locale.ROOT);
+        if (card.foodCost() != null) {
+            return COLOR_BUILDING;
+        }
+        if (card.event()) {
+            if (type.contains("sustenance")) {
+                return COLOR_SUSTENANCE;
+            }
+            if (type.contains("shamanic")) {
+                return COLOR_SHAMANIC_RITUAL;
+            }
+            if (type.contains("cave") && type.contains("painting")) {
+                return COLOR_CAVE_PAINTING;
+            }
+            if (type.contains("hunt")) {
+                return COLOR_HUNT;
+            }
+            return null;
+        }
+        if (type.contains("inventor")) {
+            return COLOR_INVENTOR;
+        }
+        if (type.contains("gatherer")) {
+            return COLOR_GATHERER;
+        }
+        if (type.contains("shaman")) {
+            return COLOR_SHAMAN;
+        }
+        if (type.contains("builder")) {
+            return COLOR_BUILDER;
+        }
+        if (type.contains("artist")) {
+            return COLOR_ARTIST;
+        }
+        if (type.contains("hunter")) {
+            return COLOR_HUNTER;
+        }
+        return null;
     }
 
     /**
@@ -717,7 +835,56 @@ final class CliPrinter {
         if (color == null) {
             return nickname;
         }
-        return nickname + " [" + color + "]";
+        String label = nickname + " [" + color + "]";
+        if ("WHITE".equals(String.valueOf(color).toUpperCase(Locale.ROOT))) {
+            return colorizeWhitePlayer(label);
+        }
+        return makeBold(colorize(label, playerColor(color)));
+    }
+
+    /**
+     * Chooses the configured display color for a player color.
+     *
+     * @param color player color
+     * @return hex color, or null for unknown values
+     */
+    private String playerColor(Object color) {
+        return switch (String.valueOf(color).toUpperCase(Locale.ROOT)) {
+            case "BLACK" -> COLOR_PLAYER_BLACK;
+            case "WHITE" -> COLOR_PLAYER_WHITE;
+            case "BLUE" -> COLOR_PLAYER_BLUE;
+            case "ORANGE" -> COLOR_PLAYER_ORANGE;
+            case "YELLOW" -> COLOR_PLAYER_YELLOW;
+            default -> null;
+        };
+    }
+
+    /**
+     * Applies bold text to already-styled or plain text.
+     *
+     * @param value text to style
+     * @return bold text when supported, otherwise the original text
+     */
+    private String makeBold(String value) {
+        if (System.console() == null) {
+            return value;
+        }
+        String prefix = "\u001B[1m";
+        return prefix + value.replace(ANSI_RESET, ANSI_RESET + prefix) + ANSI_RESET;
+    }
+
+    /**
+     * Styles white player labels with bold text and a dark background.
+     *
+     * @param value player label to style
+     * @return styled white player label when supported, otherwise the original label
+     */
+    private String colorizeWhitePlayer(String value) {
+        if (System.console() == null) {
+            return value;
+        }
+        String prefix = "\u001B[1m" + trueColor("38", COLOR_PLAYER_WHITE) + trueColor("48", COLOR_PLAYER_BLACK);
+        return prefix + value.replace(ANSI_RESET, ANSI_RESET + prefix) + ANSI_RESET;
     }
 
     /**
@@ -760,7 +927,7 @@ final class CliPrinter {
      */
     private String padRight(String value, int width) {
         String safeValue = truncate(value == null ? "" : value, width);
-        return safeValue + repeat(" ", width - safeValue.length());
+        return safeValue + repeat(" ", width - visibleWidth(safeValue));
     }
 
     /**
@@ -776,13 +943,119 @@ final class CliPrinter {
         if (value == null || width <= 0) {
             return "";
         }
-        if (value.length() <= width) {
+        if (visibleWidth(value) <= width) {
             return value;
         }
+        String plainValue = stripAnsi(value);
         if (width <= 3) {
-            return value.substring(0, width);
+            return truncatePlainToWidth(plainValue, width);
         }
-        return value.substring(0, width - 3) + "...";
+        return truncatePlainToWidth(plainValue, width - 3) + "...";
+    }
+
+    /**
+     * Truncates uncolored text by visible terminal columns.
+     *
+     * @param value plain text to truncate
+     * @param width target visible width
+     * @return truncated text
+     */
+    private String truncatePlainToWidth(String value, int width) {
+        StringBuilder builder = new StringBuilder();
+        int usedWidth = 0;
+        for (int index = 0; index < value.length();) {
+            int codePoint = value.codePointAt(index);
+            int codePointWidth = codePointWidth(codePoint);
+            if (usedWidth + codePointWidth > width) {
+                break;
+            }
+            builder.appendCodePoint(codePoint);
+            usedWidth += codePointWidth;
+            index += Character.charCount(codePoint);
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Applies ANSI truecolor only when running in a real console.
+     *
+     * @param value text to color
+     * @param colorHex hex color in {@code #RRGGBB} format
+     * @return colored text when supported, otherwise the original text
+     */
+    private String colorize(String value, String colorHex) {
+        if (System.console() == null || colorHex == null) {
+            return value;
+        }
+        try {
+            String prefix = trueColor("38", colorHex);
+            return prefix + value.replace(ANSI_RESET, ANSI_RESET + prefix) + ANSI_RESET;
+        } catch (NumberFormatException exception) {
+            return value;
+        }
+    }
+
+    /**
+     * Creates one ANSI truecolor sequence from a known hex color.
+     *
+     * @param target {@code 38} for foreground or {@code 48} for background
+     * @param colorHex color in {@code #RRGGBB} format
+     * @return ANSI truecolor sequence
+     */
+    private String trueColor(String target, String colorHex) {
+        int red = Integer.parseInt(colorHex.substring(1, 3), 16);
+        int green = Integer.parseInt(colorHex.substring(3, 5), 16);
+        int blue = Integer.parseInt(colorHex.substring(5, 7), 16);
+        return "\u001B[" + target + ";2;" + red + ";" + green + ";" + blue + "m";
+    }
+
+    /**
+     * Measures text without ANSI color escape sequences.
+     *
+     * @param value text to measure
+     * @return visible character count
+     */
+    private int visibleWidth(String value) {
+        return stripAnsi(value == null ? "" : value)
+                .codePoints()
+                .map(this::codePointWidth)
+                .sum();
+    }
+
+    /**
+     * Removes ANSI color escape sequences.
+     *
+     * @param value text to clean
+     * @return text without ANSI escape sequences
+     */
+    private String stripAnsi(String value) {
+        return ANSI_PATTERN.matcher(value).replaceAll("");
+    }
+
+    /**
+     * Estimates terminal column width for one code point.
+     *
+     * @param codePoint Unicode code point
+     * @return terminal column width
+     */
+    private int codePointWidth(int codePoint) {
+        if (Character.getType(codePoint) == Character.NON_SPACING_MARK) {
+            return 0;
+        }
+        if ((codePoint >= 0x1100 && codePoint <= 0x115F)
+                || (codePoint >= 0x2329 && codePoint <= 0x232A)
+                || (codePoint >= 0x2E80 && codePoint <= 0xA4CF)
+                || (codePoint >= 0xAC00 && codePoint <= 0xD7A3)
+                || (codePoint >= 0xF900 && codePoint <= 0xFAFF)
+                || (codePoint >= 0xFE10 && codePoint <= 0xFE19)
+                || (codePoint >= 0xFE30 && codePoint <= 0xFE6F)
+                || (codePoint >= 0xFF00 && codePoint <= 0xFF60)
+                || (codePoint >= 0xFFE0 && codePoint <= 0xFFE6)
+                || (codePoint >= 0x1F300 && codePoint <= 0x1FAFF)
+                || (codePoint >= 0x2600 && codePoint <= 0x27BF)) {
+            return 2;
+        }
+        return 1;
     }
 
     /**
