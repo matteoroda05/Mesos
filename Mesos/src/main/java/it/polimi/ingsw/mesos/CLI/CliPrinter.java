@@ -33,6 +33,7 @@ final class CliPrinter {
     private static final int TURN_ORDER_MAX_WIDTH = 44;
     private static final int MIN_OFFER_TILE_WIDTH = 26;
     private static final int MAX_OFFER_TILE_WIDTH = 32;
+    private static final int MAX_LOBBY_WIDTH = 96;
     private static final int SECTION_HORIZONTAL_PADDING = 3;
     private static final int BOX_HORIZONTAL_PADDING = 2;
     private static final String COLUMN_GAP = "  ";
@@ -71,11 +72,11 @@ final class CliPrinter {
         StringBuilder builder = new StringBuilder();
 
         builder.append(NEW_LINE);
-        appendSection(builder, "Game table - game information", createGameInfoBox(snapshot, localNickname, boardWidth));
+        appendSection(builder, "GAME TABLE", createGameInfoBox(snapshot, localNickname, boardWidth));
         appendRow(builder, "TOP ROW", snapshot.topRow(), "top", boardWidth);
         appendSection(
                 builder,
-                "TURN ORDER TILE AND OFFER TRACK / OFFER TILES",
+                "TURN ORDER TILE AND OFFER TRACK",
                 renderCenterArea(snapshot.turnOrder(), snapshot.offerTiles(), snapshot.playerCount(), boardWidth)
         );
         appendRow(builder, "BOTTOM ROW", snapshot.bottomRow(), "bottom", boardWidth);
@@ -105,47 +106,11 @@ final class CliPrinter {
      * @throws NullPointerException if the snapshot or its game list is null
      */
     String renderLobby(LobbySnapshot lobbySnapshot) {
-        int boardWidth = Math.min(resolveBoardWidth(), 120);
+        int lobbyWidth = Math.min(resolveBoardWidth(), MAX_LOBBY_WIDTH);
         StringBuilder builder = new StringBuilder();
 
         builder.append(NEW_LINE);
-        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
-        builder.append("LOBBY MESOS").append(NEW_LINE);
-        builder.append("Available games: ").append(lobbySnapshot.openGames().size()).append(NEW_LINE);
-        builder.append(repeat("=", boardWidth)).append(NEW_LINE);
-
-        if (lobbySnapshot.openGames().isEmpty()) {
-            builder.append("No open games right now. You can create a new one.")
-                    .append(NEW_LINE);
-        } else {
-            for (int playerCount = Globals.MIN_NUM_PLAYERS; playerCount <= Globals.MAX_NUM_PLAYERS; playerCount++) {
-                int currentPlayerCount = playerCount;
-                List<LobbyGameSummary> gamesForPlayerCount = lobbySnapshot.openGames().stream()
-                        .filter(game -> game.playerCount() == currentPlayerCount)
-                        .toList();
-                if (gamesForPlayerCount.isEmpty()) {
-                    continue;
-                }
-
-                builder.append(NEW_LINE)
-                        .append(currentPlayerCount)
-                        .append(" players")
-                        .append(NEW_LINE);
-
-                for (LobbyGameSummary game : gamesForPlayerCount) {
-                    builder.append("  ")
-                            .append(game.gameName())
-                            .append(" | lobby ")
-                            .append(game.joinedPlayers())
-                            .append("/")
-                            .append(game.playerCount())
-                            .append(" | free seats ")
-                            .append(game.availableSeats())
-                            .append(NEW_LINE);
-                }
-            }
-        }
-
+        appendLines(builder, createLobbyBox(lobbySnapshot, lobbyWidth));
         builder.append(NEW_LINE)
                 .append("Choose 'join' to enter an existing game or 'create' to create a new one.")
                 .append(NEW_LINE)
@@ -579,6 +544,66 @@ final class CliPrinter {
     }
 
     /**
+     * Creates the lobby listing box without affecting the prompt text below it.
+     *
+     * @param lobbySnapshot lobby data to render
+     * @param maxWidth maximum box width
+     * @return double-bordered lobby box lines
+     */
+    private List<String> createLobbyBox(LobbySnapshot lobbySnapshot, int maxWidth) {
+        int maxContentWidth = Math.max(1, maxWidth - boxFixedContentWidth());
+        List<List<String>> sections = new ArrayList<>();
+        sections.add(List.of(
+                "LOBBY MESOS",
+                "Available games: " + lobbySnapshot.openGames().size()
+        ));
+
+        if (lobbySnapshot.openGames().isEmpty()) {
+            sections.add(wrap("No open games right now. You can create a new one.", maxContentWidth));
+        } else {
+            for (int playerCount = Globals.MIN_NUM_PLAYERS; playerCount <= Globals.MAX_NUM_PLAYERS; playerCount++) {
+                int currentPlayerCount = playerCount;
+                List<LobbyGameSummary> gamesForPlayerCount = lobbySnapshot.openGames().stream()
+                        .filter(game -> game.playerCount() == currentPlayerCount)
+                        .toList();
+                if (gamesForPlayerCount.isEmpty()) {
+                    continue;
+                }
+
+                List<String> section = new ArrayList<>();
+                section.add(currentPlayerCount + " players");
+                for (LobbyGameSummary game : gamesForPlayerCount) {
+                    section.addAll(wrap("  " + game.gameName()
+                            + " | lobby " + game.joinedPlayers() + "/" + game.playerCount()
+                            + " | free seats " + game.availableSeats(), maxContentWidth));
+                }
+                sections.add(section);
+            }
+        }
+
+        int contentWidth = sections.stream()
+                .flatMap(List::stream)
+                .mapToInt(this::visibleWidth)
+                .max()
+                .orElse(0);
+        int width = Math.min(maxWidth, contentWidth + boxFixedContentWidth());
+        int boxContentWidth = Math.max(0, width - boxFixedContentWidth());
+        String padding = repeat(" ", BOX_HORIZONTAL_PADDING);
+        List<String> lines = new ArrayList<>();
+        lines.add("╔" + repeat("═", width - 2) + "╗");
+        for (int sectionIndex = 0; sectionIndex < sections.size(); sectionIndex++) {
+            if (sectionIndex > 0) {
+                lines.add("╟" + repeat("─", width - 2) + "╢");
+            }
+            for (String line : sections.get(sectionIndex)) {
+                lines.add("║" + padding + padRight(line, boxContentWidth) + padding + "║");
+            }
+        }
+        lines.add("╚" + repeat("═", width - 2) + "╝");
+        return lines;
+    }
+
+    /**
      * Returns the visible line slots required for game-size-bound structures.
      *
      * @param playerCount configured game size
@@ -692,8 +717,8 @@ final class CliPrinter {
 
     /**
      * Wraps text on whitespace within the requested width.
-     * Null or blank input returns a single empty line; words longer than the
-     * width are truncated.
+     * Null or blank input returns a single empty line; leading indentation is
+     * preserved, and words longer than the width are split.
      *
      * @param text text to wrap
      * @param width maximum line width
@@ -703,35 +728,43 @@ final class CliPrinter {
         if (text == null || text.isBlank()) {
             return List.of("");
         }
+
         List<String> wrapped = new ArrayList<>();
+        int indentEnd = 0;
+        while (indentEnd < text.length() && Character.isWhitespace(text.charAt(indentEnd))) {
+            indentEnd++;
+        }
+        String indent = text.substring(0, indentEnd);
         String[] words = text.trim().split("\\s+");
-        StringBuilder line = new StringBuilder();
+        StringBuilder line = new StringBuilder(indent);
 
         for (String word : words) {
-            if (word.length() > width) {
-                if (!line.isEmpty()) {
-                    wrapped.add(line.toString());
-                    line.setLength(0);
-                }
-                wrapped.add(truncate(word, width));
+            String separator = visibleWidth(line.toString()) > visibleWidth(indent) ? " " : "";
+            if (visibleWidth(line + separator + word) <= width) {
+                line.append(separator).append(word);
                 continue;
             }
 
-            if (line.isEmpty()) {
-                line.append(word);
-                continue;
-            }
-
-            if (line.length() + 1 + word.length() <= width) {
-                line.append(' ').append(word);
-            } else {
+            if (visibleWidth(line.toString()) > visibleWidth(indent)) {
                 wrapped.add(line.toString());
                 line.setLength(0);
-                line.append(word);
+                line.append(indent);
             }
+
+            String remainingWord = word;
+            int wordWidth = Math.max(1, width - visibleWidth(indent));
+            while (visibleWidth(indent + remainingWord) > width) {
+                String chunk = truncatePlainToWidth(remainingWord, wordWidth);
+                if (chunk.isEmpty()) {
+                    chunk = remainingWord.substring(0, Character.charCount(remainingWord.codePointAt(0)));
+                }
+                wrapped.add(indent + chunk);
+                remainingWord = remainingWord.substring(chunk.length());
+            }
+            line.append(remainingWord);
         }
 
-        if (!line.isEmpty()) {
+        if (visibleWidth(line.toString()) > visibleWidth(indent) || wrapped.isEmpty()) {
             wrapped.add(line.toString());
         }
         return wrapped;
