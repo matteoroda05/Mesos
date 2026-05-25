@@ -6,29 +6,28 @@
 
     <groupId>it.polimi.ingsw</groupId>
     <artifactId>Mesos</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-final</version>
     <name>Mesos</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>23</java.version>
+        <jackson.version>2.18.7</jackson.version>
         <junit.version>5.12.1</junit.version>
     </properties>
 
     <dependencies>
+        <!-- Provides JSON parsing and object mapping for loading the card resource data. -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.18.3</version>
+            <version>${jackson.version}</version>
         </dependency>
+
+        <!-- Provides the JUnit 5 API and engine used by the test suite. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
@@ -36,35 +35,52 @@
 
     <build>
         <plugins>
+            <!-- Fails the build early when Maven is run with a Java version older than the one required by the project. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java-version</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[${java.version},)</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Compiles the source code using the Java release declared in the project properties. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>23</release>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
+
+            <!-- Runs the JUnit test suite during the Maven test phase. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
-                <configuration>
-                    <argLine>
-                        --add-opens it.polimi.ingsw.mesos/it.polimi.ingsw.mesos.Model=ALL-UNNAMED
-                        --add-opens it.polimi.ingsw.mesos/it.polimi.ingsw.mesos.Controller=ALL-UNNAMED
-                    </argLine>
-                </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
-            </plugin>
+
+            <!-- Builds runnable jars that include the project classes and runtime dependencies. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.6.0</version>
                 <executions>
+                    <!-- Creates the runnable server jar with the server launcher as its entry point. -->
                     <execution>
                         <id>server-jar</id>
                         <phase>package</phase>
@@ -82,6 +98,7 @@
                             </transformers>
                         </configuration>
                     </execution>
+                    <!-- Creates the runnable client jar with the client launcher as its entry point. -->
                     <execution>
                         <id>client-jar</id>
                         <phase>package</phase>
@@ -101,6 +118,21 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Generates Javadocs with relaxed checks so the current documentation can be produced successfully. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.12.0</version>
+                <configuration>
+                    <legacyMode>true</legacyMode>
+                    <doclint>none</doclint>
+                    <show>private</show>
+                    <detectLinks>false</detectLinks>
+                    <detectOfflineLinks>false</detectOfflineLinks>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>

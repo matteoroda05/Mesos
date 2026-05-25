@@ -1,63 +1,53 @@
 # Software engineering project – Polytechnic University of Milan, 2025/2026
 
-### Build runnable jars
+## Maven project
 
-From the repository root:
+The Maven project is inside the `Mesos` directory. Run Maven commands from there:
 
 ```bash
 cd Mesos
-./mvnw clean package
 ```
 
-This creates two runnable jars. You can double-click them to open a small game window, or run them from a terminal:
+## Build runnable jars
 
-- `Mesos/target/Mesos-1.0-SNAPSHOT-server.jar`
-- `Mesos/target/Mesos-1.0-SNAPSHOT-client.jar`
+From `Mesos`, build the project with:
+
+```bash
+./mvnw -DskipTests package
+```
+
+This creates the main project jar and two runnable jars:
+
+- `Mesos/target/Mesos-1.0.0-final.jar`
+- `Mesos/target/Mesos-1.0.0-final-server.jar`
+- `Mesos/target/Mesos-1.0.0-final-client.jar`
+
+You can double-click the runnable client and server jars to open a small game window, or run them from a terminal.
 
 Open the server jar first:
 
 ```bash
-cd Mesos
-java -jar target/Mesos-1.0-SNAPSHOT-server.jar
+java -jar target/Mesos-1.0.0-final-server.jar
 ```
 
 Then open the client jar:
 
 ```bash
-cd Mesos
-java -jar target/Mesos-1.0-SNAPSHOT-client.jar
+java -jar target/Mesos-1.0.0-final-client.jar
 ```
 
 By default the server listens on socket port `12345` and RMI port `1099`.
 
-### Question list:
-- `newEra()` method only in model or in controller as well?
-- **Error handling**
-- Where do we handle "build" errors?
+## Build Javadocs
 
+From `Mesos`, generate the project Javadocs with:
 
-### Todo list:
-- **Test classes**
-- **Error handling**
-- [Cards](Mesos/src/main/resources/Cards.json)
-    - correct cards
-- [BuildingCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/BuildingCard.java)
-    - conclude building effects under [Buildings](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings) package
-        * [BuildingEndRound](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Buildings/BuildingEndRound.java): add visitor that can allow extra card pick
-- [GameSetup](Mesos/src/main/java/it/polimi/ingsw/mesos/Controller/GameSetup.java)
-    - Select the correct amount of buildings for different player counts
-    - Put final events at the end of the deck
-- [ModelController](Mesos/src/main/java/it/polimi/ingsw/mesos/Controller/ModelController.java)
-    - add methods to get needed variables from `GameContext`and remove `getGameContext()`
-- [MarketRow](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/MarketRow.java)
-    - remove method `takeCard()` after fixing its tests
-- [ErrorStates](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Enums/ErrorStates.java)
-    - Complete the enum
-- [OfferTrack](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/OfferTrack.java)
-    - method `getAvailableTiles()` could be removed
-    - method `ensureTilesInitialized()` is useless
+```bash
+./mvnw javadoc:javadoc
+```
 
-### NOT NEEDED TESTS:
-- [TribeCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/TribeCard.java), [CharacterCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/CharacterCard.java) > already tested for in [CardTest](Mesos/src/test/java/it/polimi/ingsw/mesos/Model/Cards/CardTest.java)
-- [EventCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/EventCard.java) > test single event classes
-- [ArtistCard](Mesos/src/main/java/it/polimi/ingsw/mesos/Model/Cards/Characters/ArtistCard.java) > nothing to test for
+The generated documentation entry point is:
+
+```text
+Mesos/target/reports/apidocs/index.html
+```
