@@ -238,7 +238,7 @@ public class RmiGameClient implements GameClient {
     @Override
     public GameOperationResult unsubscribe(UnsubscribeGameRequest request) throws IOException {
         if (remoteListener == null) {
-            return GameOperationResult.success("Nessuna sottoscrizione attiva", null);
+            return GameOperationResult.success("No active subscription", null);
         }
 
         try {

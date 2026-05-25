@@ -49,9 +49,9 @@ public class ActionState extends GameState {
      * @param color player receiving the extra action
      * @param extra_picks number of extra card choices granted
      * @param top_row true when the extra choices apply to the top row
-     * @implNote This constructor does not validate the player color or
-     *           {@code extra_picks}; callers are expected to pass a valid
-     *           player and a non-negative number of picks.
+     * This constructor does not validate the player color or
+     * @code extra_picks}; callers are expected to pass a valid
+     * player and a non-negative number of picks.
      */
     public ActionState(ModelController controller, Color color, int extra_picks, boolean top_row) {
         this(controller, color, extra_picks, top_row, false);
@@ -98,7 +98,7 @@ public class ActionState extends GameState {
     @Override
     public GameState chooseCard(Color player_color, int card, boolean is_top) {
         if (p != player_color) {
-            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn (dumbass)" );
+            throw new RuntimeException("Wrong turn: it's player " + p + "'s turn, not "  + player_color + "'s turn");
         }
 
         Optional<CharacterCard> chosen;

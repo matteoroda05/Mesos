@@ -1,6 +1,5 @@
 package it.polimi.ingsw.mesos.CLI;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -36,7 +35,6 @@ class CliPrinterTest {
                     Color.BLUE,
                     1,
                     2,
-                    List.of(Color.BLUE, Color.YELLOW),
                     List.of(
                             new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
                             new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)
@@ -50,39 +48,38 @@ class CliPrinterTest {
                             new TurnOrderSpaceSummary(1, 1, Color.YELLOW, "Bob")
                     ),
                     List.of(
-                            new CardSummary(0, "Hunter", Era.SECOND, false, "cacciatore attivo", null, null),
-                            new CardSummary(1, "Building End Game", Era.SECOND, false, "fine partita: +4 pp", 2, 4),
-                            new CardSummary(2, "Shaman", Era.SECOND, false, "2 stelle sciamaniche", null, null),
-                            new CardSummary(3, "Builder", Era.SECOND, false, "sconto edifici 1", null, null),
-                            new CardSummary(4, "Inventor", Era.SECOND, false, "icona BOAT", null, null),
-                            new CardSummary(5, "Sustenance Event", Era.SECOND, true, "2 cibo per personaggio", null, null),
-                            new CardSummary(6, "Building Bonus Event", Era.SECOND, false, "su hunt: hunter da' +1 cibo", 3, 1),
-                            new CardSummary(7, "Gatherer", Era.SECOND, false, "sconto sostentamento 1 cibo", null, null)
+                            new CardSummary(0, "Hunter", Era.SECOND, false, "active hunter", null, null),
+                            new CardSummary(1, "Building End Game", Era.SECOND, false, "end game: +4 pp", 2, 4),
+                            new CardSummary(2, "Shaman", Era.SECOND, false, "2 shamanic stars", null, null),
+                            new CardSummary(3, "Builder", Era.SECOND, false, "building discount 1", null, null),
+                            new CardSummary(4, "Inventor", Era.SECOND, false, "icon BOAT", null, null),
+                            new CardSummary(5, "Sustenance Event", Era.SECOND, true, "2 food per character", null, null),
+                            new CardSummary(6, "Building Bonus Event", Era.SECOND, false, "on hunt: hunter gives +1 food", 3, 1),
+                            new CardSummary(7, "Gatherer", Era.SECOND, false, "sustenance discount 1 food", null, null)
                     ),
                     List.of(
-                            new CardSummary(0, "Shamanic Ritual Event", Era.SECOND, true, "vincitori +6 pp", null, null)
+                            new CardSummary(0, "Shamanic Ritual Event", Era.SECOND, true, "winners +6 pp", null, null)
                     )
             );
 
             String rendering = printer.renderSnapshot(snapshot, "Alice");
 
             assertTrue(rendering.contains("MESOS | test-room"));
-            assertTrue(rendering.contains("Tavolo di gioco"));
-            assertTrue(rendering.contains("RIGA ALTA"));
-            assertTrue(rendering.contains("RIGA BASSA"));
-            assertTrue(rendering.contains("ORDINE DI TURNO"));
-            assertTrue(rendering.contains("TESSERE OFFERTA"));
+            assertTrue(rendering.contains("Game table"));
+            assertTrue(rendering.contains("TOP ROW"));
+            assertTrue(rendering.contains("BOTTOM ROW"));
+            assertTrue(rendering.contains("TURN ORDER"));
+            assertTrue(rendering.contains("OFFER TILES"));
             assertTrue(rendering.contains("card top 0"));
             assertTrue(rendering.contains("card top 7"));
             assertTrue(rendering.contains("offer 1"));
-            assertTrue(rendering.contains("card bottom <indice>"));
-            assertFalse(rendering.contains("pass"));
-            assertTrue(rendering.contains("cacciatore attivo"));
+            assertTrue(rendering.contains("'pass'"));
+            assertTrue(rendering.contains("active hunter"));
             assertTrue(rendering.contains("Shamanic Ritual Event"));
-            assertTrue(rendering.contains("2 cibo per personaggio"));
-            assertTrue(rendering.contains("Alto  : 0"));
-            assertTrue(rendering.contains("Basso : 2"));
-            assertTrue(rendering.contains("Cibo  : +1"));
+            assertTrue(rendering.contains("2 food per character"));
+            assertTrue(rendering.contains("Top   : 0"));
+            assertTrue(rendering.contains("Bottom: 2"));
+            assertTrue(rendering.contains("Food  : +1"));
             assertTrue(rendering.lines().mapToInt(String::length).max().orElse(0) <= 180);
         } finally {
             if (previousWidth == null) {
@@ -94,42 +91,9 @@ class CliPrinterTest {
     }
 
     @Test
-    void renderHelpDoesNotAdvertisePassCommand() {
+    void renderHelpIncludesPassCommand() {
         CliPrinter printer = new CliPrinter();
 
-        assertFalse(printer.renderHelp().contains("pass | passa"));
-    }
-
-    @Test
-    void renderSnapshotMentionsPassOnlyForOptionalExtraPick() {
-        CliPrinter printer = new CliPrinter();
-        GameSnapshot snapshot = new GameSnapshot(
-                "pass-room",
-                2,
-                2,
-                true,
-                false,
-                GameStatus.ROUND_ACTIONS,
-                3,
-                Era.SECOND,
-                "Alice",
-                Color.BLUE,
-                1,
-                0,
-                List.of(Color.BLUE, Color.YELLOW),
-                List.of(
-                        new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
-                        new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)
-                ),
-                List.of(new OfferTileSummary(0, 'A', 0, 0, 0, true, null, null)),
-                List.of(new TurnOrderSpaceSummary(0, 0, Color.BLUE, "Alice")),
-                List.of(new CardSummary(0, "Building After Everyone", Era.SECOND, false, "carta extra opzionale", 2, 4)),
-                List.of(),
-                true
-        );
-
-        String rendering = printer.renderSnapshot(snapshot, "Alice");
-
-        assertTrue(rendering.contains("usa 'pass'"));
+        assertTrue(printer.renderHelp().contains("pass | passa"));
     }
 }

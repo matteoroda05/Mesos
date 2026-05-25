@@ -26,10 +26,10 @@ class MesosServerCoreSummaryTest {
 
         assertTrue(((String) describeEndGameBuilding.invoke(session,
                 new BuildingEndGame(Era.FIRST, 2, 1, 1, true, 0, 0, null, 0)))
-                .contains("raddoppia"));
+                .contains("double"));
         assertTrue(((String) describeEndGameBuilding.invoke(session,
                 new BuildingEndGame(Era.FIRST, 2, 1, 1, false, 5, 0, null, 0)))
-                .contains("set completo"));
+                .contains("complete character set"));
         assertTrue(((String) describeEndGameBuilding.invoke(session,
                 new BuildingEndGame(Era.FIRST, 2, 1, 1, false, 0, 2, HunterCard.class, 0)))
                 .contains("Hunter"));
@@ -54,13 +54,13 @@ class MesosServerCoreSummaryTest {
         assertTrue(((String) describeCard.invoke(session,
                 new BuildingShamanicRitual(Era.FIRST, 2, 1, 1, 0, 2))).contains("x2"));
         assertTrue(((String) describeCard.invoke(session,
-                new BuildingShamanicRitual(Era.FIRST, 2, 1, 1, 0, 0))).contains("annulla"));
+                new BuildingShamanicRitual(Era.FIRST, 2, 1, 1, 0, 0))).contains("cancel"));
         assertTrue(((String) describeCard.invoke(session,
                 new ArtistCard(Era.FIRST, 2))).isEmpty());
         assertTrue(((String) describeCard.invoke(session,
-                new BuilderCard(Era.FIRST, 2, 1, 2))).contains("sconto edifici"));
+                new BuilderCard(Era.FIRST, 2, 1, 2))).contains("building discount"));
         assertTrue(((String) formatName.invoke(session, "ShamanicRitualEvent")).contains("Shamanic Ritual Event"));
-        assertTrue(((String) signed.invoke(session, -1, " cibo")).contains("-1"));
+        assertTrue(((String) signed.invoke(session, -1, " food")).contains("-1"));
     }
 
     private static Object newSession() throws Exception {
