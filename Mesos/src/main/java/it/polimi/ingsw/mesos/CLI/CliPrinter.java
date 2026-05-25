@@ -40,7 +40,7 @@ final class CliPrinter {
     private static final String CENTER_AREA_GAP = "      ";
     private static final String ANSI_RESET = "\u001B[0m";
     private static final Pattern ANSI_PATTERN = Pattern.compile("\u001B\\[[;\\d]*m");
-    private static final String COLOR_BUILDING = "#B88A44";
+    private static final String COLOR_BUILDING = "#D6A354";
     private static final String COLOR_INVENTOR = "#62B2A0";
     private static final String COLOR_GATHERER = "#D77C45";
     private static final String COLOR_SHAMAN = "#764152";
@@ -51,7 +51,6 @@ final class CliPrinter {
     private static final String COLOR_SHAMANIC_RITUAL = "#FF8DB4";
     private static final String COLOR_CAVE_PAINTING = "#FFD616";
     private static final String COLOR_HUNT = "#FF4656";
-    private static final String COLOR_TILE = "#A68A64";
     private static final String COLOR_PLAYER_BLACK = "#393934";
     private static final String COLOR_PLAYER_WHITE = "#DDD8CB";
     private static final String COLOR_PLAYER_BLUE = "#5894A1";
@@ -315,7 +314,7 @@ final class CliPrinter {
         }
         int targetLines = playerSlots(playerCount);
         List<String> fitted = fitLines(body, targetLines, TURN_ORDER_MAX_WIDTH - boxFixedContentWidth());
-        return createAutoDoubleBox(fitted, TURN_ORDER_MAX_WIDTH, COLOR_TILE);
+        return createAutoDoubleBox(fitted, TURN_ORDER_MAX_WIDTH, null);
     }
 
     /**
@@ -327,7 +326,7 @@ final class CliPrinter {
      */
     private List<String> renderOfferTrackPanel(List<OfferTileSummary> offerTiles) {
         if (offerTiles.isEmpty()) {
-            return createDoubleBox(List.of("OFFER TILES", "No tiles available."), 24, COLOR_TILE);
+            return createDoubleBox(List.of("OFFER TILES", "No tiles available."), 24, null);
         }
 
         int splitIndex = offerTiles.size() <= 4 ? offerTiles.size() : (offerTiles.size() + 1) / 2;
@@ -471,7 +470,7 @@ final class CliPrinter {
                 ? "Status: Free"
                 : "Status: " + playerLabel(tile.occupantNickname(), tile.occupantColor()));
         body.add("offer " + tile.index());
-        return createDoubleBox(fitLines(body, OFFER_TILE_BODY_HEIGHT, tileWidth - boxFixedContentWidth()), tileWidth, COLOR_TILE);
+        return createDoubleBox(fitLines(body, OFFER_TILE_BODY_HEIGHT, tileWidth - boxFixedContentWidth()), tileWidth, null);
     }
 
     /**
@@ -785,18 +784,18 @@ final class CliPrinter {
      * Builds the compact type label shown at the top of a card.
      *
      * @param card card summary
-     * @return uppercase card label with a category emoji
+     * @return uppercase card label with an ASCII category marker
      * @throws NullPointerException if the card is null
      */
     private String cardBadge(CardSummary card) {
         String label = card.type().toUpperCase(Locale.ROOT);
         if (card.event()) {
-            return label + " ⚡";
+            return label + " [EVENT]";
         }
         if (card.foodCost() != null) {
-            return label + " 🏠";
+            return label + " [BUI]";
         }
-        return label + " 👥";
+        return label + " [TRIBE]";
     }
 
     /**
