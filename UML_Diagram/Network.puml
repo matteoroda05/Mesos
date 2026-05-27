@@ -1,0 +1,476 @@
+@startuml
+
+title Mesos - Network UML
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+package "Network" {
+
+  enum ConnectionType {
+    SOCKET
+    RMI
+  }
+
+  enum OperationErrorCode {
+    NONE
+    GAME_NAME_TAKEN
+    GAME_NOT_FOUND
+    GAME_FULL
+    PLAYER_NAME_TAKEN
+    PLAYER_NOT_IN_GAME
+    INVALID_LISTENER
+    NICKNAME_DISCONNECTED
+  }
+
+  class NetworkDefaults <<utility>> {
+    + DEFAULT_RMI_HOST: String
+    + DEFAULT_SOCKET_PORT: int
+    + DEFAULT_RMI_REGISTRY_PORT: int
+    + DEFAULT_RMI_SERVICE_NAME: String
+    + HEARTBEAT_INTERVAL_MILLIS: long
+    + HEARTBEAT_TIMEOUT_MILLIS: long
+    + SINGLE_PLAYER_WIN_TIMEOUT_MILLIS: long
+    + resolveRmiServerHost(configuredHost: String): String
+    + configureRmiServerHostname(configuredHost: String): void
+    + detectLocalNetworkHost(): String
+  }
+
+  class ServerEndpoint <<record>> {
+    + connectionType: ConnectionType
+    + host: String
+    + port: int
+    + serviceName: String
+    + socket(host: String, port: int): ServerEndpoint
+    + socket(host: String): ServerEndpoint
+    + rmi(host: String, port: int): ServerEndpoint
+    + rmi(host: String): ServerEndpoint
+    + rmi(host: String, port: int, serviceName: String): ServerEndpoint
+    + defaultEndpoint(connectionType: ConnectionType, host: String): ServerEndpoint
+  }
+
+  class GameClientFactory <<utility>> {
+    + connect(connectionType: ConnectionType, host: String): GameClient
+    + connect(connectionType: ConnectionType, host: String, port: int): GameClient
+    + connect(connectionType: ConnectionType, host: String, port: int, serviceName: String): GameClient
+    + connect(endpoint: ServerEndpoint): GameClient
+  }
+
+  interface GameClient {
+    + getLobby(): GameOperationResult
+    + nickname(request: NicknameRequest): GameOperationResult
+    + createGame(request: CreateGameRequest): GameOperationResult
+    + joinGame(request: JoinGameRequest): GameOperationResult
+    + getSnapshot(request: SnapshotRequest): GameOperationResult
+    + chooseOffer(request: ChooseOfferRequest): GameOperationResult
+    + chooseCard(request: ChooseCardRequest): GameOperationResult
+    + subscribe(request: SubscribeGameRequest, listener: GameUpdateListener): GameOperationResult
+    + unsubscribe(request: UnsubscribeGameRequest): GameOperationResult
+    + close(): void
+  }
+
+  interface MesosServerService {
+    + getLobby(): GameOperationResult
+    + nickname(request: NicknameRequest): GameOperationResult
+    + createGame(request: CreateGameRequest): GameOperationResult
+    + joinGame(request: JoinGameRequest): GameOperationResult
+    + getSnapshot(request: SnapshotRequest): GameOperationResult
+    + chooseOffer(request: ChooseOfferRequest): GameOperationResult
+    + chooseCard(request: ChooseCardRequest): GameOperationResult
+    + subscribe(request: SubscribeGameRequest, updateSink: GameUpdateSink): GameOperationResult
+    + unsubscribe(request: UnsubscribeGameRequest, updateSink: GameUpdateSink): GameOperationResult
+    + heartbeat(request: HeartbeatRequest): GameOperationResult
+  }
+
+  class MesosServerCore {
+    - cardData: CardData
+    - gameSetup: GameSetup
+    - sessions: Map<String, GameSession>
+    - takenNicknames: Set<String>
+    - disconnectedGameByNickname: Map<String, String>
+    - lastHeartbeatByNickname: Map<String, Long>
+    - resilienceTimer: ScheduledExecutorService
+    + MesosServerCore()
+    + MesosServerCore(cardData: CardData)
+    + nickname(request: NicknameRequest): GameOperationResult
+    + getLobby(): GameOperationResult
+    + createGame(request: CreateGameRequest): GameOperationResult
+    + joinGame(request: JoinGameRequest): GameOperationResult
+    + getSnapshot(request: SnapshotRequest): GameOperationResult
+    + chooseOffer(request: ChooseOfferRequest): GameOperationResult
+    + chooseCard(request: ChooseCardRequest): GameOperationResult
+    + subscribe(request: SubscribeGameRequest, updateSink: GameUpdateSink): GameOperationResult
+    + unsubscribe(request: UnsubscribeGameRequest, updateSink: GameUpdateSink): GameOperationResult
+    + heartbeat(request: HeartbeatRequest): GameOperationResult
+  }
+
+  class "MesosServerCore.GameSession" as GameSession {
+    - context: GameContext
+    - controller: GameFlowController
+    - joinedNicknames: List<String>
+    - colorsByNickname: Map<String, Color>
+    - subscribers: Set<GameUpdateSink>
+    - singleConnectedSince: long
+    - forcedWinnerNickname: String
+    - join(nickname: String, gameSetup: GameSetup): GameOperationResult
+    - rejoin(nickname: String): GameOperationResult
+    - chooseOffer(nickname: String, offerTileIndex: int): GameOperationResult
+    - chooseCard(nickname: String, cardIndex: int, topRow: boolean): GameOperationResult
+    - subscribe(nickname: String, updateSink: GameUpdateSink): GameOperationResult
+    - unsubscribe(nickname: String, updateSink: GameUpdateSink): GameOperationResult
+    - publishAndSnapshot(message: String): GameSnapshot
+  }
+
+  class MesosServerLauncher <<utility>> {
+    + main(args: String[]): void
+  }
+
+  interface GameUpdateListener <<functional>> {
+    + onUpdate(update: GameViewUpdate): void
+  }
+
+  interface GameUpdateSink <<functional>> {
+    + accept(update: GameViewUpdate): void
+  }
+
+  interface GameRequest <<sealed>> {
+    + requestToService(service: MesosServerService, connection: ClientConnection): GameOperationResult
+  }
+
+  interface GameServerMessage {
+    + messageExecute(context: SocketClientContext): void
+  }
+}
+
+package "Network.Requests" {
+  class LobbyRequest <<record>> {
+  }
+
+  class NicknameRequest <<record>> {
+    + nickname: String
+  }
+
+  class CreateGameRequest <<record>> {
+    + gameName: String
+    + playerCount: int
+  }
+
+  class JoinGameRequest <<record>> {
+    + gameName: String
+    + nickname: String
+    + rejoin: boolean
+  }
+
+  class SnapshotRequest <<record>> {
+    + gameName: String
+  }
+
+  class ChooseOfferRequest <<record>> {
+    + gameName: String
+    + nickname: String
+    + offerTileIndex: int
+  }
+
+  class ChooseCardRequest <<record>> {
+    + gameName: String
+    + nickname: String
+    + cardIndex: int
+    + topRow: boolean
+  }
+
+  class SubscribeGameRequest <<record>> {
+    + gameName: String
+    + nickname: String
+  }
+
+  class UnsubscribeGameRequest <<record>> {
+    + gameName: String
+    + nickname: String
+  }
+
+  class HeartbeatRequest <<record>> {
+    + gameName: String
+    + nickname: String
+    + joined: boolean
+  }
+}
+
+package "Network.Messages" {
+  class GameOperationResult <<record>> {
+    + success: boolean
+    + message: String
+    + errorCode: OperationErrorCode
+    + snapshot: GameSnapshot
+    + lobbySnapshot: LobbySnapshot
+    + rejoinAvailable: boolean
+    + success(message: String, snapshot: GameSnapshot): GameOperationResult
+    + successLobby(message: String, lobbySnapshot: LobbySnapshot): GameOperationResult
+    + failure(message: String, snapshot: GameSnapshot): GameOperationResult
+    + successNickname(message: String, rejoinAvailable: boolean): GameOperationResult
+    + messageExecute(context: SocketClientContext): void
+  }
+
+  class GameViewUpdate <<record>> {
+    + gameName: String
+    + message: String
+    + snapshot: GameSnapshot
+    + messageExecute(context: SocketClientContext): void
+  }
+}
+
+package "Network.Socket" {
+  class SocketGameClient {
+    - socket: Socket
+    - output: ObjectOutputStream
+    - input: ObjectInputStream
+    - responses: BlockingQueue<GameOperationResult>
+    - readerThread: Thread
+    - heartbeatExecutor: ScheduledExecutorService
+    - context: SocketClientContext
+    - activeSubscription: SubscribeGameRequest
+    + SocketGameClient(host: String, port: int)
+    - exchange(request: GameRequest): GameOperationResult
+    - readLoop(): void
+    + close(): void
+  }
+
+  class "SocketGameClient.SocketClientContext" as SocketClientContext <<record>> {
+    + responses: BlockingQueue<GameOperationResult>
+    + updateListener: GameUpdateListener
+  }
+
+  class SocketGameServer {
+    - serverService: MesosServerService
+    - serverSocket: ServerSocket
+    - executorService: ExecutorService
+    - running: AtomicBoolean
+    - clientSockets: Set<Socket>
+    + SocketGameServer(serverService: MesosServerService, port: int)
+    + getPort(): int
+    - acceptLoop(): void
+    - handleClient(clientSocket: Socket): void
+    + close(): void
+  }
+
+  class "SocketGameServer.ClientConnection" as ClientConnection {
+    - output: ObjectOutputStream
+    - activeSubscription: SubscribeGameRequest
+    + accept(update: GameViewUpdate): void
+    - sendMessage(message: Serializable): void
+    + subscribe(request: SubscribeGameRequest): void
+    + unsubscribe(request: UnsubscribeGameRequest): void
+    - cleanup(): void
+  }
+}
+
+package "Network.RMI" {
+  interface RemoteMesosServer {
+    + getLobby(): GameOperationResult
+    + nickname(request: NicknameRequest): GameOperationResult
+    + createGame(request: CreateGameRequest): GameOperationResult
+    + joinGame(request: JoinGameRequest): GameOperationResult
+    + getSnapshot(request: SnapshotRequest): GameOperationResult
+    + chooseOffer(request: ChooseOfferRequest): GameOperationResult
+    + chooseCard(request: ChooseCardRequest): GameOperationResult
+    + subscribe(request: SubscribeGameRequest, listener: RemoteGameUpdateListener): GameOperationResult
+    + unsubscribe(request: UnsubscribeGameRequest, listener: RemoteGameUpdateListener): GameOperationResult
+    + heartbeat(request: HeartbeatRequest): GameOperationResult
+  }
+
+  interface RemoteGameUpdateListener {
+    + onUpdate(update: GameViewUpdate): void
+  }
+
+  class RmiGameClient {
+    - remoteServer: RemoteMesosServer
+    - heartbeatExecutor: ScheduledExecutorService
+    - remoteListener: RemoteGameUpdateListener
+    - activeSubscription: SubscribeGameRequest
+    + RmiGameClient(host: String, registryPort: int, serviceName: String)
+    + subscribe(request: SubscribeGameRequest, listener: GameUpdateListener): GameOperationResult
+    + unsubscribe(request: UnsubscribeGameRequest): GameOperationResult
+    + close(): void
+  }
+
+  class "RmiGameClient.RemoteGameUpdateListenerAdapter" as RemoteGameUpdateListenerAdapter {
+    - delegate: GameUpdateListener
+    + onUpdate(update: GameViewUpdate): void
+  }
+
+  class RmiGameServer {
+    - registry: Registry
+    - remoteServer: RemoteMesosServer
+    - serviceName: String
+    - advertisedHost: String
+    - port: int
+    + RmiGameServer(serverService: MesosServerService, port: int, serviceName: String)
+    + RmiGameServer(serverService: MesosServerService, host: String, port: int, serviceName: String)
+    + getPort(): int
+    + getAdvertisedHost(): String
+    + close(): void
+  }
+
+  class "RmiGameServer.RmiServerAdapter" as RmiServerAdapter {
+    - serverService: MesosServerService
+    - sinksByListener: Map<RemoteGameUpdateListener, GameUpdateSink>
+    + getLobby(): GameOperationResult
+    + nickname(request: NicknameRequest): GameOperationResult
+    + createGame(request: CreateGameRequest): GameOperationResult
+    + joinGame(request: JoinGameRequest): GameOperationResult
+    + getSnapshot(request: SnapshotRequest): GameOperationResult
+    + chooseOffer(request: ChooseOfferRequest): GameOperationResult
+    + chooseCard(request: ChooseCardRequest): GameOperationResult
+    + subscribe(request: SubscribeGameRequest, listener: RemoteGameUpdateListener): GameOperationResult
+    + unsubscribe(request: UnsubscribeGameRequest, listener: RemoteGameUpdateListener): GameOperationResult
+    + heartbeat(request: HeartbeatRequest): GameOperationResult
+    - createSink(listener: RemoteGameUpdateListener): GameUpdateSink
+  }
+}
+
+package "Network.DTO" {
+  class LobbySnapshot <<record>> {
+    + openGames: List<LobbyGameSummary>
+  }
+
+  class LobbyGameSummary <<record>> {
+    + gameName: String
+    + playerCount: int
+    + joinedPlayers: int
+    + availableSeats: int
+  }
+
+  class GameSnapshot <<record>> {
+    + gameName: String
+    + playerCount: int
+    + joinedPlayers: int
+    + started: boolean
+    + finished: boolean
+    + status: GameStatus
+    + currentRound: int
+    + currentEra: Era
+    + currentPlayerNickname: String
+    + currentPlayerColor: Color
+    + players: List<PlayerSummary>
+    + offerTiles: List<OfferTileSummary>
+    + turnOrder: List<TurnOrderSpaceSummary>
+    + topRow: List<CardSummary>
+    + bottomRow: List<CardSummary>
+  }
+
+  class PlayerSummary <<record>> {
+    + nickname: String
+    + color: Color
+    + food: int
+    + prestigePoints: int
+    + characterCount: int
+    + buildingCount: int
+  }
+
+  class CardSummary <<record>> {
+    + selectionIndex: int
+    + type: String
+    + era: Era
+    + event: boolean
+    + details: String
+    + foodCost: Integer
+    + prestigePoints: Integer
+  }
+
+  class OfferTileSummary <<record>> {
+    + index: int
+    + id: char
+    + topPicks: int
+    + bottomPicks: int
+    + foodGain: int
+    + available: boolean
+    + occupantColor: Color
+    + occupantNickname: String
+  }
+
+  class TurnOrderSpaceSummary <<record>> {
+    + index: int
+    + foodBonus: int
+    + occupantColor: Color
+    + occupantNickname: String
+  }
+}
+
+' Core implementations
+MesosServerCore ..|> MesosServerService
+MesosServerCore *-- "0..*" GameSession
+GameSession o-- "0..*" GameUpdateSink : subscribers
+MesosServerLauncher ..> MesosServerCore : creates
+MesosServerLauncher ..> SocketGameServer : starts
+MesosServerLauncher ..> RmiGameServer : starts
+
+' Client creation
+GameClientFactory ..> ServerEndpoint
+GameClientFactory ..> ConnectionType
+GameClientFactory ..> SocketGameClient : creates
+GameClientFactory ..> RmiGameClient : creates
+SocketGameClient ..|> GameClient
+RmiGameClient ..|> GameClient
+ServerEndpoint --> ConnectionType
+
+' Socket transport
+SocketGameServer o-- MesosServerService
+SocketGameServer *-- ClientConnection
+ClientConnection ..|> GameUpdateSink
+SocketGameClient *-- SocketClientContext
+SocketClientContext --> GameUpdateListener
+SocketGameClient ..> GameRequest : sends
+SocketGameClient ..> GameServerMessage : reads
+SocketGameServer ..> GameRequest : reads
+SocketGameServer ..> GameOperationResult : replies
+SocketGameServer ..> GameViewUpdate : pushes
+
+' RMI transport
+RemoteMesosServer --|> Remote
+RemoteGameUpdateListener --|> Remote
+RmiGameClient o-- RemoteMesosServer
+RmiGameClient o-- RemoteGameUpdateListener
+RmiGameClient *-- RemoteGameUpdateListenerAdapter
+RemoteGameUpdateListenerAdapter --|> RemoteGameUpdateListener
+RemoteGameUpdateListenerAdapter o-- GameUpdateListener
+RmiGameServer o-- RemoteMesosServer
+RmiGameServer *-- RmiServerAdapter
+RmiServerAdapter --|> RemoteMesosServer
+RmiServerAdapter o-- MesosServerService
+RmiServerAdapter --> GameUpdateSink : wraps callbacks
+RmiServerAdapter --> RemoteGameUpdateListener
+
+' Request hierarchy
+LobbyRequest ..|> GameRequest
+NicknameRequest ..|> GameRequest
+CreateGameRequest ..|> GameRequest
+JoinGameRequest ..|> GameRequest
+SnapshotRequest ..|> GameRequest
+ChooseOfferRequest ..|> GameRequest
+ChooseCardRequest ..|> GameRequest
+SubscribeGameRequest ..|> GameRequest
+UnsubscribeGameRequest ..|> GameRequest
+HeartbeatRequest ..|> GameRequest
+GameRequest ..> MesosServerService : dispatches to
+GameRequest ..> ClientConnection : socket callback state
+
+' Server messages and payloads
+GameOperationResult ..|> GameServerMessage
+GameViewUpdate ..|> GameServerMessage
+GameOperationResult --> OperationErrorCode
+GameOperationResult --> GameSnapshot
+GameOperationResult --> LobbySnapshot
+GameViewUpdate --> GameSnapshot
+GameServerMessage ..> SocketClientContext : execute
+GameUpdateListener ..> GameViewUpdate
+GameUpdateSink ..> GameViewUpdate
+
+' Snapshot composition
+LobbySnapshot *-- "0..*" LobbyGameSummary
+GameSnapshot *-- "0..*" PlayerSummary
+GameSnapshot *-- "0..*" OfferTileSummary
+GameSnapshot *-- "0..*" TurnOrderSpaceSummary
+GameSnapshot *-- "0..*" CardSummary
+
+@enduml
