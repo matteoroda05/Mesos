@@ -706,6 +706,14 @@
     -fx-max-width: 190;
 }
 
+.info-panel {
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+}
+
 .owned-cards-debug-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
