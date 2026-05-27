@@ -695,3 +695,24 @@
 .totem-option-button:disabled {
     -fx-opacity: 0.42;
 }
+
+.owned-cards-debug-box {
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+    -fx-pref-width: 190;
+    -fx-max-width: 190;
+}
+
+.owned-cards-debug-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-primary;
+}
+
+.owned-cards-debug-row {
+    -fx-font-size: 10px;
+    -fx-text-fill: -mesos-text;
+}

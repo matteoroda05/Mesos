@@ -31,7 +31,9 @@ import javafx.scene.transform.Scale;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
@@ -66,6 +68,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final HBox bottomRowPane;
     private final HBox offerTilesPane;
     private final VBox rankingBox;
+    private final VBox ownedCardsDebugBox;
     private final VBox minimalTurnBarPane;
     private final VBox totemWrapper;
     private final StackPane viewport;
@@ -138,6 +141,11 @@ public final class MesosGameBoardView extends BorderPane {
         this.rankingBox.setVisible(false);
         this.rankingBox.setManaged(false);
 
+        this.ownedCardsDebugBox = new VBox(6);
+        this.ownedCardsDebugBox.getStyleClass().add("owned-cards-debug-box");
+        this.ownedCardsDebugBox.setVisible(false);
+        this.ownedCardsDebugBox.setManaged(false);
+
         this.totemWrapper = new VBox(4);
         this.minimalTurnBarPane = buildMinimalTurnOrderBar();
         this.tabletopCanvas = buildTabletopCanvas();
@@ -176,6 +184,7 @@ public final class MesosGameBoardView extends BorderPane {
         rebuildRanking();
         rebuildMinimalTurnBar();
         rebuildTotemWrapper();
+        rebuildOwnedCardsDebugBox();
     }
 
     private void rebuildMinimalTurnBar() {
@@ -287,7 +296,7 @@ public final class MesosGameBoardView extends BorderPane {
         bottomInfoBar.setAlignment(Pos.BOTTOM_LEFT);
         bottomInfoBar.setPadding(new Insets(12, 0, 8, 8));
         bottomInfoBar.setStyle("-fx-border-color: transparent;");
-        bottomInfoBar.getChildren().addAll(totemWrapper, buildCompactInfoPanel());
+        bottomInfoBar.getChildren().addAll(totemWrapper, buildCompactInfoPanel(), ownedCardsDebugBox);
         VBox.setVgrow(bottomInfoBar, Priority.ALWAYS);
 
         VBox shell = new VBox(tableContent, bottomInfoBar);
@@ -549,6 +558,78 @@ public final class MesosGameBoardView extends BorderPane {
             rankingBox.getChildren().add(row);
             rank++;
         }
+    }
+
+    private void rebuildOwnedCardsDebugBox() {
+        ownedCardsDebugBox.getChildren().clear();
+        if (snapshot == null) {
+            ownedCardsDebugBox.setVisible(false);
+            ownedCardsDebugBox.setManaged(false);
+            return;
+        }
+
+        Optional<PlayerSummary> localPlayer = snapshot.players().stream()
+                .filter(player -> player.nickname().equals(localNickname))
+                .findFirst();
+        if (localPlayer.isEmpty()) {
+            ownedCardsDebugBox.setVisible(false);
+            ownedCardsDebugBox.setManaged(false);
+            return;
+        }
+
+        PlayerSummary player = localPlayer.get();
+        Map<String, Integer> characterCounts = new LinkedHashMap<>();
+        for (CardSummary card : player.characterCards()) {
+            characterCounts.merge(card.type(), 1, Integer::sum);
+        }
+
+        Map<String, Integer> buildingCounts = new LinkedHashMap<>();
+        for (CardSummary card : player.buildingCards()) {
+            buildingCounts.merge(card.type(), 1, Integer::sum);
+        }
+
+        Label title = new Label("Owned cards");
+        title.getStyleClass().add("subsection-title");
+        ownedCardsDebugBox.getChildren().add(title);
+
+        Label resources = new Label("Food: " + player.food() + " | Prestige: " + player.prestigePoints());
+        resources.getStyleClass().add("owned-cards-debug-row");
+        ownedCardsDebugBox.getChildren().add(resources);
+
+        Label characterHeader = new Label("Characters: " + player.characterCount());
+        characterHeader.getStyleClass().add("owned-cards-debug-title");
+        ownedCardsDebugBox.getChildren().add(characterHeader);
+        if (characterCounts.isEmpty()) {
+            Label emptyCharacters = new Label("None");
+            emptyCharacters.getStyleClass().add("owned-cards-debug-row");
+            ownedCardsDebugBox.getChildren().add(emptyCharacters);
+        } else {
+            characterCounts.forEach((type, count) -> {
+                Label row = new Label(count + " x " + type);
+                row.getStyleClass().add("owned-cards-debug-row");
+                row.setWrapText(true);
+                ownedCardsDebugBox.getChildren().add(row);
+            });
+        }
+
+        Label buildingHeader = new Label("Buildings: " + player.buildingCount());
+        buildingHeader.getStyleClass().add("owned-cards-debug-title");
+        ownedCardsDebugBox.getChildren().add(buildingHeader);
+        if (buildingCounts.isEmpty()) {
+            Label emptyBuildings = new Label("None");
+            emptyBuildings.getStyleClass().add("owned-cards-debug-row");
+            ownedCardsDebugBox.getChildren().add(emptyBuildings);
+        } else {
+            buildingCounts.forEach((type, count) -> {
+                Label row = new Label(count + " x " + type);
+                row.getStyleClass().add("owned-cards-debug-row");
+                row.setWrapText(true);
+                ownedCardsDebugBox.getChildren().add(row);
+            });
+        }
+
+        ownedCardsDebugBox.setVisible(true);
+        ownedCardsDebugBox.setManaged(true);
     }
 
     private Node buildCardNode(
