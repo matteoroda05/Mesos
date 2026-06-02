@@ -16,6 +16,12 @@ From `Mesos`, build the project with:
 ./mvnw -DskipTests package
 ```
 
+or for the GUI:
+
+```bash
+./mvnw -q -Dmaven.test.skip=true package
+```
+
 This creates the main project jar and two runnable jars:
 
 - `Mesos/target/Mesos-1.0.0-final.jar`

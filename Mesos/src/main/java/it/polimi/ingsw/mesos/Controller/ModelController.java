@@ -268,6 +268,7 @@ public class ModelController {
             if (cost > player.getFood()) throw new IllegalArgumentException("player cannot afford this building");
             BuildingCard card_to_buy = market_row.takeBuildingCard(card);
             player.getTribe().addCard(card_to_buy);
+            card_to_buy.setOwner(player);
             int check = player.loseFood(cost);
             if (check > 0) throw new IllegalStateException("player lost more food than than available");
         } else {
