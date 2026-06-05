@@ -714,6 +714,18 @@
     -fx-padding: 10;
 }
 
+.player-color-indicator {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 236, 201, 0.36);
+    -fx-border-radius: 999;
+    -fx-padding: 1;
+}
+
+.player-color-indicator-dot {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.34), 3, 0.2, 0, 1);
+}
+
 .owned-cards-debug-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;

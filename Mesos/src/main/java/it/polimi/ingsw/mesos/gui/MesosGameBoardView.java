@@ -26,6 +26,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
 
@@ -70,7 +71,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final VBox rankingBox;
     private final VBox ownedCardsDebugBox;
     private final VBox minimalTurnBarPane;
-    private final VBox totemWrapper;
+    private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
     private final VBox tabletopCanvas;
     private final Scale boardScale;
@@ -146,7 +147,9 @@ public final class MesosGameBoardView extends BorderPane {
         this.ownedCardsDebugBox.setVisible(false);
         this.ownedCardsDebugBox.setManaged(false);
 
-        this.totemWrapper = new VBox(4);
+        this.infoPanelColorIndicator = buildColorIndicator(null, "info-panel-color-indicator");
+        this.infoPanelColorIndicator.setVisible(false);
+        this.infoPanelColorIndicator.setManaged(false);
         this.minimalTurnBarPane = buildMinimalTurnOrderBar();
         this.tabletopCanvas = buildTabletopCanvas();
         this.boardScale = new Scale(1, 1, 0, 0);
@@ -183,7 +186,7 @@ public final class MesosGameBoardView extends BorderPane {
         rebuildOfferTiles();
         rebuildRanking();
         rebuildMinimalTurnBar();
-        rebuildTotemWrapper();
+        refreshInfoPanelColorIndicator();
         rebuildOwnedCardsDebugBox();
     }
 
@@ -192,12 +195,24 @@ public final class MesosGameBoardView extends BorderPane {
         minimalTurnBarPane.getChildren().setAll(refreshedBar.getChildren());
     }
 
-    private void rebuildTotemWrapper() {
-        totemWrapper.getChildren().clear();
-        if (snapshot != null && snapshot.currentPlayerColor() != null) {
-            Node playerTotem = buildTotem(snapshot.currentPlayerColor(), 36);
-            totemWrapper.getChildren().add(playerTotem);
+    private void refreshInfoPanelColorIndicator() {
+        Optional<it.polimi.ingsw.mesos.Model.Enums.Color> indicatorColor = resolveInfoPanelColor();
+        boolean hasColor = indicatorColor.isPresent();
+        infoPanelColorIndicator.setVisible(hasColor);
+        infoPanelColorIndicator.setManaged(hasColor);
+        indicatorColor.ifPresent(color -> updateColorIndicator(infoPanelColorIndicator, color));
+    }
+
+    private Optional<it.polimi.ingsw.mesos.Model.Enums.Color> resolveInfoPanelColor() {
+        if (snapshot == null) {
+            return Optional.empty();
         }
+        Optional<it.polimi.ingsw.mesos.Model.Enums.Color> localPlayerColor = snapshot.players().stream()
+                .filter(player -> player.nickname().equals(localNickname))
+                .map(PlayerSummary::color)
+                .filter(color -> color != null)
+                .findFirst();
+        return localPlayerColor.or(() -> Optional.ofNullable(snapshot.currentPlayerColor()));
     }
 
     private void buildLayout() {
@@ -286,17 +301,12 @@ public final class MesosGameBoardView extends BorderPane {
         tableContent.setPrefWidth(DESIGN_WIDTH);
         tableContent.setMinWidth(DESIGN_WIDTH);
 
-        // Player totem wrapper (left side, fixed identifier)
-        totemWrapper.setAlignment(Pos.TOP_CENTER);
-        totemWrapper.setPrefWidth(50);
-        totemWrapper.setMinWidth(50);
-        totemWrapper.setMaxWidth(50);
-        
         HBox bottomInfoBar = new HBox(8);
+        bottomInfoBar.getStyleClass().add("bottom-info-bar");
         bottomInfoBar.setAlignment(Pos.BOTTOM_LEFT);
         bottomInfoBar.setPadding(new Insets(12, 0, 8, 8));
         bottomInfoBar.setStyle("-fx-border-color: transparent;");
-        bottomInfoBar.getChildren().addAll(totemWrapper, buildCompactInfoPanel(), ownedCardsDebugBox);
+        bottomInfoBar.getChildren().addAll(buildCompactInfoPanel(), ownedCardsDebugBox);
         VBox.setVgrow(bottomInfoBar, Priority.ALWAYS);
 
         VBox shell = new VBox(tableContent, bottomInfoBar);
@@ -334,7 +344,9 @@ public final class MesosGameBoardView extends BorderPane {
     }
 
     private VBox buildCompactInfoPanel() {
-        VBox titleSection = new VBox(2, titleLabel, subtitleLabel);
+        HBox titleRow = new HBox(6, infoPanelColorIndicator, titleLabel);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        VBox titleSection = new VBox(2, titleRow, subtitleLabel);
         titleSection.setMaxWidth(650);
 
         FlowPane metaWrap = new FlowPane(4, 4,
@@ -520,6 +532,9 @@ public final class MesosGameBoardView extends BorderPane {
         nameLabel.setMaxWidth(73);
         nameLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
 
+        if (space.occupantNickname() != null) {
+            entry.getChildren().add(buildColorIndicator(space.occupantColor(), "turn-order-color-indicator"));
+        }
         entry.getChildren().add(nameLabel);
         return entry;
     }
@@ -753,6 +768,44 @@ public final class MesosGameBoardView extends BorderPane {
         wrapper.getStyleClass().add("empty-state");
         wrapper.setPadding(new Insets(18));
         return wrapper;
+    }
+
+    private StackPane buildColorIndicator(
+            it.polimi.ingsw.mesos.Model.Enums.Color color,
+            String extraStyleClass
+    ) {
+        StackPane indicator = new StackPane();
+        indicator.getStyleClass().add("player-color-indicator");
+        if (extraStyleClass != null && !extraStyleClass.isBlank()) {
+            indicator.getStyleClass().add(extraStyleClass);
+        }
+        indicator.setMinSize(12, 12);
+        indicator.setPrefSize(12, 12);
+        indicator.setMaxSize(12, 12);
+
+        Circle dot = new Circle(5);
+        dot.getStyleClass().add("player-color-indicator-dot");
+        indicator.getChildren().add(dot);
+        updateColorIndicator(indicator, color);
+        return indicator;
+    }
+
+    private void updateColorIndicator(StackPane indicator, it.polimi.ingsw.mesos.Model.Enums.Color color) {
+        if (!indicator.getChildren().isEmpty() && indicator.getChildren().getFirst() instanceof Circle dot) {
+            dot.setFill(toIndicatorColor(color));
+            dot.setStroke(Color.rgb(255, 236, 201, 0.72));
+            dot.setStrokeWidth(1);
+        }
+    }
+
+    private Color toIndicatorColor(it.polimi.ingsw.mesos.Model.Enums.Color color) {
+        return switch (color == null ? it.polimi.ingsw.mesos.Model.Enums.Color.WHITE : color) {
+            case BLUE -> Color.rgb(57, 146, 218);
+            case YELLOW -> Color.rgb(244, 196, 48);
+            case ORANGE -> Color.rgb(230, 92, 36);
+            case WHITE -> Color.rgb(239, 232, 214);
+            case BLACK -> Color.rgb(94, 53, 137);
+        };
     }
 
     private Node buildTotem(it.polimi.ingsw.mesos.Model.Enums.Color color, double size) {
