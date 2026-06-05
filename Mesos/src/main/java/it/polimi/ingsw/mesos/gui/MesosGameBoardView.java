@@ -311,15 +311,19 @@ public final class MesosGameBoardView extends BorderPane {
         bottomHudOverlay.getStyleClass().add("bottom-hud-overlay");
         bottomHudOverlay.setPadding(new Insets(0, 12, 12, 0));
         bottomHudOverlay.setMaxWidth(Double.MAX_VALUE);
+        bottomHudOverlay.setMaxHeight(Region.USE_PREF_SIZE);
         bottomHudOverlay.setPickOnBounds(false);
 
+        ownedCardsDebugBox.setMaxHeight(Region.USE_PREF_SIZE);
         bottomHudOverlay.setLeft(ownedCardsDebugBox);
         BorderPane.setAlignment(ownedCardsDebugBox, Pos.BOTTOM_LEFT);
 
         VBox statusPanel = buildCompactInfoPanel();
+        statusPanel.setMaxHeight(Region.USE_PREF_SIZE);
         bottomHudOverlay.setCenter(statusPanel);
         BorderPane.setAlignment(statusPanel, Pos.BOTTOM_CENTER);
 
+        ownedTribeDecksPane.setMaxHeight(Region.USE_PREF_SIZE);
         bottomHudOverlay.setRight(ownedTribeDecksPane);
         BorderPane.setAlignment(ownedTribeDecksPane, Pos.BOTTOM_RIGHT);
         return bottomHudOverlay;

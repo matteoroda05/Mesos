@@ -12,6 +12,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,9 @@ class MesosGameBoardViewTest {
             assertTrue(bottomBar.getLeft().getStyleClass().contains("owned-cards-debug-box"));
             assertTrue(bottomBar.getCenter().getStyleClass().contains("info-panel"));
             assertTrue(bottomBar.getRight().getStyleClass().contains("owned-tribe-decks-strip"));
+            assertEquals(Region.USE_PREF_SIZE, bottomBar.getMaxHeight());
+            assertEquals(Region.USE_PREF_SIZE, ((Region) bottomBar.getLeft()).getMaxHeight());
+            assertEquals(Region.USE_PREF_SIZE, ((Region) bottomBar.getCenter()).getMaxHeight());
             assertEquals(1, view.lookupAll(".info-panel-color-indicator").size());
             return null;
         });
