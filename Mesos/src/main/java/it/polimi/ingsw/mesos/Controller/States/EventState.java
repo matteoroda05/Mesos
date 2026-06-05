@@ -4,6 +4,7 @@ import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
@@ -49,6 +50,9 @@ public class EventState extends GameState {
         List<SustenanceEvent> sustenance = new ArrayList<>();
         Map<Color, Tribe> tribes = controller.getTribes();
 
+        System.out.println("EVENT STATE");
+        printTribeCards(tribes);
+
         while (!events.isEmpty()) {
             EventCard curr = events.removeFirst();
             BuildingTrigger trigger = curr.asTrigger();
@@ -56,6 +60,7 @@ public class EventState extends GameState {
             if (trigger == BuildingTrigger.ON_EVENT_SUSTENANCE) {
                 sustenance.add((SustenanceEvent) curr);
             } else {
+                System.out.println("Current event: " + formatCard(curr));
                 Map<Color, Result> outcome = curr.calculateOutcome(tribes);
                 List<BuildingCard> buildings = controller.getBuildingsWithTrigger(trigger);
                 if (trigger == BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL) {
@@ -72,6 +77,7 @@ public class EventState extends GameState {
             SustenanceEvent event = sustenance.removeFirst();
             BuildingTrigger trigger = event.asTrigger();
 
+            System.out.println("Current event: " + formatCard(event));
             Map<Color, Result> outcome = event.calculateOutcome(tribes);
             List<BuildingBonusEvent> buildings = controller.getBuildingsWithTrigger(trigger)
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
@@ -97,5 +103,24 @@ public class EventState extends GameState {
     @Override
     public GameStatus getStatus() {
         return last_round ? GameStatus.FINAL_EVENTS : GameStatus.ROUND_EVENTS;
+    }
+
+    // TODO: REMOVE THIS FUNCTION USEFUL: FOR DEBUG ONLY
+    private static void printTribeCards(Map<Color, Tribe> tribes) {
+        tribes.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    System.out.println(entry.getKey());
+                    List<Card> cards = entry.getValue().getCards();
+                    if (cards.isEmpty()) {
+                        System.out.println("  (no cards)");
+                    } else {
+                        cards.forEach(card -> System.out.println("  - " + formatCard(card)));
+                    }
+                });
+    }
+
+    private static String formatCard(Card card) {
+        return card.getClass().getSimpleName() + " (" + card.getEra() + ")";
     }
 }
