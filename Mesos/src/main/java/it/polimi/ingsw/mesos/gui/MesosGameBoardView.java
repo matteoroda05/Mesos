@@ -46,6 +46,10 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double MARKET_CARD_HEIGHT = 130;
     private static final double OFFER_TILE_WIDTH = 85;
     private static final double OFFER_TILE_HEIGHT = 130;
+    private static final double OWNED_TRIBE_CARD_WIDTH = 54;
+    private static final double OWNED_TRIBE_CARD_HEIGHT = 82;
+    private static final double OWNED_TRIBE_POPUP_CARD_WIDTH = 68;
+    private static final double OWNED_TRIBE_POPUP_CARD_HEIGHT = 104;
     private final String localNickname;
     private final MesosAssetResolver assetResolver;
     private final Runnable onRefresh;
@@ -58,11 +62,6 @@ public final class MesosGameBoardView extends BorderPane {
     private final Label subtitleLabel;
     private final Label turnLabel;
     private final Label actionHintLabel;
-    private final Label roundBadgeLabel;
-    private final Label eraBadgeLabel;
-    private final Label phaseBadgeLabel;
-    private final Label currentBadgeLabel;
-    private final Label picksBadgeLabel;
     private final FlowPane actionRow;
     private final Button passButton;
     private final HBox topRowPane;
@@ -70,6 +69,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final HBox offerTilesPane;
     private final VBox rankingBox;
     private final VBox ownedCardsDebugBox;
+    private final HBox ownedTribeDecksPane;
     private final VBox minimalTurnBarPane;
     private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
@@ -109,11 +109,6 @@ public final class MesosGameBoardView extends BorderPane {
         this.actionHintLabel.getStyleClass().add("action-copy");
         this.actionHintLabel.setWrapText(true);
 
-        this.roundBadgeLabel = badgeLabel("Round -");
-        this.eraBadgeLabel = badgeLabel("Era -");
-        this.phaseBadgeLabel = badgeLabel("Phase -");
-        this.currentBadgeLabel = badgeLabel("Active -");
-        this.picksBadgeLabel = badgeLabel("Picks -");
         this.passButton = buildInfoActionButton("Pass", this.onPass);
         this.passButton.setVisible(false);
         this.passButton.setManaged(false);
@@ -147,6 +142,12 @@ public final class MesosGameBoardView extends BorderPane {
         this.ownedCardsDebugBox.setVisible(false);
         this.ownedCardsDebugBox.setManaged(false);
 
+        this.ownedTribeDecksPane = new HBox(0);
+        this.ownedTribeDecksPane.getStyleClass().add("owned-tribe-decks-strip");
+        this.ownedTribeDecksPane.setAlignment(Pos.BOTTOM_RIGHT);
+        this.ownedTribeDecksPane.setVisible(false);
+        this.ownedTribeDecksPane.setManaged(false);
+
         this.infoPanelColorIndicator = buildColorIndicator(null, "info-panel-color-indicator");
         this.infoPanelColorIndicator.setVisible(false);
         this.infoPanelColorIndicator.setManaged(false);
@@ -164,20 +165,12 @@ public final class MesosGameBoardView extends BorderPane {
             return;
         }
 
-        titleLabel.setText(snapshot.gameName());
-        subtitleLabel.setText("Players " + snapshot.joinedPlayers() + "/" + snapshot.playerCount()
-                + " | " + (snapshot.started() ? "Live match" : "Lobby view"));
-        roundBadgeLabel.setText("Round " + snapshot.currentRound());
-        eraBadgeLabel.setText("Era " + formatEra(snapshot.currentEra()));
-        phaseBadgeLabel.setText(MesosUserMessageMapper.describePhase(snapshot.status()));
-        currentBadgeLabel.setText("Active " + (snapshot.currentPlayerNickname() == null
+        titleLabel.setText("Game Status:");
+        subtitleLabel.setText("Round " + snapshot.currentRound() + "/3");
+        turnLabel.setText("Era: " + formatEraName(snapshot.currentEra()));
+        actionHintLabel.setText("Player Turn: " + (snapshot.currentPlayerNickname() == null
                 ? "-"
                 : snapshot.currentPlayerNickname()));
-        picksBadgeLabel.setText("Picks " + snapshot.remainingTopChoices() + "/" + snapshot.remainingBottomChoices());
-        turnLabel.setText(buildTurnLine(snapshot));
-        actionHintLabel.setText(updateMessage == null || updateMessage.isBlank()
-                ? buildActionHint(snapshot)
-                : updateMessage);
         boolean showPass = canUsePass();
         passButton.setVisible(showPass);
         passButton.setManaged(showPass);
@@ -188,6 +181,7 @@ public final class MesosGameBoardView extends BorderPane {
         rebuildMinimalTurnBar();
         refreshInfoPanelColorIndicator();
         rebuildOwnedCardsDebugBox();
+        rebuildOwnedTribeDecksPane();
     }
 
     private void rebuildMinimalTurnBar() {
@@ -245,9 +239,9 @@ public final class MesosGameBoardView extends BorderPane {
         }
         
         pane.getChildren().add(wrapper);
-        HBox bottomInfoBar = buildBottomInfoBar();
-        StackPane.setAlignment(bottomInfoBar, Pos.BOTTOM_LEFT);
-        pane.getChildren().add(bottomInfoBar);
+        BorderPane bottomHudOverlay = buildBottomHudOverlay();
+        StackPane.setAlignment(bottomHudOverlay, Pos.BOTTOM_CENTER);
+        pane.getChildren().add(bottomHudOverlay);
         pane.getStyleClass().add("board-viewport");
         pane.setAlignment(Pos.CENTER);
         pane.setPadding(new Insets(0));
@@ -312,14 +306,23 @@ public final class MesosGameBoardView extends BorderPane {
         return shell;
     }
 
-    private HBox buildBottomInfoBar() {
-        HBox bottomInfoBar = new HBox(8);
-        bottomInfoBar.getStyleClass().add("bottom-info-bar");
-        bottomInfoBar.setAlignment(Pos.BOTTOM_LEFT);
-        bottomInfoBar.setPadding(new Insets(12, 0, 8, 0));
-        bottomInfoBar.setStyle("-fx-border-color: transparent;");
-        bottomInfoBar.getChildren().addAll(buildCompactInfoPanel(), ownedCardsDebugBox);
-        return bottomInfoBar;
+    private BorderPane buildBottomHudOverlay() {
+        BorderPane bottomHudOverlay = new BorderPane();
+        bottomHudOverlay.getStyleClass().add("bottom-hud-overlay");
+        bottomHudOverlay.setPadding(new Insets(0, 12, 12, 0));
+        bottomHudOverlay.setMaxWidth(Double.MAX_VALUE);
+        bottomHudOverlay.setPickOnBounds(false);
+
+        bottomHudOverlay.setLeft(ownedCardsDebugBox);
+        BorderPane.setAlignment(ownedCardsDebugBox, Pos.BOTTOM_LEFT);
+
+        VBox statusPanel = buildCompactInfoPanel();
+        bottomHudOverlay.setCenter(statusPanel);
+        BorderPane.setAlignment(statusPanel, Pos.BOTTOM_CENTER);
+
+        bottomHudOverlay.setRight(ownedTribeDecksPane);
+        BorderPane.setAlignment(ownedTribeDecksPane, Pos.BOTTOM_RIGHT);
+        return bottomHudOverlay;
     }
 
     private Node buildTopTableRow() {
@@ -354,24 +357,14 @@ public final class MesosGameBoardView extends BorderPane {
         VBox titleSection = new VBox(2, titleRow, subtitleLabel);
         titleSection.setMaxWidth(650);
 
-        FlowPane metaWrap = new FlowPane(4, 4,
-                roundBadgeLabel,
-                eraBadgeLabel,
-                phaseBadgeLabel,
-                currentBadgeLabel,
-                picksBadgeLabel
-        );
-        metaWrap.getStyleClass().add("turn-meta-wrap");
-        metaWrap.setAlignment(Pos.CENTER_LEFT);
-        metaWrap.setMaxWidth(600);
+        VBox statusLines = new VBox(3, turnLabel, actionHintLabel);
+        statusLines.setMaxWidth(380);
 
-        VBox statsSection = new VBox(6, metaWrap);
-        statsSection.setMaxWidth(650);
-
-        VBox infoPanel = new VBox(12, titleSection, statsSection, turnLabel, actionHintLabel, actionRow);
+        VBox infoPanel = new VBox(10, titleSection, statusLines, actionRow);
         infoPanel.getStyleClass().add("info-panel");
         infoPanel.setAlignment(Pos.TOP_LEFT);
-        infoPanel.setMaxWidth(650);
+        infoPanel.setPrefWidth(390);
+        infoPanel.setMaxWidth(430);
         return infoPanel;
     }
 
@@ -598,58 +591,140 @@ public final class MesosGameBoardView extends BorderPane {
         }
 
         PlayerSummary player = localPlayer.get();
-        Map<String, Integer> characterCounts = new LinkedHashMap<>();
-        for (CardSummary card : player.characterCards()) {
-            characterCounts.merge(card.type(), 1, Integer::sum);
-        }
-
-        Map<String, Integer> buildingCounts = new LinkedHashMap<>();
-        for (CardSummary card : player.buildingCards()) {
-            buildingCounts.merge(card.type(), 1, Integer::sum);
-        }
-
-        Label title = new Label("Owned cards");
+        Label title = new Label("Owned Cards:");
         title.getStyleClass().add("subsection-title");
         ownedCardsDebugBox.getChildren().add(title);
 
-        Label resources = new Label("Food: " + player.food() + " | Prestige: " + player.prestigePoints());
-        resources.getStyleClass().add("owned-cards-debug-row");
-        ownedCardsDebugBox.getChildren().add(resources);
-
-        Label characterHeader = new Label("Characters: " + player.characterCount());
-        characterHeader.getStyleClass().add("owned-cards-debug-title");
-        ownedCardsDebugBox.getChildren().add(characterHeader);
-        if (characterCounts.isEmpty()) {
-            Label emptyCharacters = new Label("None");
-            emptyCharacters.getStyleClass().add("owned-cards-debug-row");
-            ownedCardsDebugBox.getChildren().add(emptyCharacters);
-        } else {
-            characterCounts.forEach((type, count) -> {
-                Label row = new Label(count + " x " + type);
-                row.getStyleClass().add("owned-cards-debug-row");
-                row.setWrapText(true);
-                ownedCardsDebugBox.getChildren().add(row);
-            });
-        }
-
-        Label buildingHeader = new Label("Buildings: " + player.buildingCount());
-        buildingHeader.getStyleClass().add("owned-cards-debug-title");
-        ownedCardsDebugBox.getChildren().add(buildingHeader);
-        if (buildingCounts.isEmpty()) {
-            Label emptyBuildings = new Label("None");
-            emptyBuildings.getStyleClass().add("owned-cards-debug-row");
-            ownedCardsDebugBox.getChildren().add(emptyBuildings);
-        } else {
-            buildingCounts.forEach((type, count) -> {
-                Label row = new Label(count + " x " + type);
-                row.getStyleClass().add("owned-cards-debug-row");
-                row.setWrapText(true);
-                ownedCardsDebugBox.getChildren().add(row);
-            });
-        }
+        ownedCardsDebugBox.getChildren().addAll(
+                ownedCardsStatRow("Food " + player.food()),
+                ownedCardsStatRow("Prestige " + player.prestigePoints()),
+                ownedCardsStatRow("Characters " + player.characterCount()),
+                ownedCardsStatRow("Buildings " + player.buildingCount())
+        );
 
         ownedCardsDebugBox.setVisible(true);
         ownedCardsDebugBox.setManaged(true);
+    }
+
+    private Label ownedCardsStatRow(String text) {
+        Label row = new Label(text);
+        row.getStyleClass().add("owned-cards-debug-row");
+        return row;
+    }
+
+    private void rebuildOwnedTribeDecksPane() {
+        ownedTribeDecksPane.getChildren().clear();
+        if (snapshot == null) {
+            ownedTribeDecksPane.setVisible(false);
+            ownedTribeDecksPane.setManaged(false);
+            return;
+        }
+
+        Optional<PlayerSummary> localPlayer = snapshot.players().stream()
+                .filter(player -> player.nickname().equals(localNickname))
+                .findFirst();
+        if (localPlayer.isEmpty()) {
+            ownedTribeDecksPane.setVisible(false);
+            ownedTribeDecksPane.setManaged(false);
+            return;
+        }
+
+        Map<String, List<CardSummary>> cardsByType = new LinkedHashMap<>();
+        for (CardSummary card : localPlayer.get().characterCards()) {
+            cardsByType.computeIfAbsent(card.type(), ignored -> new ArrayList<>()).add(card);
+        }
+
+        cardsByType.values().stream()
+                .map(this::buildOwnedTribeDeck)
+                .forEach(ownedTribeDecksPane.getChildren()::add);
+
+        boolean hasCards = !ownedTribeDecksPane.getChildren().isEmpty();
+        ownedTribeDecksPane.setVisible(hasCards);
+        ownedTribeDecksPane.setManaged(hasCards);
+    }
+
+    private StackPane buildOwnedTribeDeck(List<CardSummary> cards) {
+        StackPane deck = new StackPane();
+        deck.getStyleClass().add("owned-tribe-deck");
+        deck.setAlignment(Pos.BOTTOM_CENTER);
+        deck.setCursor(Cursor.HAND);
+        deck.setMinSize(OWNED_TRIBE_CARD_WIDTH + 14, OWNED_TRIBE_CARD_HEIGHT + 14);
+        deck.setPrefSize(OWNED_TRIBE_CARD_WIDTH + 14, OWNED_TRIBE_CARD_HEIGHT + 14);
+        deck.setMaxSize(OWNED_TRIBE_CARD_WIDTH + 14, OWNED_TRIBE_CARD_HEIGHT + 14);
+
+        int firstVisibleCardIndex = Math.max(0, cards.size() - 3);
+        for (int index = firstVisibleCardIndex; index < cards.size(); index++) {
+            int distanceFromFront = cards.size() - 1 - index;
+            StackPane card = buildOwnedTribeCardSurface(
+                    cards.get(index),
+                    OWNED_TRIBE_CARD_WIDTH,
+                    OWNED_TRIBE_CARD_HEIGHT,
+                    "owned-tribe-deck-card"
+            );
+            card.setTranslateX(-distanceFromFront * 5.0);
+            card.setTranslateY(-distanceFromFront * 2.0);
+            deck.getChildren().add(card);
+        }
+
+        if (cards.size() > 1) {
+            Label count = new Label(String.valueOf(cards.size()));
+            count.getStyleClass().add("owned-tribe-deck-count");
+            StackPane.setAlignment(count, Pos.TOP_RIGHT);
+            StackPane.setMargin(count, new Insets(0, 2, 0, 0));
+            deck.getChildren().add(count);
+        }
+
+        HBox popup = buildOwnedTribeDeckPopup(cards);
+        popup.setVisible(false);
+        popup.setManaged(false);
+        StackPane.setAlignment(popup, Pos.BOTTOM_RIGHT);
+        popup.setTranslateY(-OWNED_TRIBE_CARD_HEIGHT - 18);
+        popup.setTranslateX(-Math.max(0, cards.size() - 1) * 28.0);
+        deck.getChildren().add(popup);
+
+        deck.setOnMouseEntered(event -> {
+            popup.setVisible(true);
+            deck.toFront();
+        });
+        deck.setOnMouseExited(event -> popup.setVisible(false));
+        return deck;
+    }
+
+    private HBox buildOwnedTribeDeckPopup(List<CardSummary> cards) {
+        HBox popup = new HBox(-10);
+        popup.getStyleClass().add("owned-tribe-deck-popup");
+        popup.setAlignment(Pos.BOTTOM_CENTER);
+        popup.setPickOnBounds(false);
+        for (CardSummary card : cards) {
+            popup.getChildren().add(buildOwnedTribeCardSurface(
+                    card,
+                    OWNED_TRIBE_POPUP_CARD_WIDTH,
+                    OWNED_TRIBE_POPUP_CARD_HEIGHT,
+                    "owned-tribe-popup-card"
+            ));
+        }
+        return popup;
+    }
+
+    private StackPane buildOwnedTribeCardSurface(
+            CardSummary cardSummary,
+            double width,
+            double height,
+            String styleClass
+    ) {
+        StackPane surface = buildSurfaceArt(
+                assetResolver.resolveCard(cardSummary),
+                width,
+                height,
+                cardSummary.type(),
+                cardSummary.details()
+        );
+        surface.getStyleClass().add(styleClass);
+        Tooltip tooltip = new Tooltip(buildTooltipText(cardSummary));
+        tooltip.setWrapText(true);
+        tooltip.setMaxWidth(280);
+        Tooltip.install(surface, tooltip);
+        return surface;
     }
 
     private Node buildCardNode(
@@ -856,38 +931,6 @@ public final class MesosGameBoardView extends BorderPane {
         return snapshot != null && isLocalTurn() && snapshot.passAvailable();
     }
 
-    private String buildTurnLine(GameSnapshot snapshot) {
-        if (snapshot.status() == GameStatus.LOGIN) {
-            return "Waiting for " + Math.max(0, snapshot.playerCount() - snapshot.joinedPlayers()) + " more player(s).";
-        }
-        if (snapshot.currentPlayerNickname() == null) {
-            return "Observe the shared board state while the match advances.";
-        }
-        return "Current player: " + snapshot.currentPlayerNickname()
-                + " | Remaining picks top/bottom: "
-                + snapshot.remainingTopChoices() + "/" + snapshot.remainingBottomChoices();
-    }
-
-    private String buildActionHint(GameSnapshot snapshot) {
-        if (snapshot.finished()) {
-            return "The match has ended. Review the ranking and the final board layout.";
-        }
-        if (!isLocalTurn()) {
-            return snapshot.currentPlayerNickname() == null
-                    ? "Waiting for the server to advance the flow."
-                    : "It is " + snapshot.currentPlayerNickname() + "'s turn.";
-        }
-        return switch (snapshot.status()) {
-            case ROUND_OFFER -> "Select one available offer tile from the central strip.";
-            case ROUND_ACTIONS -> snapshot.passAvailable()
-                    ? "Choose one top-row card or use Pass to skip the optional extra pick."
-                    : "Choose a card from the upper or lower row, depending on your remaining picks.";
-            case ROUND_EVENTS, ROUND_END, FINAL_EVENTS -> "The server is resolving automatic effects. Watch the board update.";
-            case LOGIN -> "Waiting for the lobby to fill before the match starts.";
-            default -> "Observe the board or use Refresh if you need a fresh snapshot.";
-        };
-    }
-
     private String formatEra(Era era) {
         if (era == null) {
             return "-";
@@ -896,6 +939,17 @@ public final class MesosGameBoardView extends BorderPane {
             case FIRST -> "I";
             case SECOND -> "II";
             case THIRD -> "III";
+        };
+    }
+
+    private String formatEraName(Era era) {
+        if (era == null) {
+            return "-";
+        }
+        return switch (era) {
+            case FIRST -> "Paleolithic";
+            case SECOND -> "Mesolithic";
+            case THIRD -> "Neolithic";
         };
     }
 

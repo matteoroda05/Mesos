@@ -701,9 +701,9 @@
     -fx-border-color: rgba(255, 176, 92, 0.16);
     -fx-border-radius: 14;
     -fx-background-radius: 14;
-    -fx-padding: 10;
-    -fx-pref-width: 190;
-    -fx-max-width: 190;
+    -fx-padding: 14 18 14 18;
+    -fx-pref-width: 340;
+    -fx-max-width: 340;
 }
 
 .info-panel {
@@ -712,6 +712,46 @@
     -fx-border-radius: 14;
     -fx-background-radius: 14;
     -fx-padding: 10;
+}
+
+.bottom-hud-overlay {
+    -fx-background-color: transparent;
+}
+
+.owned-tribe-decks-strip {
+    -fx-padding: 0 2 0 0;
+}
+
+.owned-tribe-deck {
+    -fx-padding: 4;
+}
+
+.owned-tribe-deck-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 8, 0.24, 0, 2);
+}
+
+.owned-tribe-deck-count {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 236, 201, 0.40);
+    -fx-border-radius: 999;
+    -fx-padding: 1 5 1 5;
+}
+
+.owned-tribe-deck-popup {
+    -fx-background-color: rgba(17, 11, 28, 0.90);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 176, 92, 0.22);
+    -fx-border-radius: 12;
+    -fx-padding: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 18, 0.24, 0, 5);
+}
+
+.owned-tribe-popup-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 10, 0.20, 0, 2);
 }
 
 .player-color-indicator {
@@ -733,6 +773,6 @@
 }
 
 .owned-cards-debug-row {
-    -fx-font-size: 10px;
+    -fx-font-size: 15px;
     -fx-text-fill: -mesos-text;
 }
