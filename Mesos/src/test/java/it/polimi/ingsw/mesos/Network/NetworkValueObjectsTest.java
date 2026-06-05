@@ -13,9 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NetworkValueObjectsTest {
     @Test
@@ -49,7 +47,7 @@ class NetworkValueObjectsTest {
         assertTrue(snapshot.turnOrder().isEmpty());
         assertTrue(snapshot.topRow().isEmpty());
         assertTrue(snapshot.bottomRow().isEmpty());
-        assertTrue(!snapshot.passAvailable());
+        assertFalse(snapshot.passAvailable());
     }
 
     @Test
@@ -63,7 +61,7 @@ class NetworkValueObjectsTest {
         players.add(new PlayerSummary("Bob", Color.YELLOW, 0, 0, 0, 0));
         assertEquals(List.of(Color.BLUE), snapshot.reservedColors());
         assertEquals(1, snapshot.players().size());
-        assertTrue(!snapshot.passAvailable());
+        assertFalse(snapshot.passAvailable());
         assertThrows(UnsupportedOperationException.class,
                 () -> snapshot.players().add(new PlayerSummary("Carol", Color.ORANGE, 0, 0, 0, 0)));
     }

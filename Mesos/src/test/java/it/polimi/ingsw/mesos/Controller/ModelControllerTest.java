@@ -3,10 +3,6 @@ package it.polimi.ingsw.mesos.Controller;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +19,8 @@ import it.polimi.ingsw.mesos.Model.MarketRow;
 import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Result;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class ModelControllerTest {
 
@@ -60,8 +58,8 @@ class ModelControllerTest {
             game_context.getGameTable().getTurnOrderTile().clearFirst();
         }
 
-        assertEquals(null, model_controller.getNextPlayerTurn());
-        assertEquals(null, model_controller.getNextPlayerOfferTile());
+        assertNull(model_controller.getNextPlayerTurn());
+        assertNull(model_controller.getNextPlayerOfferTile());
     }
 
     @Test

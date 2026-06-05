@@ -19,11 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GameSetupTest {
 
@@ -186,10 +182,10 @@ class GameSetupTest {
         assertEquals(Color.BLACK, assignedColors.get("Alice"));
         assertEquals(Color.YELLOW, assignedColors.get("Charlie"));
         assertEquals(4, new HashSet<>(assignedColors.values()).size());
-        assertTrue(assignedColors.get("Bob") != Color.BLACK);
-        assertTrue(assignedColors.get("Bob") != Color.YELLOW);
-        assertTrue(assignedColors.get("Dana") != Color.BLACK);
-        assertTrue(assignedColors.get("Dana") != Color.YELLOW);
+        assertNotSame(Color.BLACK, assignedColors.get("Bob"));
+        assertNotSame(Color.YELLOW, assignedColors.get("Bob"));
+        assertNotSame(Color.BLACK, assignedColors.get("Dana"));
+        assertNotSame(Color.YELLOW, assignedColors.get("Dana"));
     }
 
     private static List<String> createNicknames(int playerCount) {

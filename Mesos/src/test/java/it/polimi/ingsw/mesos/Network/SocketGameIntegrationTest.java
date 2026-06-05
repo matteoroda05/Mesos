@@ -33,10 +33,7 @@ import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SocketGameIntegrationTest {
     @Test
@@ -181,7 +178,7 @@ class SocketGameIntegrationTest {
             output.flush();
 
             Object response = input.readObject();
-            assertTrue(response instanceof GameOperationResult);
+            assertInstanceOf(GameOperationResult.class, response);
             GameOperationResult result = (GameOperationResult) response;
             assertFalse(result.success());
             assertEquals("Unsupported request payload", result.message());
@@ -267,7 +264,7 @@ class SocketGameIntegrationTest {
         try (SocketGameServer socketServer = new SocketGameServer(new RecordingServerService(), 0)) {
             ExecutionException runningFailure = assertThrows(ExecutionException.class,
                     () -> invokeHandleClientWithPrimitivePayload(socketServer, true));
-            assertTrue(runningFailure.getCause() instanceof IllegalStateException);
+            assertInstanceOf(IllegalStateException.class, runningFailure.getCause());
 
             invokeHandleClientWithPrimitivePayload(socketServer, false);
         }
@@ -420,7 +417,7 @@ class SocketGameIntegrationTest {
         output.writeObject(request);
         output.flush();
         Object response = input.readObject();
-        assertTrue(response instanceof GameOperationResult);
+        assertInstanceOf(GameOperationResult.class, response);
         assertTrue(((GameOperationResult) response).success());
     }
 

@@ -65,8 +65,8 @@ class ChooseOfferStateTest extends StateTestSupport {
         
         Color lastPlayer = currentState.getActivePlayer();
         GameState finalState = currentState.chooseOffer(lastPlayer, numPlayers - 1);
-        
-        assertTrue(finalState instanceof ActionState);
+
+        assertInstanceOf(ActionState.class, finalState);
     }
 
     @Test

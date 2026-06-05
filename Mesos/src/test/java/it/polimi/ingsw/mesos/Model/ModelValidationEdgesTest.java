@@ -69,7 +69,7 @@ class ModelValidationEdgesTest {
 
     @Test
     void deckConstructorsAndStateGuardsRejectInvalidEdges() throws Exception {
-        assertThrows(IllegalArgumentException.class, () -> new TribeDeck((List<it.polimi.ingsw.mesos.Model.Cards.TribeCard>) null, 2));
+        assertThrows(IllegalArgumentException.class, () -> new TribeDeck(null, 2));
         assertThrows(IllegalArgumentException.class, () -> new TribeDeck(1, List.of()));
         assertThrows(IllegalArgumentException.class, () -> new TribeDeck(6, List.of()));
         assertThrows(IllegalArgumentException.class, () -> new TribeDeck(2, null));

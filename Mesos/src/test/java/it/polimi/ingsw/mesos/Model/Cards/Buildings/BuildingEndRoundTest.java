@@ -1,15 +1,13 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import it.polimi.ingsw.mesos.Controller.States.ActionState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class BuildingEndRoundTest extends BuildingTestSupport {
 
@@ -33,7 +31,7 @@ class BuildingEndRoundTest extends BuildingTestSupport {
         assertEquals(fixture.owner().getColor(), action.getActivePlayer());
         assertEquals(1, action.getRemainingTopChoices());
         assertEquals(0, action.getRemainingBottomChoices());
-        assertEquals(false, building.isActive());
+        assertFalse(building.isActive());
     }
 
     @Test
@@ -46,10 +44,10 @@ class BuildingEndRoundTest extends BuildingTestSupport {
         building.setOwner(fixture.owner());
 
         assertNull(building.effect(fixture.table(), fixture.controller()));
-        assertEquals(false, building.isActive());
+        assertFalse(building.isActive());
 
         building.reset();
 
-        assertEquals(true, building.isActive());
+        assertTrue(building.isActive());
     }
 }

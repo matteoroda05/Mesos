@@ -9,10 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GameFlowControllerTest {
     @Test
@@ -126,9 +123,9 @@ class GameFlowControllerTest {
         assertThrows(RuntimeException.class, () -> state.pass(Color.BLUE));
         assertThrows(RuntimeException.class, () -> state.skipTurn(Color.BLUE));
         assertSame(state, state.process());
-        assertTrue(state.getActivePlayer() == null);
-        assertTrue(state.getRemainingTopChoices() == 0);
-        assertTrue(state.getRemainingBottomChoices() == 0);
+        assertNull(state.getActivePlayer());
+        assertEquals(0, state.getRemainingTopChoices());
+        assertEquals(0, state.getRemainingBottomChoices());
     }
 
     private static GameFlowController controllerWithPlayers(String gameName) throws Exception {

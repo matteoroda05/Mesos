@@ -15,15 +15,7 @@ import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OfferTileSummary;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
 import it.polimi.ingsw.mesos.Network.PlayerSummary;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -436,6 +428,7 @@ class MesosCliClientTest {
                 Color.BLUE,
                 1,
                 1,
+                List.of(Color.BLUE),
                 List.of(new PlayerSummary("Alice", Color.BLUE, 3, 4, 2, 1)),
                 List.of(new OfferTileSummary(0, 'A', 1, 0, 0, true, null, null)),
                 List.of(new TurnOrderSpaceSummary(0, 0, Color.BLUE, "Alice")),
@@ -541,6 +534,11 @@ class MesosCliClientTest {
             cardIndexes.add(request.cardIndex());
             cardRows.add(request.topRow());
             return poll(cardResults, GameOperationResult.success("card", snapshot(GameStatus.ROUND_ACTIONS)));
+        }
+
+        @Override
+        public GameOperationResult chooseColor(ChooseColorRequest request) throws IOException {
+            return null;
         }
 
         @Override

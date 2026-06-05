@@ -1,12 +1,11 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CardTest {
     private Card card;
@@ -42,6 +41,6 @@ public class CardTest {
 
     @Test
     void cardReturnsFalseToIsEvent(){
-        assertEquals(false, card.isEvent());
+        assertFalse(card.isEvent());
     }
 }

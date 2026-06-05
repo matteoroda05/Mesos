@@ -58,7 +58,7 @@ class MesosServerCoreSummaryTest {
         assertTrue(((String) describeCard.invoke(session,
                 new ArtistCard(Era.FIRST, 2))).isEmpty());
         assertTrue(((String) describeCard.invoke(session,
-                new BuilderCard(Era.FIRST, 2, 1, 2))).contains("building discount"));
+                new BuilderCard(Era.FIRST, 2, 1, 2))).contains("food discount"));
         assertTrue(((String) formatName.invoke(session, "ShamanicRitualEvent")).contains("Shamanic Ritual Event"));
         assertTrue(((String) signed.invoke(session, -1, " food")).contains("-1"));
     }

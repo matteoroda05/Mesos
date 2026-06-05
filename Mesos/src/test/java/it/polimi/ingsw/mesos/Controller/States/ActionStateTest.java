@@ -209,12 +209,12 @@ class ActionStateTest extends StateTestSupport {
         GameState extraState = state.process();
 
         assertInstanceOf(ActionState.class, extraState);
-        assertEquals(false, building.isActive());
+        assertFalse(building.isActive());
 
         GameState nextState = extraState.pass(player);
 
         assertInstanceOf(EventState.class, nextState);
-        assertEquals(true, building.isActive());
+        assertTrue(building.isActive());
     }
 
     @Test
