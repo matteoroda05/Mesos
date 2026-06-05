@@ -13,7 +13,9 @@ public final class NetworkDefaults {
     public static final String DEFAULT_RMI_HOST = "127.0.0.1";
     public static final int DEFAULT_SOCKET_PORT = 12_345;
     public static final int DEFAULT_RMI_REGISTRY_PORT = 1_099;
+    public static final int DEFAULT_RMI_CALLBACK_PORT = 0;
     public static final String DEFAULT_RMI_SERVICE_NAME = "MesosGameService";
+    public static final String RMI_CALLBACK_PORT_PROPERTY = "mesos.rmi.callback.port";
     public static final long HEARTBEAT_INTERVAL_MILLIS = 2_000;
     public static final long HEARTBEAT_TIMEOUT_MILLIS = 8_000;
     public static final long SINGLE_PLAYER_WIN_TIMEOUT_MILLIS = 60_000;
@@ -47,6 +49,20 @@ public final class NetworkDefaults {
      */
     public static void configureRmiServerHostname(String configuredHost) {
         System.setProperty("java.rmi.server.hostname", resolveRmiServerHost(configuredHost));
+    }
+
+    /**
+     * Resolves the optional RMI client callback port.
+     * Port 0 keeps the default anonymous-port RMI behavior.
+     *
+     * @return configured callback port, or 0 when absent/invalid
+     */
+    public static int rmiCallbackPort() {
+        int port = Integer.getInteger(RMI_CALLBACK_PORT_PROPERTY, DEFAULT_RMI_CALLBACK_PORT);
+        if (port < 0 || port > 65_535) {
+            return DEFAULT_RMI_CALLBACK_PORT;
+        }
+        return port;
     }
 
     /**

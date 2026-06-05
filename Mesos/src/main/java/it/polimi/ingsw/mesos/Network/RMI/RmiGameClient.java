@@ -319,12 +319,14 @@ public class RmiGameClient implements GameClient {
 
         /**
          * Exports an RMI callback that forwards updates to a local listener.
+         * A fixed port can be requested with {@code mesos.rmi.callback.port};
+         * when absent, RMI uses an anonymous port.
          *
          * @param delegate local listener receiving forwarded updates
          * @throws RemoteException if the callback cannot be exported
          */
         private RemoteGameUpdateListenerAdapter(GameUpdateListener delegate) throws RemoteException {
-            super();
+            super(NetworkDefaults.rmiCallbackPort());
             this.delegate = delegate;
         }
 
