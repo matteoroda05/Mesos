@@ -217,8 +217,8 @@ public final class MesosGameBoardView extends BorderPane {
 
     private void buildLayout() {
         getStyleClass().add("board-root");
-        // keep the main shell padding minimal; card vertical offset is applied to the tabletop only
-        setPadding(new Insets(0, 20, 20, 20));
+        // keep horizontal padding at zero so HUD overlays can reach the screen edges
+        setPadding(new Insets(0, 0, 20, 0));
         setMinSize(0, 0);
         setCenter(viewport);
         // apply a 7% top offset to the tabletop (cards) so the background stays fixed
@@ -245,6 +245,9 @@ public final class MesosGameBoardView extends BorderPane {
         }
         
         pane.getChildren().add(wrapper);
+        HBox bottomInfoBar = buildBottomInfoBar();
+        StackPane.setAlignment(bottomInfoBar, Pos.BOTTOM_LEFT);
+        pane.getChildren().add(bottomInfoBar);
         pane.getStyleClass().add("board-viewport");
         pane.setAlignment(Pos.CENTER);
         pane.setPadding(new Insets(0));
@@ -301,20 +304,22 @@ public final class MesosGameBoardView extends BorderPane {
         tableContent.setPrefWidth(DESIGN_WIDTH);
         tableContent.setMinWidth(DESIGN_WIDTH);
 
-        HBox bottomInfoBar = new HBox(8);
-        bottomInfoBar.getStyleClass().add("bottom-info-bar");
-        bottomInfoBar.setAlignment(Pos.BOTTOM_LEFT);
-        bottomInfoBar.setPadding(new Insets(12, 0, 8, 8));
-        bottomInfoBar.setStyle("-fx-border-color: transparent;");
-        bottomInfoBar.getChildren().addAll(buildCompactInfoPanel(), ownedCardsDebugBox);
-        VBox.setVgrow(bottomInfoBar, Priority.ALWAYS);
-
-        VBox shell = new VBox(tableContent, bottomInfoBar);
+        VBox shell = new VBox(tableContent);
         shell.getStyleClass().add("tabletop-shell");
         shell.setAlignment(Pos.TOP_CENTER);
         shell.setPrefWidth(DESIGN_WIDTH);
         shell.setMinWidth(DESIGN_WIDTH);
         return shell;
+    }
+
+    private HBox buildBottomInfoBar() {
+        HBox bottomInfoBar = new HBox(8);
+        bottomInfoBar.getStyleClass().add("bottom-info-bar");
+        bottomInfoBar.setAlignment(Pos.BOTTOM_LEFT);
+        bottomInfoBar.setPadding(new Insets(12, 0, 8, 0));
+        bottomInfoBar.setStyle("-fx-border-color: transparent;");
+        bottomInfoBar.getChildren().addAll(buildCompactInfoPanel(), ownedCardsDebugBox);
+        return bottomInfoBar;
     }
 
     private Node buildTopTableRow() {

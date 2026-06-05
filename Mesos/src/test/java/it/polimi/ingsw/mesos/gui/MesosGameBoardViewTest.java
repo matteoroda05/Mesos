@@ -7,8 +7,10 @@ import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.PlayerSummary;
 import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +44,9 @@ class MesosGameBoardViewTest {
             view.updateSnapshot(snapshot(), "Offer tile selected.");
 
             HBox bottomBar = singleNode(view, ".bottom-info-bar", HBox.class);
+            assertEquals(0.0, view.getPadding().getLeft());
+            assertTrue(bottomBar.getParent().getStyleClass().contains("board-viewport"));
+            assertEquals(Pos.BOTTOM_LEFT, StackPane.getAlignment(bottomBar));
             assertEquals(2, bottomBar.getChildren().size());
             assertTrue(bottomBar.getChildren().get(0).getStyleClass().contains("info-panel"));
             assertTrue(bottomBar.getChildren().get(1).getStyleClass().contains("owned-cards-debug-box"));
