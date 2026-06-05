@@ -1141,10 +1141,7 @@ final class CliPrinter {
         }
 
         Integer sttyWidth = runTerminalQuery("stty size");
-        if (sttyWidth != null) {
-            return sttyWidth;
-        }
-        return null;
+        return sttyWidth;
     }
 
     /**

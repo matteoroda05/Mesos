@@ -9,7 +9,7 @@ import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 public class BuildingDeck {
-    private Map<Era, List<BuildingCard>> deck;
+    private final Map<Era, List<BuildingCard>> deck;
 
     /**
      * Builds a deck grouped by building era.

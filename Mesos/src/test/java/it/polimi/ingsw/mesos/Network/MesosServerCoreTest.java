@@ -77,7 +77,7 @@ class MesosServerCoreTest {
         assertEquals("open-room", lobby.lobbySnapshot().openGames().getFirst().gameName());
 
         GameOperationResult fullJoin = serverCore.joinGame(new JoinGameRequest("full-room", "Charlie"));
-        assertTrue(!fullJoin.success());
+        assertFalse(fullJoin.success());
         assertEquals(OperationErrorCode.GAME_FULL, fullJoin.errorCode());
         assertNull(fullJoin.snapshot());
     }
@@ -89,7 +89,7 @@ class MesosServerCoreTest {
         assertTrue(serverCore.createGame(new CreateGameRequest("shared-name", 2)).success());
 
         GameOperationResult duplicateGame = serverCore.createGame(new CreateGameRequest("shared-name", 2));
-        assertTrue(!duplicateGame.success());
+        assertFalse(duplicateGame.success());
         assertEquals(OperationErrorCode.GAME_NAME_TAKEN, duplicateGame.errorCode());
 
         GameOperationResult aliceNickname = serverCore.nickname(new NicknameRequest("Alice"));
@@ -100,7 +100,7 @@ class MesosServerCoreTest {
         assertTrue(serverCore.createGame(new CreateGameRequest("another-room", 2)).success());
 
         GameOperationResult duplicatePlayer = serverCore.nickname(new NicknameRequest("Alice"));
-        assertTrue(!duplicatePlayer.success());
+        assertFalse(duplicatePlayer.success());
         assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, duplicatePlayer.errorCode());
         assertNull(duplicatePlayer.snapshot());
     }

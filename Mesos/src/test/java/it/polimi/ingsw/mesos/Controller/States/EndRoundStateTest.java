@@ -5,8 +5,7 @@ import it.polimi.ingsw.mesos.Controller.GameState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EndRoundStateTest extends StateTestSupport {
 
@@ -28,8 +27,8 @@ class EndRoundStateTest extends StateTestSupport {
     void processMovesToChooseOfferState() {
         int initialRound = game_context.getRoundNumber();
         GameState nextState = state.process();
-        
-        assertTrue(nextState instanceof ChooseOfferState);
+
+        assertInstanceOf(ChooseOfferState.class, nextState);
         assertEquals(initialRound + 1, game_context.getRoundNumber());
     }
 }
