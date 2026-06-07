@@ -714,10 +714,6 @@
     -fx-padding: 10;
 }
 
-.bottom-hud-overlay {
-    -fx-background-color: transparent;
-}
-
 .left-hud-column {
     -fx-pref-width: 340;
     -fx-max-width: 340;

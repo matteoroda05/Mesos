@@ -43,6 +43,8 @@ import java.util.function.IntConsumer;
 public final class MesosGameBoardView extends BorderPane {
     private static final double DESIGN_WIDTH = 920;
     private static final double DESIGN_HEIGHT = 370;
+    private static final double TABLETOP_VERTICAL_OFFSET_RATIO = 0.07;
+    private static final double LEFT_HUD_WIDTH = 340;
     private static final double MARKET_CARD_WIDTH = 85;
     private static final double MARKET_CARD_HEIGHT = 130;
     private static final double OFFER_TILE_WIDTH = 85;
@@ -53,7 +55,7 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double OWNED_CARD_DECK_SLOT_HEIGHT = OWNED_TRIBE_CARD_HEIGHT + 18;
     private static final double OWNED_CARD_DECK_STACK_X = 4.0;
     private static final double OWNED_CARD_DECK_STACK_Y = 2.0;
-    private static final double OWNED_CARD_PREVIEW_SCALE = 2.5;
+    private static final double OWNED_CARD_PREVIEW_SCALE = 2.25;
     private static final int OWNED_CARD_DECK_MAX_VISIBLE_OFFSET = 5;
     private static final List<OwnedCardDeckDefinition> OWNED_CARD_DECK_DEFINITIONS = List.of(
             new OwnedCardDeckDefinition("hunter", "Hunters", false),
@@ -244,10 +246,9 @@ public final class MesosGameBoardView extends BorderPane {
         setPadding(new Insets(0, 0, 20, 0));
         setMinSize(0, 0);
         setCenter(viewport);
-        // apply a 7% top offset to the tabletop (cards) so the background stays fixed
+        // Keep the tabletop slightly lower while the background stays fixed.
         viewport.heightProperty().addListener((observable, oldValue, newValue) -> {
-            double top = Math.max(0, newValue.doubleValue() * 0.07);
-            tabletopCanvas.setTranslateY(top);
+            tabletopCanvas.setTranslateY(newValue.doubleValue() * TABLETOP_VERTICAL_OFFSET_RATIO);
         });
     }
 
@@ -268,7 +269,7 @@ public final class MesosGameBoardView extends BorderPane {
         }
         
         pane.getChildren().add(wrapper);
-        BorderPane bottomHudOverlay = buildBottomHudOverlay();
+        StackPane bottomHudOverlay = buildBottomHudOverlay();
         StackPane.setAlignment(bottomHudOverlay, Pos.BOTTOM_CENTER);
         pane.getChildren().add(bottomHudOverlay);
         StackPane.setAlignment(ownedDeckPreviewOverlay, Pos.CENTER);
@@ -337,8 +338,8 @@ public final class MesosGameBoardView extends BorderPane {
         return shell;
     }
 
-    private BorderPane buildBottomHudOverlay() {
-        BorderPane bottomHudOverlay = new BorderPane();
+    private StackPane buildBottomHudOverlay() {
+        StackPane bottomHudOverlay = new StackPane();
         bottomHudOverlay.getStyleClass().add("bottom-hud-overlay");
         bottomHudOverlay.setPadding(new Insets(0, 12, 12, 0));
         bottomHudOverlay.setMaxWidth(Double.MAX_VALUE);
@@ -354,13 +355,16 @@ public final class MesosGameBoardView extends BorderPane {
         VBox leftHudColumn = new VBox(8, statusPanel, ownedCardsDebugBox);
         leftHudColumn.getStyleClass().add("left-hud-column");
         leftHudColumn.setAlignment(Pos.BOTTOM_LEFT);
+        leftHudColumn.setPrefWidth(LEFT_HUD_WIDTH);
+        leftHudColumn.setMaxWidth(LEFT_HUD_WIDTH);
         leftHudColumn.setMaxHeight(Region.USE_PREF_SIZE);
-        bottomHudOverlay.setLeft(leftHudColumn);
-        BorderPane.setAlignment(leftHudColumn, Pos.BOTTOM_LEFT);
+        bottomHudOverlay.getChildren().add(leftHudColumn);
+        StackPane.setAlignment(leftHudColumn, Pos.BOTTOM_LEFT);
 
         ownedTribeDecksPane.setMaxHeight(Region.USE_PREF_SIZE);
-        bottomHudOverlay.setRight(ownedTribeDecksPane);
-        BorderPane.setAlignment(ownedTribeDecksPane, Pos.BOTTOM_RIGHT);
+        ownedTribeDecksPane.setMaxWidth(Region.USE_PREF_SIZE);
+        bottomHudOverlay.getChildren().add(ownedTribeDecksPane);
+        StackPane.setAlignment(ownedTribeDecksPane, Pos.BOTTOM_RIGHT);
         return bottomHudOverlay;
     }
 

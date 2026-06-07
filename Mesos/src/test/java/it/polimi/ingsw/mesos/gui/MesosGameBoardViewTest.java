@@ -8,9 +8,10 @@ import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.PlayerSummary;
 import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
 import javafx.application.Platform;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.Scene;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -30,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MesosGameBoardViewTest {
@@ -52,16 +52,16 @@ class MesosGameBoardViewTest {
 
             view.updateSnapshot(snapshot(), "Offer tile selected.");
 
-            BorderPane bottomBar = singleNode(view, ".bottom-hud-overlay", BorderPane.class);
+            StackPane bottomBar = singleNode(view, ".bottom-hud-overlay", StackPane.class);
             assertEquals(0.0, view.getPadding().getLeft());
             assertTrue(bottomBar.getParent().getStyleClass().contains("board-viewport"));
             assertEquals(Pos.BOTTOM_CENTER, StackPane.getAlignment(bottomBar));
-            VBox leftColumn = (VBox) bottomBar.getLeft();
+            VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
             assertTrue(leftColumn.getStyleClass().contains("left-hud-column"));
             assertTrue(leftColumn.getChildren().get(0).getStyleClass().contains("info-panel"));
             assertTrue(leftColumn.getChildren().get(1).getStyleClass().contains("owned-cards-debug-box"));
-            assertNull(bottomBar.getCenter());
-            assertTrue(bottomBar.getRight().getStyleClass().contains("owned-tribe-decks-strip"));
+            assertEquals(Pos.BOTTOM_LEFT, StackPane.getAlignment(leftColumn));
+            assertEquals(Pos.BOTTOM_RIGHT, StackPane.getAlignment(singleNode(view, ".owned-tribe-decks-strip", HBox.class)));
             assertEquals(Region.USE_PREF_SIZE, bottomBar.getMaxHeight());
             assertEquals(Region.USE_PREF_SIZE, leftColumn.getMaxHeight());
             assertEquals(Region.USE_PREF_SIZE, ((Region) leftColumn.getChildren().get(0)).getMaxHeight());
@@ -99,14 +99,40 @@ class MesosGameBoardViewTest {
             FlowPane previewGrid = (FlowPane) previewGridNodes.iterator().next();
             assertTrue(previewGrid.scaleXProperty().isBound());
             assertTrue(previewGrid.scaleYProperty().isBound());
-            assertEquals(2.5, previewGrid.getScaleX());
-            assertEquals(2.5, previewGrid.getScaleY());
+            assertEquals(2.25, previewGrid.getScaleX());
+            assertEquals(2.25, previewGrid.getScaleY());
             assertEquals(0, previewOverlay.lookupAll(".owned-card-preview-panel").size());
 
             hunterDeck.getOnMouseExited().handle(null);
 
             assertFalse(previewOverlay.isVisible());
             assertEquals(originalOrder, decksStrip.getChildren());
+            return null;
+        });
+    }
+
+    @Test
+    void bottomHudDoesNotCoverBottomRowCards() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshotWithRows(0, 1), "Card selected.");
+            view.applyCss();
+            view.layout();
+
+            Node bottomCard = singleNode(singleNode(view, ".table-row-bottom", HBox.class), ".interactive-card", Node.class);
+            Bounds bottomCardBounds = bottomCard.localToScene(bottomCard.getBoundsInLocal());
+            Bounds leftHudBounds = singleNode(view, ".left-hud-column", VBox.class)
+                    .localToScene(singleNode(view, ".left-hud-column", VBox.class).getBoundsInLocal());
+            Bounds deckStripBounds = singleNode(view, ".owned-tribe-decks-strip", HBox.class)
+                    .localToScene(singleNode(view, ".owned-tribe-decks-strip", HBox.class).getBoundsInLocal());
+
+            assertFalse(leftHudBounds.intersects(bottomCardBounds),
+                    "left HUD " + leftHudBounds + " overlaps bottom card " + bottomCardBounds);
+            assertFalse(deckStripBounds.intersects(bottomCardBounds),
+                    "deck strip " + deckStripBounds + " overlaps bottom card " + bottomCardBounds);
             return null;
         });
     }
@@ -230,7 +256,11 @@ class MesosGameBoardViewTest {
     }
 
     private static <T> T singleNode(MesosGameBoardView view, String selector, Class<T> expectedType) {
-        Set<Node> matches = view.lookupAll(selector);
+        return singleNode((Node) view, selector, expectedType);
+    }
+
+    private static <T> T singleNode(Node root, String selector, Class<T> expectedType) {
+        Set<Node> matches = root.lookupAll(selector);
         assertEquals(1, matches.size());
         return expectedType.cast(matches.iterator().next());
     }
