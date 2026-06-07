@@ -720,13 +720,33 @@
 
 .owned-tribe-decks-strip {
     -fx-padding: 0 2 0 0;
+    -fx-spacing: 0;
 }
 
-.owned-tribe-deck {
+.owned-tribe-deck,
+.owned-card-deck-slot {
     -fx-padding: 4;
 }
 
-.owned-tribe-deck-card {
+.owned-card-deck-empty {
+    -fx-opacity: 0.82;
+}
+
+.owned-card-deck-placeholder {
+    -fx-background-color: rgba(255, 236, 201, 0.07);
+    -fx-background-radius: 11;
+    -fx-border-color: rgba(255, 230, 184, 0.24);
+    -fx-border-radius: 11;
+}
+
+.owned-card-deck-placeholder-label {
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(245, 230, 204, 0.72);
+}
+
+.owned-tribe-deck-card,
+.owned-card-deck-card {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 8, 0.24, 0, 2);
 }
 
@@ -752,6 +772,34 @@
 
 .owned-tribe-popup-card {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 10, 0.20, 0, 2);
+}
+
+.owned-card-preview-overlay {
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.owned-card-preview-panel {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 176, 92, 0.20);
+    -fx-border-radius: 16;
+    -fx-padding: 12 14 14 14;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.46), 22, 0.26, 0, 7);
+}
+
+.owned-card-preview-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.owned-card-preview-grid {
+    -fx-alignment: center;
+}
+
+.owned-card-preview-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 12, 0.24, 0, 3);
 }
 
 .player-color-indicator {

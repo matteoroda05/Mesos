@@ -17,6 +17,7 @@ import javafx.scene.layout.StackPane;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -25,6 +26,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MesosGameBoardViewTest {
@@ -62,16 +64,33 @@ class MesosGameBoardViewTest {
     }
 
     @Test
-    void ownedTribeCardsAreGroupedIntoBottomRightDecksWithHoverPopups() throws Exception {
+    void ownedCardsUseStableDeckSlotsAndCenteredHoverPreview() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
             view.updateSnapshot(snapshot(), "Offer tile selected.");
 
-            assertEquals(1, view.lookupAll(".owned-tribe-decks-strip").size());
-            assertEquals(2, view.lookupAll(".owned-tribe-deck").size());
-            assertEquals(2, view.lookupAll(".owned-tribe-deck-popup").size());
-            assertEquals(3, view.lookupAll(".owned-tribe-popup-card").size());
+            HBox decksStrip = singleNode(view, ".owned-tribe-decks-strip", HBox.class);
+            StackPane previewOverlay = singleNode(view, ".owned-card-preview-overlay", StackPane.class);
+            assertEquals(7, decksStrip.getChildren().size());
+            assertEquals(7, view.lookupAll(".owned-card-deck-slot").size());
+            assertEquals(4, view.lookupAll(".owned-card-deck-empty").size());
+            assertEquals(4, view.lookupAll(".owned-card-deck-card").size());
+            assertEquals(0, view.lookupAll(".owned-tribe-deck-popup").size());
+
+            List<Node> originalOrder = new ArrayList<>(decksStrip.getChildren());
+            Node hunterDeck = originalOrder.getFirst();
+            hunterDeck.getOnMouseEntered().handle(null);
+
+            assertEquals(originalOrder, decksStrip.getChildren());
+            assertTrue(previewOverlay.isVisible());
+            assertEquals(Pos.CENTER, StackPane.getAlignment(previewOverlay));
+            assertEquals(2, previewOverlay.lookupAll(".owned-card-preview-card").size());
+
+            hunterDeck.getOnMouseExited().handle(null);
+
+            assertFalse(previewOverlay.isVisible());
+            assertEquals(originalOrder, decksStrip.getChildren());
             return null;
         });
     }
@@ -107,8 +126,11 @@ class MesosGameBoardViewTest {
                 tribeCard(1, "Hunter", "hunter_era_1_b"),
                 tribeCard(2, "Shaman", "shaman_era_1_a")
         );
+        List<CardSummary> buildingCards = List.of(
+                tribeCard(3, "Building", "building_era_1_01")
+        );
         List<PlayerSummary> players = List.of(
-                new PlayerSummary("dio", Color.ORANGE, 3, 0, 3, 0, characterCards, List.of()),
+                new PlayerSummary("dio", Color.ORANGE, 3, 0, 3, 1, characterCards, buildingCards),
                 new PlayerSummary("Carlo2", Color.BLUE, 0, 0, 0, 0)
         );
         List<TurnOrderSpaceSummary> turnOrder = List.of(
