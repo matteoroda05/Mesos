@@ -11,9 +11,11 @@ import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MesosGameBoardViewTest {
@@ -52,12 +55,16 @@ class MesosGameBoardViewTest {
             assertEquals(0.0, view.getPadding().getLeft());
             assertTrue(bottomBar.getParent().getStyleClass().contains("board-viewport"));
             assertEquals(Pos.BOTTOM_CENTER, StackPane.getAlignment(bottomBar));
-            assertTrue(bottomBar.getLeft().getStyleClass().contains("owned-cards-debug-box"));
-            assertTrue(bottomBar.getCenter().getStyleClass().contains("info-panel"));
+            VBox leftColumn = (VBox) bottomBar.getLeft();
+            assertTrue(leftColumn.getStyleClass().contains("left-hud-column"));
+            assertTrue(leftColumn.getChildren().get(0).getStyleClass().contains("info-panel"));
+            assertTrue(leftColumn.getChildren().get(1).getStyleClass().contains("owned-cards-debug-box"));
+            assertNull(bottomBar.getCenter());
             assertTrue(bottomBar.getRight().getStyleClass().contains("owned-tribe-decks-strip"));
             assertEquals(Region.USE_PREF_SIZE, bottomBar.getMaxHeight());
-            assertEquals(Region.USE_PREF_SIZE, ((Region) bottomBar.getLeft()).getMaxHeight());
-            assertEquals(Region.USE_PREF_SIZE, ((Region) bottomBar.getCenter()).getMaxHeight());
+            assertEquals(Region.USE_PREF_SIZE, leftColumn.getMaxHeight());
+            assertEquals(Region.USE_PREF_SIZE, ((Region) leftColumn.getChildren().get(0)).getMaxHeight());
+            assertEquals(Region.USE_PREF_SIZE, ((Region) leftColumn.getChildren().get(1)).getMaxHeight());
             assertEquals(1, view.lookupAll(".info-panel-color-indicator").size());
             return null;
         });
@@ -86,6 +93,12 @@ class MesosGameBoardViewTest {
             assertTrue(previewOverlay.isVisible());
             assertEquals(Pos.CENTER, StackPane.getAlignment(previewOverlay));
             assertEquals(2, previewOverlay.lookupAll(".owned-card-preview-card").size());
+            Set<Node> previewGridNodes = previewOverlay.lookupAll(".owned-card-preview-grid");
+            assertEquals(1, previewGridNodes.size());
+            FlowPane previewGrid = (FlowPane) previewGridNodes.iterator().next();
+            assertTrue(previewGrid.scaleXProperty().isBound());
+            assertTrue(previewGrid.scaleYProperty().isBound());
+            assertEquals(0, previewOverlay.lookupAll(".owned-card-preview-panel").size());
 
             hunterDeck.getOnMouseExited().handle(null);
 

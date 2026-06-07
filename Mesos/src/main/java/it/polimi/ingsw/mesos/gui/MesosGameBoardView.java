@@ -343,14 +343,18 @@ public final class MesosGameBoardView extends BorderPane {
         bottomHudOverlay.setMaxHeight(Region.USE_PREF_SIZE);
         bottomHudOverlay.setPickOnBounds(false);
 
-        ownedCardsDebugBox.setMaxHeight(Region.USE_PREF_SIZE);
-        bottomHudOverlay.setLeft(ownedCardsDebugBox);
-        BorderPane.setAlignment(ownedCardsDebugBox, Pos.BOTTOM_LEFT);
-
         VBox statusPanel = buildCompactInfoPanel();
         statusPanel.setMaxHeight(Region.USE_PREF_SIZE);
-        bottomHudOverlay.setCenter(statusPanel);
-        BorderPane.setAlignment(statusPanel, Pos.BOTTOM_CENTER);
+        statusPanel.setMaxWidth(Double.MAX_VALUE);
+        ownedCardsDebugBox.setMaxHeight(Region.USE_PREF_SIZE);
+        ownedCardsDebugBox.setMaxWidth(Double.MAX_VALUE);
+
+        VBox leftHudColumn = new VBox(8, statusPanel, ownedCardsDebugBox);
+        leftHudColumn.getStyleClass().add("left-hud-column");
+        leftHudColumn.setAlignment(Pos.BOTTOM_LEFT);
+        leftHudColumn.setMaxHeight(Region.USE_PREF_SIZE);
+        bottomHudOverlay.setLeft(leftHudColumn);
+        BorderPane.setAlignment(leftHudColumn, Pos.BOTTOM_LEFT);
 
         ownedTribeDecksPane.setMaxHeight(Region.USE_PREF_SIZE);
         bottomHudOverlay.setRight(ownedTribeDecksPane);
@@ -715,7 +719,7 @@ public final class MesosGameBoardView extends BorderPane {
             deck.getChildren().add(count);
         }
 
-        deck.setOnMouseEntered(event -> showOwnedDeckPreview(definition.label(), cards));
+        deck.setOnMouseEntered(event -> showOwnedDeckPreview(cards));
         deck.setOnMouseExited(event -> hideOwnedDeckPreview());
         return deck;
     }
@@ -736,20 +740,20 @@ public final class MesosGameBoardView extends BorderPane {
         return placeholder;
     }
 
-    private void showOwnedDeckPreview(String title, List<CardSummary> cards) {
+    private void showOwnedDeckPreview(List<CardSummary> cards) {
         ownedDeckPreviewOverlay.getChildren().clear();
         if (cards.isEmpty()) {
             ownedDeckPreviewOverlay.setVisible(false);
             return;
         }
 
-        Label previewTitle = new Label(title + " (" + cards.size() + ")");
-        previewTitle.getStyleClass().add("owned-card-preview-title");
-
         FlowPane previewCards = new FlowPane(10, 12);
         previewCards.getStyleClass().add("owned-card-preview-grid");
         previewCards.setAlignment(Pos.CENTER);
-        previewCards.setMaxWidth((MARKET_CARD_WIDTH * 5) + 48);
+        previewCards.scaleXProperty().bind(boardScale.xProperty());
+        previewCards.scaleYProperty().bind(boardScale.yProperty());
+        int visibleColumns = Math.min(cards.size(), 5);
+        previewCards.setMaxWidth((MARKET_CARD_WIDTH * visibleColumns) + (10 * Math.max(0, visibleColumns - 1)));
 
         for (CardSummary card : cards) {
             previewCards.getChildren().add(buildOwnedTribeCardSurface(
@@ -760,12 +764,7 @@ public final class MesosGameBoardView extends BorderPane {
             ));
         }
 
-        VBox previewPanel = new VBox(10, previewTitle, previewCards);
-        previewPanel.getStyleClass().add("owned-card-preview-panel");
-        previewPanel.setAlignment(Pos.CENTER);
-        previewPanel.setMaxWidth((MARKET_CARD_WIDTH * 5) + 84);
-
-        ownedDeckPreviewOverlay.getChildren().setAll(previewPanel);
+        ownedDeckPreviewOverlay.getChildren().setAll(previewCards);
         ownedDeckPreviewOverlay.setVisible(true);
     }
 

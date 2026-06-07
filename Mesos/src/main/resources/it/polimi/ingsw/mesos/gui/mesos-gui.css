@@ -718,6 +718,11 @@
     -fx-background-color: transparent;
 }
 
+.left-hud-column {
+    -fx-pref-width: 340;
+    -fx-max-width: 340;
+}
+
 .owned-tribe-decks-strip {
     -fx-padding: 0 2 0 0;
     -fx-spacing: 0;
@@ -779,23 +784,9 @@
     -fx-padding: 0;
 }
 
-.owned-card-preview-panel {
-    -fx-background-color: rgba(17, 11, 28, 0.84);
-    -fx-background-radius: 16;
-    -fx-border-color: rgba(255, 176, 92, 0.20);
-    -fx-border-radius: 16;
-    -fx-padding: 12 14 14 14;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.46), 22, 0.26, 0, 7);
-}
-
-.owned-card-preview-title {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -mesos-text;
-}
-
 .owned-card-preview-grid {
     -fx-alignment: center;
+    -fx-padding: 0;
 }
 
 .owned-card-preview-card {
