@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
@@ -98,6 +99,8 @@ class MesosGameBoardViewTest {
             FlowPane previewGrid = (FlowPane) previewGridNodes.iterator().next();
             assertTrue(previewGrid.scaleXProperty().isBound());
             assertTrue(previewGrid.scaleYProperty().isBound());
+            assertEquals(2.5, previewGrid.getScaleX());
+            assertEquals(2.5, previewGrid.getScaleY());
             assertEquals(0, previewOverlay.lookupAll(".owned-card-preview-panel").size());
 
             hunterDeck.getOnMouseExited().handle(null);
@@ -121,19 +124,68 @@ class MesosGameBoardViewTest {
         });
     }
 
+    @Test
+    void refreshedSnapshotKeepsRemainingCardPickClickableAndClearsDeckPreview() throws Exception {
+        runOnFxThread(() -> {
+            AtomicInteger pickedCards = new AtomicInteger();
+            MesosGameBoardView view = buildView((ignoredIndex, ignoredTopRow) -> pickedCards.incrementAndGet());
+
+            view.updateSnapshot(snapshotWithRows(0, 2), "Offer tile selected.");
+            StackPane previewOverlay = singleNode(view, ".owned-card-preview-overlay", StackPane.class);
+            Node hunterDeck = singleNode(view, ".owned-tribe-decks-strip", HBox.class).getChildren().getFirst();
+            hunterDeck.getOnMouseEntered().handle(null);
+            assertTrue(previewOverlay.isVisible());
+
+            view.updateSnapshot(snapshotWithRows(0, 1), "Card selected.");
+
+            assertFalse(previewOverlay.isVisible());
+            Node remainingBottomCard = view.lookupAll(".interactive-card").iterator().next();
+            remainingBottomCard.getOnMouseClicked().handle(null);
+
+            assertEquals(1, pickedCards.get());
+            return null;
+        });
+    }
+
     private static MesosGameBoardView buildView() {
+        return buildView((ignoredIndex, ignoredTopRow) -> { });
+    }
+
+    private static MesosGameBoardView buildView(java.util.function.BiConsumer<Integer, Boolean> onChooseCard) {
         return new MesosGameBoardView(
                 "dio",
                 new MesosAssetResolver(),
                 () -> { },
                 () -> { },
                 ignored -> { },
-                (ignoredIndex, ignoredTopRow) -> { },
+                onChooseCard,
                 () -> { }
         );
     }
 
     private static GameSnapshot snapshot() {
+        return snapshot(List.of(), List.of(), 1, 0);
+    }
+
+    private static GameSnapshot snapshotWithRows(int remainingTopChoices, int remainingBottomChoices) {
+        return snapshot(
+                List.of(
+                        tribeCard(10, "Hunter", "hunter_era_1_a")
+                ),
+                List.of(
+                        tribeCard(20, "Inventor", "inventor_era_1_a")
+                ),
+                remainingTopChoices,
+                remainingBottomChoices
+        );
+    }
+
+    private static GameSnapshot snapshot(
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow,
+            int remainingTopChoices,
+            int remainingBottomChoices
+    ) {
         List<CardSummary> characterCards = List.of(
                 tribeCard(0, "Hunter", "hunter_era_1_a"),
                 tribeCard(1, "Hunter", "hunter_era_1_b"),
@@ -161,14 +213,14 @@ class MesosGameBoardViewTest {
                 Era.FIRST,
                 "dio",
                 Color.ORANGE,
-                1,
-                0,
+                remainingTopChoices,
+                remainingBottomChoices,
                 List.of(Color.ORANGE, Color.BLUE),
                 players,
                 List.of(),
                 turnOrder,
-                List.of(),
-                List.of(),
+                topRow,
+                bottomRow,
                 false
         );
     }

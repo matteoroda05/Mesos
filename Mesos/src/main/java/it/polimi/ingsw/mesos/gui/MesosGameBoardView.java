@@ -53,6 +53,7 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double OWNED_CARD_DECK_SLOT_HEIGHT = OWNED_TRIBE_CARD_HEIGHT + 18;
     private static final double OWNED_CARD_DECK_STACK_X = 4.0;
     private static final double OWNED_CARD_DECK_STACK_Y = 2.0;
+    private static final double OWNED_CARD_PREVIEW_SCALE = 2.5;
     private static final int OWNED_CARD_DECK_MAX_VISIBLE_OFFSET = 5;
     private static final List<OwnedCardDeckDefinition> OWNED_CARD_DECK_DEFINITIONS = List.of(
             new OwnedCardDeckDefinition("hunter", "Hunters", false),
@@ -187,6 +188,7 @@ public final class MesosGameBoardView extends BorderPane {
     }
 
     public void updateSnapshot(GameSnapshot snapshot, String updateMessage) {
+        hideOwnedDeckPreview();
         this.snapshot = snapshot;
         if (snapshot == null) {
             return;
@@ -750,8 +752,8 @@ public final class MesosGameBoardView extends BorderPane {
         FlowPane previewCards = new FlowPane(10, 12);
         previewCards.getStyleClass().add("owned-card-preview-grid");
         previewCards.setAlignment(Pos.CENTER);
-        previewCards.scaleXProperty().bind(boardScale.xProperty());
-        previewCards.scaleYProperty().bind(boardScale.yProperty());
+        previewCards.scaleXProperty().bind(boardScale.xProperty().multiply(OWNED_CARD_PREVIEW_SCALE));
+        previewCards.scaleYProperty().bind(boardScale.yProperty().multiply(OWNED_CARD_PREVIEW_SCALE));
         int visibleColumns = Math.min(cards.size(), 5);
         previewCards.setMaxWidth((MARKET_CARD_WIDTH * visibleColumns) + (10 * Math.max(0, visibleColumns - 1)));
 
