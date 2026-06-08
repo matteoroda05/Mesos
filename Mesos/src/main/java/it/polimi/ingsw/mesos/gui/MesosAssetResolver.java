@@ -11,36 +11,14 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class MesosAssetResolver {
     private static final Pattern TRIBE_ID_PATTERN = Pattern.compile(
             "^(hunter|builder|gatherer|artist|inventor|shaman)_era_([123])_([a-z])$");
     private static final Pattern BUILDING_ID_PATTERN = Pattern.compile("^building_era_([123])_(\\d{2})$");
-    private static final Map<String, Integer> TRIBE_TYPE_OFFSETS = Map.of(
-            "hunter", 0,
-            "builder", 8,
-            "gatherer", 11,
-            "artist", 14,
-            "inventor", 18,
-            "shaman", 22
-    );
-    private static final Map<String, String> EVENT_RESOURCE_PATHS = Map.ofEntries(
-            Map.entry("hunt_event_era_1", "/cards_png/carte_front/events/Cards_total_front_85.png"),
-            Map.entry("sustenance_event_era_1", "/cards_png/carte_front/events/Cards_total_front_86.png"),
-            Map.entry("shamanic_ritual_event_era_1", "/cards_png/carte_front/events/Cards_total_front_87.png"),
-            Map.entry("cave_painting_event_era_1", "/cards_png/carte_front/events/Cards_total_front_88.png"),
-            Map.entry("hunt_event_era_2", "/cards_png/carte_front/events/Cards_total_front_89.png"),
-            Map.entry("sustenance_event_era_2", "/cards_png/carte_front/events/Cards_total_front_90.png"),
-            Map.entry("shamanic_ritual_event_era_2", "/cards_png/carte_front/events/Cards_total_front_91.png"),
-            Map.entry("cave_painting_event_era_2", "/cards_png/carte_front/events/Cards_total_front_92.png"),
-            Map.entry("hunt_event_era_3", "/cards_png/carte_front/events/Cards_total_front_93.png"),
-            Map.entry("cave_painting_event_era_3", "/cards_png/carte_front/events/Cards_total_front_94.png"),
-            Map.entry("sustenance_event_era_3", "/cards_png/carte_front/events/Cards_total_front_95.png"),
-            Map.entry("shamanic_ritual_event_era_3", "/cards_png/carte_front/events/Cards_total_front_96.png")
-    );
-    private static final int[] BUILDING_COUNTS_BY_ERA = {6, 7, 8};
+    private static final Pattern EVENT_ID_PATTERN = Pattern.compile(
+            "^(hunt|sustenance|shamanic_ritual|cave_painting)_event_era_([123])$");
 
     private final Map<String, Optional<Image>> imageCache;
 
@@ -126,46 +104,15 @@ public final class MesosAssetResolver {
     }
 
     private String resolveCardResourcePath(String presentationId) {
-        Matcher tribeMatcher = TRIBE_ID_PATTERN.matcher(presentationId);
-        if (tribeMatcher.matches()) {
-            String type = tribeMatcher.group(1);
-            int eraIndex = Integer.parseInt(tribeMatcher.group(2)) - 1;
-            int withinTypeIndex = tribeMatcher.group(3).charAt(0) - 'a';
-            Integer typeOffset = TRIBE_TYPE_OFFSETS.get(type);
-            if (typeOffset == null || eraIndex < 0 || eraIndex > 2 || withinTypeIndex < 0) {
-                return null;
-            }
-
-            int cardNumber = 1 + (eraIndex * 28) + typeOffset + withinTypeIndex;
-            if (cardNumber < 1 || cardNumber > 84) {
-                return null;
-            }
-            return "/cards_png/carte_front/tribe/Cards_total_front_" + cardNumber + ".png";
+        if (TRIBE_ID_PATTERN.matcher(presentationId).matches()) {
+            return "/cards_png/carte_front/tribe/" + presentationId + ".png";
         }
-
-        String eventPath = EVENT_RESOURCE_PATHS.get(presentationId);
-        if (eventPath != null) {
-            return eventPath;
+        if (BUILDING_ID_PATTERN.matcher(presentationId).matches()) {
+            return "/cards_png/carte_front/buildings/" + presentationId + ".png";
         }
-
-        Matcher buildingMatcher = BUILDING_ID_PATTERN.matcher(presentationId);
-        if (buildingMatcher.matches()) {
-            int eraIndex = Integer.parseInt(buildingMatcher.group(1)) - 1;
-            int withinEraIndex = Integer.parseInt(buildingMatcher.group(2));
-            if (eraIndex < 0 || eraIndex >= BUILDING_COUNTS_BY_ERA.length) {
-                return null;
-            }
-            if (withinEraIndex < 1 || withinEraIndex > BUILDING_COUNTS_BY_ERA[eraIndex]) {
-                return null;
-            }
-
-            int cardNumber = 97 + withinEraIndex - 1;
-            for (int index = 0; index < eraIndex; index++) {
-                cardNumber += BUILDING_COUNTS_BY_ERA[index];
-            }
-            return "/cards_png/carte_front/buildings/Cards_total_front_" + cardNumber + ".png";
+        if (EVENT_ID_PATTERN.matcher(presentationId).matches()) {
+            return "/cards_png/carte_front/events/" + presentationId + ".png";
         }
-
         return null;
     }
 
