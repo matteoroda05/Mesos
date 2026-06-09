@@ -4,28 +4,28 @@
                            "type":  "HUNTER",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "activeHunter":  false,
+                           "activeHunter":  true,
                            "presentation_id":  "hunter_era_1_a"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "activeHunter":  false,
+                           "activeHunter":  true,
                            "presentation_id":  "hunter_era_1_b"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "activeHunter":  true,
+                           "activeHunter":  false,
                            "presentation_id":  "hunter_era_1_c"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "FIRST",
-                           "minPlayers":  2,
-                           "activeHunter":  true,
+                           "minPlayers":  3,
+                           "activeHunter":  false,
                            "presentation_id":  "hunter_era_1_d"
                        },
                        {
@@ -36,32 +36,11 @@
                            "presentation_id":  "hunter_era_1_e"
                        },
                        {
-                           "type":  "HUNTER",
-                           "era":  "FIRST",
-                           "minPlayers":  3,
-                           "activeHunter":  false,
-                           "presentation_id":  "hunter_era_1_f"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "FIRST",
-                           "minPlayers":  3,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_1_g"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "FIRST",
-                           "minPlayers":  4,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_1_h"
-                       },
-                       {
                            "type":  "BUILDER",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "prestigePoints":  1,
-                           "foodDiscount":  2,
+                           "prestigePoints":  2,
+                           "foodDiscount":  1,
                            "presentation_id":  "builder_era_1_a"
                        },
                        {
@@ -122,6 +101,12 @@
                            "minPlayers":  4,
                            "presentation_id":  "artist_era_1_d"
                        },
+                        {
+                           "type":  "ARTIST",
+                           "era":  "FIRST",
+                           "minPlayers":  2,
+                           "presentation_id":  "artist_era_1_e"
+                       },
                        {
                            "type":  "INVENTOR",
                            "era":  "FIRST",
@@ -161,41 +146,27 @@
                            "type":  "SHAMAN",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "numStars":  1,
+                           "numStars":  2,
                            "presentation_id":  "shaman_era_1_b"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "FIRST",
-                           "minPlayers":  2,
-                           "numStars":  2,
+                           "minPlayers":  4,
+                           "numStars":  1,
                            "presentation_id":  "shaman_era_1_c"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "FIRST",
-                           "minPlayers":  3,
-                           "numStars":  2,
+                           "minPlayers":  2,
+                           "numStars":  5,
                            "presentation_id":  "shaman_era_1_d"
-                       },
-                       {
-                           "type":  "SHAMAN",
-                           "era":  "FIRST",
-                           "minPlayers":  3,
-                           "numStars":  3,
-                           "presentation_id":  "shaman_era_1_e"
-                       },
-                       {
-                           "type":  "SHAMAN",
-                           "era":  "FIRST",
-                           "minPlayers":  4,
-                           "numStars":  3,
-                           "presentation_id":  "shaman_era_1_f"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "SECOND",
-                           "minPlayers":  2,
+                           "minPlayers":  5,
                            "activeHunter":  false,
                            "presentation_id":  "hunter_era_2_a"
                        },
@@ -210,43 +181,29 @@
                            "type":  "HUNTER",
                            "era":  "SECOND",
                            "minPlayers":  2,
-                           "activeHunter":  true,
+                           "activeHunter":  false,
                            "presentation_id":  "hunter_era_2_c"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "SECOND",
-                           "minPlayers":  2,
+                           "minPlayers":  3,
                            "activeHunter":  true,
                            "presentation_id":  "hunter_era_2_d"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "SECOND",
-                           "minPlayers":  3,
-                           "activeHunter":  false,
+                           "minPlayers":  2,
+                           "activeHunter":  true,
                            "presentation_id":  "hunter_era_2_e"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "SECOND",
-                           "minPlayers":  3,
-                           "activeHunter":  false,
-                           "presentation_id":  "hunter_era_2_f"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "SECOND",
                            "minPlayers":  4,
                            "activeHunter":  true,
-                           "presentation_id":  "hunter_era_2_g"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "SECOND",
-                           "minPlayers":  5,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_2_h"
+                           "presentation_id":  "hunter_era_2_f"
                        },
                        {
                            "type":  "BUILDER",
@@ -299,19 +256,19 @@
                        {
                            "type":  "ARTIST",
                            "era":  "SECOND",
-                           "minPlayers":  2,
+                           "minPlayers":  3,
                            "presentation_id":  "artist_era_2_b"
                        },
                        {
                            "type":  "ARTIST",
                            "era":  "SECOND",
-                           "minPlayers":  3,
+                           "minPlayers":  2,
                            "presentation_id":  "artist_era_2_c"
                        },
                        {
                            "type":  "ARTIST",
                            "era":  "SECOND",
-                           "minPlayers":  5,
+                           "minPlayers":  2,
                            "presentation_id":  "artist_era_2_d"
                        },
                        {
@@ -346,7 +303,7 @@
                            "type":  "SHAMAN",
                            "era":  "SECOND",
                            "minPlayers":  2,
-                           "numStars":  1,
+                           "numStars":  2,
                            "presentation_id":  "shaman_era_2_a"
                        },
                        {
@@ -359,86 +316,44 @@
                        {
                            "type":  "SHAMAN",
                            "era":  "SECOND",
-                           "minPlayers":  3,
-                           "numStars":  2,
+                           "minPlayers":  5,
+                           "numStars":  1,
                            "presentation_id":  "shaman_era_2_c"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "SECOND",
-                           "minPlayers":  3,
+                           "minPlayers":  5,
                            "numStars":  2,
                            "presentation_id":  "shaman_era_2_d"
-                       },
-                       {
-                           "type":  "SHAMAN",
-                           "era":  "SECOND",
-                           "minPlayers":  4,
-                           "numStars":  3,
-                           "presentation_id":  "shaman_era_2_e"
-                       },
-                       {
-                           "type":  "SHAMAN",
-                           "era":  "SECOND",
-                           "minPlayers":  5,
-                           "numStars":  3,
-                           "presentation_id":  "shaman_era_2_f"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "THIRD",
                            "minPlayers":  2,
-                           "activeHunter":  false,
+                           "activeHunter":  true,
                            "presentation_id":  "hunter_era_3_a"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "THIRD",
-                           "minPlayers":  2,
-                           "activeHunter":  false,
+                           "minPlayers":  5,
+                           "activeHunter":  true,
                            "presentation_id":  "hunter_era_3_b"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "THIRD",
                            "minPlayers":  2,
-                           "activeHunter":  true,
+                           "activeHunter":  false,
                            "presentation_id":  "hunter_era_3_c"
                        },
                        {
                            "type":  "HUNTER",
                            "era":  "THIRD",
                            "minPlayers":  2,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_3_d"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "THIRD",
-                           "minPlayers":  3,
                            "activeHunter":  false,
-                           "presentation_id":  "hunter_era_3_e"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "THIRD",
-                           "minPlayers":  3,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_3_f"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "THIRD",
-                           "minPlayers":  4,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_3_g"
-                       },
-                       {
-                           "type":  "HUNTER",
-                           "era":  "THIRD",
-                           "minPlayers":  5,
-                           "activeHunter":  true,
-                           "presentation_id":  "hunter_era_3_h"
+                           "presentation_id":  "hunter_era_3_d"
                        },
                        {
                            "type":  "BUILDER",
@@ -497,7 +412,7 @@
                        {
                            "type":  "ARTIST",
                            "era":  "THIRD",
-                           "minPlayers":  3,
+                           "minPlayers":  2,
                            "presentation_id":  "artist_era_3_c"
                        },
                        {
@@ -537,44 +452,37 @@
                        {
                            "type":  "SHAMAN",
                            "era":  "THIRD",
-                           "minPlayers":  2,
-                           "numStars":  1,
+                           "minPlayers":  4,
+                           "numStars":  2,
                            "presentation_id":  "shaman_era_3_a"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "THIRD",
-                           "minPlayers":  2,
+                           "minPlayers":  3,
                            "numStars":  2,
                            "presentation_id":  "shaman_era_3_b"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "THIRD",
-                           "minPlayers":  3,
-                           "numStars":  2,
+                           "minPlayers":  2,
+                           "numStars":  3,
                            "presentation_id":  "shaman_era_3_c"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "THIRD",
-                           "minPlayers":  3,
-                           "numStars":  3,
+                           "minPlayers":  2,
+                           "numStars":  2,
                            "presentation_id":  "shaman_era_3_d"
                        },
                        {
                            "type":  "SHAMAN",
                            "era":  "THIRD",
-                           "minPlayers":  4,
+                           "minPlayers":  2,
                            "numStars":  3,
                            "presentation_id":  "shaman_era_3_e"
-                       },
-                       {
-                           "type":  "SHAMAN",
-                           "era":  "THIRD",
-                           "minPlayers":  5,
-                           "numStars":  3,
-                           "presentation_id":  "shaman_era_3_f"
                        },
                        {
                            "type":  "HUNT_EVENT",
@@ -669,8 +577,8 @@
                               "type":  "BUILDING_ON_CARD",
                               "era":  "FIRST",
                               "minPlayers":  2,
-                              "foodCost":  3,
-                              "prestigePoints":  0,
+                              "foodCost":  4,
+                              "prestigePoints":  3,
                               "foodBonus":  5,
                               "setCompletion":  true,
                               "inventorsPair":  false,
@@ -681,156 +589,161 @@
                               "era":  "FIRST",
                               "minPlayers":  2,
                               "foodCost":  4,
-                              "prestigePoints":  0,
+                              "prestigePoints":  4,
+                              "foodBonus":  -1,
+                              "ppBonus":  0,
+                              "characterType":  "GATHERER",
+                              "trigger":  "ON_EVENT_SUSTENANCE",
+                              "presentation_id":  "building_era_1_02"
+                          },
+                        {
+                              "type":  "BUILDING_BONUS_EVENT",
+                              "era":  "FIRST",
+                              "minPlayers":  2,
+                              "foodCost":  5,
+                              "prestigePoints":  3,
                               "foodBonus":  -1,
                               "ppBonus":  0,
                               "characterType":  "ARTIST",
                               "trigger":  "ON_EVENT_SUSTENANCE",
-                              "presentation_id":  "building_era_1_02"
+                              "presentation_id":  "building_era_1_03"
                           },
                           {
                               "type":  "BUILDING_SHAMANIC_RITUAL",
                               "era":  "FIRST",
                               "minPlayers":  2,
-                              "foodCost":  3,
-                              "prestigePoints":  0,
+                              "foodCost":  5,
+                              "prestigePoints":  2,
                               "starBonus":  0,
                               "winMultiplier":  0,
-                              "presentation_id":  "building_era_1_03"
+                              "presentation_id":  "building_era_1_04"
                           },
                           {
                               "type":  "BUILDING_END_TURN",
                               "era":  "FIRST",
                               "minPlayers":  2,
-                              "foodCost":  4,
-                              "prestigePoints":  0,
+                              "foodCost":  3,
+                              "prestigePoints":  3,
                               "foodBonus":  1,
-                              "presentation_id":  "building_era_1_04"
+                              "presentation_id":  "building_era_1_05"
                           },
                           {
                               "type":  "BUILDING_ON_CARD",
                               "era":  "FIRST",
                               "minPlayers":  2,
                               "foodCost":  3,
-                              "prestigePoints":  0,
+                              "prestigePoints":  4,
                               "foodBonus":  3,
                               "setCompletion":  false,
                               "inventorsPair":  true,
-                              "presentation_id":  "building_era_1_05"
-                          },
-                          {
-                              "type":  "BUILDING_SHAMANIC_RITUAL",
-                              "era":  "FIRST",
-                              "minPlayers":  2,
-                              "foodCost":  4,
-                              "prestigePoints":  0,
-                              "starBonus":  3,
-                              "winMultiplier":  0,
                               "presentation_id":  "building_era_1_06"
                           },
                           {
                               "type":  "BUILDING_SHAMANIC_RITUAL",
                               "era":  "SECOND",
                               "minPlayers":  2,
-                              "foodCost":  5,
+                              "foodCost":  7,
                               "prestigePoints":  0,
                               "starBonus":  0,
                               "winMultiplier":  2,
                               "presentation_id":  "building_era_2_01"
                           },
+                        {
+                              "type":  "BUILDING_SHAMANIC_RITUAL",
+                              "era":  "SECOND",
+                              "minPlayers":  2,
+                              "foodCost":  6,
+                              "prestigePoints":  4,
+                              "starBonus":  3,
+                              "winMultiplier":  0,
+                              "presentation_id":  "building_era_2_02"
+                          },
                           {
                               "type":  "BUILDING_BONUS_EVENT",
                               "era":  "SECOND",
                               "minPlayers":  2,
-                              "foodCost":  5,
-                              "prestigePoints":  0,
+                              "foodCost":  7,
+                              "prestigePoints":  4,
                               "foodBonus":  1,
-                              "ppBonus":  1,
-                              "characterType":  "HUNTER",
-                              "trigger":  "ON_EVENT_HUNT",
-                              "presentation_id":  "building_era_2_02"
-                          },
-                          {
-                              "type":  "BUILDING_END_GAME",
-                              "era":  "SECOND",
-                              "minPlayers":  2,
-                              "foodCost":  6,
-                              "prestigePoints":  0,
-                              "doubleBuildersPp":  true,
-                              "characterSetBonusPrestige":  0,
-                              "characterMultiplier":  0,
-                              "characterType":  null,
-                              "prestigeBonus":  0,
+                              "ppBonus":  0,
+                              "characterType":  "INVENTOR",
+                              "trigger":  "ON_EVENT_SUSTENANCE",
                               "presentation_id":  "building_era_2_03"
                           },
                           {
                               "type":  "BUILDING_BONUS_EVENT",
                               "era":  "SECOND",
                               "minPlayers":  2,
-                              "foodCost":  4,
-                              "prestigePoints":  0,
+                              "foodCost":  7,
+                              "prestigePoints":  2,
                               "foodBonus":  1,
-                              "ppBonus":  0,
-                              "characterType":  "ARTIST",
-                              "trigger":  "ON_EVENT_CAVE_PAINTINGS",
+                              "ppBonus":  1,
+                              "characterType":  "HUNTER",
+                              "trigger":  "ON_EVENT_HUNT",
                               "presentation_id":  "building_era_2_04"
                           },
                           {
                               "type":  "BUILDING_END_GAME",
                               "era":  "SECOND",
                               "minPlayers":  2,
-                              "foodCost":  5,
-                              "prestigePoints":  0,
-                              "doubleBuildersPp":  false,
-                              "characterSetBonusPrestige":  6,
+                              "foodCost":  6,
+                              "prestigePoints":  4,
+                              "doubleBuildersPp":  true,
+                              "characterSetBonusPrestige":  0,
                               "characterMultiplier":  0,
                               "characterType":  null,
                               "prestigeBonus":  0,
                               "presentation_id":  "building_era_2_05"
+                          },
+                        {
+                              "type":  "BUILDING_BONUS_EVENT",
+                              "era":  "SECOND",
+                              "minPlayers":  2,
+                              "foodCost":  5,
+                              "prestigePoints":  6,
+                              "foodBonus":  1,
+                              "ppBonus":  0,
+                              "characterType":  "ARTIST",
+                              "trigger":  "ON_EVENT_CAVE_PAINTINGS",
+                              "presentation_id":  "building_era_2_06"
                           },
                           {
                               "type":  "BUILDING_END_GAME",
                               "era":  "SECOND",
                               "minPlayers":  2,
                               "foodCost":  5,
+                              "prestigePoints":  6,
+                              "doubleBuildersPp":  false,
+                              "characterSetBonusPrestige":  6,
+                              "characterMultiplier":  0,
+                              "characterType":  null,
+                              "prestigeBonus":  0,
+                              "presentation_id":  "building_era_2_07"
+                          },
+                          {
+                              "type":  "BUILDING_END_GAME",
+                              "era":  "THIRD",
+                              "minPlayers":  2,
+                              "foodCost":  8,
                               "prestigePoints":  8,
                               "doubleBuildersPp":  false,
                               "characterSetBonusPrestige":  0,
                               "characterMultiplier":  3,
                               "characterType":  "HUNTER",
                               "prestigeBonus":  0,
-                              "presentation_id":  "building_era_2_06"
-                          },
-                          {
-                              "type":  "BUILDING_END_ROUND",
-                              "era":  "SECOND",
-                              "minPlayers":  2,
-                              "foodCost":  5,
-                              "prestigePoints":  2,
-                              "presentation_id":  "building_era_2_07"
-                          },
-                          {
-                              "type":  "BUILDING_BONUS_EVENT",
-                              "era":  "THIRD",
-                              "minPlayers":  2,
-                              "foodCost":  6,
-                              "prestigePoints":  0,
-                              "foodBonus":  -1,
-                              "ppBonus":  0,
-                              "characterType":  "INVENTOR",
-                              "trigger":  "ON_EVENT_SUSTENANCE",
                               "presentation_id":  "building_era_3_01"
                           },
                           {
-                              "type":  "BUILDING_BONUS_EVENT",
+                              "type":  "BUILDING_END_GAME",
                               "era":  "THIRD",
                               "minPlayers":  2,
-                              "foodCost":  6,
-                              "prestigePoints":  0,
-                              "foodBonus":  -1,
-                              "ppBonus":  0,
+                              "foodCost":  7,
+                              "prestigePoints":  6,
+                              "doubleBuildersPp":  false,
+                              "characterSetBonusPrestige":  0,
+                              "characterMultiplier":  4,
                               "characterType":  "GATHERER",
-                              "trigger":  "ON_EVENT_SUSTENANCE",
+                              "prestigeBonus":  0,
                               "presentation_id":  "building_era_3_02"
                           },
                           {
@@ -838,7 +751,7 @@
                               "era":  "THIRD",
                               "minPlayers":  2,
                               "foodCost":  7,
-                              "prestigePoints":  0,
+                              "prestigePoints":  4,
                               "doubleBuildersPp":  false,
                               "characterSetBonusPrestige":  0,
                               "characterMultiplier":  4,
@@ -850,12 +763,12 @@
                               "type":  "BUILDING_END_GAME",
                               "era":  "THIRD",
                               "minPlayers":  2,
-                              "foodCost":  7,
-                              "prestigePoints":  0,
+                              "foodCost":  6,
+                              "prestigePoints":  3,
                               "doubleBuildersPp":  false,
                               "characterSetBonusPrestige":  0,
                               "characterMultiplier":  4,
-                              "characterType":  "ARTIST",
+                              "characterType":  "BUILDER",
                               "prestigeBonus":  0,
                               "presentation_id":  "building_era_3_04"
                           },
@@ -863,45 +776,41 @@
                               "type":  "BUILDING_END_GAME",
                               "era":  "THIRD",
                               "minPlayers":  2,
-                              "foodCost":  6,
-                              "prestigePoints":  0,
+                              "foodCost":  7,
+                              "prestigePoints":  4,
                               "doubleBuildersPp":  false,
                               "characterSetBonusPrestige":  0,
-                              "characterMultiplier":  5,
-                              "characterType":  "GATHERER",
+                              "characterMultiplier":  4,
+                              "characterType":  "ARTIST",
                               "prestigeBonus":  0,
                               "presentation_id":  "building_era_3_05"
                           },
-                          {
+                        {
                               "type":  "BUILDING_END_GAME",
                               "era":  "THIRD",
                               "minPlayers":  2,
-                              "foodCost":  8,
-                              "prestigePoints":  0,
+                              "foodCost":  6,
+                              "prestigePoints":  6,
                               "doubleBuildersPp":  false,
-                              "characterSetBonusPrestige":  8,
-                              "characterMultiplier":  0,
-                              "characterType":  null,
+                              "characterSetBonusPrestige":  0,
+                              "characterMultiplier":  2,
+                              "characterType":  "INVENTOR",
                               "prestigeBonus":  0,
                               "presentation_id":  "building_era_3_06"
                           },
                           {
-                              "type":  "BUILDING_BONUS_EVENT",
+                              "type":  "BUILDING_AFTER_EVERYONE",
                               "era":  "THIRD",
                               "minPlayers":  2,
-                              "foodCost":  7,
-                              "prestigePoints":  0,
-                              "foodBonus":  1,
-                              "ppBonus":  1,
-                              "characterType":  "HUNTER",
-                              "trigger":  "ON_EVENT_HUNT",
+                              "foodCost":  9,
+                              "prestigePoints":  3,
                               "presentation_id":  "building_era_3_07"
                           },
                           {
                               "type":  "BUILDING_END_GAME",
                               "era":  "THIRD",
                               "minPlayers":  2,
-                              "foodCost":  8,
+                              "foodCost":  10,
                               "prestigePoints":  0,
                               "doubleBuildersPp":  false,
                               "characterSetBonusPrestige":  0,
