@@ -123,11 +123,11 @@ final class NetworkTestSupport {
 
         GameOperationResult aliceSubscription = aliceClient.subscribe(
                 new SubscribeGameRequest(gameName, "Alice"),
-                aliceUpdates::offer
+                update -> { if (update instanceof GameViewUpdate view) aliceUpdates.offer(view); }
         );
         GameOperationResult bobSubscription = bobClient.subscribe(
                 new SubscribeGameRequest(gameName, "Bob"),
-                bobUpdates::offer
+                update -> { if (update instanceof GameViewUpdate view) bobUpdates.offer(view); }
         );
         assertTrue(aliceSubscription.success());
         assertTrue(bobSubscription.success());
@@ -217,7 +217,8 @@ final class NetworkTestSupport {
 
         LinkedBlockingQueue<GameViewUpdate> bobUpdates = new LinkedBlockingQueue<>();
         assertTrue(aliceClient.subscribe(new SubscribeGameRequest(gameName, "Alice"), update -> { }).success());
-        assertTrue(bobClient.subscribe(new SubscribeGameRequest(gameName, "Bob"), bobUpdates::offer).success());
+        assertTrue(bobClient.subscribe(new SubscribeGameRequest(gameName, "Bob"),
+                update -> { if (update instanceof GameViewUpdate view) bobUpdates.offer(view); }).success());
 
         GameOperationResult aliceChooseBlue =
                 aliceClient.chooseColor(new ChooseColorRequest(gameName, "Alice", Color.BLUE));

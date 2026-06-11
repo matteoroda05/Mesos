@@ -1,6 +1,18 @@
 package it.polimi.ingsw.mesos.gui;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
+
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
@@ -31,16 +43,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.IntConsumer;
 
 public final class MesosGameBoardView extends BorderPane {
     private static final double DESIGN_WIDTH = 920;
@@ -104,6 +106,8 @@ public final class MesosGameBoardView extends BorderPane {
     private final StackPane ownedDeckPreviewOverlay;
     private final VBox playerButtonsPane;
     private final StackPane playerTribeOverlay;
+    private final VBox eventLogPane;
+    private final StackPane eventLogOverlay;
     private final Button infoButton;
     private final StackPane infoPopupOverlay;
     private final VBox minimalTurnBarPane;
@@ -113,6 +117,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final Scale boardScale;
 
     private GameSnapshot snapshot;
+    private List<EventLogEntry> eventLog = List.of();
 
     public MesosGameBoardView(
             String localNickname,
@@ -208,6 +213,19 @@ public final class MesosGameBoardView extends BorderPane {
         this.playerTribeOverlay.setMinSize(0, 0);
         this.playerTribeOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        this.eventLogPane = new VBox(6);
+        this.eventLogPane.getStyleClass().add("event-log-pane");
+        this.eventLogPane.setAlignment(Pos.TOP_RIGHT);
+        this.eventLogPane.setMaxWidth(Region.USE_PREF_SIZE);
+
+        this.eventLogOverlay = new StackPane();
+        this.eventLogOverlay.getStyleClass().add("event-log-overlay");
+        this.eventLogOverlay.setAlignment(Pos.CENTER);
+        this.eventLogOverlay.setVisible(false);
+        this.eventLogOverlay.setPickOnBounds(false);
+        this.eventLogOverlay.setMinSize(0, 0);
+        this.eventLogOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
         this.infoButton = buildInfoActionButton("Info", this::showInfoPopup);
         this.infoButton.getStyleClass().add("info-popup-button");
 
@@ -227,6 +245,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.boardScale = new Scale(1, 1, 0, 0);
         this.viewport = buildViewport();
 
+        rebuildEventLogPane();
         buildLayout();
     }
 
@@ -317,6 +336,9 @@ public final class MesosGameBoardView extends BorderPane {
         StackPane.setAlignment(playerButtonsPane, Pos.TOP_LEFT);
         StackPane.setMargin(playerButtonsPane, new Insets(12, 0, 0, 12));
         pane.getChildren().add(playerButtonsPane);
+        StackPane.setAlignment(eventLogPane, Pos.TOP_RIGHT);
+        StackPane.setMargin(eventLogPane, new Insets(12, 12, 0, 0));
+        pane.getChildren().add(eventLogPane);
         StackPane.setAlignment(infoButton, Pos.TOP_RIGHT);
         StackPane.setMargin(infoButton, new Insets(12, 12, 0, 0));
         pane.getChildren().add(infoButton);
@@ -327,6 +349,8 @@ public final class MesosGameBoardView extends BorderPane {
         pane.getChildren().add(ownedDeckPreviewOverlay);
         StackPane.setAlignment(playerTribeOverlay, Pos.CENTER);
         pane.getChildren().add(playerTribeOverlay);
+        StackPane.setAlignment(eventLogOverlay, Pos.CENTER);
+        pane.getChildren().add(eventLogOverlay);
         StackPane.setAlignment(infoPopupOverlay, Pos.CENTER);
         pane.getChildren().add(infoPopupOverlay);
         pane.getStyleClass().add("board-viewport");
@@ -756,6 +780,93 @@ public final class MesosGameBoardView extends BorderPane {
     private void hidePlayerTribePopup() {
         playerTribeOverlay.setVisible(false);
         playerTribeOverlay.getChildren().clear();
+    }
+
+    /**
+     * Replaces the rendered event log with the given history and refreshes the
+     * top-right "Event Log" button (and the open popup, if any).
+     *
+     * @param log full event history to display; null is treated as empty
+     */
+    public void setEventLog(List<EventLogEntry> log) {
+        this.eventLog = log == null ? List.of() : log;
+        rebuildEventLogPane();
+        if (eventLogOverlay.isVisible()) {
+            eventLogOverlay.getChildren().setAll(buildEventLogPopup());
+        }
+    }
+
+    private void rebuildEventLogPane() {
+        eventLogPane.getChildren().clear();
+        Button button = new Button("Event Log (" + eventLog.size() + ")");
+        button.getStyleClass().add("event-log-button");
+        button.setMaxWidth(Region.USE_PREF_SIZE);
+        button.setOnAction(event -> showEventLogPopup());
+        eventLogPane.getChildren().add(button);
+    }
+
+    private void showEventLogPopup() {
+        hideOwnedDeckPreview();
+        hidePlayerTribePopup();
+        eventLogOverlay.getChildren().setAll(buildEventLogPopup());
+        eventLogOverlay.setVisible(true);
+    }
+
+    private void hideEventLogPopup() {
+        eventLogOverlay.setVisible(false);
+        eventLogOverlay.getChildren().clear();
+    }
+
+    private VBox buildEventLogPopup() {
+        HBox titleRow = new HBox(8);
+        titleRow.getStyleClass().add("player-tribe-header");
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label title = new Label("Event Log");
+        title.getStyleClass().add("player-tribe-popup-title");
+
+        Button close = new Button("Close");
+        close.getStyleClass().addAll("secondary-button", "player-tribe-close-button");
+        close.setOnAction(event -> hideEventLogPopup());
+
+        titleRow.getChildren().addAll(title, spacer(), close);
+
+        VBox entries = new VBox(12);
+        entries.getStyleClass().add("event-log-entries");
+        if (eventLog.isEmpty()) {
+            entries.getChildren().add(playerTribeEmptyLabel("No events yet."));
+        } else {
+            // newest first so the most recent event is immediately visible
+            for (int index = eventLog.size() - 1; index >= 0; index--) {
+                entries.getChildren().add(buildEventLogEntryNode(eventLog.get(index)));
+            }
+        }
+
+        ScrollPane scroll = new ScrollPane(entries);
+        scroll.getStyleClass().add("player-tribe-scroll");
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setMaxHeight(360);
+
+        VBox popup = new VBox(12, titleRow, scroll);
+        popup.getStyleClass().addAll("player-tribe-popup", "event-log-popup");
+        popup.setAlignment(Pos.TOP_LEFT);
+        popup.setMaxWidth(520);
+        popup.setMaxHeight(540);
+        return popup;
+    }
+
+    private Node buildEventLogEntryNode(EventLogEntry entry) {
+        Label title = new Label(EventMessageFormatter.title(entry));
+        title.getStyleClass().add("subsection-title");
+
+        Label body = new Label(EventMessageFormatter.body(entry));
+        body.getStyleClass().add("details-label");
+        body.setWrapText(true);
+
+        VBox group = new VBox(4, title, body);
+        group.getStyleClass().add("event-log-entry");
+        return group;
     }
 
     private void showInfoPopup() {

@@ -155,7 +155,7 @@ class NetworkValueObjectsTest {
         assertEquals("Aggiornamento tavolo", new GameViewUpdate("game", null, snapshot).message());
         assertEquals("Aggiornamento tavolo", new GameViewUpdate("game", " ", snapshot).message());
 
-        List<GameViewUpdate> received = new ArrayList<>();
+        List<GameServerMessage> received = new ArrayList<>();
         GameViewUpdate update = new GameViewUpdate("game", "updated", snapshot);
         update.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), received::add));
         update.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), null));

@@ -1,9 +1,12 @@
 package it.polimi.ingsw.mesos.gui;
 
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
@@ -11,8 +14,10 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +35,7 @@ public final class MesosGuiFlowController {
     private MesosGameBoardView gameBoardView;
     private MesosGuiScreenFactory.NicknameScreen nicknameScreen;
     private final Map<String, Color> preJoinColorByGame;
+    private final List<EventLogEntry> eventLog = new ArrayList<>();
 
     public MesosGuiFlowController(
             Host host,
@@ -48,11 +54,20 @@ public final class MesosGuiFlowController {
         showConnectionScreen();
     }
 
-    public void handleRemoteUpdate(GameViewUpdate update) {
+    public void handleRemoteUpdate(GameServerMessage update) {
         Platform.runLater(() -> {
-            String message = MesosUserMessageMapper.describeUpdate(update);
+            if (update instanceof EventNotification notification) {
+                eventLog.add(notification.entry());
+                if (gameBoardView != null) {
+                    gameBoardView.setEventLog(eventLog);
+                }
+                return;
+            }
+
+            GameViewUpdate view = update instanceof GameViewUpdate gameViewUpdate ? gameViewUpdate : null;
+            String message = MesosUserMessageMapper.describeUpdate(view);
             host.updateStatus(message);
-            renderSnapshot(update == null ? null : update.snapshot(), message);
+            renderSnapshot(view == null ? null : view.snapshot(), message);
         });
     }
 
@@ -111,6 +126,7 @@ public final class MesosGuiFlowController {
             );
         }
         gameBoardView.updateSnapshot(snapshot, message);
+        gameBoardView.setEventLog(eventLog);
         host.setContent(gameBoardView);
     }
 
@@ -433,6 +449,7 @@ public final class MesosGuiFlowController {
                     gameBoardView = null;
                     nicknameScreen = null;
                     preJoinColorByGame.clear();
+                    eventLog.clear();
                     showConnectionScreen();
                     host.updateStatus("Disconnected.");
                 },

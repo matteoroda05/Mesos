@@ -798,6 +798,35 @@
     -fx-padding: 9;
 }
 
+.event-log-overlay {
+    -fx-alignment: center;
+}
+
+.event-log-button {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 999;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.24), 10, 0.14, 0, 3);
+}
+
+.event-log-button:hover {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.event-log-entry {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.10);
+    -fx-border-radius: 12;
+    -fx-padding: 9;
+}
+
 .player-tribe-card-group-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;

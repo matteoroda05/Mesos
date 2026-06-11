@@ -12,6 +12,10 @@ import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventSummary;
+import it.polimi.ingsw.mesos.PlayerEventLine;
 import it.polimi.ingsw.mesos.Result;
 
 import java.util.*;
@@ -49,6 +53,7 @@ public class EventState extends GameState {
     public GameState process() {
         List<SustenanceEvent> sustenance = new ArrayList<>();
         Map<Color, Tribe> tribes = controller.getTribes();
+        List<EventSummary> summaries = new ArrayList<>();
 
         System.out.println("EVENT STATE");
         printTribeCards(tribes);
@@ -68,7 +73,7 @@ public class EventState extends GameState {
                 } else {
                     buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
                 }
-                outcome.forEach((player, result) -> controller.playerApplyOutcome(result, player));
+                addSummary(summaries, curr, outcome);
             }
         }
 
@@ -83,13 +88,43 @@ public class EventState extends GameState {
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
 
             buildings.forEach(building -> building.effect(outcome, controller));
-            outcome.forEach((player, result) -> {controller.playerApplyOutcome(result, player);});
+            addSummary(summaries, event, outcome);
+        }
+
+        if (!summaries.isEmpty()) {
+            String title = last_round ? "FINAL EVENTS" : "EVENTS ROUND";
+            controller.getGameContext().logEventEntry(new EventLogEntry.Round(title, summaries));
         }
 
         if (last_round) {
             return new EndGameState(controller);
         } else {
             return new EndRoundState(controller);
+        }
+    }
+
+    /**
+     * Applies an event's outcome to every affected player and appends a summary
+     * of the actually-applied per-player changes. Players whose net food and
+     * prestige are both unchanged are omitted from the summary, and events that
+     * affect nobody produce no summary at all.
+     *
+     * @param summaries accumulator receiving the new summary, when non-empty
+     * @param event event being resolved
+     * @param outcome per-player results to apply, keyed by color
+     */
+    private void addSummary(List<EventSummary> summaries, EventCard event, Map<Color, Result> outcome) {
+        List<PlayerEventLine> lines = new ArrayList<>();
+        outcome.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    AppliedDelta applied = controller.playerApplyOutcome(entry.getValue(), entry.getKey());
+                    if (applied.foodDelta() != 0 || applied.prestigeDelta() != 0) {
+                        lines.add(new PlayerEventLine(entry.getKey(), applied.foodDelta(), applied.prestigeDelta()));
+                    }
+                });
+        if (!lines.isEmpty()) {
+            summaries.add(new EventSummary(EventSummary.formatEventName(event.getClass().getSimpleName()), lines));
         }
     }
 

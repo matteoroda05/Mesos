@@ -15,6 +15,8 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Result;
 
 public class ModelController {
@@ -233,7 +235,9 @@ public class ModelController {
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
         Result placing_result = game_table.getTurnOrderTile().placeTotem(player_color);
-        playerApplyOutcome(placing_result, player_color);
+        AppliedDelta applied = playerApplyOutcome(placing_result, player_color);
+        this.game_context.logEventEntry(
+                new EventLogEntry.TurnOrder(player_color, applied.foodDelta(), applied.prestigeDelta()));
     }
 
     /**
@@ -368,7 +372,9 @@ public class ModelController {
         GameTable gameTable = this.game_context.getGameTable();
         gameTable.getOfferTrack().clearOccupantByColor(player_color);
         Result placing_result = gameTable.getTurnOrderTile().placeTotem(player_color);
-        playerApplyOutcome(placing_result, player_color);
+        AppliedDelta applied = playerApplyOutcome(placing_result, player_color);
+        this.game_context.logEventEntry(
+                new EventLogEntry.TurnOrder(player_color, applied.foodDelta(), applied.prestigeDelta()));
     }
 
 
@@ -405,12 +411,15 @@ public class ModelController {
      *
      * @param outcome result to apply
      * @param player_color color of the affected player
+     * @return the food and prestige change actually applied to the player
      * @throws IllegalArgumentException if the player color is null or unknown
      * @throws NullPointerException if the outcome is null
      */
-    public void playerApplyOutcome(Result outcome, Color player_color) {
+    public AppliedDelta playerApplyOutcome(Result outcome, Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player p = this.game_context.getPlayer(player_color);
+        int food_before = p.getFood();
+        int prestige_before = p.getPrestigePoints();
         int penalty = 0;
         if (outcome.food() > 0){
             p.gainFood(outcome.food());
@@ -420,5 +429,6 @@ public class ModelController {
         if (outcome.prestige() - penalty != 0){
             p.changePrestigePoints(outcome.prestige() - penalty);
         }
+        return new AppliedDelta(p.getFood() - food_before, p.getPrestigePoints() - prestige_before);
     }
 }

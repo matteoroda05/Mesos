@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 
 public class RmiGameClient implements GameClient {
@@ -348,7 +348,7 @@ public class RmiGameClient implements GameClient {
          * @param update update payload
          */
         @Override
-        public void onUpdate(GameViewUpdate update) {
+        public void onUpdate(GameServerMessage update) {
             delegate.onUpdate(update);
         }
     }
