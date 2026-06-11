@@ -28,7 +28,8 @@ public final class MesosCliClient {
 
     private String nickname;
     private String gameName;
-    private GameSnapshot snapshot;
+    private volatile GameSnapshot snapshot;
+    private volatile GameSnapshot lastRenderedSnapshot;
 
     /**
      * Creates a CLI client bound to standard input and a terminal printer.
@@ -542,7 +543,7 @@ public final class MesosCliClient {
                     throw new IllegalArgumentException("use: offer <index>");
                 }
                 int offerIndex = parseInt(tokens[1], "the offer index");
-                handleResult(client.chooseOffer(new ChooseOfferRequest(gameName, nickname, offerIndex)));
+                handleActionResult(client.chooseOffer(new ChooseOfferRequest(gameName, nickname, offerIndex)));
             }
             case "card", "carta" -> {
                 if (tokens.length != 3) {
@@ -550,13 +551,13 @@ public final class MesosCliClient {
                 }
                 boolean topRow = parseRow(tokens[1]);
                 int cardIndex = parseInt(tokens[2], "the card index");
-                handleResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
+                handleActionResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
             }
             case "pass", "passa" -> {
                 if (tokens.length != 1) {
                     throw new IllegalArgumentException("use: pass");
                 }
-                handleResult(client.pass(new PassRequest(gameName, nickname)));
+                handleActionResult(client.pass(new PassRequest(gameName, nickname)));
             }
             default -> throw new IllegalArgumentException("unknown command '" + tokens[0] + "'");
         }
@@ -628,6 +629,25 @@ public final class MesosCliClient {
     }
 
     /**
+     * Handles a local game action, printing the returned snapshot immediately
+     * when an asynchronous update has not already rendered the same board.
+     *
+     * @param result operation result produced by a local game action
+     */
+    private void handleActionResult(GameOperationResult result) {
+        GameSnapshot resultSnapshot = result == null ? null : result.snapshot();
+        boolean snapshotAlreadyRendered = isSnapshotAlreadyRendered(resultSnapshot);
+        handleResult(result);
+        if (result == null || !result.success()) {
+            return;
+        }
+        if (snapshotAlreadyRendered || isSnapshotAlreadyRendered(resultSnapshot)) {
+            return;
+        }
+        printSnapshotIfAvailable();
+    }
+
+    /**
      * Handles a game operation result and prints its message.
      *
      * @param result operation result, ignored when null
@@ -666,6 +686,10 @@ public final class MesosCliClient {
         if (update == null) {
             return;
         }
+        if (isSnapshotAlreadyRendered(update.snapshot())) {
+            snapshot = update.snapshot();
+            return;
+        }
         snapshot = update.snapshot();
         synchronized (consoleLock) {
             System.out.println();
@@ -673,6 +697,7 @@ public final class MesosCliClient {
             System.out.println(printer.renderSnapshot(snapshot, nickname));
             System.out.print("mesos> ");
             System.out.flush();
+            lastRenderedSnapshot = snapshot;
         }
     }
 
@@ -684,6 +709,17 @@ public final class MesosCliClient {
             return;
         }
         printLine(printer.renderSnapshot(snapshot, nickname));
+        lastRenderedSnapshot = snapshot;
+    }
+
+    /**
+     * Checks whether a snapshot has already been rendered to the console.
+     *
+     * @param candidate snapshot to compare, or null
+     * @return true when the same snapshot was already printed
+     */
+    private boolean isSnapshotAlreadyRendered(GameSnapshot candidate) {
+        return candidate != null && candidate.equals(lastRenderedSnapshot);
     }
 
     /**

@@ -1,6 +1,8 @@
 package it.polimi.ingsw.mesos.Network.RMI;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -52,6 +54,10 @@ public class RmiGameClient implements GameClient {
         }
 
         try {
+            System.setProperty("java.rmi.server.hostname", NetworkDefaults.resolveRmiClientHost(
+                    host,
+                    determineRoutedLocalHost(host, registryPort)
+            ));
             Registry registry = LocateRegistry.getRegistry(host, registryPort);
             this.remoteServer = (RemoteMesosServer) registry.lookup(serviceName);
             this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(task -> {
@@ -323,6 +329,27 @@ public class RmiGameClient implements GameClient {
                 remoteServer.heartbeat(new HeartbeatRequest(gameName, nickname, true));
             }
         } catch (RemoteException ignored) {
+        }
+    }
+
+    /**
+     * Resolves the local host address actually chosen by the OS route toward
+     * the RMI registry.
+     *
+     * @param host registry host
+     * @param registryPort registry port
+     * @return local host address used for the route, or null when it cannot be
+     *         determined
+     */
+    private static String determineRoutedLocalHost(String host, int registryPort) {
+        try (Socket socket = new Socket(host, registryPort)) {
+            InetAddress localAddress = socket.getLocalAddress();
+            if (localAddress == null) {
+                return null;
+            }
+            return localAddress.getHostAddress();
+        } catch (IOException ignored) {
+            return null;
         }
     }
 
