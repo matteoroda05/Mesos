@@ -51,6 +51,7 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double LEFT_HUD_WIDTH = 340;
     private static final double MARKET_CARD_WIDTH = 85;
     private static final double MARKET_CARD_HEIGHT = 130;
+    private static final double MARKET_CARD_SLOT_HEIGHT = MARKET_CARD_HEIGHT + 8;
     private static final double OFFER_TILE_WIDTH = 85;
     private static final double OFFER_TILE_HEIGHT = 130;
     private static final double OWNED_TRIBE_CARD_WIDTH = 54;
@@ -337,6 +338,7 @@ public final class MesosGameBoardView extends BorderPane {
         }
         
         pane.getChildren().add(wrapper);
+        StackPane.setAlignment(wrapper, Pos.TOP_CENTER);
         StackPane.setAlignment(playerButtonsPane, Pos.TOP_LEFT);
         StackPane.setMargin(playerButtonsPane, new Insets(12, 0, 0, 12));
         pane.getChildren().add(playerButtonsPane);
@@ -375,7 +377,6 @@ public final class MesosGameBoardView extends BorderPane {
 
         pane.widthProperty().addListener((observable, oldValue, newValue) -> updateBoardScale(pane));
         pane.heightProperty().addListener((observable, oldValue, newValue) -> updateBoardScale(pane));
-        tabletopCanvas.layoutBoundsProperty().addListener((observable, oldValue, newValue) -> updateBoardScale(pane));
         return pane;
     }
 
@@ -384,12 +385,9 @@ public final class MesosGameBoardView extends BorderPane {
                 viewport.getWidth() - viewport.getPadding().getLeft() - viewport.getPadding().getRight());
         double availableHeight = Math.max(0,
                 viewport.getHeight() - viewport.getPadding().getTop() - viewport.getPadding().getBottom());
-        double contentWidth = Math.max(DESIGN_WIDTH, tabletopCanvas.getLayoutBounds().getWidth());
-        double contentHeight = Math.max(DESIGN_HEIGHT, tabletopCanvas.getLayoutBounds().getHeight());
-
         double scale = 1.0;
         if (availableWidth > 0 && availableHeight > 0) {
-            scale = Math.min(availableWidth / contentWidth, availableHeight / contentHeight);
+            scale = Math.min(availableWidth / DESIGN_WIDTH, availableHeight / DESIGN_HEIGHT);
         }
 
         boardScale.setX(scale);
@@ -1221,9 +1219,7 @@ public final class MesosGameBoardView extends BorderPane {
             StackPane slot = new StackPane(surface);
             slot.getStyleClass().add("owned-card-slot");
             slot.setAlignment(Pos.BOTTOM_CENTER);
-            slot.setMinSize(width + 18, height + 44);
-            slot.setPrefSize(width + 18, height + 44);
-            slot.setMaxSize(width + 18, height + 44);
+            setFixedSize(slot, width + 18, height + 44);
             slot.setOnMouseEntered(event -> {
                 slot.toFront();
                 surface.setScaleX(1.85);
@@ -1239,8 +1235,18 @@ public final class MesosGameBoardView extends BorderPane {
             return slot;
         }
 
-        Tooltip.install(surface, tooltip);
-        return surface;
+        StackPane slot = new StackPane(surface);
+        slot.getStyleClass().add("market-card-slot");
+        slot.setAlignment(Pos.CENTER);
+        setFixedSize(slot, width, MARKET_CARD_SLOT_HEIGHT);
+        Tooltip.install(slot, tooltip);
+        return slot;
+    }
+
+    private void setFixedSize(Region region, double width, double height) {
+        region.setMinSize(width, height);
+        region.setPrefSize(width, height);
+        region.setMaxSize(width, height);
     }
 
     private String buildTooltipText(CardSummary cardSummary) {
