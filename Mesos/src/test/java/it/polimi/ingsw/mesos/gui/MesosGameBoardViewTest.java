@@ -114,11 +114,11 @@ class MesosGameBoardViewTest {
     }
 
     @Test
-    void playerButtonsOpenCenteredTribePopup() throws Exception {
+    void playerButtonsDisableLocalPlayerAndOpenOtherTribePopup() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.updateSnapshot(snapshotWithOpponentTribe(), "Offer tile selected.");
 
             VBox buttonsPane = singleNode(view, ".player-buttons-pane", VBox.class);
             assertEquals(Pos.TOP_LEFT, StackPane.getAlignment(buttonsPane));
@@ -129,17 +129,22 @@ class MesosGameBoardViewTest {
             }
 
             Button localPlayerButton = (Button) buttonsPane.getChildren().getFirst();
-            localPlayerButton.getOnAction().handle(null);
+            assertTrue(localPlayerButton.isDisabled());
+            StackPane popupOverlay = singleNode(view, ".player-tribe-overlay", StackPane.class);
+            localPlayerButton.fire();
+            assertFalse(popupOverlay.isVisible());
+
+            Button otherPlayerButton = (Button) buttonsPane.getChildren().get(1);
+            otherPlayerButton.fire();
             view.applyCss();
             view.layout();
 
-            StackPane popupOverlay = singleNode(view, ".player-tribe-overlay", StackPane.class);
             assertTrue(popupOverlay.isVisible());
             assertEquals(Pos.CENTER, StackPane.getAlignment(popupOverlay));
             assertEquals(1, popupOverlay.lookupAll(".player-tribe-popup").size());
             assertEquals(2, popupOverlay.lookupAll(".player-tribe-resource").size());
             ScrollPane tribeScroll = singleNode(popupOverlay, ".player-tribe-scroll", ScrollPane.class);
-            assertEquals(4, tribeScroll.getContent().lookupAll(".player-tribe-card").size());
+            assertEquals(2, tribeScroll.getContent().lookupAll(".player-tribe-card").size());
             return null;
         });
     }
@@ -288,6 +293,29 @@ class MesosGameBoardViewTest {
         return snapshot(List.of(), List.of(), 1, 0, characterCards, List.of());
     }
 
+    private static GameSnapshot snapshotWithOpponentTribe() {
+        return snapshot(
+                List.of(),
+                List.of(),
+                1,
+                0,
+                List.of(
+                        tribeCard(0, "Hunter", "hunter_era_1_a"),
+                        tribeCard(1, "Hunter", "hunter_era_1_b"),
+                        tribeCard(2, "Shaman", "shaman_era_1_a")
+                ),
+                List.of(
+                        tribeCard(3, "Building", "building_era_1_01")
+                ),
+                List.of(
+                        tribeCard(4, "Gatherer", "gatherer_era_1_a")
+                ),
+                List.of(
+                        tribeCard(5, "Building", "building_era_1_01")
+                )
+        );
+    }
+
     private static GameSnapshot snapshotWithRows(int remainingTopChoices, int remainingBottomChoices) {
         return snapshot(
                 List.of(
@@ -331,6 +359,20 @@ class MesosGameBoardViewTest {
             List<CardSummary> characterCards,
             List<CardSummary> buildingCards
     ) {
+        return snapshot(topRow, bottomRow, remainingTopChoices, remainingBottomChoices, characterCards, buildingCards,
+                List.of(), List.of());
+    }
+
+    private static GameSnapshot snapshot(
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow,
+            int remainingTopChoices,
+            int remainingBottomChoices,
+            List<CardSummary> characterCards,
+            List<CardSummary> buildingCards,
+            List<CardSummary> opponentCharacterCards,
+            List<CardSummary> opponentBuildingCards
+    ) {
         List<PlayerSummary> players = List.of(
                 new PlayerSummary(
                         "dio",
@@ -342,7 +384,16 @@ class MesosGameBoardViewTest {
                         characterCards,
                         buildingCards
                 ),
-                new PlayerSummary("Carlo2", Color.BLUE, 0, 0, 0, 0)
+                new PlayerSummary(
+                        "Carlo2",
+                        Color.BLUE,
+                        1,
+                        2,
+                        opponentCharacterCards.size(),
+                        opponentBuildingCards.size(),
+                        opponentCharacterCards,
+                        opponentBuildingCards
+                )
         );
         List<TurnOrderSpaceSummary> turnOrder = List.of(
                 new TurnOrderSpaceSummary(0, 0, Color.ORANGE, "dio"),

@@ -746,6 +746,10 @@
     -fx-border-color: rgba(255, 230, 184, 0.34);
 }
 
+.player-summary-button:disabled {
+    -fx-opacity: 0.72;
+}
+
 .player-tribe-overlay {
     -fx-alignment: center;
 }
@@ -879,7 +883,12 @@
 }
 
 .owned-card-preview-card {
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 12, 0.24, 0, 3);
+    -fx-background-color: rgba(255, 238, 202, 0.30);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 238, 202, 0.92);
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.82), 34, 0.42, 0, 11);
 }
 
 .player-color-indicator {
