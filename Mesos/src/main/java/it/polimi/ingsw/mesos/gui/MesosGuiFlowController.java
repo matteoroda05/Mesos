@@ -179,7 +179,8 @@ public final class MesosGuiFlowController {
         }
 
         if (!result.success()) {
-            if (result.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN && handleTakenNickname(nickname)) {
+            if (result.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN) {
+                handleTakenNickname();
                 return;
             }
 
@@ -206,25 +207,14 @@ public final class MesosGuiFlowController {
         rejoinGame(nickname);
     }
 
-    private boolean handleTakenNickname(String nickname) {
-        boolean useSuffix = host.showConfirmation(
+    private void handleTakenNickname() {
+        guiService.clearCurrentNickname();
+        selectNicknameField();
+        host.updateStatus("Choose another nickname.");
+        host.showAlert(
                 "Nickname already in use",
-                "This nickname is already in use. Do you want to keep it with an automatic suffix?"
+                "This nickname is already in use. Choose another nickname."
         );
-        if (!useSuffix) {
-            guiService.clearCurrentNickname();
-            selectNicknameField();
-            host.updateStatus("Choose another nickname.");
-            return true;
-        }
-
-        String suffixedNickname = appendNumericSuffix(nickname, 1);
-        TextField field = nicknameField();
-        if (field != null) {
-            field.setText(suffixedNickname);
-        }
-        submitNickname(suffixedNickname);
-        return true;
     }
 
     private void rejoinGame(String nickname) {
@@ -496,10 +486,6 @@ public final class MesosGuiFlowController {
 
     private TextField nicknameField() {
         return nicknameScreen == null ? null : nicknameScreen.nicknameField();
-    }
-
-    private String appendNumericSuffix(String baseName, int suffix) {
-        return baseName + "-" + suffix;
     }
 
     private void handleCreateGameResult(String gameName, Color selectedColor, GameOperationResult result) {
