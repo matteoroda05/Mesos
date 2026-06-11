@@ -65,6 +65,8 @@ public final class MesosGameBoardView extends BorderPane {
     private static final int OWNED_CARD_PREVIEW_COLUMNS = 5;
     private static final double PLAYER_TRIBE_CARD_WIDTH = 54;
     private static final double PLAYER_TRIBE_CARD_HEIGHT = 82;
+    private static final double INFO_CARD_WIDTH = 220;
+    private static final double INFO_CARD_HEIGHT = 338;
     private static final int OWNED_CARD_DECK_MAX_VISIBLE_OFFSET = 5;
     private static final List<OwnedCardDeckDefinition> OWNED_CARD_DECK_DEFINITIONS = List.of(
             new OwnedCardDeckDefinition("hunter", "Hunters", false),
@@ -102,6 +104,8 @@ public final class MesosGameBoardView extends BorderPane {
     private final StackPane ownedDeckPreviewOverlay;
     private final VBox playerButtonsPane;
     private final StackPane playerTribeOverlay;
+    private final Button infoButton;
+    private final StackPane infoPopupOverlay;
     private final VBox minimalTurnBarPane;
     private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
@@ -204,6 +208,17 @@ public final class MesosGameBoardView extends BorderPane {
         this.playerTribeOverlay.setMinSize(0, 0);
         this.playerTribeOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        this.infoButton = buildInfoActionButton("Info", this::showInfoPopup);
+        this.infoButton.getStyleClass().add("info-popup-button");
+
+        this.infoPopupOverlay = new StackPane();
+        this.infoPopupOverlay.getStyleClass().add("info-popup-overlay");
+        this.infoPopupOverlay.setAlignment(Pos.CENTER);
+        this.infoPopupOverlay.setVisible(false);
+        this.infoPopupOverlay.setMinSize(0, 0);
+        this.infoPopupOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        this.infoPopupOverlay.setOnMouseClicked(event -> hideInfoPopup());
+
         this.infoPanelColorIndicator = buildColorIndicator(null, "info-panel-color-indicator");
         this.infoPanelColorIndicator.setVisible(false);
         this.infoPanelColorIndicator.setManaged(false);
@@ -218,6 +233,7 @@ public final class MesosGameBoardView extends BorderPane {
     public void updateSnapshot(GameSnapshot snapshot, String updateMessage) {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
+        hideInfoPopup();
         this.snapshot = snapshot;
         if (snapshot == null) {
             rebuildPlayerButtonsPane();
@@ -301,6 +317,9 @@ public final class MesosGameBoardView extends BorderPane {
         StackPane.setAlignment(playerButtonsPane, Pos.TOP_LEFT);
         StackPane.setMargin(playerButtonsPane, new Insets(12, 0, 0, 12));
         pane.getChildren().add(playerButtonsPane);
+        StackPane.setAlignment(infoButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(infoButton, new Insets(12, 12, 0, 0));
+        pane.getChildren().add(infoButton);
         StackPane bottomHudOverlay = buildBottomHudOverlay();
         StackPane.setAlignment(bottomHudOverlay, Pos.BOTTOM_CENTER);
         pane.getChildren().add(bottomHudOverlay);
@@ -308,6 +327,8 @@ public final class MesosGameBoardView extends BorderPane {
         pane.getChildren().add(ownedDeckPreviewOverlay);
         StackPane.setAlignment(playerTribeOverlay, Pos.CENTER);
         pane.getChildren().add(playerTribeOverlay);
+        StackPane.setAlignment(infoPopupOverlay, Pos.CENTER);
+        pane.getChildren().add(infoPopupOverlay);
         pane.getStyleClass().add("board-viewport");
         pane.setAlignment(Pos.CENTER);
         pane.setPadding(new Insets(0));
@@ -722,6 +743,7 @@ public final class MesosGameBoardView extends BorderPane {
 
     private void showPlayerTribePopup(PlayerSummary player) {
         hideOwnedDeckPreview();
+        hideInfoPopup();
         playerTribeOverlay.getChildren().setAll(buildPlayerTribePopup(player));
         playerTribeOverlay.setVisible(true);
     }
@@ -729,6 +751,45 @@ public final class MesosGameBoardView extends BorderPane {
     private void hidePlayerTribePopup() {
         playerTribeOverlay.setVisible(false);
         playerTribeOverlay.getChildren().clear();
+    }
+
+    private void showInfoPopup() {
+        hideOwnedDeckPreview();
+        hidePlayerTribePopup();
+        infoPopupOverlay.getChildren().setAll(buildInfoPopup());
+        infoPopupOverlay.setVisible(true);
+    }
+
+    private void hideInfoPopup() {
+        infoPopupOverlay.setVisible(false);
+        infoPopupOverlay.getChildren().clear();
+    }
+
+    private HBox buildInfoPopup() {
+        StackPane roundInfoCard = buildSurfaceArt(
+                assetResolver.resolveRoundEventInfo(),
+                INFO_CARD_WIDTH,
+                INFO_CARD_HEIGHT,
+                "Round info",
+                ""
+        );
+        roundInfoCard.getStyleClass().add("info-popup-card");
+
+        StackPane endGameInfoCard = buildSurfaceArt(
+                assetResolver.resolveEndGameInfo(),
+                INFO_CARD_WIDTH,
+                INFO_CARD_HEIGHT,
+                "End game info",
+                ""
+        );
+        endGameInfoCard.getStyleClass().add("info-popup-card");
+
+        HBox popup = new HBox(12, roundInfoCard, endGameInfoCard);
+        popup.getStyleClass().addAll("player-tribe-popup", "info-popup-panel");
+        popup.setAlignment(Pos.CENTER);
+        popup.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        popup.setOnMouseClicked(event -> event.consume());
+        return popup;
     }
 
     private VBox buildPlayerTribePopup(PlayerSummary player) {

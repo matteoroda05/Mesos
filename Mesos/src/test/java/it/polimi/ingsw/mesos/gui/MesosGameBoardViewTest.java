@@ -145,6 +145,41 @@ class MesosGameBoardViewTest {
     }
 
     @Test
+    void infoButtonOpensTopRightPopupWithTwoCardsAndClosesOnOutsideClick() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.applyCss();
+            view.layout();
+
+            Button infoButton = singleNode(view, ".info-popup-button", Button.class);
+            assertEquals(Pos.TOP_RIGHT, StackPane.getAlignment(infoButton));
+
+            infoButton.getOnAction().handle(null);
+            view.applyCss();
+            view.layout();
+
+            StackPane overlay = singleNode(view, ".info-popup-overlay", StackPane.class);
+            HBox popup = singleNode(overlay, ".info-popup-panel", HBox.class);
+            assertTrue(overlay.isVisible());
+            assertEquals(2, overlay.lookupAll(".info-popup-card").size());
+            Bounds overlayBounds = overlay.localToScene(overlay.getBoundsInLocal());
+            Bounds popupBounds = popup.localToScene(popup.getBoundsInLocal());
+            assertTrue(popupBounds.getWidth() < overlayBounds.getWidth());
+            assertTrue(popupBounds.getHeight() < overlayBounds.getHeight());
+
+            overlay.getOnMouseClicked().handle(null);
+
+            assertFalse(overlay.isVisible());
+            assertTrue(overlay.getChildren().isEmpty());
+            return null;
+        }, 15);
+    }
+
+    @Test
     void largeOwnedCardDeckPreviewWrapsFivePerRowAndScalesDown() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
@@ -351,8 +386,12 @@ class MesosGameBoardViewTest {
     }
 
     private static <T> T runOnFxThread(Callable<T> callable) throws Exception {
+        return runOnFxThread(callable, 5);
+    }
+
+    private static <T> T runOnFxThread(Callable<T> callable, int timeoutSeconds) throws Exception {
         FutureTask<T> task = new FutureTask<>(callable);
         Platform.runLater(task);
-        return task.get(5, TimeUnit.SECONDS);
+        return task.get(timeoutSeconds, TimeUnit.SECONDS);
     }
 }
