@@ -27,6 +27,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.LinkedHashMap;
@@ -116,6 +117,13 @@ public final class MesosClientApplication extends Application implements MesosGu
         alert.setTitle("MESOS");
         alert.setHeaderText(title);
         alert.setContentText(message);
+        alert.setGraphic(null);
+        alert.getDialogPane().getStyleClass().add("mesos-alert-pane");
+        applyStylesheet(alert.getDialogPane());
+        alert.setOnShown(e -> {
+            Button ok = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+            if (ok != null) ok.getStyleClass().add("primary-button");
+        });
         alert.show();
     }
 
@@ -141,9 +149,10 @@ public final class MesosClientApplication extends Application implements MesosGu
         ButtonType confirmType = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(confirmType, ButtonType.CANCEL);
 
-        Label intro = new Label("Choose a totem for " + gameName + ". Unavailable colors are disabled and the list refreshes if another player reserves one first.");
+        Label intro = new Label("Choose a totem for " + gameName + ".\nUnavailable colors are disabled and the list refreshes if another player reserves one first.");
         intro.getStyleClass().add("details-label");
         intro.setWrapText(true);
+        intro.setTextAlignment(TextAlignment.CENTER);
 
         ToggleGroup toggleGroup = new ToggleGroup();
         Map<ToggleButton, Color> colorsByButton = new LinkedHashMap<>();
@@ -165,9 +174,11 @@ public final class MesosClientApplication extends Application implements MesosGu
         Label footer = new Label("You can choose a different totem in another match.");
         footer.getStyleClass().add("details-label");
         footer.setWrapText(true);
+        footer.setTextAlignment(TextAlignment.CENTER);
 
         VBox content = new VBox(14, intro, choices, footer);
         content.getStyleClass().add("totem-dialog-content");
+        content.setAlignment(Pos.CENTER);
         dialog.getDialogPane().setContent(content);
 
         Button confirmButton = (Button) dialog.getDialogPane().lookupButton(confirmType);
@@ -232,7 +243,7 @@ public final class MesosClientApplication extends Application implements MesosGu
 
     private ToggleButton buildTotemChoiceButton(Color color) {
         Label nameLabel = new Label(formatTotemName(color));
-        nameLabel.getStyleClass().add("subsection-title");
+        nameLabel.getStyleClass().addAll("subsection-title", "totem-option-label");
 
         VBox graphic = new VBox(8);
         graphic.setAlignment(Pos.CENTER);

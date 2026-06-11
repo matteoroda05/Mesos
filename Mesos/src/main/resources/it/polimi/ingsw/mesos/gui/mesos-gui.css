@@ -663,12 +663,21 @@
     -fx-text-fill: -mesos-text;
 }
 
+.totem-dialog-pane .header-panel .label,
+.totem-dialog-content .details-label {
+    -fx-effect: dropshadow(gaussian, rgba(9, 6, 18, 0.98), 9, 0.85, 0, 2);
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
 .totem-dialog-pane .content.label {
     -fx-text-fill: -mesos-muted;
 }
 
 .totem-dialog-content {
     -fx-padding: 4 0 2 0;
+    -fx-alignment: center;
 }
 
 .totem-dialog-grid {
@@ -681,6 +690,10 @@
     -fx-border-radius: 18;
     -fx-background-radius: 18;
     -fx-padding: 12;
+}
+
+.totem-option-label {
+    -fx-effect: dropshadow(gaussian, rgba(9, 6, 18, 0.95), 7, 0.75, 0, 1);
 }
 
 .totem-option-button:hover {
@@ -941,4 +954,47 @@
 .owned-cards-debug-row {
     -fx-font-size: 15px;
     -fx-text-fill: -mesos-text;
+}
+
+.mesos-alert-pane {
+    -fx-background-color: rgba(14, 9, 22, 0.98);
+}
+
+.mesos-alert-pane > *.header-panel {
+    -fx-background-color: linear-gradient(to right, rgba(255, 158, 66, 0.16), rgba(76, 194, 200, 0.12));
+    -fx-padding: 18 22 18 22;
+}
+
+.mesos-alert-pane .header-panel .label {
+    -fx-background-color: rgba(9, 6, 18, 0.78);
+    -fx-background-radius: 8;
+    -fx-padding: 5 8 5 8;
+    -fx-text-fill: -mesos-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.mesos-alert-pane .content {
+    -fx-background-color: transparent;
+    -fx-padding: 14 22 10 22;
+}
+
+.mesos-alert-pane .content.label {
+    -fx-background-color: rgba(9, 6, 18, 0.78);
+    -fx-background-radius: 8;
+    -fx-padding: 6 8 6 8;
+    -fx-text-fill: -mesos-muted;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 1px;
+}
+
+.mesos-alert-pane .button-bar {
+    -fx-background-color: rgba(17, 11, 27, 0.94);
+    -fx-padding: 14 18 14 18;
+}
+
+.mesos-alert-pane .button-bar .primary-button {
+    -fx-padding: 8 15 8 15;
+    -fx-font-size: 12px;
+    -fx-translate-y: -2;
 }
