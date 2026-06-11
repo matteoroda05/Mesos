@@ -226,8 +226,12 @@ public final class MesosGameBoardView extends BorderPane {
         this.eventLogOverlay.setMinSize(0, 0);
         this.eventLogOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        this.infoButton = buildInfoActionButton("Info", this::showInfoPopup);
-        this.infoButton.getStyleClass().add("info-popup-button");
+        // built identically to the Event Log button so the two match exactly
+        // (same font, padding, and size); "info-popup-button" is only a marker class
+        this.infoButton = new Button("Instruction Cards");
+        this.infoButton.getStyleClass().addAll("event-log-button", "info-popup-button");
+        this.infoButton.setMaxWidth(Region.USE_PREF_SIZE);
+        this.infoButton.setOnAction(event -> showInfoPopup());
 
         this.infoPopupOverlay = new StackPane();
         this.infoPopupOverlay.getStyleClass().add("info-popup-overlay");
@@ -336,12 +340,16 @@ public final class MesosGameBoardView extends BorderPane {
         StackPane.setAlignment(playerButtonsPane, Pos.TOP_LEFT);
         StackPane.setMargin(playerButtonsPane, new Insets(12, 0, 0, 12));
         pane.getChildren().add(playerButtonsPane);
-        StackPane.setAlignment(eventLogPane, Pos.TOP_RIGHT);
-        StackPane.setMargin(eventLogPane, new Insets(12, 12, 0, 0));
-        pane.getChildren().add(eventLogPane);
-        StackPane.setAlignment(infoButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(infoButton, new Insets(12, 12, 0, 0));
-        pane.getChildren().add(infoButton);
+        HBox topRightBar = new HBox(6, eventLogPane, infoButton);
+        topRightBar.getStyleClass().add("top-right-bar");
+        topRightBar.setAlignment(Pos.CENTER_RIGHT);
+        topRightBar.setFillHeight(false);
+        topRightBar.setMaxWidth(Region.USE_PREF_SIZE);
+        topRightBar.setMaxHeight(Region.USE_PREF_SIZE);
+        topRightBar.setPickOnBounds(false);
+        StackPane.setAlignment(topRightBar, Pos.TOP_RIGHT);
+        StackPane.setMargin(topRightBar, new Insets(12, 12, 0, 0));
+        pane.getChildren().add(topRightBar);
         StackPane bottomHudOverlay = buildBottomHudOverlay();
         StackPane.setAlignment(bottomHudOverlay, Pos.BOTTOM_CENTER);
         pane.getChildren().add(bottomHudOverlay);

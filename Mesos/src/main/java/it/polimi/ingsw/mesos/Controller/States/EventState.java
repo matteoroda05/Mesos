@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.AppliedDelta;
 import it.polimi.ingsw.mesos.EventLogEntry;
@@ -68,12 +69,19 @@ public class EventState extends GameState {
                 System.out.println("Current event: " + formatCard(curr));
                 Map<Color, Result> outcome = curr.calculateOutcome(tribes);
                 List<BuildingCard> buildings = controller.getBuildingsWithTrigger(trigger);
+                List<String> activations = new ArrayList<>();
                 if (trigger == BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL) {
-                    buildings.forEach(building -> ((BuildingShamanicRitual) building).effect(outcome));
+                    buildings.forEach(building -> {
+                        ((BuildingShamanicRitual) building).effect(outcome);
+                        activations.add(eventBuildingNote(building));
+                    });
                 } else {
-                    buildings.forEach(building -> ((BuildingBonusEvent) building).effect(outcome, controller));
+                    buildings.forEach(building -> {
+                        ((BuildingBonusEvent) building).effect(outcome, controller);
+                        activations.add(eventBuildingNote(building));
+                    });
                 }
-                addSummary(summaries, curr, outcome);
+                addSummary(summaries, curr, outcome, activations);
             }
         }
 
@@ -87,8 +95,12 @@ public class EventState extends GameState {
             List<BuildingBonusEvent> buildings = controller.getBuildingsWithTrigger(trigger)
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
 
-            buildings.forEach(building -> building.effect(outcome, controller));
-            addSummary(summaries, event, outcome);
+            List<String> activations = new ArrayList<>();
+            buildings.forEach(building -> {
+                building.effect(outcome, controller);
+                activations.add(eventBuildingNote(building));
+            });
+            addSummary(summaries, event, outcome, activations);
         }
 
         if (!summaries.isEmpty()) {
@@ -112,8 +124,15 @@ public class EventState extends GameState {
      * @param summaries accumulator receiving the new summary, when non-empty
      * @param event event being resolved
      * @param outcome per-player results to apply, keyed by color
+     * @param buildingActivations ready-to-display notes for buildings activated
+     *                            while resolving this event
      */
-    private void addSummary(List<EventSummary> summaries, EventCard event, Map<Color, Result> outcome) {
+    private void addSummary(
+            List<EventSummary> summaries,
+            EventCard event,
+            Map<Color, Result> outcome,
+            List<String> buildingActivations
+    ) {
         List<PlayerEventLine> lines = new ArrayList<>();
         outcome.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -123,9 +142,26 @@ public class EventState extends GameState {
                         lines.add(new PlayerEventLine(entry.getKey(), applied.foodDelta(), applied.prestigeDelta()));
                     }
                 });
-        if (!lines.isEmpty()) {
-            summaries.add(new EventSummary(EventSummary.formatEventName(event.getClass().getSimpleName()), lines));
+        if (!lines.isEmpty() || !buildingActivations.isEmpty()) {
+            summaries.add(new EventSummary(
+                    EventSummary.formatEventName(event.getClass().getSimpleName()),
+                    lines,
+                    buildingActivations));
         }
+    }
+
+    /**
+     * Builds the activation note for a building triggered while resolving an
+     * event.
+     *
+     * @param building building that was activated
+     * @return a line such as {@code "Building Bonus Event from player ORANGE has been activated"}
+     */
+    private static String eventBuildingNote(BuildingCard building) {
+        Player owner = building.getOwner();
+        String ownerSuffix = owner == null ? "" : " from player " + owner.getColor();
+        return "Building " + EventLogEntry.formatBuildingName(building.getClass().getSimpleName())
+                + ownerSuffix + " has been activated";
     }
 
     /**

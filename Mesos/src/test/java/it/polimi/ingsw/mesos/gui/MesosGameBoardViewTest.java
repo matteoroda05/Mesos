@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MesosGameBoardViewTest {
@@ -161,7 +162,11 @@ class MesosGameBoardViewTest {
             view.layout();
 
             Button infoButton = singleNode(view, ".info-popup-button", Button.class);
-            assertEquals(Pos.TOP_RIGHT, StackPane.getAlignment(infoButton));
+            // the Instruction Cards button shares a top-right bar with the Event Log button,
+            // sitting to its right
+            HBox topRightBar = (HBox) infoButton.getParent();
+            assertEquals(Pos.TOP_RIGHT, StackPane.getAlignment(topRightBar));
+            assertSame(infoButton, topRightBar.getChildren().get(topRightBar.getChildren().size() - 1));
 
             infoButton.getOnAction().handle(null);
             view.applyCss();

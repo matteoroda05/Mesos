@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.AppliedDelta;
 
 import java.util.List;
 import java.util.Optional;
@@ -115,7 +116,10 @@ public class ActionState extends GameState {
         if (chosen.isPresent()) {
             List<BuildingOnCard> buildings = controller.getPlayerBuildings(this.p, BuildingTrigger.ON_ACQUIRE_CHARACTER)
                     .stream().map(building -> ((BuildingOnCard) building)).toList();
-            buildings.forEach(building -> building.effect(chosen.get(), controller));
+            buildings.forEach(building -> {
+                AppliedDelta delta = controller.captureDelta(this.p, () -> building.effect(chosen.get(), controller));
+                controller.logBuildingActivation(building, delta, null);
+            });
         }
 
         if (hasFinished()) {
@@ -241,7 +245,10 @@ public class ActionState extends GameState {
                 .map(building -> ((BuildingEndTurn) building))
                 .toList();
         TurnOrderTile tile = controller.getTurnOrderTile();
-        buildings.forEach(building -> building.effect(tile, controller));
+        buildings.forEach(building -> {
+            AppliedDelta delta = controller.captureDelta(this.p, () -> building.effect(tile, controller));
+            controller.logBuildingActivation(building, delta, null);
+        });
     }
 
     /**
@@ -285,6 +292,7 @@ public class ActionState extends GameState {
             }
             ActionState next_state = building.effect(controller.getGameTable(), controller);
             if (next_state != null) {
+                controller.logBuildingActivation(building, new AppliedDelta(0, 0), "granting an extra card pick");
                 return next_state;
             }
         }
