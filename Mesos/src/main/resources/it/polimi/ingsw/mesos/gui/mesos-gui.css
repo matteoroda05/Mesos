@@ -719,6 +719,99 @@
     -fx-max-width: 340;
 }
 
+.player-buttons-pane {
+    -fx-spacing: 6;
+}
+
+.player-summary-button {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 999;
+    -fx-padding: 5 10 5 7;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-graphic-text-gap: 7;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.24), 10, 0.14, 0, 3);
+}
+
+.player-summary-button:hover,
+.player-summary-button-active {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.player-summary-button-local {
+    -fx-border-color: rgba(255, 230, 184, 0.34);
+}
+
+.player-tribe-overlay {
+    -fx-alignment: center;
+}
+
+.player-tribe-popup {
+    -fx-background-color: rgba(17, 11, 28, 0.94);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 176, 92, 0.22);
+    -fx-border-radius: 16;
+    -fx-padding: 14 16 16 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 24, 0.26, 0, 7);
+}
+
+.player-tribe-header {
+    -fx-alignment: center-left;
+}
+
+.player-tribe-popup-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.player-tribe-close-button {
+    -fx-padding: 6 12 6 12;
+}
+
+.player-tribe-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.player-tribe-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.player-tribe-card-groups {
+    -fx-spacing: 10;
+}
+
+.player-tribe-card-group {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.10);
+    -fx-border-radius: 12;
+    -fx-padding: 9;
+}
+
+.player-tribe-card-group-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-primary;
+}
+
+.player-tribe-card-grid {
+    -fx-alignment: center-left;
+}
+
+.player-tribe-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.42), 8, 0.20, 0, 2);
+}
+
+.player-tribe-empty {
+    -fx-padding: 4 0 4 0;
+}
+
 .owned-tribe-decks-strip {
     -fx-padding: 0 2 0 0;
     -fx-spacing: 0;

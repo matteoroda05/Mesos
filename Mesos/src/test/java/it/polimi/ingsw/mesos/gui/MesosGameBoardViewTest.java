@@ -12,6 +12,8 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -107,6 +109,37 @@ class MesosGameBoardViewTest {
 
             assertFalse(previewOverlay.isVisible());
             assertEquals(originalOrder, decksStrip.getChildren());
+            return null;
+        });
+    }
+
+    @Test
+    void playerButtonsOpenCenteredTribePopup() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+
+            view.updateSnapshot(snapshot(), "Offer tile selected.");
+
+            VBox buttonsPane = singleNode(view, ".player-buttons-pane", VBox.class);
+            assertEquals(Pos.TOP_LEFT, StackPane.getAlignment(buttonsPane));
+            assertEquals(2, view.lookupAll(".player-summary-button").size());
+            for (Node buttonNode : buttonsPane.getChildren()) {
+                Button button = (Button) buttonNode;
+                assertTrue(button.getGraphic().getStyleClass().contains("player-summary-color-indicator"));
+            }
+
+            Button localPlayerButton = (Button) buttonsPane.getChildren().getFirst();
+            localPlayerButton.getOnAction().handle(null);
+            view.applyCss();
+            view.layout();
+
+            StackPane popupOverlay = singleNode(view, ".player-tribe-overlay", StackPane.class);
+            assertTrue(popupOverlay.isVisible());
+            assertEquals(Pos.CENTER, StackPane.getAlignment(popupOverlay));
+            assertEquals(1, popupOverlay.lookupAll(".player-tribe-popup").size());
+            assertEquals(2, popupOverlay.lookupAll(".player-tribe-resource").size());
+            ScrollPane tribeScroll = singleNode(popupOverlay, ".player-tribe-scroll", ScrollPane.class);
+            assertEquals(4, tribeScroll.getContent().lookupAll(".player-tribe-card").size());
             return null;
         });
     }

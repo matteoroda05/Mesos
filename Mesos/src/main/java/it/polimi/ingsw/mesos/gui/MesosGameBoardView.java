@@ -13,8 +13,10 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -61,6 +63,8 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double OWNED_CARD_PREVIEW_GAP = 10;
     private static final double OWNED_CARD_PREVIEW_ROW_GAP = 12;
     private static final int OWNED_CARD_PREVIEW_COLUMNS = 5;
+    private static final double PLAYER_TRIBE_CARD_WIDTH = 54;
+    private static final double PLAYER_TRIBE_CARD_HEIGHT = 82;
     private static final int OWNED_CARD_DECK_MAX_VISIBLE_OFFSET = 5;
     private static final List<OwnedCardDeckDefinition> OWNED_CARD_DECK_DEFINITIONS = List.of(
             new OwnedCardDeckDefinition("hunter", "Hunters", false),
@@ -96,6 +100,8 @@ public final class MesosGameBoardView extends BorderPane {
     private final VBox ownedCardsDebugBox;
     private final HBox ownedTribeDecksPane;
     private final StackPane ownedDeckPreviewOverlay;
+    private final VBox playerButtonsPane;
+    private final StackPane playerTribeOverlay;
     private final VBox minimalTurnBarPane;
     private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
@@ -183,6 +189,21 @@ public final class MesosGameBoardView extends BorderPane {
         this.ownedDeckPreviewOverlay.setMinSize(0, 0);
         this.ownedDeckPreviewOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        this.playerButtonsPane = new VBox(6);
+        this.playerButtonsPane.getStyleClass().add("player-buttons-pane");
+        this.playerButtonsPane.setAlignment(Pos.TOP_LEFT);
+        this.playerButtonsPane.setVisible(false);
+        this.playerButtonsPane.setManaged(false);
+        this.playerButtonsPane.setMaxWidth(Region.USE_PREF_SIZE);
+
+        this.playerTribeOverlay = new StackPane();
+        this.playerTribeOverlay.getStyleClass().add("player-tribe-overlay");
+        this.playerTribeOverlay.setAlignment(Pos.CENTER);
+        this.playerTribeOverlay.setVisible(false);
+        this.playerTribeOverlay.setPickOnBounds(false);
+        this.playerTribeOverlay.setMinSize(0, 0);
+        this.playerTribeOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
         this.infoPanelColorIndicator = buildColorIndicator(null, "info-panel-color-indicator");
         this.infoPanelColorIndicator.setVisible(false);
         this.infoPanelColorIndicator.setManaged(false);
@@ -196,8 +217,10 @@ public final class MesosGameBoardView extends BorderPane {
 
     public void updateSnapshot(GameSnapshot snapshot, String updateMessage) {
         hideOwnedDeckPreview();
+        hidePlayerTribePopup();
         this.snapshot = snapshot;
         if (snapshot == null) {
+            rebuildPlayerButtonsPane();
             return;
         }
 
@@ -218,6 +241,7 @@ public final class MesosGameBoardView extends BorderPane {
         refreshInfoPanelColorIndicator();
         rebuildOwnedCardsDebugBox();
         rebuildOwnedTribeDecksPane();
+        rebuildPlayerButtonsPane();
     }
 
     private void rebuildMinimalTurnBar() {
@@ -274,11 +298,16 @@ public final class MesosGameBoardView extends BorderPane {
         }
         
         pane.getChildren().add(wrapper);
+        StackPane.setAlignment(playerButtonsPane, Pos.TOP_LEFT);
+        StackPane.setMargin(playerButtonsPane, new Insets(12, 0, 0, 12));
+        pane.getChildren().add(playerButtonsPane);
         StackPane bottomHudOverlay = buildBottomHudOverlay();
         StackPane.setAlignment(bottomHudOverlay, Pos.BOTTOM_CENTER);
         pane.getChildren().add(bottomHudOverlay);
         StackPane.setAlignment(ownedDeckPreviewOverlay, Pos.CENTER);
         pane.getChildren().add(ownedDeckPreviewOverlay);
+        StackPane.setAlignment(playerTribeOverlay, Pos.CENTER);
+        pane.getChildren().add(playerTribeOverlay);
         pane.getStyleClass().add("board-viewport");
         pane.setAlignment(Pos.CENTER);
         pane.setPadding(new Insets(0));
@@ -658,6 +687,154 @@ public final class MesosGameBoardView extends BorderPane {
         Label row = new Label(text);
         row.getStyleClass().add("owned-cards-debug-row");
         return row;
+    }
+
+    private void rebuildPlayerButtonsPane() {
+        playerButtonsPane.getChildren().clear();
+        if (snapshot == null || snapshot.players().isEmpty()) {
+            playerButtonsPane.setVisible(false);
+            playerButtonsPane.setManaged(false);
+            return;
+        }
+
+        for (PlayerSummary player : snapshot.players()) {
+            playerButtonsPane.getChildren().add(buildPlayerSummaryButton(player));
+        }
+        playerButtonsPane.setVisible(true);
+        playerButtonsPane.setManaged(true);
+    }
+
+    private Button buildPlayerSummaryButton(PlayerSummary player) {
+        Button button = new Button(player.nickname());
+        button.getStyleClass().add("player-summary-button");
+        if (player.nickname().equals(localNickname)) {
+            button.getStyleClass().add("player-summary-button-local");
+        }
+        if (snapshot != null && player.nickname().equals(snapshot.currentPlayerNickname())) {
+            button.getStyleClass().add("player-summary-button-active");
+        }
+        button.setGraphic(buildColorIndicator(player.color(), "player-summary-color-indicator"));
+        button.setContentDisplay(ContentDisplay.LEFT);
+        button.setMaxWidth(Region.USE_PREF_SIZE);
+        button.setOnAction(event -> showPlayerTribePopup(player));
+        return button;
+    }
+
+    private void showPlayerTribePopup(PlayerSummary player) {
+        hideOwnedDeckPreview();
+        playerTribeOverlay.getChildren().setAll(buildPlayerTribePopup(player));
+        playerTribeOverlay.setVisible(true);
+    }
+
+    private void hidePlayerTribePopup() {
+        playerTribeOverlay.setVisible(false);
+        playerTribeOverlay.getChildren().clear();
+    }
+
+    private VBox buildPlayerTribePopup(PlayerSummary player) {
+        HBox titleRow = new HBox(8);
+        titleRow.getStyleClass().add("player-tribe-header");
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label title = new Label(player.nickname() + "'s Tribe");
+        title.getStyleClass().add("player-tribe-popup-title");
+
+        Button close = new Button("Close");
+        close.getStyleClass().addAll("secondary-button", "player-tribe-close-button");
+        close.setOnAction(event -> hidePlayerTribePopup());
+
+        titleRow.getChildren().addAll(
+                buildColorIndicator(player.color(), "player-tribe-color-indicator"),
+                title,
+                spacer(),
+                close
+        );
+
+        HBox resources = new HBox(8);
+        resources.setAlignment(Pos.CENTER_LEFT);
+        resources.getChildren().addAll(
+                playerTribeResource("Food " + player.food()),
+                playerTribeResource("Prestige " + player.prestigePoints())
+        );
+
+        VBox tribeCards = buildPlayerTribeCardGroups(player);
+        ScrollPane scroll = new ScrollPane(tribeCards);
+        scroll.getStyleClass().add("player-tribe-scroll");
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setMaxHeight(360);
+
+        VBox popup = new VBox(12, titleRow, resources, scroll);
+        popup.getStyleClass().add("player-tribe-popup");
+        popup.setAlignment(Pos.TOP_LEFT);
+        popup.setMaxWidth(760);
+        popup.setMaxHeight(540);
+        return popup;
+    }
+
+    private Label playerTribeResource(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().addAll("meta-badge", "player-tribe-resource");
+        return label;
+    }
+
+    private VBox buildPlayerTribeCardGroups(PlayerSummary player) {
+        VBox groups = new VBox(10);
+        groups.getStyleClass().add("player-tribe-card-groups");
+
+        Map<String, List<CardSummary>> cardsByType = new LinkedHashMap<>();
+        for (CardSummary card : player.characterCards()) {
+            cardsByType.computeIfAbsent(normalizeDeckKey(card.type()), ignored -> new ArrayList<>()).add(card);
+        }
+
+        boolean hasCharacterCards = false;
+        for (OwnedCardDeckDefinition definition : OWNED_CARD_DECK_DEFINITIONS) {
+            if (definition.buildingDeck()) {
+                continue;
+            }
+            List<CardSummary> cards = cardsByType.getOrDefault(definition.key(), List.of());
+            if (!cards.isEmpty()) {
+                groups.getChildren().add(buildPlayerTribeCardGroup(definition.label(), cards));
+                hasCharacterCards = true;
+            }
+        }
+
+        if (!hasCharacterCards) {
+            groups.getChildren().add(playerTribeEmptyLabel("No character cards"));
+        }
+        if (player.buildingCards().isEmpty()) {
+            groups.getChildren().add(playerTribeEmptyLabel("No building cards"));
+        } else {
+            groups.getChildren().add(buildPlayerTribeCardGroup("Buildings", player.buildingCards()));
+        }
+        return groups;
+    }
+
+    private Label playerTribeEmptyLabel(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().addAll("muted-label", "player-tribe-empty");
+        return label;
+    }
+
+    private VBox buildPlayerTribeCardGroup(String title, List<CardSummary> cards) {
+        Label label = new Label(title + " (" + cards.size() + ")");
+        label.getStyleClass().add("player-tribe-card-group-title");
+
+        FlowPane cardGrid = new FlowPane(6, 6);
+        cardGrid.getStyleClass().add("player-tribe-card-grid");
+        cardGrid.setMaxWidth(700);
+        for (CardSummary card : cards) {
+            cardGrid.getChildren().add(buildOwnedTribeCardSurface(
+                    card,
+                    PLAYER_TRIBE_CARD_WIDTH,
+                    PLAYER_TRIBE_CARD_HEIGHT,
+                    "player-tribe-card"
+            ));
+        }
+
+        VBox group = new VBox(6, label, cardGrid);
+        group.getStyleClass().add("player-tribe-card-group");
+        return group;
     }
 
     private void rebuildOwnedTribeDecksPane() {
