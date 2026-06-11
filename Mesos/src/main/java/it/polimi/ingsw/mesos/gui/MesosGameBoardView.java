@@ -55,7 +55,12 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double OWNED_CARD_DECK_SLOT_HEIGHT = OWNED_TRIBE_CARD_HEIGHT + 18;
     private static final double OWNED_CARD_DECK_STACK_X = 4.0;
     private static final double OWNED_CARD_DECK_STACK_Y = 2.0;
-    private static final double OWNED_CARD_PREVIEW_SCALE = 2.25;
+    private static final double OWNED_CARD_PREVIEW_MAX_SCALE = 2.25;
+    private static final double OWNED_CARD_PREVIEW_MAX_WIDTH = 840;
+    private static final double OWNED_CARD_PREVIEW_MAX_HEIGHT = 320;
+    private static final double OWNED_CARD_PREVIEW_GAP = 10;
+    private static final double OWNED_CARD_PREVIEW_ROW_GAP = 12;
+    private static final int OWNED_CARD_PREVIEW_COLUMNS = 5;
     private static final int OWNED_CARD_DECK_MAX_VISIBLE_OFFSET = 5;
     private static final List<OwnedCardDeckDefinition> OWNED_CARD_DECK_DEFINITIONS = List.of(
             new OwnedCardDeckDefinition("hunter", "Hunters", false),
@@ -753,13 +758,25 @@ public final class MesosGameBoardView extends BorderPane {
             return;
         }
 
-        FlowPane previewCards = new FlowPane(10, 12);
+        FlowPane previewCards = new FlowPane(OWNED_CARD_PREVIEW_GAP, OWNED_CARD_PREVIEW_ROW_GAP);
         previewCards.getStyleClass().add("owned-card-preview-grid");
         previewCards.setAlignment(Pos.CENTER);
-        previewCards.scaleXProperty().bind(boardScale.xProperty().multiply(OWNED_CARD_PREVIEW_SCALE));
-        previewCards.scaleYProperty().bind(boardScale.yProperty().multiply(OWNED_CARD_PREVIEW_SCALE));
-        int visibleColumns = Math.min(cards.size(), 5);
-        previewCards.setMaxWidth((MARKET_CARD_WIDTH * visibleColumns) + (10 * Math.max(0, visibleColumns - 1)));
+        int visibleColumns = Math.min(cards.size(), OWNED_CARD_PREVIEW_COLUMNS);
+        int visibleRows = (int) Math.ceil(cards.size() / (double) OWNED_CARD_PREVIEW_COLUMNS);
+        double contentWidth = (MARKET_CARD_WIDTH * visibleColumns)
+                + (OWNED_CARD_PREVIEW_GAP * Math.max(0, visibleColumns - 1));
+        double contentHeight = (MARKET_CARD_HEIGHT * visibleRows)
+                + (OWNED_CARD_PREVIEW_ROW_GAP * Math.max(0, visibleRows - 1));
+        double previewScale = Math.min(
+                OWNED_CARD_PREVIEW_MAX_SCALE,
+                Math.min(
+                        OWNED_CARD_PREVIEW_MAX_WIDTH / contentWidth,
+                        OWNED_CARD_PREVIEW_MAX_HEIGHT / contentHeight
+                )
+        );
+        previewCards.scaleXProperty().bind(boardScale.xProperty().multiply(previewScale));
+        previewCards.scaleYProperty().bind(boardScale.yProperty().multiply(previewScale));
+        previewCards.setMaxWidth(contentWidth);
 
         for (CardSummary card : cards) {
             previewCards.getChildren().add(buildOwnedTribeCardSurface(

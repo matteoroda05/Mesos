@@ -112,6 +112,29 @@ class MesosGameBoardViewTest {
     }
 
     @Test
+    void largeOwnedCardDeckPreviewWrapsFivePerRowAndScalesDown() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            List<CardSummary> manyHunters = new ArrayList<>();
+            for (int index = 0; index < 15; index++) {
+                manyHunters.add(tribeCard(index, "Hunter", "hunter_era_1_a"));
+            }
+
+            view.updateSnapshot(snapshotWithOwnedCharacterCards(manyHunters), "Card selected.");
+
+            Node hunterDeck = singleNode(view, ".owned-tribe-decks-strip", HBox.class).getChildren().getFirst();
+            hunterDeck.getOnMouseEntered().handle(null);
+            FlowPane previewGrid = singleNode(view, ".owned-card-preview-grid", FlowPane.class);
+
+            assertEquals(15, previewGrid.lookupAll(".owned-card-preview-card").size());
+            assertEquals(465.0, previewGrid.getMaxWidth());
+            assertTrue(previewGrid.getScaleX() < 1.0);
+            assertTrue(previewGrid.getScaleY() < 1.0);
+            return null;
+        });
+    }
+
+    @Test
     void bottomHudDoesNotCoverBottomRowCards() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
@@ -193,6 +216,10 @@ class MesosGameBoardViewTest {
         return snapshot(List.of(), List.of(), 1, 0);
     }
 
+    private static GameSnapshot snapshotWithOwnedCharacterCards(List<CardSummary> characterCards) {
+        return snapshot(List.of(), List.of(), 1, 0, characterCards, List.of());
+    }
+
     private static GameSnapshot snapshotWithRows(int remainingTopChoices, int remainingBottomChoices) {
         return snapshot(
                 List.of(
@@ -212,16 +239,41 @@ class MesosGameBoardViewTest {
             int remainingTopChoices,
             int remainingBottomChoices
     ) {
-        List<CardSummary> characterCards = List.of(
-                tribeCard(0, "Hunter", "hunter_era_1_a"),
-                tribeCard(1, "Hunter", "hunter_era_1_b"),
-                tribeCard(2, "Shaman", "shaman_era_1_a")
+        return snapshot(
+                topRow,
+                bottomRow,
+                remainingTopChoices,
+                remainingBottomChoices,
+                List.of(
+                        tribeCard(0, "Hunter", "hunter_era_1_a"),
+                        tribeCard(1, "Hunter", "hunter_era_1_b"),
+                        tribeCard(2, "Shaman", "shaman_era_1_a")
+                ),
+                List.of(
+                        tribeCard(3, "Building", "building_era_1_01")
+                )
         );
-        List<CardSummary> buildingCards = List.of(
-                tribeCard(3, "Building", "building_era_1_01")
-        );
+    }
+
+    private static GameSnapshot snapshot(
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow,
+            int remainingTopChoices,
+            int remainingBottomChoices,
+            List<CardSummary> characterCards,
+            List<CardSummary> buildingCards
+    ) {
         List<PlayerSummary> players = List.of(
-                new PlayerSummary("dio", Color.ORANGE, 3, 0, 3, 1, characterCards, buildingCards),
+                new PlayerSummary(
+                        "dio",
+                        Color.ORANGE,
+                        3,
+                        0,
+                        characterCards.size(),
+                        buildingCards.size(),
+                        characterCards,
+                        buildingCards
+                ),
                 new PlayerSummary("Carlo2", Color.BLUE, 0, 0, 0, 0)
         );
         List<TurnOrderSpaceSummary> turnOrder = List.of(
