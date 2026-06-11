@@ -707,7 +707,8 @@ public final class MesosGameBoardView extends BorderPane {
     private Button buildPlayerSummaryButton(PlayerSummary player) {
         Button button = new Button(player.nickname());
         button.getStyleClass().add("player-summary-button");
-        if (player.nickname().equals(localNickname)) {
+        boolean localPlayer = player.nickname().equals(localNickname);
+        if (localPlayer) {
             button.getStyleClass().add("player-summary-button-local");
         }
         if (snapshot != null && player.nickname().equals(snapshot.currentPlayerNickname())) {
@@ -716,7 +717,11 @@ public final class MesosGameBoardView extends BorderPane {
         button.setGraphic(buildColorIndicator(player.color(), "player-summary-color-indicator"));
         button.setContentDisplay(ContentDisplay.LEFT);
         button.setMaxWidth(Region.USE_PREF_SIZE);
-        button.setOnAction(event -> showPlayerTribePopup(player));
+        if (localPlayer) {
+            button.setDisable(true);
+        } else {
+            button.setOnAction(event -> showPlayerTribePopup(player));
+        }
         return button;
     }
 
