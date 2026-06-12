@@ -125,29 +125,50 @@
                            "type":  "INVENTOR",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "inventionIcon":  "BOAT",
+                           "inventionIcon":  "LEATHER",
                            "presentation_id":  "inventor_era_1_a"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "FIRST",
                            "minPlayers":  2,
-                           "inventionIcon":  "ARROW",
+                           "inventionIcon":  "BOAT",
                            "presentation_id":  "inventor_era_1_b"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "FIRST",
-                           "minPlayers":  3,
-                           "inventionIcon":  "HOOK",
+                           "minPlayers":  2,
+                           "inventionIcon":  "ARROW",
                            "presentation_id":  "inventor_era_1_c"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "FIRST",
-                           "minPlayers":  4,
-                           "inventionIcon":  "NECKLACE",
+                           "minPlayers":  2,
+                           "inventionIcon":  "BREAD",
                            "presentation_id":  "inventor_era_1_d"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "FIRST",
+                           "minPlayers":  4,
+                           "inventionIcon":  "ROPE",
+                           "presentation_id":  "inventor_era_1_e"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "FIRST",
+                           "minPlayers":  4,
+                           "inventionIcon":  "STICK",
+                           "presentation_id":  "inventor_era_1_f"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "FIRST",
+                           "minPlayers":  4,
+                           "inventionIcon":  "BOWL",
+                           "presentation_id":  "inventor_era_1_g"
                        },
                        {
                            "type":  "SHAMAN",
@@ -310,22 +331,36 @@
                            "type":  "INVENTOR",
                            "era":  "SECOND",
                            "minPlayers":  2,
-                           "inventionIcon":  "ROPE",
+                           "inventionIcon":  "DOLL",
                            "presentation_id":  "inventor_era_2_b"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "SECOND",
-                           "minPlayers":  3,
-                           "inventionIcon":  "DOLL",
+                           "minPlayers":  4,
+                           "inventionIcon":  "HOOK",
                            "presentation_id":  "inventor_era_2_c"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "SECOND",
-                           "minPlayers":  4,
-                           "inventionIcon":  "STICK",
+                           "minPlayers":  2,
+                           "inventionIcon":  "ROPE",
                            "presentation_id":  "inventor_era_2_d"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "SECOND",
+                           "minPlayers":  2,
+                           "inventionIcon":  "LEATHER",
+                           "presentation_id":  "inventor_era_2_e"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "SECOND",
+                           "minPlayers":  2,
+                           "inventionIcon":  "STICK",
+                           "presentation_id":  "inventor_era_2_f"
                        },
                        {
                            "type":  "SHAMAN",
@@ -460,30 +495,51 @@
                        {
                            "type":  "INVENTOR",
                            "era":  "THIRD",
-                           "minPlayers":  2,
-                           "inventionIcon":  "LEATHER",
+                           "minPlayers":  3,
+                           "inventionIcon":  "ARROW",
                            "presentation_id":  "inventor_era_3_a"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "THIRD",
                            "minPlayers":  2,
-                           "inventionIcon":  "BREAD",
+                           "inventionIcon":  "DOLL",
                            "presentation_id":  "inventor_era_3_b"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "THIRD",
+                           "minPlayers":  2,
+                           "inventionIcon":  "HOOK",
+                           "presentation_id":  "inventor_era_3_c"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "THIRD",
+                           "minPlayers":  2,
+                           "inventionIcon":  "NECKLACE",
+                           "presentation_id":  "inventor_era_3_d"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "THIRD",
+                           "minPlayers":  4,
+                           "inventionIcon":  "NECKLACE",
+                           "presentation_id":  "inventor_era_3_e"
+                       },
+                       {
+                           "type":  "INVENTOR",
+                           "era":  "THIRD",
+                           "minPlayers":  2,
+                           "inventionIcon":  "BREAD",
+                           "presentation_id":  "inventor_era_3_f"
                        },
                        {
                            "type":  "INVENTOR",
                            "era":  "THIRD",
                            "minPlayers":  3,
                            "inventionIcon":  "BOAT",
-                           "presentation_id":  "inventor_era_3_c"
-                       },
-                       {
-                           "type":  "INVENTOR",
-                           "era":  "THIRD",
-                           "minPlayers":  4,
-                           "inventionIcon":  "ARROW",
-                           "presentation_id":  "inventor_era_3_d"
+                           "presentation_id":  "inventor_era_3_g"
                        },
                        {
                            "type":  "SHAMAN",
