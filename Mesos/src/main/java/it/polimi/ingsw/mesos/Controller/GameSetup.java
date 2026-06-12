@@ -93,11 +93,32 @@ public class GameSetup {
      *                                  blank
      */
     public void createMapOfPlayers(GameContext game_context, List<String> nicknames) {
+        createMapOfPlayers(game_context, nicknames, Map.of());
+    }
+
+    /**
+     * Creates players from nicknames, honoring any reserved colors first and
+     * assigning unique fallback colors to the remaining players.
+     *
+     * @param game_context game context to populate
+     * @param nicknames player nicknames in seating order
+     * @param reservedColors reserved colors keyed by nickname
+     * @throws IllegalArgumentException if the context, nickname list, or
+     *                                  reserved color map is invalid, if the
+     *                                  nickname count does not match the game
+     *                                  size, or if reserved colors are
+     *                                  duplicated or assigned to unknown
+     *                                  nicknames
+     */
+    public void createMapOfPlayers(GameContext game_context, List<String> nicknames, Map<String, Color> reservedColors) {
         if (nicknames == null) {
             throw new IllegalArgumentException("nickname cannot be null");
         }
         if(game_context == null) {
             throw new IllegalArgumentException("game_context cannot be null");
+        }
+        if (reservedColors == null) {
+            throw new IllegalArgumentException("reservedColors cannot be null");
         }
         if(nicknames.size() != game_context.getGameSize()) {
             throw new IllegalArgumentException(
@@ -110,16 +131,42 @@ public class GameSetup {
             }
         }
 
-        List<Color> shuffled_colors = new ArrayList<>(Arrays.asList(Color.values()));
-        shuffle(shuffled_colors);
+        List<Color> usedColors = new ArrayList<>();
+        for (Map.Entry<String, Color> reservedEntry : reservedColors.entrySet()) {
+            String reservedNickname = reservedEntry.getKey();
+            Color reservedColor = reservedEntry.getValue();
+            if (reservedNickname == null || reservedNickname.isBlank()) {
+                throw new IllegalArgumentException("reserved nickname cannot be null or blank");
+            }
+            if (reservedColor == null) {
+                throw new IllegalArgumentException("reserved color cannot be null");
+            }
+            if (!nicknames.contains(reservedNickname)) {
+                throw new IllegalArgumentException("reserved color assigned to unknown nickname");
+            }
+            if (usedColors.contains(reservedColor)) {
+                throw new IllegalArgumentException("reserved colors must be unique");
+            }
+            usedColors.add(reservedColor);
+        }
+
+        List<Color> availableColors = new ArrayList<>(Arrays.asList(Color.values()));
+        availableColors.removeAll(usedColors);
+        shuffle(availableColors);
 
         Map<Color, Player> players_by_color = new LinkedHashMap<>();
         int[] starting_food = PLAYER_STARTING_FOOD();
+        int fallbackColorIndex = 0;
         for (int i = 0; i < nicknames.size(); i++) {
-            Color random_color = shuffled_colors.get(i);
+            String nickname = nicknames.get(i);
+            Color assignedColor = reservedColors.get(nickname);
+            if (assignedColor == null) {
+                assignedColor = availableColors.get(fallbackColorIndex);
+                fallbackColorIndex++;
+            }
             int initial_food = starting_food[i];
-            Player player = new Player(nicknames.get(i), random_color, initial_food);
-            players_by_color.put(random_color, player);
+            Player player = new Player(nickname, assignedColor, initial_food);
+            players_by_color.put(assignedColor, player);
         }
 
         game_context.setupPlayers(players_by_color);
@@ -194,6 +241,13 @@ public class GameSetup {
 
         return all_tiles.stream()
                 .filter(tile -> tile.getMinNumPlayers() <= player_count)
+                .map(tile -> new OfferTile(
+                        tile.getOfferTileId(),
+                        tile.getTopPicks(),
+                        tile.getBottomPicks(),
+                        tile.getFoodGain(),
+                        tile.getMinNumPlayers()
+                ))
                 .toList();
     }
 

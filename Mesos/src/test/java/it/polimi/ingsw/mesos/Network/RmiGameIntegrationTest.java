@@ -61,6 +61,24 @@ class RmiGameIntegrationTest {
     }
 
     @Test
+    void rmiClientsHonorWaitingRoomColorSelectionBeforeGameStart() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        int rmiPort = NetworkTestSupport.findFreePort();
+
+        try (RmiGameServer rmiServer = new RmiGameServer(serverCore, rmiPort, "MesosTestServiceColor");
+             GameClient aliceClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceColor"));
+             GameClient bobClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceColor"));
+             GameClient carolClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestServiceColor"))) {
+            NetworkTestSupport.assertWaitingRoomColorSelection(
+                    aliceClient,
+                    bobClient,
+                    carolClient,
+                    "rmi-color-room"
+            );
+        }
+    }
+
+    @Test
     void rmiClientHandlesSubscriptionGuardsAndFailures() throws IOException {
         MesosServerCore serverCore = new MesosServerCore();
         int rmiPort = NetworkTestSupport.findFreePort();

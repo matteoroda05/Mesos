@@ -16,13 +16,10 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GameSetupTest {
 
@@ -165,6 +162,32 @@ class GameSetupTest {
         assertTrue(observedOrders.stream().anyMatch(order -> !order.equals(enumOrder)));
     }
 
+    @Test
+    void createMapOfPlayersHonorsReservedColorsAndAssignsUniqueFallbacks() throws Exception {
+        GameSetup setup = new GameSetup();
+        GameContext context = setup.createGame("ReservedColors", 4, CardLoader.load());
+        List<String> nicknames = List.of("Alice", "Bob", "Charlie", "Dana");
+        Map<String, Color> reservedColors = Map.of(
+                "Alice", Color.BLACK,
+                "Charlie", Color.YELLOW
+        );
+
+        setup.createMapOfPlayers(context, nicknames, reservedColors);
+
+        Map<String, Color> assignedColors = new java.util.LinkedHashMap<>();
+        for (Player player : context.getPlayers()) {
+            assignedColors.put(player.getNickname(), player.getColor());
+        }
+
+        assertEquals(Color.BLACK, assignedColors.get("Alice"));
+        assertEquals(Color.YELLOW, assignedColors.get("Charlie"));
+        assertEquals(4, new HashSet<>(assignedColors.values()).size());
+        assertNotSame(Color.BLACK, assignedColors.get("Bob"));
+        assertNotSame(Color.YELLOW, assignedColors.get("Bob"));
+        assertNotSame(Color.BLACK, assignedColors.get("Dana"));
+        assertNotSame(Color.YELLOW, assignedColors.get("Dana"));
+    }
+
     private static List<String> createNicknames(int playerCount) {
         List<String> nicknames = new ArrayList<>();
         for (int i = 1; i <= playerCount; i++) {
@@ -196,11 +219,21 @@ class GameSetupTest {
         private TestTribeCard(Era era) {
             super(era, 2);
         }
+
+        @Override
+        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static final class TestBuildingCard extends BuildingCard {
         private TestBuildingCard(Era era) {
             super(era, 2, 1, 1, BuildingTrigger.ON_END_TURN);
+        }
+
+        @Override
+        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
         }
     }
 }

@@ -19,11 +19,6 @@ public final class MesosServerLauncherApp {
      * @throws Exception if the server startup fails
      */
     public static void main(String[] args) throws Exception {
-        if (System.console() != null) {
-            MesosServerLauncher.main(args);
-            return;
-        }
-
-        SwingConsoleWindow.open("Mesos Server", () -> MesosServerLauncher.main(args));
+        MesosServerLauncher.main(args);
     }
 }

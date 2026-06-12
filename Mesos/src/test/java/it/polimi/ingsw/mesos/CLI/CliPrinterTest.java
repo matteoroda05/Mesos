@@ -35,6 +35,7 @@ class CliPrinterTest {
                     Color.BLUE,
                     1,
                     2,
+                    List.of(Color.BLUE, Color.YELLOW),
                     List.of(
                             new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
                             new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)

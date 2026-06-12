@@ -24,6 +24,8 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
  *                           active
  * @param remainingTopChoices remaining choices from the top row
  * @param remainingBottomChoices remaining choices from the bottom row
+ * @param reservedColors colors already reserved in this game before start,
+ *                       normalized to an immutable empty list when null
  * @param players player summaries, normalized to an immutable empty list when
  *                null
  * @param offerTiles offer tile summaries, normalized to an immutable empty list
@@ -34,6 +36,9 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
  *               when null
  * @param bottomRow bottom market row summaries, normalized to an immutable
  *                  empty list when null
+ * @param passAvailable true when the active player may use {@code pass} to
+ *                      skip the optional extra top-row pick granted by the
+ *                      after-everyone building
  */
 public record GameSnapshot(
         String gameName,
@@ -48,12 +53,57 @@ public record GameSnapshot(
         Color currentPlayerColor,
         int remainingTopChoices,
         int remainingBottomChoices,
+        List<Color> reservedColors,
         List<PlayerSummary> players,
         List<OfferTileSummary> offerTiles,
         List<TurnOrderSpaceSummary> turnOrder,
         List<CardSummary> topRow,
-        List<CardSummary> bottomRow
+        List<CardSummary> bottomRow,
+        boolean passAvailable
 ) implements Serializable {
+
+    public GameSnapshot(
+            String gameName,
+            int playerCount,
+            int joinedPlayers,
+            boolean started,
+            boolean finished,
+            GameStatus status,
+            int currentRound,
+            Era currentEra,
+            String currentPlayerNickname,
+            Color currentPlayerColor,
+            int remainingTopChoices,
+            int remainingBottomChoices,
+            List<Color> reservedColors,
+            List<PlayerSummary> players,
+            List<OfferTileSummary> offerTiles,
+            List<TurnOrderSpaceSummary> turnOrder,
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow
+    ) {
+        this(
+                gameName,
+                playerCount,
+                joinedPlayers,
+                started,
+                finished,
+                status,
+                currentRound,
+                currentEra,
+                currentPlayerNickname,
+                currentPlayerColor,
+                remainingTopChoices,
+                remainingBottomChoices,
+                reservedColors,
+                players,
+                offerTiles,
+                turnOrder,
+                topRow,
+                bottomRow,
+                false
+        );
+    }
 
     /**
      * Validates required snapshot fields and defensively copies list fields.
@@ -79,6 +129,7 @@ public record GameSnapshot(
         if (currentRound < 0) {
             throw new IllegalArgumentException("currentRound cannot be negative");
         }
+        reservedColors = reservedColors == null ? List.of() : List.copyOf(reservedColors);
         players = players == null ? List.of() : List.copyOf(players);
         offerTiles = offerTiles == null ? List.of() : List.copyOf(offerTiles);
         turnOrder = turnOrder == null ? List.of() : List.copyOf(turnOrder);

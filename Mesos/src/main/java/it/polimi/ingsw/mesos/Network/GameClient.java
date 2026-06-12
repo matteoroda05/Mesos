@@ -19,6 +19,8 @@ public interface GameClient extends Closeable {
 
     GameOperationResult chooseCard(ChooseCardRequest request) throws IOException;
 
+    GameOperationResult chooseColor(ChooseColorRequest request) throws IOException;
+
     GameOperationResult pass(PassRequest request) throws IOException;
 
     GameOperationResult subscribe(SubscribeGameRequest request, GameUpdateListener listener) throws IOException;

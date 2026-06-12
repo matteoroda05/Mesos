@@ -169,6 +169,18 @@ public class SocketGameClient implements GameClient {
     }
 
     /**
+     * Sends a color-choice request.
+     *
+     * @param request color-choice request
+     * @return operation result from the server
+     * @throws IOException if request exchange fails
+     */
+    @Override
+    public GameOperationResult chooseColor(ChooseColorRequest request) throws IOException {
+        return exchange(request);
+    }
+
+    /**
      * Sends a pass request.
      *
      * @param request pass request

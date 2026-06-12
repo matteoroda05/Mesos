@@ -112,6 +112,27 @@ public class Tribe {
         return this.buildings.size();
     }
 
+    public List<CharacterCard> getCharacterCards() {
+        List<CharacterCard> ownedCards = new ArrayList<>();
+        List<Class<? extends CharacterCard>> orderedTypes = List.of(
+                HunterCard.class,
+                ShamanCard.class,
+                ArtistCard.class,
+                BuilderCard.class,
+                InventorCard.class,
+                GathererCard.class
+        );
+
+        for (Class<? extends CharacterCard> type : orderedTypes) {
+            ownedCards.addAll(this.characters.get(type));
+        }
+        return List.copyOf(ownedCards);
+    }
+
+    public List<BuildingCard> getBuildingCards() {
+        return List.copyOf(this.buildings);
+    }
+
     // TODO: REMOVE THIS FUNCTION USEFUL: FOR DEBUG ONLY
     public List<Card> getCards() {
         List<Card> cards = new ArrayList<>();
