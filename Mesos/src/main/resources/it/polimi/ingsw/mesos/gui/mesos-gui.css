@@ -646,6 +646,40 @@
     -fx-spacing: 10;
 }
 
+.final-leaderboard-overlay {
+    -fx-alignment: center;
+    -fx-padding: 12;
+}
+
+.final-leaderboard-box {
+    -fx-background-color: rgba(17, 11, 28, 0.94);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255, 176, 92, 0.26);
+    -fx-border-radius: 18;
+    -fx-padding: 18 22 20 22;
+    -fx-pref-width: 430;
+    -fx-max-width: 430;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.52), 28, 0.28, 0, 8);
+}
+
+.final-leaderboard-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.final-leaderboard-row {
+    -fx-background-color: rgba(255, 236, 201, 0.08);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.12);
+    -fx-border-radius: 12;
+    -fx-padding: 8 10 8 10;
+}
+
+.final-leaderboard-lobby-button {
+    -fx-padding: 7 13 7 13;
+}
+
 .waiting-player-row {
     -fx-background-color: rgba(30, 18, 40, 0.88);
     -fx-border-color: rgba(255, 176, 92, 0.12);
@@ -737,6 +771,7 @@
 }
 
 .player-buttons-pane {
+    -fx-alignment: top-left;
     -fx-spacing: 6;
 }
 

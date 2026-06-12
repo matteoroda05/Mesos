@@ -52,6 +52,9 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double MARKET_CARD_WIDTH = 85;
     private static final double MARKET_CARD_HEIGHT = 130;
     private static final double MARKET_CARD_SLOT_HEIGHT = MARKET_CARD_HEIGHT + 8;
+    private static final double MARKET_CARD_ROW_GAP = 12;
+    private static final double TOP_MARKET_ROW_MAX_WIDTH = DESIGN_WIDTH - 48;
+    private static final double BOTTOM_MARKET_ROW_MAX_WIDTH = 410;
     private static final double OFFER_TILE_WIDTH = 85;
     private static final double OFFER_TILE_HEIGHT = 130;
     private static final double OWNED_TRIBE_CARD_WIDTH = 54;
@@ -70,7 +73,7 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double PLAYER_TRIBE_CARD_HEIGHT = 82;
     private static final double INFO_CARD_WIDTH = 220;
     private static final double INFO_CARD_HEIGHT = 338;
-    private static final int OWNED_CARD_DECK_MAX_VISIBLE_OFFSET = 5;
+    private static final int OWNED_CARD_DECK_MAX_VISIBLE_CARDS = 3;
     private static final List<OwnedCardDeckDefinition> OWNED_CARD_DECK_DEFINITIONS = List.of(
             new OwnedCardDeckDefinition("hunter", "Hunters", false),
             new OwnedCardDeckDefinition("builder", "Builders", false),
@@ -89,6 +92,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final Runnable onRefresh;
     private final Runnable onDisconnect;
     private final Runnable onPass;
+    private final Runnable onBackToLobby;
     private final IntConsumer onChooseOffer;
     private final BiConsumer<Integer, Boolean> onChooseCard;
 
@@ -105,12 +109,16 @@ public final class MesosGameBoardView extends BorderPane {
     private final VBox ownedCardsDebugBox;
     private final HBox ownedTribeDecksPane;
     private final StackPane ownedDeckPreviewOverlay;
-    private final VBox playerButtonsPane;
+    private final HBox playerButtonsPane;
     private final StackPane playerTribeOverlay;
     private final VBox eventLogPane;
     private final StackPane eventLogOverlay;
     private final Button infoButton;
     private final StackPane infoPopupOverlay;
+    private final HBox topRightBar;
+    private final StackPane bottomHudOverlay;
+    private final StackPane finalLeaderboardOverlay;
+    private final VBox finalLeaderboardBox;
     private final VBox minimalTurnBarPane;
     private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
@@ -127,7 +135,8 @@ public final class MesosGameBoardView extends BorderPane {
             Runnable onDisconnect,
             IntConsumer onChooseOffer,
             BiConsumer<Integer, Boolean> onChooseCard,
-            Runnable onPass
+            Runnable onPass,
+            Runnable onBackToLobby
     ) {
         this.localNickname = localNickname;
         this.assetResolver = assetResolver;
@@ -136,6 +145,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.onChooseOffer = onChooseOffer;
         this.onChooseCard = onChooseCard;
         this.onPass = onPass;
+        this.onBackToLobby = onBackToLobby;
 
         this.titleLabel = new Label("MESOS");
         this.titleLabel.getStyleClass().add("view-title");
@@ -164,8 +174,8 @@ public final class MesosGameBoardView extends BorderPane {
         this.actionRow.getStyleClass().add("board-action-row");
         this.actionRow.setAlignment(Pos.CENTER_LEFT);
 
-        this.topRowPane = new HBox(4);
-        this.bottomRowPane = new HBox(4);
+        this.topRowPane = new HBox(MARKET_CARD_ROW_GAP);
+        this.bottomRowPane = new HBox(MARKET_CARD_ROW_GAP);
         this.topRowPane.setAlignment(Pos.CENTER);
         this.bottomRowPane.setAlignment(Pos.CENTER);
         this.topRowPane.getStyleClass().add("table-row-cards");
@@ -199,7 +209,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.ownedDeckPreviewOverlay.setMinSize(0, 0);
         this.ownedDeckPreviewOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        this.playerButtonsPane = new VBox(6);
+        this.playerButtonsPane = new HBox(6);
         this.playerButtonsPane.getStyleClass().add("player-buttons-pane");
         this.playerButtonsPane.setAlignment(Pos.TOP_LEFT);
         this.playerButtonsPane.setVisible(false);
@@ -242,10 +252,23 @@ public final class MesosGameBoardView extends BorderPane {
         this.infoPopupOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         this.infoPopupOverlay.setOnMouseClicked(event -> hideInfoPopup());
 
+        this.topRightBar = new HBox(6, eventLogPane, infoButton);
+        this.topRightBar.getStyleClass().add("top-right-bar");
+        this.topRightBar.setAlignment(Pos.CENTER_RIGHT);
+        this.topRightBar.setFillHeight(false);
+        this.topRightBar.setMaxWidth(Region.USE_PREF_SIZE);
+        this.topRightBar.setMaxHeight(Region.USE_PREF_SIZE);
+        this.topRightBar.setPickOnBounds(false);
+
         this.infoPanelColorIndicator = buildColorIndicator(null, "info-panel-color-indicator");
         this.infoPanelColorIndicator.setVisible(false);
         this.infoPanelColorIndicator.setManaged(false);
         this.minimalTurnBarPane = buildMinimalTurnOrderBar();
+        this.bottomHudOverlay = buildBottomHudOverlay();
+        this.finalLeaderboardBox = new VBox(10);
+        this.finalLeaderboardBox.getStyleClass().add("final-leaderboard-box");
+        this.finalLeaderboardBox.setAlignment(Pos.CENTER);
+        this.finalLeaderboardOverlay = buildFinalLeaderboardOverlay();
         this.tabletopCanvas = buildTabletopCanvas();
         this.boardScale = new Scale(1, 1, 0, 0);
         this.viewport = buildViewport();
@@ -260,9 +283,18 @@ public final class MesosGameBoardView extends BorderPane {
         hideInfoPopup();
         this.snapshot = snapshot;
         if (snapshot == null) {
+            setFinalMode(false);
             rebuildPlayerButtonsPane();
             return;
         }
+
+        if (isFinalSnapshot()) {
+            rebuildFinalLeaderboard();
+            setFinalMode(true);
+            return;
+        }
+
+        setFinalMode(false);
 
         titleLabel.setText("Game Status:");
         subtitleLabel.setText("Round " + snapshot.currentRound() + "/3");
@@ -282,6 +314,25 @@ public final class MesosGameBoardView extends BorderPane {
         rebuildOwnedCardsDebugBox();
         rebuildOwnedTribeDecksPane();
         rebuildPlayerButtonsPane();
+    }
+
+    private boolean isFinalSnapshot() {
+        return snapshot != null
+                && (snapshot.finished()
+                || snapshot.status() == GameStatus.END_GAME
+                || snapshot.status() == GameStatus.END_SCREEN);
+    }
+
+    private void setFinalMode(boolean finalMode) {
+        tabletopCanvas.setVisible(!finalMode);
+        topRightBar.setVisible(!finalMode);
+        topRightBar.setManaged(!finalMode);
+        bottomHudOverlay.setVisible(!finalMode);
+        bottomHudOverlay.setManaged(!finalMode);
+        playerButtonsPane.setVisible(!finalMode && snapshot != null && !snapshot.players().isEmpty());
+        playerButtonsPane.setManaged(!finalMode && snapshot != null && !snapshot.players().isEmpty());
+        finalLeaderboardOverlay.setVisible(finalMode);
+        finalLeaderboardOverlay.setManaged(finalMode);
     }
 
     private void rebuildMinimalTurnBar() {
@@ -342,19 +393,13 @@ public final class MesosGameBoardView extends BorderPane {
         StackPane.setAlignment(playerButtonsPane, Pos.TOP_LEFT);
         StackPane.setMargin(playerButtonsPane, new Insets(12, 0, 0, 12));
         pane.getChildren().add(playerButtonsPane);
-        HBox topRightBar = new HBox(6, eventLogPane, infoButton);
-        topRightBar.getStyleClass().add("top-right-bar");
-        topRightBar.setAlignment(Pos.CENTER_RIGHT);
-        topRightBar.setFillHeight(false);
-        topRightBar.setMaxWidth(Region.USE_PREF_SIZE);
-        topRightBar.setMaxHeight(Region.USE_PREF_SIZE);
-        topRightBar.setPickOnBounds(false);
         StackPane.setAlignment(topRightBar, Pos.TOP_RIGHT);
         StackPane.setMargin(topRightBar, new Insets(12, 12, 0, 0));
         pane.getChildren().add(topRightBar);
-        StackPane bottomHudOverlay = buildBottomHudOverlay();
         StackPane.setAlignment(bottomHudOverlay, Pos.BOTTOM_CENTER);
         pane.getChildren().add(bottomHudOverlay);
+        StackPane.setAlignment(finalLeaderboardOverlay, Pos.CENTER);
+        pane.getChildren().add(finalLeaderboardOverlay);
         StackPane.setAlignment(ownedDeckPreviewOverlay, Pos.CENTER);
         pane.getChildren().add(ownedDeckPreviewOverlay);
         StackPane.setAlignment(playerTribeOverlay, Pos.CENTER);
@@ -520,6 +565,7 @@ public final class MesosGameBoardView extends BorderPane {
             boolean topRow
     ) {
         targetRow.getChildren().clear();
+        updateMarketRowScale(targetRow, cards.size(), topRow);
 
         for (CardSummary cardSummary : cards) {
             targetRow.getChildren().add(buildCardNode(
@@ -535,6 +581,23 @@ public final class MesosGameBoardView extends BorderPane {
         if (targetRow.getChildren().isEmpty()) {
             targetRow.getChildren().add(buildEmptyState("No cards available."));
         }
+    }
+
+    private void updateMarketRowScale(HBox targetRow, int cardCount, boolean topRow) {
+        if (cardCount <= 0) {
+            targetRow.setScaleX(1.0);
+            targetRow.setScaleY(1.0);
+            targetRow.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            return;
+        }
+
+        double rowWidth = (MARKET_CARD_WIDTH * cardCount)
+                + (MARKET_CARD_ROW_GAP * Math.max(0, cardCount - 1));
+        double maxWidth = topRow ? TOP_MARKET_ROW_MAX_WIDTH : BOTTOM_MARKET_ROW_MAX_WIDTH;
+        double rowScale = Math.min(1.0, maxWidth / rowWidth);
+        targetRow.setScaleX(rowScale);
+        targetRow.setScaleY(rowScale);
+        targetRow.setPrefWidth(rowWidth);
     }
 
     private void rebuildOfferTiles() {
@@ -697,6 +760,54 @@ public final class MesosGameBoardView extends BorderPane {
                     badgeLabel(player.prestigePoints() + " pp")
             );
             rankingBox.getChildren().add(row);
+            rank++;
+        }
+    }
+
+    private StackPane buildFinalLeaderboardOverlay() {
+        Button lobbyButton = new Button("Back to Lobby");
+        lobbyButton.getStyleClass().addAll("secondary-button", "final-leaderboard-lobby-button");
+        lobbyButton.setOnAction(event -> onBackToLobby.run());
+        lobbyButton.setMaxWidth(Region.USE_PREF_SIZE);
+
+        StackPane overlay = new StackPane(finalLeaderboardBox, lobbyButton);
+        overlay.getStyleClass().add("final-leaderboard-overlay");
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setVisible(false);
+        overlay.setManaged(false);
+        overlay.setMinSize(0, 0);
+        overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(finalLeaderboardBox, Pos.CENTER);
+        StackPane.setAlignment(lobbyButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(lobbyButton, new Insets(12, 12, 0, 0));
+        return overlay;
+    }
+
+    private void rebuildFinalLeaderboard() {
+        finalLeaderboardBox.getChildren().clear();
+
+        Label title = new Label("Final Leaderboard");
+        title.getStyleClass().add("final-leaderboard-title");
+        finalLeaderboardBox.getChildren().add(title);
+
+        List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
+        ranking.sort(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed()
+                .thenComparing(PlayerSummary::nickname));
+
+        int rank = 1;
+        for (PlayerSummary player : ranking) {
+            HBox row = new HBox(10);
+            row.getStyleClass().add("final-leaderboard-row");
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.getChildren().addAll(
+                    badgeLabel("#" + rank),
+                    buildColorIndicator(player.color(), "final-leaderboard-color-indicator"),
+                    new Label(player.nickname()),
+                    spacer(),
+                    badgeLabel("Food " + player.food()),
+                    badgeLabel(player.prestigePoints() + " PP")
+            );
+            finalLeaderboardBox.getChildren().add(row);
             rank++;
         }
     }
@@ -1067,9 +1178,11 @@ public final class MesosGameBoardView extends BorderPane {
         deck.setMaxSize(OWNED_CARD_DECK_SLOT_WIDTH, OWNED_CARD_DECK_SLOT_HEIGHT);
         deck.getChildren().add(buildOwnedCardDeckPlaceholder(definition.label()));
 
-        for (int index = 0; index < cards.size(); index++) {
-            int distanceFromFront = cards.size() - 1 - index;
-            int visibleOffset = Math.min(distanceFromFront, OWNED_CARD_DECK_MAX_VISIBLE_OFFSET);
+        int visibleCards = Math.min(cards.size(), OWNED_CARD_DECK_MAX_VISIBLE_CARDS);
+        int firstVisibleCard = Math.max(0, cards.size() - visibleCards);
+        for (int index = firstVisibleCard; index < cards.size(); index++) {
+            int visibleIndex = index - firstVisibleCard;
+            int visibleOffset = visibleCards - 1 - visibleIndex;
             StackPane card = buildOwnedTribeCardSurface(
                     cards.get(index),
                     OWNED_TRIBE_CARD_WIDTH,

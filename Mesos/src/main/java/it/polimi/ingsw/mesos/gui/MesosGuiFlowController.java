@@ -122,7 +122,8 @@ public final class MesosGuiFlowController {
                     this::disconnectToConnectionScreen,
                     this::chooseOffer,
                     this::chooseCard,
-                    this::choosePass
+                    this::choosePass,
+                    () -> loadLobby("Returned to lobby.")
             );
         }
         gameBoardView.updateSnapshot(snapshot, message);
