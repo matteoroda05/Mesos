@@ -891,7 +891,7 @@
                               "presentation_id":  "building_era_3_06"
                           },
                           {
-                              "type":  "BUILDING_AFTER_EVERYONE",
+                              "type":  "BUILDING_END_ROUND",
                               "era":  "THIRD",
                               "minPlayers":  2,
                               "foodCost":  9,
