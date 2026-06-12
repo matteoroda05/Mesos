@@ -29,7 +29,8 @@ public class EventState extends GameState {
      */
     public EventState(ModelController controller) {
         super(controller);
-        last_round = controller.getGameContext().getRoundNumber() >= 10;
+        // TODO: Set back to 10 (debug purposes only)
+        last_round = controller.getGameContext().getRoundNumber() >= 2;
         events = last_round ? controller.getAllEvents() : controller.getEventsBottom();
         events.sort(Comparator.comparing(EventCard::getEra)); // sort by era to maintain order
     }

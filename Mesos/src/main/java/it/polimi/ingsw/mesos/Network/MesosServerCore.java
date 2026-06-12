@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Network;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -16,6 +17,7 @@ import it.polimi.ingsw.mesos.Controller.GameFlowController;
 import it.polimi.ingsw.mesos.Controller.GameSetup;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
+import it.polimi.ingsw.mesos.Database.DatabaseManager;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
@@ -508,6 +510,9 @@ public class MesosServerCore implements MesosServerService {
         private final Set<GameUpdateSink> subscribers;
         private long singleConnectedSince;
         private String forcedWinnerNickname;
+        private final DatabaseManager databaseManager;
+        private final Timestamp gameTimestamp;
+        private boolean saved = false;
 
         /**
          * Creates an empty session around a game context.
@@ -520,6 +525,8 @@ public class MesosServerCore implements MesosServerService {
             this.colorsByNickname = new LinkedHashMap<>();
             this.subscribers = new LinkedHashSet<>();
             this.singleConnectedSince = -1;
+            this.databaseManager = new DatabaseManager();
+            this.gameTimestamp = new Timestamp(System.currentTimeMillis());
         }
 
         /**
@@ -1009,12 +1016,35 @@ public class MesosServerCore implements MesosServerService {
 
         /**
          * Checks whether the game has ended naturally or through a forced
-         * resilience winner.
+         * resilience winner. If the game has finished then update ranking database.
          *
          * @return true when the game is finished
          */
         private boolean finished() {
+            if (!this.saved && (forcedWinnerNickname != null || started() && controller.isGameFinished())) {
+                this.saved = saveResult();
+
+                // DEBUG
+                if (this.saved) {
+                    final var a = databaseManager.getLeaderboard();
+                    for (final var entry : a) {
+                        System.out.println(entry.toString());
+                    }
+                }
+            }
             return forcedWinnerNickname != null || started() && controller.isGameFinished();
+        }
+
+        private boolean saveResult() {
+            final var players = this.context.getPlayers();
+            final var numPlayers = players.size();
+            boolean success = true;
+
+            for (final var player : players) {
+                success = success && this.databaseManager.saveMatchResult(
+                        player.getNickname(), player.getPrestigePoints(), this.gameTimestamp, numPlayers);
+            }
+            return success;
         }
 
         /**
