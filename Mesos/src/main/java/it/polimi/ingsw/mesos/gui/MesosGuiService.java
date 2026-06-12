@@ -3,9 +3,9 @@ package it.polimi.ingsw.mesos.gui;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
 import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
@@ -33,7 +33,7 @@ public final class MesosGuiService implements AutoCloseable {
     private final ExecutorService ioExecutor;
 
     private volatile GameClient client;
-    private volatile Consumer<GameViewUpdate> updateHandler;
+    private volatile Consumer<GameServerMessage> updateHandler;
     private volatile String currentGameName;
     private volatile String currentNickname;
 
@@ -43,7 +43,7 @@ public final class MesosGuiService implements AutoCloseable {
         this.updateHandler = update -> { };
     }
 
-    public void setUpdateHandler(Consumer<GameViewUpdate> updateHandler) {
+    public void setUpdateHandler(Consumer<GameServerMessage> updateHandler) {
         this.updateHandler = updateHandler == null ? update -> { } : updateHandler;
     }
 
@@ -233,12 +233,12 @@ public final class MesosGuiService implements AutoCloseable {
         return null;
     }
 
-    private void forwardUpdate(GameViewUpdate update) {
+    private void forwardUpdate(GameServerMessage update) {
         if (update == null) {
             return;
         }
 
-        Consumer<GameViewUpdate> handler = updateHandler;
+        Consumer<GameServerMessage> handler = updateHandler;
         if (handler != null) {
             handler.accept(update);
         }

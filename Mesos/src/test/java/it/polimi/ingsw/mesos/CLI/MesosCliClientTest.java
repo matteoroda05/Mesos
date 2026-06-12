@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.LobbyGameSummary;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OfferTileSummary;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
@@ -113,8 +114,8 @@ class MesosCliClientTest {
         assertTrue(output.toString(StandardCharsets.UTF_8).contains("[error] fail"));
 
         setField(cli, "nickname", "Alice");
-        invoke(cli, "handleRemoteUpdate", GameViewUpdate.class, null);
-        invoke(cli, "handleRemoteUpdate", GameViewUpdate.class, new GameViewUpdate("room", "updated", snapshot));
+        invoke(cli, "handleRemoteUpdate", GameServerMessage.class, null);
+        invoke(cli, "handleRemoteUpdate", GameServerMessage.class, new GameViewUpdate("room", "updated", snapshot));
         assertTrue(output.toString(StandardCharsets.UTF_8).contains("[update] updated"));
     }
 

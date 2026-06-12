@@ -5,16 +5,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.LobbySnapshot;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public final class MesosCliClient {
     private enum GameLoopExit {
@@ -682,18 +693,23 @@ public final class MesosCliClient {
      *
      * @param update remote update payload
      */
-    private void handleRemoteUpdate(GameViewUpdate update) {
-        if (update == null) {
+    private void handleRemoteUpdate(GameServerMessage update) {
+        if (update instanceof EventNotification notification) {
+            synchronized (consoleLock) {
+                System.out.println();
+                System.out.println("[event] " + EventMessageFormatter.format(notification.entry()));
+                System.out.print("mesos> ");
+                System.out.flush();
+            }
             return;
         }
-        if (isSnapshotAlreadyRendered(update.snapshot())) {
-            snapshot = update.snapshot();
+        if (!(update instanceof GameViewUpdate view)) {
             return;
         }
-        snapshot = update.snapshot();
+        snapshot = view.snapshot();
         synchronized (consoleLock) {
             System.out.println();
-            System.out.println("[update] " + update.message());
+            System.out.println("[update] " + view.message());
             System.out.println(printer.renderSnapshot(snapshot, nickname));
             System.out.print("mesos> ");
             System.out.flush();
