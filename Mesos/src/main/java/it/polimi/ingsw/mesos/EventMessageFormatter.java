@@ -21,13 +21,7 @@ public final class EventMessageFormatter {
      * @return heading text
      */
     public static String title(EventLogEntry entry) {
-        if (entry instanceof EventLogEntry.Round round) {
-            return round.title();
-        }
-        if (entry instanceof EventLogEntry.Notice notice) {
-            return notice.title();
-        }
-        return "Turn order";
+        return entry.title();
     }
 
     /**
@@ -38,27 +32,7 @@ public final class EventMessageFormatter {
      * @return body text (may contain newlines)
      */
     public static String body(EventLogEntry entry) {
-        if (entry instanceof EventLogEntry.Round round) {
-            StringBuilder builder = new StringBuilder();
-            for (EventSummary event : round.events()) {
-                builder.append(event.eventName()).append('\n');
-                for (PlayerEventLine line : event.lines()) {
-                    builder.append("- ").append(describeLine(line)).append('\n');
-                }
-                for (String activation : event.buildingActivations()) {
-                    builder.append(activation).append('\n');
-                }
-            }
-            return builder.toString().stripTrailing();
-        }
-        if (entry instanceof EventLogEntry.TurnOrder turnOrder) {
-            return "Player " + turnOrder.color()
-                    + " return to the turn order tile" + turnOrderSuffix(turnOrder);
-        }
-        if (entry instanceof EventLogEntry.Notice notice) {
-            return notice.body();
-        }
-        return "";
+        return entry.body();
     }
 
     /**
@@ -71,33 +45,24 @@ public final class EventMessageFormatter {
         return title(entry) + "\n" + body(entry);
     }
 
-    private static String describeLine(PlayerEventLine line) {
-        String change = joinChanges(line.foodDelta(), line.prestigeDelta(), false);
-        return "Player " + line.color() + " " + change;
-    }
-
-    private static String turnOrderSuffix(EventLogEntry.TurnOrder turnOrder) {
-        if (turnOrder.foodDelta() == 0 && turnOrder.prestigeDelta() == 0) {
-            return " with no change";
-        }
-        return " " + joinChanges(turnOrder.foodDelta(), turnOrder.prestigeDelta(), true);
-    }
-
-    private static String joinChanges(int foodDelta, int prestigeDelta, boolean gerund) {
+    /**
+     * Formatting utility
+     * @param foodDelta food bonus/penalty
+     * @param prestigeDelta prestige gained/lost
+     * @return message listing the changes
+     */
+    public static String joinChanges(int foodDelta, int prestigeDelta) {
         List<String> clauses = new ArrayList<>();
         if (foodDelta != 0) {
-            clauses.add(verb(foodDelta, gerund) + " " + Math.abs(foodDelta) + " food");
+            clauses.add(verb(foodDelta) + " food");
         }
         if (prestigeDelta != 0) {
-            clauses.add(verb(prestigeDelta, gerund) + " " + Math.abs(prestigeDelta) + " prestige points");
+            clauses.add(verb(prestigeDelta) + " prestige points");
         }
         return String.join(" and ", clauses);
     }
 
-    private static String verb(int delta, boolean gerund) {
-        if (gerund) {
-            return delta > 0 ? "gaining" : "losing";
-        }
-        return delta > 0 ? "gained" : "lost";
+    private static String verb(int delta) {
+        return (delta > 0 ? "gained" : "lost") + " " + Math.abs(delta);
     }
 }

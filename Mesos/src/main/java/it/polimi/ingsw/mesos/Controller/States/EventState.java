@@ -105,7 +105,7 @@ public class EventState extends GameState {
         }
 
         if (!summaries.isEmpty()) {
-            String title = last_round ? "FINAL EVENTS" : "EVENTS ROUND";
+            String title = last_round ? "Final events" : "Events resolution";
             controller.getGameContext().logEventEntry(new EventLogEntry.Round(title, summaries));
         }
 
