@@ -1,6 +1,8 @@
 package it.polimi.ingsw.mesos.Network.RMI;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -14,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 
 public class RmiGameClient implements GameClient {
@@ -52,6 +54,10 @@ public class RmiGameClient implements GameClient {
         }
 
         try {
+            System.setProperty("java.rmi.server.hostname", NetworkDefaults.resolveRmiClientHost(
+                    host,
+                    determineRoutedLocalHost(host, registryPort)
+            ));
             Registry registry = LocateRegistry.getRegistry(host, registryPort);
             this.remoteServer = (RemoteMesosServer) registry.lookup(serviceName);
             this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(task -> {
@@ -326,6 +332,27 @@ public class RmiGameClient implements GameClient {
         }
     }
 
+    /**
+     * Resolves the local host address actually chosen by the OS route toward
+     * the RMI registry.
+     *
+     * @param host registry host
+     * @param registryPort registry port
+     * @return local host address used for the route, or null when it cannot be
+     *         determined
+     */
+    private static String determineRoutedLocalHost(String host, int registryPort) {
+        try (Socket socket = new Socket(host, registryPort)) {
+            InetAddress localAddress = socket.getLocalAddress();
+            if (localAddress == null) {
+                return null;
+            }
+            return localAddress.getHostAddress();
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
     private static final class RemoteGameUpdateListenerAdapter extends UnicastRemoteObject implements RemoteGameUpdateListener {
         private final GameUpdateListener delegate;
 
@@ -348,7 +375,7 @@ public class RmiGameClient implements GameClient {
          * @param update update payload
          */
         @Override
-        public void onUpdate(GameViewUpdate update) {
+        public void onUpdate(GameServerMessage update) {
             delegate.onUpdate(update);
         }
     }

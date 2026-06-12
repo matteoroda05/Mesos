@@ -1,9 +1,12 @@
 package it.polimi.ingsw.mesos.gui;
 
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
@@ -11,8 +14,10 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +35,7 @@ public final class MesosGuiFlowController {
     private MesosGameBoardView gameBoardView;
     private MesosGuiScreenFactory.NicknameScreen nicknameScreen;
     private final Map<String, Color> preJoinColorByGame;
+    private final List<EventLogEntry> eventLog = new ArrayList<>();
 
     public MesosGuiFlowController(
             Host host,
@@ -48,11 +54,20 @@ public final class MesosGuiFlowController {
         showConnectionScreen();
     }
 
-    public void handleRemoteUpdate(GameViewUpdate update) {
+    public void handleRemoteUpdate(GameServerMessage update) {
         Platform.runLater(() -> {
-            String message = MesosUserMessageMapper.describeUpdate(update);
+            if (update instanceof EventNotification notification) {
+                eventLog.add(notification.entry());
+                if (gameBoardView != null) {
+                    gameBoardView.setEventLog(eventLog);
+                }
+                return;
+            }
+
+            GameViewUpdate view = update instanceof GameViewUpdate gameViewUpdate ? gameViewUpdate : null;
+            String message = MesosUserMessageMapper.describeUpdate(view);
             host.updateStatus(message);
-            renderSnapshot(update == null ? null : update.snapshot(), message);
+            renderSnapshot(view == null ? null : view.snapshot(), message);
         });
     }
 
@@ -107,10 +122,12 @@ public final class MesosGuiFlowController {
                     this::disconnectToConnectionScreen,
                     this::chooseOffer,
                     this::chooseCard,
-                    this::choosePass
+                    this::choosePass,
+                    () -> loadLobby("Returned to lobby.")
             );
         }
         gameBoardView.updateSnapshot(snapshot, message);
+        gameBoardView.setEventLog(eventLog);
         host.setContent(gameBoardView);
     }
 
@@ -163,7 +180,8 @@ public final class MesosGuiFlowController {
         }
 
         if (!result.success()) {
-            if (result.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN && handleTakenNickname(nickname)) {
+            if (result.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN) {
+                handleTakenNickname();
                 return;
             }
 
@@ -190,25 +208,14 @@ public final class MesosGuiFlowController {
         rejoinGame(nickname);
     }
 
-    private boolean handleTakenNickname(String nickname) {
-        boolean useSuffix = host.showConfirmation(
+    private void handleTakenNickname() {
+        guiService.clearCurrentNickname();
+        selectNicknameField();
+        host.updateStatus("Choose another nickname.");
+        host.showAlert(
                 "Nickname already in use",
-                "This nickname is already in use. Do you want to keep it with an automatic suffix?"
+                "This nickname is already in use. Choose another nickname."
         );
-        if (!useSuffix) {
-            guiService.clearCurrentNickname();
-            selectNicknameField();
-            host.updateStatus("Choose another nickname.");
-            return true;
-        }
-
-        String suffixedNickname = appendNumericSuffix(nickname, 1);
-        TextField field = nicknameField();
-        if (field != null) {
-            field.setText(suffixedNickname);
-        }
-        submitNickname(suffixedNickname);
-        return true;
     }
 
     private void rejoinGame(String nickname) {
@@ -433,6 +440,7 @@ public final class MesosGuiFlowController {
                     gameBoardView = null;
                     nicknameScreen = null;
                     preJoinColorByGame.clear();
+                    eventLog.clear();
                     showConnectionScreen();
                     host.updateStatus("Disconnected.");
                 },
@@ -479,10 +487,6 @@ public final class MesosGuiFlowController {
 
     private TextField nicknameField() {
         return nicknameScreen == null ? null : nicknameScreen.nicknameField();
-    }
-
-    private String appendNumericSuffix(String baseName, int suffix) {
-        return baseName + "-" + suffix;
     }
 
     private void handleCreateGameResult(String gameName, Color selectedColor, GameOperationResult result) {

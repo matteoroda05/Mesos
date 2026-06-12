@@ -9,6 +9,7 @@ import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -131,6 +132,17 @@ class NetworkValueObjectsTest {
     }
 
     @Test
+    void networkDefaultsResolveRmiClientHostForLoopbackAndLanServers() throws Exception {
+        Method method = NetworkDefaults.class.getDeclaredMethod("resolveRmiClientHost", String.class, String.class);
+        method.setAccessible(true);
+
+        assertEquals("127.0.0.1", method.invoke(null, "localhost", "10.0.0.8"));
+        assertEquals("127.0.0.1", method.invoke(null, "127.0.0.1", "10.0.0.8"));
+        assertEquals("10.0.0.8", method.invoke(null, "192.168.1.20", "10.0.0.8"));
+        assertEquals(NetworkDefaults.detectLocalNetworkHost(), method.invoke(null, "192.168.1.20", null));
+    }
+
+    @Test
     void operationResultsAndViewUpdatesExecuteAgainstSocketContext() {
         GameOperationResult success = new GameOperationResult(true, null, null, null, null, false);
         assertEquals("Operation completed", success.message());
@@ -155,7 +167,7 @@ class NetworkValueObjectsTest {
         assertEquals("Aggiornamento tavolo", new GameViewUpdate("game", null, snapshot).message());
         assertEquals("Aggiornamento tavolo", new GameViewUpdate("game", " ", snapshot).message());
 
-        List<GameViewUpdate> received = new ArrayList<>();
+        List<GameServerMessage> received = new ArrayList<>();
         GameViewUpdate update = new GameViewUpdate("game", "updated", snapshot);
         update.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), received::add));
         update.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), null));

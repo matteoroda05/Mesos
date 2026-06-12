@@ -19,23 +19,10 @@ import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
+import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitorImpl;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 import it.polimi.ingsw.mesos.Model.GameContext;
@@ -44,6 +31,8 @@ import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
@@ -1037,7 +1026,20 @@ public class MesosServerCore implements MesosServerService {
         private GameSnapshot publishAndSnapshot(String message) {
             GameSnapshot snapshot = toSnapshot();
             publish(new GameViewUpdate(context.getGameName(), message, snapshot));
+            broadcastEventLog();
             return snapshot;
+        }
+
+        /**
+         * Drains the structured events accumulated by the model during the last
+         * command and broadcasts one {@link EventNotification} per entry. Called
+         * right after the snapshot update so the board is already up to date when
+         * the popup arrives.
+         */
+        private void broadcastEventLog() {
+            for (EventLogEntry entry : context.drainEventLog()) {
+                publish(new EventNotification(context.getGameName(), entry));
+            }
         }
 
         /**
@@ -1046,7 +1048,7 @@ public class MesosServerCore implements MesosServerService {
          *
          * @param update update to publish
          */
-        private void publish(GameViewUpdate update) {
+        private void publish(GameServerMessage update) {
             List<GameUpdateSink> failedSubscribers = new ArrayList<>();
             for (GameUpdateSink subscriber : subscribers) {
                 try {
@@ -1257,30 +1259,30 @@ public class MesosServerCore implements MesosServerService {
             return switch (card) {
                 case BuildingCard buildingCard -> new CardSummary(
                         selectionIndex,
-                        formatName(buildingCard.getClass().getSimpleName()),
+                        CardDescriptionVisitorImpl.formatName(buildingCard.getClass().getSimpleName()),
                         buildingCard.getEra(),
                         false,
-                        describeCard(buildingCard),
+                        buildingCard.accept(CardDescriptionVisitorImpl.INSTANCE),
                         buildingCard.getFoodCost(),
                         buildingCard.getPrestigePoints(),
                         buildingCard.getPresentationId()
                 );
                 case EventCard eventCard -> new CardSummary(
                         selectionIndex,
-                        formatName(eventCard.getClass().getSimpleName()),
+                        CardDescriptionVisitorImpl.formatName(eventCard.getClass().getSimpleName()),
                         eventCard.getEra(),
                         true,
-                        describeCard(eventCard),
+                        eventCard.accept(CardDescriptionVisitorImpl.INSTANCE),
                         null,
                         null,
                         eventCard.getPresentationId()
                 );
                 case CharacterCard characterCard -> new CardSummary(
                         selectionIndex,
-                        formatName(characterCard.getClass().getSimpleName()),
+                        CardDescriptionVisitorImpl.formatName(characterCard.getClass().getSimpleName()),
                         characterCard.getEra(),
                         false,
-                        describeCard(characterCard),
+                        characterCard.accept(CardDescriptionVisitorImpl.INSTANCE),
                         null,
                         null,
                         characterCard.getPresentationId()
@@ -1295,136 +1297,6 @@ public class MesosServerCore implements MesosServerService {
                 summaries.add(summarizeCard(cards.get(index), index));
             }
             return summaries;
-        }
-
-        /**
-         * Builds a short human-readable description for a known card type.
-         * Unknown card types deliberately fall back to an empty description.
-         *
-         * @param card card to describe
-         * @return localized effect summary or an empty string
-         */
-        private String describeCard(Card card) {
-            return switch (card) {
-                case BuilderCard builderCard ->
-                        "Building discount " + builderCard.getBuildingDiscount()
-                                + ", end game +" + builderCard.getPrestigePoints() + " pp";
-                case GathererCard gathererCard ->
-                        "Sustenance discount " + gathererCard.getDiscount() + " food";
-                case HunterCard hunterCard ->
-                        hunterCard.isActiveHunter() ? "Active hunter" : "Hunter";
-                case InventorCard inventorCard ->
-                        "Icon " + inventorCard.getInventionIcon();
-                case ShamanCard shamanCard ->
-                        shamanCard.getStars() + " shamanic stars";
-                case HuntEvent huntEvent ->
-                        "+" + huntEvent.getPrestigePerHunter() + " pp and +" + huntEvent.getFoodPerHunter()
-                                + " food per hunter";
-                case CavePaintingEvent cavePaintingEvent ->
-                        "With at least " + cavePaintingEvent.getThreshold() + " artists: +"
-                                + cavePaintingEvent.getPointsPerArtist()
-                                + " pp each, otherwise " + cavePaintingEvent.getPenalty() + " pp";
-                case ShamanicRitualEvent shamanicRitualEvent ->
-                        "Winners +" + shamanicRitualEvent.getWinnerBonus()
-                                + " pp, losers " + shamanicRitualEvent.getLoserPenalty() + " pp";
-                case SustenanceEvent sustenanceEvent ->
-                        sustenanceEvent.getFoodPerCharacter() + " food per character, each deficit costs "
-                                + sustenanceEvent.getPointPenalty() + " pp";
-                case BuildingBonusEvent buildingBonusEvent ->
-                        "On " + formatTrigger(buildingBonusEvent.getTrigger())
-                                + ": " + formatName(buildingBonusEvent.getCharacterType().getSimpleName())
-                                + " gives " + signed(buildingBonusEvent.getFoodBonus(), " food")
-                                + ", +" + buildingBonusEvent.getPrestigeBonus() + " pp";
-                case BuildingEndTurn buildingEndTurn ->
-                        "End turn: +" + buildingEndTurn.getFoodBonus() + " food with positive turn order tile bonus";
-                case BuildingOnCard buildingOnCard ->
-                        buildingOnCard.isSetCompletion()
-                                ? "When taking cards: +" + buildingOnCard.getFoodBonus() + " food if you complete a set"
-                                : "Inventor pair: +" + buildingOnCard.getFoodBonus() + " food with duplicate icon";
-                case BuildingShamanicRitual buildingShamanicRitual ->
-                        buildingShamanicRitual.getStarBonus() != 0
-                                ? "Ritual: +" + buildingShamanicRitual.getStarBonus() + " stars before scoring"
-                                : buildingShamanicRitual.getWinMultiplier() != 0
-                                        ? "Ritual: the winner multiplies by x" + buildingShamanicRitual.getWinMultiplier()
-                                        : "Ritual: cancel your penalty if you lose";
-                case BuildingEndGame buildingEndGame ->
-                        describeEndGameBuilding(buildingEndGame);
-                default -> "";
-            };
-        }
-
-        /**
-         * Builds the specific description for an end-game building.
-         *
-         * @param buildingEndGame end-game building to describe
-         * @return description, or an empty string when the building has no
-         *         recognized scoring configuration
-         */
-        private String describeEndGameBuilding(BuildingEndGame buildingEndGame) {
-            if (buildingEndGame.isDoubleBuildersPrestige()) {
-                return "End game: double builders' prestige";
-            }
-            if (buildingEndGame.getCharacterSetBonusPrestige() != 0) {
-                return "End game: +" + buildingEndGame.getCharacterSetBonusPrestige() + " pp per complete character set";
-            }
-            if (buildingEndGame.getCharacterMultiplier() != 0 && buildingEndGame.getCharacterType() != null) {
-                return "End game: +" + buildingEndGame.getCharacterMultiplier() + " pp per "
-                        + formatName(buildingEndGame.getCharacterType().getSimpleName());
-            }
-            if (buildingEndGame.getPrestigeBonus() != 0) {
-                return "End game: +" + buildingEndGame.getPrestigeBonus() + " pp";
-            }
-            return "";
-        }
-
-        /**
-         * Converts a class-style name into a readable display name.
-         *
-         * @param rawName raw class or type name
-         * @return formatted display name
-         */
-        private String formatName(String rawName) {
-            String baseName = rawName
-                    .replace("Card", "")
-                    .replace("Event", " Event");
-
-            StringBuilder builder = new StringBuilder();
-            for (int index = 0; index < baseName.length(); index++) {
-                char character = baseName.charAt(index);
-                if (index > 0 && Character.isUpperCase(character) && baseName.charAt(index - 1) != ' ') {
-                    builder.append(' ');
-                }
-                builder.append(character);
-            }
-            return builder.toString().trim();
-        }
-
-        /**
-         * Formats a building trigger enum for display.
-         *
-         * @param trigger trigger to format
-         * @return lowercase trigger label without the event prefix
-         * @throws NullPointerException if trigger is null
-         */
-        private String formatTrigger(it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger trigger) {
-            return trigger.name()
-                    .replace("ON_EVENT_", "")
-                    .replace('_', ' ')
-                    .toLowerCase();
-        }
-
-        /**
-         * Formats a signed numeric value with a suffix.
-         *
-         * @param value value to format
-         * @param suffix suffix appended after the value
-         * @return value with a leading plus sign when non-negative
-         */
-        private String signed(int value, String suffix) {
-            if (value >= 0) {
-                return "+" + value + suffix;
-            }
-            return value + suffix;
         }
 
         /**

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 abstract public class Card {
@@ -17,7 +18,7 @@ abstract public class Card {
      *                                  the range 0 to 5
      */
     public Card(Era era, int min_players) {
-        if (min_players < 0 || min_players > 5) throw new IllegalArgumentException("min_players must be between 0 and 5");
+        if (min_players < 0 || min_players > Globals.MAX_NUM_PLAYERS) throw new IllegalArgumentException("min_players must be between 0 and 5");
 
         this.era = era;
         this.min_players = min_players;
@@ -62,4 +63,12 @@ abstract public class Card {
     public boolean isEvent() {
         return false;
     }
+
+    /**
+     * Accepts a description visitor and returns this card's effect summary.
+     *
+     * @param visitor description visitor
+     * @return human-readable effect description, never null
+     */
+    public abstract String accept(CardDescriptionVisitor visitor);
 }

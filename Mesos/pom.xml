@@ -15,6 +15,8 @@
         <jackson.version>2.18.7</jackson.version>
         <junit.version>5.12.1</junit.version>
         <javafx.version>23.0.2</javafx.version>
+        <skipTests>false</skipTests>
+        <maven.test.skip>${skipTests}</maven.test.skip>
     </properties>
 
     <dependencies>
@@ -78,6 +80,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
             </plugin>
 
             <!-- Builds runnable jars that include the project classes and runtime dependencies. -->
@@ -126,6 +131,24 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>it.polimi.ingsw.mesos.Launcher.MesosClientLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                    <!-- Creates the runnable CLI jar with the interactive terminal client as its entry point. -->
+                    <execution>
+                        <id>cli-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>cli</shadedClassifierName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>it.polimi.ingsw.mesos.CLI.MesosCliClient</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

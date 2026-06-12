@@ -80,6 +80,7 @@ public final class MesosGuiScreenFactory {
 
         StackPane container = new StackPane(shell);
         container.setAlignment(Pos.CENTER);
+        container.getStyleClass().addAll("connection-screen-root", "connection-screen-content");
         container.setPadding(new Insets(6, 0, 6, 0));
         container.setTranslateY(96);
 
@@ -331,13 +332,13 @@ public final class MesosGuiScreenFactory {
         imageView.setViewport(new Rectangle2D(1300, 1152, 2220, 656));
         imageView.setPreserveRatio(true);
         imageView.fitWidthProperty().bind(
-                Bindings.max(Bindings.min(availableWidth.subtract(220), 700.0), 420.0)
+                Bindings.max(Bindings.min(availableWidth.subtract(260), 560.0), 320.0)
         );
         imageView.setSmooth(true);
 
         StackPane wrapper = new StackPane(imageView);
         wrapper.setAlignment(Pos.CENTER);
-        wrapper.setMaxWidth(720);
+        wrapper.setMaxWidth(580);
         wrapper.setTranslateY(12);
         return wrapper;
     }

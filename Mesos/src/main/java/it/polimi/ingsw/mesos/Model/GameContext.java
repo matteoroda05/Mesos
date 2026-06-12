@@ -1,9 +1,11 @@
 package it.polimi.ingsw.mesos.Model;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -16,6 +18,7 @@ public class GameContext {
     private Era current_era;
     private final GameTable game_table;
     private Map<Color, Player> players;
+    private final List<EventLogEntry> event_log = new ArrayList<>();
 
     /**
      * Creates a game context with round zero, the first era, and an empty player
@@ -150,6 +153,29 @@ public class GameContext {
             throw new IllegalArgumentException("color not present");
 
         return players.get(color);
+    }
+
+    /**
+     * Records a structured game event so the network layer can broadcast it to
+     * clients as a popup.
+     *
+     * @param entry event entry to record
+     */
+    public void logEventEntry(EventLogEntry entry) {
+        if (entry != null) {
+            this.event_log.add(entry);
+        }
+    }
+
+    /**
+     * Returns the events accumulated since the last drain and clears the buffer.
+     *
+     * @return events recorded since the previous call, in insertion order
+     */
+    public List<EventLogEntry> drainEventLog() {
+        List<EventLogEntry> drained = List.copyOf(this.event_log);
+        this.event_log.clear();
+        return drained;
     }
 
     /**

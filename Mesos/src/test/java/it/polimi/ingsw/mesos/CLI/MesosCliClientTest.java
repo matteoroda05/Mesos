@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.LobbyGameSummary;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OfferTileSummary;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
@@ -113,9 +114,26 @@ class MesosCliClientTest {
         assertTrue(output.toString(StandardCharsets.UTF_8).contains("[error] fail"));
 
         setField(cli, "nickname", "Alice");
-        invoke(cli, "handleRemoteUpdate", GameViewUpdate.class, null);
-        invoke(cli, "handleRemoteUpdate", GameViewUpdate.class, new GameViewUpdate("room", "updated", snapshot));
+        invoke(cli, "handleRemoteUpdate", GameServerMessage.class, null);
+        invoke(cli, "handleRemoteUpdate", GameServerMessage.class, new GameViewUpdate("room", "updated", snapshot));
         assertTrue(output.toString(StandardCharsets.UTF_8).contains("[update] updated"));
+    }
+
+    @Test
+    void handleRemoteUpdateSkipsDuplicateSnapshots() throws Exception {
+        MesosCliClient cli = newCli("");
+        ByteArrayOutputStream output = captureOutput();
+        GameSnapshot snapshot = snapshot(GameStatus.ROUND_ACTIONS);
+
+        setField(cli, "nickname", "Alice");
+        setField(cli, "snapshot", snapshot);
+        invoke(cli, "printSnapshotIfAvailable");
+
+        invoke(cli, "handleRemoteUpdate", GameViewUpdate.class, new GameViewUpdate("room", "updated", snapshot));
+
+        String text = output.toString(StandardCharsets.UTF_8);
+        assertFalse(text.contains("[update] updated"));
+        assertEquals(1, occurrences(text, "GAME TABLE"));
     }
 
     @Test
@@ -314,6 +332,23 @@ class MesosCliClientTest {
     }
 
     @Test
+    void mainLoopRendersReturnedSnapshotAfterSuccessfulLocalMove() throws Exception {
+        MesosCliClient cli = newCli("offer 1\nexit\n");
+        FakeClient client = new FakeClient();
+        client.offerResults.add(GameOperationResult.success("offer", snapshot(GameStatus.ROUND_ACTIONS)));
+        setField(cli, "gameName", "Room");
+        setField(cli, "nickname", "Alice");
+        setField(cli, "snapshot", snapshot(GameStatus.ROUND_OFFER));
+        ByteArrayOutputStream output = captureOutput();
+
+        assertEquals("QUIT_CLIENT", invoke(cli, "mainLoop", GameClient.class, client).toString());
+
+        String text = output.toString(StandardCharsets.UTF_8);
+        assertTrue(text.contains("[ok] offer"));
+        assertTrue(occurrences(text, "GAME TABLE") >= 2);
+    }
+
+    @Test
     void mainLoopPromptsForFinishedGameExitChoice() throws Exception {
         MesosCliClient lobbyCli = newCli("yes\n");
         setField(lobbyCli, "gameName", "Room");
@@ -441,6 +476,10 @@ class MesosCliClientTest {
         Field field = target.getClass().getDeclaredField(name);
         field.setAccessible(true);
         return field.get(target);
+    }
+
+    private static int occurrences(String text, String needle) {
+        return text.split(java.util.regex.Pattern.quote(needle), -1).length - 1;
     }
 
     private static void setField(Object target, String name, Object value) throws Exception {

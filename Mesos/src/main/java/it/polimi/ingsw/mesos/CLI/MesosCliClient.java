@@ -5,16 +5,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
+import it.polimi.ingsw.mesos.Network.LobbySnapshot;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
+import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 public final class MesosCliClient {
     private enum GameLoopExit {
@@ -28,7 +39,8 @@ public final class MesosCliClient {
 
     private String nickname;
     private String gameName;
-    private GameSnapshot snapshot;
+    private volatile GameSnapshot snapshot;
+    private volatile GameSnapshot lastRenderedSnapshot;
 
     /**
      * Creates a CLI client bound to standard input and a terminal printer.
@@ -542,7 +554,7 @@ public final class MesosCliClient {
                     throw new IllegalArgumentException("use: offer <index>");
                 }
                 int offerIndex = parseInt(tokens[1], "the offer index");
-                handleResult(client.chooseOffer(new ChooseOfferRequest(gameName, nickname, offerIndex)));
+                handleActionResult(client.chooseOffer(new ChooseOfferRequest(gameName, nickname, offerIndex)));
             }
             case "card", "carta" -> {
                 if (tokens.length != 3) {
@@ -550,13 +562,13 @@ public final class MesosCliClient {
                 }
                 boolean topRow = parseRow(tokens[1]);
                 int cardIndex = parseInt(tokens[2], "the card index");
-                handleResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
+                handleActionResult(client.chooseCard(new ChooseCardRequest(gameName, nickname, cardIndex, topRow)));
             }
             case "pass", "passa" -> {
                 if (tokens.length != 1) {
                     throw new IllegalArgumentException("use: pass");
                 }
-                handleResult(client.pass(new PassRequest(gameName, nickname)));
+                handleActionResult(client.pass(new PassRequest(gameName, nickname)));
             }
             default -> throw new IllegalArgumentException("unknown command '" + tokens[0] + "'");
         }
@@ -628,6 +640,25 @@ public final class MesosCliClient {
     }
 
     /**
+     * Handles a local game action, printing the returned snapshot immediately
+     * when an asynchronous update has not already rendered the same board.
+     *
+     * @param result operation result produced by a local game action
+     */
+    private void handleActionResult(GameOperationResult result) {
+        GameSnapshot resultSnapshot = result == null ? null : result.snapshot();
+        boolean snapshotAlreadyRendered = isSnapshotAlreadyRendered(resultSnapshot);
+        handleResult(result);
+        if (result == null || !result.success()) {
+            return;
+        }
+        if (snapshotAlreadyRendered || isSnapshotAlreadyRendered(resultSnapshot)) {
+            return;
+        }
+        printSnapshotIfAvailable();
+    }
+
+    /**
      * Handles a game operation result and prints its message.
      *
      * @param result operation result, ignored when null
@@ -662,17 +693,27 @@ public final class MesosCliClient {
      *
      * @param update remote update payload
      */
-    private void handleRemoteUpdate(GameViewUpdate update) {
-        if (update == null) {
+    private void handleRemoteUpdate(GameServerMessage update) {
+        if (update instanceof EventNotification notification) {
+            synchronized (consoleLock) {
+                System.out.println();
+                System.out.println("[event] " + EventMessageFormatter.format(notification.entry()));
+                System.out.print("mesos> ");
+                System.out.flush();
+            }
             return;
         }
-        snapshot = update.snapshot();
+        if (!(update instanceof GameViewUpdate view)) {
+            return;
+        }
+        snapshot = view.snapshot();
         synchronized (consoleLock) {
             System.out.println();
-            System.out.println("[update] " + update.message());
+            System.out.println("[update] " + view.message());
             System.out.println(printer.renderSnapshot(snapshot, nickname));
             System.out.print("mesos> ");
             System.out.flush();
+            lastRenderedSnapshot = snapshot;
         }
     }
 
@@ -684,6 +725,17 @@ public final class MesosCliClient {
             return;
         }
         printLine(printer.renderSnapshot(snapshot, nickname));
+        lastRenderedSnapshot = snapshot;
+    }
+
+    /**
+     * Checks whether a snapshot has already been rendered to the console.
+     *
+     * @param candidate snapshot to compare, or null
+     * @return true when the same snapshot was already printed
+     */
+    private boolean isSnapshotAlreadyRendered(GameSnapshot candidate) {
+        return candidate != null && candidate.equals(lastRenderedSnapshot);
     }
 
     /**

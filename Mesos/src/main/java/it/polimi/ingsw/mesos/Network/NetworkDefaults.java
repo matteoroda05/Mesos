@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Locale;
 
 /**
  * Shared network defaults and host-detection helpers.
@@ -49,6 +50,47 @@ public final class NetworkDefaults {
      */
     public static void configureRmiServerHostname(String configuredHost) {
         System.setProperty("java.rmi.server.hostname", resolveRmiServerHost(configuredHost));
+    }
+
+    /**
+     * Resolves the host advertised by an RMI client callback.
+     * Loopback server connections keep the callback on loopback; all other
+     * connections advertise the first usable local IPv4 address.
+     *
+     * @param serverHost host used to connect to the RMI server
+     * @return callback host to advertise back to the server
+     */
+    public static String resolveRmiClientHost(String serverHost) {
+        return resolveRmiClientHost(serverHost, null);
+    }
+
+    /**
+     * Resolves the host advertised by an RMI client callback.
+     * Loopback server connections keep the callback on loopback; otherwise the
+     * address actually used to reach the server is preferred, falling back to
+     * the first usable local IPv4 address.
+     *
+     * @param serverHost host used to connect to the RMI server
+     * @param routedLocalHost local address chosen by the OS route to the server
+     * @return callback host to advertise back to the server
+     */
+    public static String resolveRmiClientHost(String serverHost, String routedLocalHost) {
+        if (serverHost != null && isLoopbackHost(serverHost)) {
+            return DEFAULT_RMI_HOST;
+        }
+        if (routedLocalHost != null && !routedLocalHost.isBlank()) {
+            return routedLocalHost.trim();
+        }
+        return detectLocalNetworkHost();
+    }
+
+    /**
+     * Sets the JVM RMI hostname property for client-side callback exports.
+     *
+     * @param serverHost host used to connect to the RMI server
+     */
+    public static void configureRmiClientHostname(String serverHost) {
+        System.setProperty("java.rmi.server.hostname", resolveRmiClientHost(serverHost));
     }
 
     /**
@@ -107,5 +149,19 @@ public final class NetworkDefaults {
                 && !address.isAnyLocalAddress()
                 && !address.isLoopbackAddress()
                 && !address.isLinkLocalAddress();
+    }
+
+    /**
+     * Checks whether a host string refers to the local loopback interface.
+     *
+     * @param host host string to inspect
+     * @return true when the host is localhost or a loopback literal
+     */
+    private static boolean isLoopbackHost(String host) {
+        String normalized = host.trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("localhost")
+                || normalized.startsWith("127.")
+                || normalized.equals("::1")
+                || normalized.equals("0:0:0:0:0:0:0:1");
     }
 }

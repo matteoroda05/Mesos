@@ -47,7 +47,7 @@ public class OfferTile {
         if (food_gain < 0 || food_gain > 3) {
             throw new IllegalArgumentException("foodGain cannot be negative or greater than 3");
         }
-        if (min_num_players < 2 || min_num_players > 5) {
+        if (min_num_players < Globals.MIN_NUM_PLAYERS || min_num_players > Globals.MAX_NUM_PLAYERS) {
             throw new IllegalArgumentException("minNumPlayers must be between 2 and 5");
         }
 

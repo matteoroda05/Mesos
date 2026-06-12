@@ -16,6 +16,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.AppliedDelta;
 import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -148,8 +149,9 @@ class EventStateTest extends StateTestSupport {
         }
 
         @Override
-        public void playerApplyOutcome(Result outcome, Color player_color) {
+        public AppliedDelta playerApplyOutcome(Result outcome, Color player_color) {
             appliedResults.add(outcome);
+            return new AppliedDelta(0, 0);
         }
     }
 
