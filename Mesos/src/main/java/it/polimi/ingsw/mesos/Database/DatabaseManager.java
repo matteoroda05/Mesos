@@ -4,7 +4,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implement a local database with the scores of matches played.
+ * Has function utilities to interact with the database.
+ */
 public class DatabaseManager {
+    /**
+     * Name of local instance of the database.
+     */
     private static final String DB_URL = "jdbc:sqlite:game_leaderboard.db";
 
     public DatabaseManager() {
@@ -15,6 +22,9 @@ public class DatabaseManager {
         return DriverManager.getConnection(DB_URL);
     }
 
+    /**
+     * If there is no database create one, otherwise do nothing.
+     */
     private void initializeDatabase() {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS match_history ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -33,6 +43,14 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Insert an entry in the database.
+     * @param nickname player nickname
+     * @param finalScore player score to save
+     * @param timestamp match timestamp
+     * @param numPlayers number of players in the match
+     * @return false if an exception occurs during the database update, true otherwise.
+     */
     public boolean saveMatchResult(String nickname, int finalScore, Timestamp timestamp, int numPlayers) {
         String insertSQL = "INSERT INTO match_history (nickname, final_score, match_date, num_players) VALUES (?, ?, ?, ?)";
 
@@ -53,6 +71,12 @@ public class DatabaseManager {
         return true;
     }
 
+    /**
+     * Return the player rank based on its score and number of players in the match.
+     * @param finalScore player's score
+     * @param numPlayers number of players in the match
+     * @return rank
+     */
     public int getPlayerRank(int finalScore, int numPlayers) {
         String rankSQL = "SELECT COUNT(*) + 1 AS rank FROM match_history WHERE num_players = ? AND final_score > ?";
         try (Connection conn = getConnection();
@@ -70,7 +94,12 @@ public class DatabaseManager {
         return -1;
     }
 
-    public List<LeaderboardEntry> getLeaderboardByPlayerCount(int numPlayers) {
+    /**
+     * Creates a list of serializable records with the top scores in matches with {@code numPlayers} players
+     * @param numPlayers number of players of the matches to filter
+     * @return top 50 rankings
+     */
+    public List<LeaderboardEntry> getLeaderboardByNumPlayers(int numPlayers) {
         List<LeaderboardEntry> leaderboard = new ArrayList<>();
         String querySQL = "SELECT nickname, final_score, match_date FROM match_history WHERE num_players = ? ORDER BY final_score DESC LIMIT 50";
 
@@ -80,13 +109,21 @@ public class DatabaseManager {
             pstmt.setInt(1, numPlayers);
 
             try (ResultSet rs = pstmt.executeQuery()) {
+                int currRank = 0;
+                int lastScore = Integer.MAX_VALUE;
+
                 while (rs.next()) {
                     String nickname = rs.getString("nickname");
                     int score = rs.getInt("final_score");
                     String dateStr = rs.getString("match_date");
                     Timestamp timestamp = Timestamp.valueOf(dateStr);
 
-                    leaderboard.add(new LeaderboardEntry(nickname, score, timestamp, numPlayers));
+                    if (score < lastScore) {
+                        currRank++;
+                        lastScore = score;
+                    }
+
+                    leaderboard.add(new LeaderboardEntry(currRank, nickname, score, timestamp, numPlayers));
                 }
             }
         } catch (SQLException e) {
@@ -95,6 +132,10 @@ public class DatabaseManager {
         return leaderboard;
     }
 
+    /**
+     * Create a list of serializable records with the contents of the history database
+     * @return ordered list of the top 50 scores
+     */
     public List<LeaderboardEntry> getLeaderboard() {
         List<LeaderboardEntry> leaderboard = new ArrayList<>();
         String querySQL = "SELECT nickname, final_score, match_date, num_players FROM match_history ORDER BY final_score DESC LIMIT 50";
@@ -103,6 +144,9 @@ public class DatabaseManager {
              PreparedStatement pstmt = conn.prepareStatement(querySQL)) {
 
             try (ResultSet rs = pstmt.executeQuery()) {
+                int currRank = 0;
+                int lastScore = Integer.MAX_VALUE;
+
                 while (rs.next()) {
                     String nickname = rs.getString("nickname");
                     int score = rs.getInt("final_score");
@@ -110,7 +154,12 @@ public class DatabaseManager {
                     Timestamp timestamp = Timestamp.valueOf(dateStr);
                     final var numPlayers = rs.getInt("num_players");
 
-                    leaderboard.add(new LeaderboardEntry(nickname, score, timestamp, numPlayers));
+                    if (score < lastScore) {
+                        currRank++;
+                        lastScore = score;
+                    }
+
+                    leaderboard.add(new LeaderboardEntry(currRank, nickname, score, timestamp, numPlayers));
                 }
             }
         } catch (SQLException e) {
