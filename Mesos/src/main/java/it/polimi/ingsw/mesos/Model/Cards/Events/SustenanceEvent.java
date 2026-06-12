@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -95,5 +96,10 @@ public final class SustenanceEvent extends EventCard {
      */
     public int getPointPenalty() {
         return points_penalty;
+    }
+
+    @Override
+    public String accept(CardDescriptionVisitor visitor) {
+        return visitor.visit(this);
     }
 }

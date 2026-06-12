@@ -219,11 +219,21 @@ class GameSetupTest {
         private TestTribeCard(Era era) {
             super(era, 2);
         }
+
+        @Override
+        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static final class TestBuildingCard extends BuildingCard {
         private TestBuildingCard(Era era) {
             super(era, 2, 1, 1, BuildingTrigger.ON_END_TURN);
+        }
+
+        @Override
+        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
         }
     }
 }

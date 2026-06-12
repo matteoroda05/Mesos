@@ -4,7 +4,6 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 
 /**

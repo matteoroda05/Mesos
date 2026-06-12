@@ -89,5 +89,10 @@ class ModelValidationEdgesTest {
         private UnknownCharacterCard() {
             super(Era.FIRST, 2);
         }
+
+        @Override
+        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

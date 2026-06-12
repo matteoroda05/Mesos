@@ -14,6 +14,11 @@ public class CardTest {
         public TestCard(Era era, int minPlayers) {
             super(era, minPlayers);
         }
+
+        @Override
+        public String accept(CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @BeforeEach

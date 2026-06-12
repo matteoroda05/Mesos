@@ -62,4 +62,12 @@ abstract public class Card {
     public boolean isEvent() {
         return false;
     }
+
+    /**
+     * Accepts a description visitor and returns this card's effect summary.
+     *
+     * @param visitor description visitor
+     * @return human-readable effect description, never null
+     */
+    public abstract String accept(CardDescriptionVisitor visitor);
 }

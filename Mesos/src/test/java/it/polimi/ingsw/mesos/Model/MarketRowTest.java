@@ -414,6 +414,11 @@ class MarketRowTest {
         UnsupportedCard() {
             super(Era.FIRST, 0);
         }
+
+        @Override
+        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Test
