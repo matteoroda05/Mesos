@@ -10,6 +10,7 @@ import java.util.Map;
  * Shared game constants and small lookup tables.
  */
 public class Globals {
+    public static final int TOTAL_ROUNDS = 10;
     public static final int MAX_NUM_PLAYERS = 5;
     public static final int MIN_NUM_PLAYERS = 2;
     public static final char FIRST_OFFER = 'A';
