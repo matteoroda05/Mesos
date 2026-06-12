@@ -34,6 +34,9 @@ import java.util.Map;
 import java.util.Set;
 
 public final class MesosClientApplication extends Application implements MesosGuiFlowController.Host {
+    private static final String CONNECTION_SCREEN_MARKER = "connection-screen-root";
+    private static final String CONNECTION_SCREEN_SHELL_CLASS = "app-shell-connection";
+
     private final MesosGuiService guiService = new MesosGuiService();
     private final MesosAssetResolver assetResolver = new MesosAssetResolver();
 
@@ -92,6 +95,10 @@ public final class MesosClientApplication extends Application implements MesosGu
 
     @Override
     public void setContent(Node node) {
+        appShell.getStyleClass().remove(CONNECTION_SCREEN_SHELL_CLASS);
+        if (node != null && node.getStyleClass().contains(CONNECTION_SCREEN_MARKER)) {
+            appShell.getStyleClass().add(CONNECTION_SCREEN_SHELL_CLASS);
+        }
         appShell.setCenter(node);
     }
 

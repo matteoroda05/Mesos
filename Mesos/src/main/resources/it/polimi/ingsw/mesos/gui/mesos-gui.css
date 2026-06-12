@@ -44,6 +44,13 @@
     -fx-spacing: 18;
 }
 
+.connection-screen-root,
+.connection-screen-content,
+.app-shell-connection {
+    -fx-background-color: #000000;
+    -fx-background-image: none;
+}
+
 .screen-flow {
     -fx-alignment: top-center;
 }

@@ -151,6 +151,20 @@ class MesosGameBoardViewTest {
     }
 
     @Test
+    void marketCardsDoNotUseRoundedClipForRenderedArtwork() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+
+            view.updateSnapshot(snapshotWithRows(1, 0), "Offer tile selected.");
+
+            HBox topRow = singleNode(view, ".table-row-top", HBox.class);
+            StackPane marketCard = singleNode(topRow, ".market-card", StackPane.class);
+            assertEquals(null, marketCard.getClip());
+            return null;
+        });
+    }
+
+    @Test
     void refreshedSnapshotKeepsRemainingCardPickClickableAndClearsDeckPreview() throws Exception {
         runOnFxThread(() -> {
             AtomicInteger pickedCards = new AtomicInteger();
