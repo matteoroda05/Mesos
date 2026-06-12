@@ -62,20 +62,26 @@
                        {
                            "type":  "GATHERER",
                            "era":  "FIRST",
-                           "minPlayers":  2,
+                           "minPlayers":  3,
                            "presentation_id":  "gatherer_era_1_a"
                        },
                        {
                            "type":  "GATHERER",
                            "era":  "FIRST",
-                           "minPlayers":  3,
+                           "minPlayers":  5,
                            "presentation_id":  "gatherer_era_1_b"
                        },
                        {
                            "type":  "GATHERER",
                            "era":  "FIRST",
-                           "minPlayers":  4,
+                           "minPlayers":  2,
                            "presentation_id":  "gatherer_era_1_c"
+                       },
+                       {
+                           "type":  "GATHERER",
+                           "era":  "FIRST",
+                           "minPlayers":  2,
+                           "presentation_id":  "gatherer_era_1_d"
                        },
                        {
                            "type":  "ARTIST",
@@ -244,8 +250,14 @@
                        {
                            "type":  "GATHERER",
                            "era":  "SECOND",
-                           "minPlayers":  5,
+                           "minPlayers":  4,
                            "presentation_id":  "gatherer_era_2_c"
+                       },
+                       {
+                           "type":  "GATHERER",
+                           "era":  "SECOND",
+                           "minPlayers":  5,
+                           "presentation_id":  "gatherer_era_2_d"
                        },
                        {
                            "type":  "ARTIST",
@@ -388,7 +400,7 @@
                        {
                            "type":  "GATHERER",
                            "era":  "THIRD",
-                           "minPlayers":  3,
+                           "minPlayers":  5,
                            "presentation_id":  "gatherer_era_3_b"
                        },
                        {
