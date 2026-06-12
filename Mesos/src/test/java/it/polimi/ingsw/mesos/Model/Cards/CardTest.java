@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
+import it.polimi.ingsw.mesos.Network.CardSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,16 @@ public class CardTest {
         @Override
         public String accept(CardDescriptionVisitor visitor) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CardSummary getSummary(int selectionIndex) {
+            return null;
+        }
+
+        @Override
+        public String getReadableName() {
+            return "";
         }
     }
 

@@ -94,5 +94,10 @@ class ModelValidationEdgesTest {
         public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public String getReadableName() {
+            return "";
+        }
     }
 }

@@ -7,13 +7,14 @@ import it.polimi.ingsw.mesos.Model.Cards.Buildings.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Player;
+import it.polimi.ingsw.mesos.Network.CardSummary;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = BuildingOnCard.class,         name = "BUILDING_ON_CARD"),
         @JsonSubTypes.Type(value = BuildingEndTurn.class,        name = "BUILDING_END_TURN"),
-        @JsonSubTypes.Type(value = BuildingAfterEveryone.class,       name = "BUILDING_END_ROUND"),
+        @JsonSubTypes.Type(value = BuildingAfterEveryone.class,  name = "BUILDING_END_ROUND"),
         @JsonSubTypes.Type(value = BuildingEndGame.class,        name = "BUILDING_END_GAME"),
         @JsonSubTypes.Type(value = BuildingBonusEvent.class,     name = "BUILDING_BONUS_EVENT"),
         @JsonSubTypes.Type(value = BuildingShamanicRitual.class, name = "BUILDING_SHAMANIC_RITUAL")
@@ -102,5 +103,19 @@ public abstract class BuildingCard extends Card {
      */
     public BuildingTrigger getTrigger() {
         return trigger;
+    }
+
+    @Override
+    public CardSummary getSummary(int selectionIndex) {
+        return new CardSummary(
+                selectionIndex,
+                this.getReadableName(),
+                this.getEra(),
+                false,
+                this.accept(CardDescriptionVisitorImpl.INSTANCE),
+                this.getFoodCost(),
+                this.getPrestigePoints(),
+                this.getPresentationId()
+        );
     }
 }

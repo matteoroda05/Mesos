@@ -123,7 +123,7 @@ public class BuildingBonusEvent extends BuildingCard {
         final int prev_penalty = output.get(owner.getColor()).penalty();
 
         Result outcome = new Result(food_change, prestige_change, prev_penalty);
-        output.replace(owner.getColor(),outcome);
+        output.replace(owner.getColor(), outcome);
     }
 
     /**
@@ -156,5 +156,10 @@ public class BuildingBonusEvent extends BuildingCard {
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String getReadableName() {
+        return "Building Bonus Event";
     }
 }

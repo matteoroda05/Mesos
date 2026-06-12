@@ -102,4 +102,9 @@ public final class SustenanceEvent extends EventCard {
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String getReadableName() {
+        return "Sustenance Event";
+    }
 }

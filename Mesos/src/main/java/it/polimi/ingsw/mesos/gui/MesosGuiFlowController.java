@@ -2,14 +2,10 @@ package it.polimi.ingsw.mesos.gui;
 
 import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Network.ConnectionType;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
+import it.polimi.ingsw.mesos.Network.*;
 import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.OperationErrorCode;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
@@ -583,7 +579,7 @@ public final class MesosGuiFlowController {
         }
 
         snapshot.players().stream()
-                .map(player -> player.color())
+                .map(PlayerSummary::color)
                 .filter(Objects::nonNull)
                 .forEach(unavailableColors::add);
         return unavailableColors;

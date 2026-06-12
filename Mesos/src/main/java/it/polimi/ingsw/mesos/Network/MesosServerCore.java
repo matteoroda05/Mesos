@@ -19,9 +19,6 @@ import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
-import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitorImpl;
-import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
@@ -48,7 +45,6 @@ public class MesosServerCore implements MesosServerService {
     private final Set<String> takenNicknames;
     private final Map<String, String> disconnectedGameByNickname;
     private final Map<String, Long> lastHeartbeatByNickname;
-    private final ScheduledExecutorService resilienceTimer;
 
     /**
      * Creates a server core using card data loaded from default resources.
@@ -77,12 +73,12 @@ public class MesosServerCore implements MesosServerService {
         this.takenNicknames = new LinkedHashSet<>();
         this.lastHeartbeatByNickname = new LinkedHashMap<>();
 
-        this.resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
+        ScheduledExecutorService resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
             Thread thread = new Thread(task, "mesos-server-resilience");
             thread.setDaemon(true);
             return thread;
         });
-        this.resilienceTimer.scheduleAtFixedRate(
+        resilienceTimer.scheduleAtFixedRate(
                 this::checkDisconnectedClients,
                 1_000,
                 1_000,
@@ -1060,7 +1056,7 @@ public class MesosServerCore implements MesosServerService {
                     failedSubscribers.add(subscriber);
                 }
             }
-            subscribers.removeAll(failedSubscribers);
+            failedSubscribers.forEach(subscribers::remove);
         }
 
         /**
@@ -1256,39 +1252,7 @@ public class MesosServerCore implements MesosServerService {
          *                               the network summary layer
          */
         private CardSummary summarizeCard(Card card, int selectionIndex) {
-            return switch (card) {
-                case BuildingCard buildingCard -> new CardSummary(
-                        selectionIndex,
-                        CardDescriptionVisitorImpl.formatName(buildingCard.getClass().getSimpleName()),
-                        buildingCard.getEra(),
-                        false,
-                        buildingCard.accept(CardDescriptionVisitorImpl.INSTANCE),
-                        buildingCard.getFoodCost(),
-                        buildingCard.getPrestigePoints(),
-                        buildingCard.getPresentationId()
-                );
-                case EventCard eventCard -> new CardSummary(
-                        selectionIndex,
-                        CardDescriptionVisitorImpl.formatName(eventCard.getClass().getSimpleName()),
-                        eventCard.getEra(),
-                        true,
-                        eventCard.accept(CardDescriptionVisitorImpl.INSTANCE),
-                        null,
-                        null,
-                        eventCard.getPresentationId()
-                );
-                case CharacterCard characterCard -> new CardSummary(
-                        selectionIndex,
-                        CardDescriptionVisitorImpl.formatName(characterCard.getClass().getSimpleName()),
-                        characterCard.getEra(),
-                        false,
-                        characterCard.accept(CardDescriptionVisitorImpl.INSTANCE),
-                        null,
-                        null,
-                        characterCard.getPresentationId()
-                );
-                default -> throw new IllegalStateException("Unsupported card type: " + card.getClass().getSimpleName());
-            };
+            return card.getSummary(selectionIndex);
         }
 
         private List<CardSummary> summarizeOwnedCards(List<? extends Card> cards) {

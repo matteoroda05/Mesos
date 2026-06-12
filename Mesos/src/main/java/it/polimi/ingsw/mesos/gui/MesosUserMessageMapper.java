@@ -1,17 +1,37 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public final class MesosUserMessageMapper {
-    private MesosUserMessageMapper() {
-    }
+    private static final Map<String, String> TRANSLATIONS = new LinkedHashMap<>(Map.ofEntries(
+            Map.entry("giocatore entrato: la partita inizia", "All players joined. The match is starting."),
+            Map.entry("colore riservato", "Color selected."),
+            Map.entry("wrong turn", "It is not your turn."),
+            Map.entry("wrong row", "You cannot pick from that row right now."),
+            Map.entry("wrong game state", "This action is not available in the current phase."),
+            Map.entry("cannot take event card", "Event cards cannot be selected."),
+            Map.entry("out of bounds", "The selected card or offer tile is no longer available."),
+            Map.entry("already occupied", "That offer tile is already occupied."),
+            Map.entry("lobby aggiornata", "Lobby refreshed."),
+            Map.entry("partita creata", "Game created."),
+            Map.entry("snapshot aggiornato", "Board refreshed."),
+            Map.entry("tessera offerta scelta", "Offer tile selected."),
+            Map.entry("carta scelta", "Card selected."),
+            Map.entry("carta extra saltata", "Optional extra pick skipped."),
+            Map.entry("iscrizione agli aggiornamenti attiva", "Live updates enabled."),
+            Map.entry("iscrizione agli aggiornamenti disattivata", "Live updates disabled."),
+            Map.entry("giocatore entrato nella lobby", "A player joined the lobby."),
+            Map.entry("la partita non e' ancora iniziata", "The game has not started yet."),
+            Map.entry("connessione socket chiusa", "The socket connection was closed.")
+    ));
 
     public static String describeResult(GameOperationResult result, String successFallback) {
         if (result == null) {
@@ -55,23 +75,6 @@ public final class MesosUserMessageMapper {
         return translateFreeform(message);
     }
 
-    public static String describePhase(GameStatus status) {
-        if (status == null) {
-            return "Unknown";
-        }
-        return switch (status) {
-            case LOADING -> "Loading";
-            case LOGIN -> "Waiting Room";
-            case SETUP -> "Setup";
-            case ROUND_OFFER -> "Offer Selection";
-            case ROUND_ACTIONS -> "Card Selection";
-            case ROUND_EVENTS -> "Round Events";
-            case ROUND_END -> "Round End";
-            case FINAL_EVENTS -> "Final Events";
-            case END_GAME, END_SCREEN -> "Game Over";
-        };
-    }
-
     private static String describeErrorCode(OperationErrorCode errorCode) {
         if (errorCode == null) {
             return null;
@@ -96,80 +99,21 @@ public final class MesosUserMessageMapper {
         }
 
         String normalized = message
-                .replace("(dumbass)", "")
                 .replace("  ", " ")
                 .trim();
         String lower = normalized.toLowerCase(Locale.ROOT);
 
-        if (lower.contains("wrong turn")) {
-            return "It is not your turn.";
-        }
-        if (lower.contains("wrong row")) {
-            return "You cannot pick from that row right now.";
-        }
-        if (lower.contains("wrong game state")) {
-            return "This action is not available in the current phase.";
-        }
-        if (lower.contains("cannot take event card")) {
-            return "Event cards cannot be selected.";
-        }
-        if (lower.contains("out of bounds")) {
-            return "The selected card or offer tile is no longer available.";
-        }
-        if (lower.contains("already occupied")) {
-            return "That offer tile is already occupied.";
-        }
-        if (lower.contains("lobby aggiornata")) {
-            return "Lobby refreshed.";
-        }
-        if (lower.contains("partita creata")) {
-            return "Game created.";
-        }
-        if (lower.contains("snapshot aggiornato")) {
-            return "Board refreshed.";
-        }
-        if (lower.contains("tessera offerta scelta")) {
-            return "Offer tile selected.";
-        }
-        if (lower.contains("carta scelta")) {
-            return "Card selected.";
-        }
-        if (lower.contains("carta extra saltata")) {
-            return "Optional extra pick skipped.";
-        }
-        if (lower.contains("colore riservato") && lower.contains("partita inizia")) {
-            return "Color selected. The match is starting.";
-        }
-        if (lower.contains("colore riservato")) {
-            return "Color selected.";
-        }
-        if (lower.contains("iscrizione agli aggiornamenti attiva")) {
-            return "Live updates enabled.";
-        }
-        if (lower.contains("iscrizione agli aggiornamenti disattivata")) {
-            return "Live updates disabled.";
-        }
-        if (lower.contains("giocatore entrato: la partita inizia")) {
-            return "All players joined. The match is starting.";
-        }
-        if (lower.contains("giocatore entrato nella lobby")) {
-            return "A player joined the lobby.";
-        }
-        if (lower.contains("la partita non e' ancora iniziata")) {
-            return "The game has not started yet.";
-        }
-        if (lower.contains("connessione socket chiusa")) {
-            return "The socket connection was closed.";
-        }
-
-        return normalized;
+        return TRANSLATIONS.entrySet().stream()
+                .filter(entry -> lower.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(lower);
     }
 
     private static Throwable unwrap(Throwable throwable) {
         Throwable current = throwable;
         while (current.getCause() != null
-                && current instanceof RuntimeException
-                && !(current instanceof IOException)) {
+                && current instanceof RuntimeException) {
             current = current.getCause();
         }
         return current;

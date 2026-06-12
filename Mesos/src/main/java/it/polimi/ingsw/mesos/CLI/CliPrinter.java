@@ -211,7 +211,6 @@ final class CliPrinter {
      * Finished games are sorted by prestige, while active games keep the
      * snapshot order.
      *
-     * @param builder destination builder
      * @param players player summaries to render
      * @param localNickname nickname to mark as local
      * @param finished whether the game is finished
@@ -269,7 +268,6 @@ final class CliPrinter {
      * Appends the turn-order and offer-track panels side by side when they fit,
      * otherwise stacks them vertically.
      *
-     * @param builder destination builder
      * @param turnOrder turn-order spaces
      * @param offerTiles offer tiles
      * @param boardWidth available board width
@@ -415,7 +413,7 @@ final class CliPrinter {
     private int preferredCardsPerShelf(int cardCount, int boardWidth) {
         int maxColumns = Math.max(1, (boardWidth + COLUMN_GAP.length()) / (MIN_CARD_WIDTH + COLUMN_GAP.length()));
         int preferredColumns = Math.max(1, (boardWidth + COLUMN_GAP.length()) / (PREFERRED_CARD_WIDTH + COLUMN_GAP.length()));
-        return Math.max(1, Math.min(cardCount, Math.min(maxColumns, preferredColumns)));
+        return Math.clamp(cardCount, 1, Math.min(maxColumns, preferredColumns));
     }
 
     /**
@@ -441,12 +439,12 @@ final class CliPrinter {
         if (tilesInRow <= 0) {
             return MIN_OFFER_TILE_WIDTH;
         }
-        int targetWidth = 21;
+        int targetWidth;
         if (tilesInRow >= 5) {
             targetWidth = 26;
         } else if (tilesInRow == 4) {
             targetWidth = 28;
-        } else if (tilesInRow <= 3) {
+        } else {
             targetWidth = 30;
         }
         return clamp(targetWidth, MIN_OFFER_TILE_WIDTH, MAX_OFFER_TILE_WIDTH);
@@ -1140,8 +1138,7 @@ final class CliPrinter {
             return tputWidth;
         }
 
-        Integer sttyWidth = runTerminalQuery("stty size");
-        return sttyWidth;
+        return runTerminalQuery("stty size");
     }
 
     /**
@@ -1216,6 +1213,6 @@ final class CliPrinter {
      * @return value constrained to the inclusive range
      */
     private int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
+        return Math.clamp(value, min, max);
     }
 }

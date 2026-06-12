@@ -195,4 +195,9 @@ public class BuildingEndGame extends BuildingCard {
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String getReadableName() {
+        return "Building End Game";
+    }
 }

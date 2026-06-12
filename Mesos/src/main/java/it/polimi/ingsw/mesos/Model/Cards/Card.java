@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Model.Cards;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Network.CardSummary;
 
 abstract public class Card {
     private final Era era;
@@ -71,4 +72,18 @@ abstract public class Card {
      * @return human-readable effect description, never null
      */
     public abstract String accept(CardDescriptionVisitor visitor);
+
+    /**
+     * Creates the card description for serialization.
+     *
+     * @return serializable record
+     */
+    public abstract CardSummary getSummary(int selectionIndex);
+
+    /**
+     * Type name for serialization and CLI printing.
+     *
+     * @return class name as string.
+     */
+    public abstract String getReadableName();
 }

@@ -44,4 +44,9 @@ public final class ShamanCard extends CharacterCard {
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String getReadableName() {
+        return "Shaman";
+    }
 }

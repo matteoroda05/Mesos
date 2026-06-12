@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
 import it.polimi.ingsw.mesos.Model.Player;
+import it.polimi.ingsw.mesos.Network.CardSummary;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -224,6 +225,16 @@ class GameSetupTest {
         public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public CardSummary getSummary(int selectionIndex) {
+            return null;
+        }
+
+        @Override
+        public String getReadableName() {
+            return "";
+        }
     }
 
     private static final class TestBuildingCard extends BuildingCard {
@@ -234,6 +245,11 @@ class GameSetupTest {
         @Override
         public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getReadableName() {
+            return "";
         }
     }
 }

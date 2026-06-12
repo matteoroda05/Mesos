@@ -119,7 +119,7 @@ public final class MesosCliClient {
 
                 if (!nicknameResult.success()) {
                     if (nicknameResult.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN) {
-                        candidateNickname = handleTakenName(candidateNickname, "Nickname");
+                        candidateNickname = handleTakenName(candidateNickname, "nickname");
                         continue;
                     }
 

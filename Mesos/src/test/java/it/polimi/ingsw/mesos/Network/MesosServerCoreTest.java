@@ -23,8 +23,6 @@ import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import org.junit.jupiter.api.Test;
 

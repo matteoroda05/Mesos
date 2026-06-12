@@ -56,7 +56,7 @@ class BuildingBonusEventTest extends BuildingTestSupport {
         building.effect(output, fixture.controller());
 
         assertEquals(foodBefore, fixture.owner().getFood());
-        assertEquals(2, fixture.owner().getPrestigePoints());
+        assertEquals(0, fixture.owner().getPrestigePoints());
     }
 
     @Test

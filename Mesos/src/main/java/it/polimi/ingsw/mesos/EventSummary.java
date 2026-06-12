@@ -15,27 +15,4 @@ import java.util.List;
  */
 public record EventSummary(String eventName, List<PlayerEventLine> lines, List<String> buildingActivations)
         implements Serializable {
-
-    /**
-     * Converts an event card class simple name into a display name, e.g.
-     * {@code "HuntEvent"} into {@code "Hunt Event"}.
-     *
-     * @param simpleName the card class simple name
-     * @return the spaced, human-readable event name
-     */
-    public static String formatEventName(String simpleName) {
-        String baseName = simpleName
-                .replace("Card", "")
-                .replace("Event", " Event");
-
-        StringBuilder builder = new StringBuilder();
-        for (int index = 0; index < baseName.length(); index++) {
-            char character = baseName.charAt(index);
-            if (index > 0 && Character.isUpperCase(character) && baseName.charAt(index - 1) != ' ') {
-                builder.append(' ');
-            }
-            builder.append(character);
-        }
-        return builder.toString().trim();
-    }
 }

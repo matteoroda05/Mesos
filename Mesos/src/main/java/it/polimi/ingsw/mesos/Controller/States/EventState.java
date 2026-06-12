@@ -145,7 +145,7 @@ public class EventState extends GameState {
                 });
         if (!lines.isEmpty() || !buildingActivations.isEmpty()) {
             summaries.add(new EventSummary(
-                    EventSummary.formatEventName(event.getClass().getSimpleName()),
+                    event.getReadableName(),
                     lines,
                     buildingActivations));
         }

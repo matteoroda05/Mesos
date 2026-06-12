@@ -107,4 +107,9 @@ public class HuntEvent extends EventCard {
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String getReadableName() {
+        return "Hunt Event";
+    }
 }

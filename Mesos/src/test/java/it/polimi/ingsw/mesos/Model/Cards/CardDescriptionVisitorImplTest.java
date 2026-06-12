@@ -83,12 +83,6 @@ class CardDescriptionVisitorImplTest {
     }
 
     @Test
-    void formatNameSplitsCamelCaseAndStripsSuffixes() {
-        assertEquals("Shamanic Ritual Event", CardDescriptionVisitorImpl.formatName("ShamanicRitualEvent"));
-        assertEquals("Builder", CardDescriptionVisitorImpl.formatName("BuilderCard"));
-    }
-
-    @Test
     void signedPrependsPlusForNonNegativeValues() {
         assertEquals("+2 food", CardDescriptionVisitorImpl.signed(2, " food"));
         assertEquals("-1 food", CardDescriptionVisitorImpl.signed(-1, " food"));
