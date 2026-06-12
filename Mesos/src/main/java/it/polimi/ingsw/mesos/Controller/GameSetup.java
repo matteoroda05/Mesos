@@ -241,6 +241,13 @@ public class GameSetup {
 
         return all_tiles.stream()
                 .filter(tile -> tile.getMinNumPlayers() <= player_count)
+                .map(tile -> new OfferTile(
+                        tile.getOfferTileId(),
+                        tile.getTopPicks(),
+                        tile.getBottomPicks(),
+                        tile.getFoodGain(),
+                        tile.getMinNumPlayers()
+                ))
                 .toList();
     }
 

@@ -72,6 +72,30 @@ class MesosServerCoreTest {
     }
 
     @Test
+    void offerTileOccupantsStayIsolatedBetweenGames() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("room-a", 2)).success());
+        assertTrue(serverCore.createGame(new CreateGameRequest("room-b", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("room-a", "Alice")).success());
+        GameOperationResult roomAStarted = serverCore.joinGame(new JoinGameRequest("room-a", "Bob"));
+        assertTrue(roomAStarted.success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("room-b", "Carol")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("room-b", "Dana")).success());
+
+        GameOperationResult roomAOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("room-a", roomAStarted.snapshot().currentPlayerNickname(), 0));
+        assertTrue(roomAOffer.success());
+
+        GameOperationResult roomBSnapshot = serverCore.getSnapshot(new SnapshotRequest("room-b"));
+
+        assertTrue(roomBSnapshot.success());
+        assertTrue(roomBSnapshot.snapshot().offerTiles().stream().allMatch(OfferTileSummary::available));
+        assertTrue(roomBSnapshot.snapshot().offerTiles().stream().allMatch(tile -> tile.occupantColor() == null));
+        assertTrue(roomBSnapshot.snapshot().offerTiles().stream().allMatch(tile -> tile.occupantNickname() == null));
+    }
+
+    @Test
     void reservedColorBeforeFinalJoinIsAppliedWhenTheGameStarts() throws IOException {
         MesosServerCore serverCore = new MesosServerCore();
 

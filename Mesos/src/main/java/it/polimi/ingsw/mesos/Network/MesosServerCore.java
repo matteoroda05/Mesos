@@ -44,6 +44,8 @@ import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
@@ -1037,7 +1039,20 @@ public class MesosServerCore implements MesosServerService {
         private GameSnapshot publishAndSnapshot(String message) {
             GameSnapshot snapshot = toSnapshot();
             publish(new GameViewUpdate(context.getGameName(), message, snapshot));
+            broadcastEventLog();
             return snapshot;
+        }
+
+        /**
+         * Drains the structured events accumulated by the model during the last
+         * command and broadcasts one {@link EventNotification} per entry. Called
+         * right after the snapshot update so the board is already up to date when
+         * the popup arrives.
+         */
+        private void broadcastEventLog() {
+            for (EventLogEntry entry : context.drainEventLog()) {
+                publish(new EventNotification(context.getGameName(), entry));
+            }
         }
 
         /**
@@ -1046,7 +1061,7 @@ public class MesosServerCore implements MesosServerService {
          *
          * @param update update to publish
          */
-        private void publish(GameViewUpdate update) {
+        private void publish(GameServerMessage update) {
             List<GameUpdateSink> failedSubscribers = new ArrayList<>();
             for (GameUpdateSink subscriber : subscribers) {
                 try {

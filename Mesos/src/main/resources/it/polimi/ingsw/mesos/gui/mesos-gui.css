@@ -528,6 +528,10 @@
     -fx-alignment: bottom-center;
 }
 
+.market-card-slot {
+    -fx-alignment: center;
+}
+
 .art-surface {
     -fx-background-color: rgba(255,255,255,0.04);
     -fx-background-radius: 18;
@@ -663,12 +667,21 @@
     -fx-text-fill: -mesos-text;
 }
 
+.totem-dialog-pane .header-panel .label,
+.totem-dialog-content .details-label {
+    -fx-effect: dropshadow(gaussian, rgba(9, 6, 18, 0.98), 9, 0.85, 0, 2);
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
 .totem-dialog-pane .content.label {
     -fx-text-fill: -mesos-muted;
 }
 
 .totem-dialog-content {
     -fx-padding: 4 0 2 0;
+    -fx-alignment: center;
 }
 
 .totem-dialog-grid {
@@ -681,6 +694,10 @@
     -fx-border-radius: 18;
     -fx-background-radius: 18;
     -fx-padding: 12;
+}
+
+.totem-option-label {
+    -fx-effect: dropshadow(gaussian, rgba(9, 6, 18, 0.95), 7, 0.75, 0, 1);
 }
 
 .totem-option-button:hover {
@@ -717,6 +734,132 @@
 .left-hud-column {
     -fx-pref-width: 340;
     -fx-max-width: 340;
+}
+
+.player-buttons-pane {
+    -fx-spacing: 6;
+}
+
+.player-summary-button {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 999;
+    -fx-padding: 5 10 5 7;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-graphic-text-gap: 7;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.24), 10, 0.14, 0, 3);
+}
+
+.player-summary-button:hover,
+.player-summary-button-active {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.player-summary-button-local {
+    -fx-border-color: rgba(255, 230, 184, 0.34);
+}
+
+.player-summary-button:disabled {
+    -fx-opacity: 0.72;
+}
+
+.player-tribe-overlay {
+    -fx-alignment: center;
+}
+
+.player-tribe-popup {
+    -fx-background-color: rgba(17, 11, 28, 0.94);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 176, 92, 0.22);
+    -fx-border-radius: 16;
+    -fx-padding: 14 16 16 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 24, 0.26, 0, 7);
+}
+
+.player-tribe-header {
+    -fx-alignment: center-left;
+}
+
+.player-tribe-popup-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.player-tribe-close-button {
+    -fx-padding: 6 12 6 12;
+}
+
+.player-tribe-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.player-tribe-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.player-tribe-card-groups {
+    -fx-spacing: 10;
+}
+
+.player-tribe-card-group {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.10);
+    -fx-border-radius: 12;
+    -fx-padding: 9;
+}
+
+.event-log-overlay {
+    -fx-alignment: center;
+}
+
+.event-log-button {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 999;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.24), 10, 0.14, 0, 3);
+}
+
+.event-log-button:hover {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.event-log-entry {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.10);
+    -fx-border-radius: 12;
+    -fx-padding: 9;
+}
+
+.player-tribe-card-group-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-primary;
+}
+
+.player-tribe-card-grid {
+    -fx-alignment: center-left;
+}
+
+.player-tribe-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.42), 8, 0.20, 0, 2);
+}
+
+.player-tribe-empty {
+    -fx-padding: 4 0 4 0;
 }
 
 .owned-tribe-decks-strip {
@@ -786,7 +929,12 @@
 }
 
 .owned-card-preview-card {
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 12, 0.24, 0, 3);
+    -fx-background-color: rgba(255, 238, 202, 0.30);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 238, 202, 0.92);
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.82), 34, 0.42, 0, 11);
 }
 
 .player-color-indicator {
@@ -810,4 +958,47 @@
 .owned-cards-debug-row {
     -fx-font-size: 15px;
     -fx-text-fill: -mesos-text;
+}
+
+.mesos-alert-pane {
+    -fx-background-color: rgba(14, 9, 22, 0.98);
+}
+
+.mesos-alert-pane > *.header-panel {
+    -fx-background-color: linear-gradient(to right, rgba(255, 158, 66, 0.16), rgba(76, 194, 200, 0.12));
+    -fx-padding: 18 22 18 22;
+}
+
+.mesos-alert-pane .header-panel .label {
+    -fx-background-color: rgba(9, 6, 18, 0.78);
+    -fx-background-radius: 8;
+    -fx-padding: 5 8 5 8;
+    -fx-text-fill: -mesos-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.mesos-alert-pane .content {
+    -fx-background-color: transparent;
+    -fx-padding: 14 22 10 22;
+}
+
+.mesos-alert-pane .content.label {
+    -fx-background-color: rgba(9, 6, 18, 0.78);
+    -fx-background-radius: 8;
+    -fx-padding: 6 8 6 8;
+    -fx-text-fill: -mesos-muted;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 1px;
+}
+
+.mesos-alert-pane .button-bar {
+    -fx-background-color: rgba(17, 11, 27, 0.94);
+    -fx-padding: 14 18 14 18;
+}
+
+.mesos-alert-pane .button-bar .primary-button {
+    -fx-padding: 8 15 8 15;
+    -fx-font-size: 12px;
+    -fx-translate-y: -2;
 }

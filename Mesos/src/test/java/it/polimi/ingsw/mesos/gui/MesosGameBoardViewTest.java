@@ -12,6 +12,8 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -31,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MesosGameBoardViewTest {
@@ -107,6 +110,104 @@ class MesosGameBoardViewTest {
 
             assertFalse(previewOverlay.isVisible());
             assertEquals(originalOrder, decksStrip.getChildren());
+            return null;
+        });
+    }
+
+    @Test
+    void playerButtonsDisableLocalPlayerAndOpenOtherTribePopup() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+
+            view.updateSnapshot(snapshotWithOpponentTribe(), "Offer tile selected.");
+
+            VBox buttonsPane = singleNode(view, ".player-buttons-pane", VBox.class);
+            assertEquals(Pos.TOP_LEFT, StackPane.getAlignment(buttonsPane));
+            assertEquals(2, view.lookupAll(".player-summary-button").size());
+            for (Node buttonNode : buttonsPane.getChildren()) {
+                Button button = (Button) buttonNode;
+                assertTrue(button.getGraphic().getStyleClass().contains("player-summary-color-indicator"));
+            }
+
+            Button localPlayerButton = (Button) buttonsPane.getChildren().getFirst();
+            assertTrue(localPlayerButton.isDisabled());
+            StackPane popupOverlay = singleNode(view, ".player-tribe-overlay", StackPane.class);
+            localPlayerButton.fire();
+            assertFalse(popupOverlay.isVisible());
+
+            Button otherPlayerButton = (Button) buttonsPane.getChildren().get(1);
+            otherPlayerButton.fire();
+            view.applyCss();
+            view.layout();
+
+            assertTrue(popupOverlay.isVisible());
+            assertEquals(Pos.CENTER, StackPane.getAlignment(popupOverlay));
+            assertEquals(1, popupOverlay.lookupAll(".player-tribe-popup").size());
+            assertEquals(2, popupOverlay.lookupAll(".player-tribe-resource").size());
+            ScrollPane tribeScroll = singleNode(popupOverlay, ".player-tribe-scroll", ScrollPane.class);
+            assertEquals(2, tribeScroll.getContent().lookupAll(".player-tribe-card").size());
+            return null;
+        });
+    }
+
+    @Test
+    void infoButtonOpensTopRightPopupWithTwoCardsAndClosesOnOutsideClick() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.applyCss();
+            view.layout();
+
+            Button infoButton = singleNode(view, ".info-popup-button", Button.class);
+            // the Instruction Cards button shares a top-right bar with the Event Log button,
+            // sitting to its right
+            HBox topRightBar = (HBox) infoButton.getParent();
+            assertEquals(Pos.TOP_RIGHT, StackPane.getAlignment(topRightBar));
+            assertSame(infoButton, topRightBar.getChildren().get(topRightBar.getChildren().size() - 1));
+
+            infoButton.getOnAction().handle(null);
+            view.applyCss();
+            view.layout();
+
+            StackPane overlay = singleNode(view, ".info-popup-overlay", StackPane.class);
+            HBox popup = singleNode(overlay, ".info-popup-panel", HBox.class);
+            assertTrue(overlay.isVisible());
+            assertEquals(2, overlay.lookupAll(".info-popup-card").size());
+            Bounds overlayBounds = overlay.localToScene(overlay.getBoundsInLocal());
+            Bounds popupBounds = popup.localToScene(popup.getBoundsInLocal());
+            assertTrue(popupBounds.getWidth() < overlayBounds.getWidth());
+            assertTrue(popupBounds.getHeight() < overlayBounds.getHeight());
+
+            overlay.getOnMouseClicked().handle(null);
+
+            assertFalse(overlay.isVisible());
+            assertTrue(overlay.getChildren().isEmpty());
+            return null;
+        }, 15);
+    }
+
+    @Test
+    void largeOwnedCardDeckPreviewWrapsFivePerRowAndScalesDown() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            List<CardSummary> manyHunters = new ArrayList<>();
+            for (int index = 0; index < 15; index++) {
+                manyHunters.add(tribeCard(index, "Hunter", "hunter_era_1_a"));
+            }
+
+            view.updateSnapshot(snapshotWithOwnedCharacterCards(manyHunters), "Card selected.");
+
+            Node hunterDeck = singleNode(view, ".owned-tribe-decks-strip", HBox.class).getChildren().getFirst();
+            hunterDeck.getOnMouseEntered().handle(null);
+            FlowPane previewGrid = singleNode(view, ".owned-card-preview-grid", FlowPane.class);
+
+            assertEquals(15, previewGrid.lookupAll(".owned-card-preview-card").size());
+            assertEquals(465.0, previewGrid.getMaxWidth());
+            assertTrue(previewGrid.getScaleX() < 1.0);
+            assertTrue(previewGrid.getScaleY() < 1.0);
             return null;
         });
     }
@@ -193,6 +294,33 @@ class MesosGameBoardViewTest {
         return snapshot(List.of(), List.of(), 1, 0);
     }
 
+    private static GameSnapshot snapshotWithOwnedCharacterCards(List<CardSummary> characterCards) {
+        return snapshot(List.of(), List.of(), 1, 0, characterCards, List.of());
+    }
+
+    private static GameSnapshot snapshotWithOpponentTribe() {
+        return snapshot(
+                List.of(),
+                List.of(),
+                1,
+                0,
+                List.of(
+                        tribeCard(0, "Hunter", "hunter_era_1_a"),
+                        tribeCard(1, "Hunter", "hunter_era_1_b"),
+                        tribeCard(2, "Shaman", "shaman_era_1_a")
+                ),
+                List.of(
+                        tribeCard(3, "Building", "building_era_1_01")
+                ),
+                List.of(
+                        tribeCard(4, "Gatherer", "gatherer_era_1_a")
+                ),
+                List.of(
+                        tribeCard(5, "Building", "building_era_1_01")
+                )
+        );
+    }
+
     private static GameSnapshot snapshotWithRows(int remainingTopChoices, int remainingBottomChoices) {
         return snapshot(
                 List.of(
@@ -212,17 +340,65 @@ class MesosGameBoardViewTest {
             int remainingTopChoices,
             int remainingBottomChoices
     ) {
-        List<CardSummary> characterCards = List.of(
-                tribeCard(0, "Hunter", "hunter_era_1_a"),
-                tribeCard(1, "Hunter", "hunter_era_1_b"),
-                tribeCard(2, "Shaman", "shaman_era_1_a")
+        return snapshot(
+                topRow,
+                bottomRow,
+                remainingTopChoices,
+                remainingBottomChoices,
+                List.of(
+                        tribeCard(0, "Hunter", "hunter_era_1_a"),
+                        tribeCard(1, "Hunter", "hunter_era_1_b"),
+                        tribeCard(2, "Shaman", "shaman_era_1_a")
+                ),
+                List.of(
+                        tribeCard(3, "Building", "building_era_1_01")
+                )
         );
-        List<CardSummary> buildingCards = List.of(
-                tribeCard(3, "Building", "building_era_1_01")
-        );
+    }
+
+    private static GameSnapshot snapshot(
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow,
+            int remainingTopChoices,
+            int remainingBottomChoices,
+            List<CardSummary> characterCards,
+            List<CardSummary> buildingCards
+    ) {
+        return snapshot(topRow, bottomRow, remainingTopChoices, remainingBottomChoices, characterCards, buildingCards,
+                List.of(), List.of());
+    }
+
+    private static GameSnapshot snapshot(
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow,
+            int remainingTopChoices,
+            int remainingBottomChoices,
+            List<CardSummary> characterCards,
+            List<CardSummary> buildingCards,
+            List<CardSummary> opponentCharacterCards,
+            List<CardSummary> opponentBuildingCards
+    ) {
         List<PlayerSummary> players = List.of(
-                new PlayerSummary("dio", Color.ORANGE, 3, 0, 3, 1, characterCards, buildingCards),
-                new PlayerSummary("Carlo2", Color.BLUE, 0, 0, 0, 0)
+                new PlayerSummary(
+                        "dio",
+                        Color.ORANGE,
+                        3,
+                        0,
+                        characterCards.size(),
+                        buildingCards.size(),
+                        characterCards,
+                        buildingCards
+                ),
+                new PlayerSummary(
+                        "Carlo2",
+                        Color.BLUE,
+                        1,
+                        2,
+                        opponentCharacterCards.size(),
+                        opponentBuildingCards.size(),
+                        opponentCharacterCards,
+                        opponentBuildingCards
+                )
         );
         List<TurnOrderSpaceSummary> turnOrder = List.of(
                 new TurnOrderSpaceSummary(0, 0, Color.ORANGE, "dio"),
@@ -266,8 +442,12 @@ class MesosGameBoardViewTest {
     }
 
     private static <T> T runOnFxThread(Callable<T> callable) throws Exception {
+        return runOnFxThread(callable, 5);
+    }
+
+    private static <T> T runOnFxThread(Callable<T> callable, int timeoutSeconds) throws Exception {
         FutureTask<T> task = new FutureTask<>(callable);
         Platform.runLater(task);
-        return task.get(5, TimeUnit.SECONDS);
+        return task.get(timeoutSeconds, TimeUnit.SECONDS);
     }
 }
