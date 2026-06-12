@@ -268,6 +268,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.finalLeaderboardBox = new VBox(10);
         this.finalLeaderboardBox.getStyleClass().add("final-leaderboard-box");
         this.finalLeaderboardBox.setAlignment(Pos.CENTER);
+        this.finalLeaderboardBox.setMaxHeight(Region.USE_PREF_SIZE);
         this.finalLeaderboardOverlay = buildFinalLeaderboardOverlay();
         this.tabletopCanvas = buildTabletopCanvas();
         this.boardScale = new Scale(1, 1, 0, 0);

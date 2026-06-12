@@ -306,6 +306,10 @@ class MesosGameBoardViewTest {
             assertFalse(singleNode(view, ".player-buttons-pane", HBox.class).isVisible());
             assertFalse(singleNode(view, ".top-right-bar", HBox.class).isVisible());
             assertEquals(2, finalOverlay.lookupAll(".final-leaderboard-row").size());
+            VBox leaderboardBox = singleNode(finalOverlay, ".final-leaderboard-box", VBox.class);
+            Bounds overlayBounds = finalOverlay.localToScene(finalOverlay.getBoundsInLocal());
+            Bounds leaderboardBounds = leaderboardBox.localToScene(leaderboardBox.getBoundsInLocal());
+            assertTrue(leaderboardBounds.getHeight() < overlayBounds.getHeight() * 0.45);
 
             Button lobbyButton = singleNode(finalOverlay, ".final-leaderboard-lobby-button", Button.class);
             assertEquals(Pos.TOP_RIGHT, StackPane.getAlignment(lobbyButton));
