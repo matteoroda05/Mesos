@@ -194,8 +194,8 @@
                        {
                            "type":  "SHAMAN",
                            "era":  "FIRST",
-                           "minPlayers":  2,
-                           "numStars":  5,
+                           "minPlayers":  5,
+                           "numStars":  2,
                            "presentation_id":  "shaman_era_1_d"
                        },
                        {
