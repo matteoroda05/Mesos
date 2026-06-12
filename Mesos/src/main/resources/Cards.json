@@ -46,18 +46,26 @@
                        {
                            "type":  "BUILDER",
                            "era":  "FIRST",
-                           "minPlayers":  3,
-                           "prestigePoints":  2,
+                           "minPlayers":  2,
+                           "prestigePoints":  3,
                            "foodDiscount":  1,
                            "presentation_id":  "builder_era_1_b"
                        },
                        {
                            "type":  "BUILDER",
                            "era":  "FIRST",
-                           "minPlayers":  4,
-                           "prestigePoints":  3,
-                           "foodDiscount":  1,
+                           "minPlayers":  2,
+                           "prestigePoints":  0,
+                           "foodDiscount":  2,
                            "presentation_id":  "builder_era_1_c"
+                       },
+                       {
+                           "type":  "BUILDER",
+                           "era":  "FIRST",
+                           "minPlayers":  5,
+                           "prestigePoints":  1,
+                           "foodDiscount":  2,
+                           "presentation_id":  "builder_era_1_d"
                        },
                        {
                            "type":  "GATHERER",
@@ -215,7 +223,7 @@
                            "type":  "BUILDER",
                            "era":  "SECOND",
                            "minPlayers":  2,
-                           "prestigePoints":  2,
+                           "prestigePoints":  1,
                            "foodDiscount":  2,
                            "presentation_id":  "builder_era_2_a"
                        },
@@ -223,17 +231,25 @@
                            "type":  "BUILDER",
                            "era":  "SECOND",
                            "minPlayers":  3,
-                           "prestigePoints":  3,
+                           "prestigePoints":  2,
                            "foodDiscount":  1,
                            "presentation_id":  "builder_era_2_b"
                        },
                        {
                            "type":  "BUILDER",
                            "era":  "SECOND",
-                           "minPlayers":  5,
+                           "minPlayers":  2,
+                           "prestigePoints":  3,
+                           "foodDiscount":  2,
+                           "presentation_id":  "builder_era_2_c"
+                       },
+                       {
+                           "type":  "BUILDER",
+                           "era":  "SECOND",
+                           "minPlayers":  2,
                            "prestigePoints":  4,
                            "foodDiscount":  1,
-                           "presentation_id":  "builder_era_2_c"
+                           "presentation_id":  "builder_era_2_d"
                        },
                        {
                            "type":  "GATHERER",
@@ -371,25 +387,33 @@
                            "type":  "BUILDER",
                            "era":  "THIRD",
                            "minPlayers":  2,
-                           "prestigePoints":  3,
+                           "prestigePoints":  2,
                            "foodDiscount":  2,
                            "presentation_id":  "builder_era_3_a"
                        },
                        {
                            "type":  "BUILDER",
                            "era":  "THIRD",
-                           "minPlayers":  3,
-                           "prestigePoints":  4,
+                           "minPlayers":  2,
+                           "prestigePoints":  5,
                            "foodDiscount":  1,
                            "presentation_id":  "builder_era_3_b"
                        },
                        {
                            "type":  "BUILDER",
                            "era":  "THIRD",
-                           "minPlayers":  5,
-                           "prestigePoints":  5,
-                           "foodDiscount":  1,
+                           "minPlayers":  2,
+                           "prestigePoints":  3,
+                           "foodDiscount":  2,
                            "presentation_id":  "builder_era_3_c"
+                       },
+                       {
+                           "type":  "BUILDER",
+                           "era":  "THIRD",
+                           "minPlayers":  5,
+                           "prestigePoints":  4,
+                           "foodDiscount":  1,
+                           "presentation_id":  "builder_era_3_d"
                        },
                        {
                            "type":  "GATHERER",
