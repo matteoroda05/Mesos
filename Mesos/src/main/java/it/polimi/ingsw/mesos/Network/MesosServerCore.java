@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Network;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -435,12 +436,14 @@ public class MesosServerCore implements MesosServerService {
     private void markDisconnected(String nickname) {
         lastHeartbeatByNickname.remove(nickname);
         GameSession session = getSessionByNickname(nickname);
-        if (session != null && !session.finished()) {
+        if (session != null) {
             disconnectedGameByNickname.put(nickname, session.context.getGameName());
-            session.markPlayerDisconnected(nickname);
-            session.removeSubscribers(nickname);
-            session.publishAndSnapshot("Player disconnected: " + nickname);
-        } else if (session == null) {
+            if (!session.finished()) {
+                session.markPlayerDisconnected(nickname);
+                session.removeSubscribers(nickname);
+                session.publishAndSnapshot("Player disconnected: " + nickname);
+            }
+        } else {
             disconnectedGameByNickname.put(nickname, null);
         }
     }
@@ -473,7 +476,8 @@ public class MesosServerCore implements MesosServerService {
      * @return true when a session contains the nickname
      */
     private boolean hasNicknameJoined (String nickname) {
-        return sessions.values().stream().anyMatch(session -> session.containsNickname(nickname));
+        return sessions.values().stream()
+                .anyMatch(session -> !session.finished() && session.containsNickname(nickname));
     }
 
     /**
@@ -839,6 +843,9 @@ public class MesosServerCore implements MesosServerService {
             if (updateSink != null) {
                 subscribersByNickname.remove(nickname, updateSink);
             }
+            if (finished()) {
+                joinedNicknames.remove(nickname);
+            }
             return GameOperationResult.success(
                     "Update subscription disabled",
                     toSnapshot()
@@ -1098,8 +1105,22 @@ public class MesosServerCore implements MesosServerService {
                     summarizeTurnOrder(),
                     summarizeRow(context.getGameTable().getTopRow()),
                     summarizeRow(context.getGameTable().getBottomRow()),
-                    currentState != null && currentState.isPassAvailable()
+                    currentState != null && currentState.isPassAvailable(),
+                    computeWinnerNickname()
             );
+        }
+
+        private String computeWinnerNickname() {
+            if (forcedWinnerNickname != null) {
+                return forcedWinnerNickname;
+            }
+            if (started() && controller.isGameFinished()) {
+                return new ModelController(context).getPlayerData().stream()
+                        .max(Comparator.comparingInt(PlayerData::prestigePoints))
+                        .map(PlayerData::nickname)
+                        .orElse(null);
+            }
+            return null;
         }
 
         private List<Color> reservedColors() {
@@ -1165,17 +1186,12 @@ public class MesosServerCore implements MesosServerService {
                         .toList();
             }
 
-            ModelController modelController = new ModelController(context);
-            int forcedWinnerScore = forcedWinnerNickname == null
-                    ? 0
-                    : modelController.getPlayerData().stream().mapToInt(PlayerData::prestigePoints).max().orElse(0) + 1;
-
-            return modelController.getPlayerData().stream()
+            return new ModelController(context).getPlayerData().stream()
                     .map(pd -> new PlayerSummary(
                             pd.nickname(),
                             pd.color(),
                             pd.food(),
-                            pd.nickname().equals(forcedWinnerNickname) ? forcedWinnerScore : pd.prestigePoints(),
+                            pd.prestigePoints(),
                             pd.characterCards().size(),
                             pd.buildingCards().size(),
                             summarizeOwnedCards(pd.characterCards()),

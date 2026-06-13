@@ -88,7 +88,7 @@ final class CliPrinter {
                         snapshot.players(),
                         snapshot.playerCount(),
                         localNickname,
-                        snapshot.finished(),
+                        snapshot.winnerNickname(),
                         snapshot.currentPlayerNickname(),
                         boardWidth
                 )
@@ -260,12 +260,13 @@ final class CliPrinter {
 
     /**
      * Appends the player summary list.
-     * Finished games are sorted by prestige, while active games keep the
+     * When a winner is known the winner is listed first, followed by the
+     * remaining players sorted by prestige descending; active games keep the
      * snapshot order.
      *
      * @param players player summaries to render
      * @param localNickname nickname to mark as local
-     * @param finished whether the game is finished
+     * @param winnerNickname winner's nickname, or null during an active game
      * @param currentPlayerNickname nickname to mark as active
      * @throws NullPointerException if the builder or player list is null
      */
@@ -273,7 +274,7 @@ final class CliPrinter {
             List<PlayerSummary> players,
             int playerCount,
             String localNickname,
-            boolean finished,
+            String winnerNickname,
             String currentPlayerNickname,
             int boardWidth
     ) {
@@ -283,11 +284,13 @@ final class CliPrinter {
             return createAutoDoubleBox(fitLines(body, playerSlots(playerCount), boardWidth - boxFixedContentWidth()), boardWidth, null);
         }
 
-        List<PlayerSummary> orderedPlayers = finished
-                ? players.stream()
-                .sorted(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
-                .toList()
-                : players;
+        List<PlayerSummary> orderedPlayers = winnerNickname == null
+                ? players
+                : players.stream()
+                .sorted(Comparator.<PlayerSummary, Boolean>comparing(
+                        p -> p.nickname().equals(winnerNickname), Comparator.reverseOrder())
+                        .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed()))
+                .toList();
 
         for (PlayerSummary player : orderedPlayers) {
             StringBuilder line = new StringBuilder();

@@ -119,7 +119,12 @@ public final class MesosGuiFlowController {
                     this::chooseOffer,
                     this::chooseCard,
                     this::choosePass,
-                    () -> loadLobby("Returned to lobby.")
+                    () -> withBusy(
+                            "Returning to lobby...",
+                            guiService.leaveGame().thenCompose(ignored -> guiService.fetchLobby()),
+                            result -> handleLobbyResult(result, "Returned to lobby."),
+                            "Could not return to lobby"
+                    )
             );
         }
         gameBoardView.updateSnapshot(snapshot, message);

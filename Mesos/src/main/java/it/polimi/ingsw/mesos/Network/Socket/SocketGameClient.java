@@ -241,6 +241,7 @@ public class SocketGameClient implements GameClient {
         GameOperationResult result = exchange(request);
         if (result.success()) {
             activeSubscription = null;
+            heartbeatGameName = null;
             context = new SocketClientContext(responses, null);
         }
         return result;

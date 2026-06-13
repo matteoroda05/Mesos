@@ -102,6 +102,22 @@ public final class MesosGuiService implements AutoCloseable {
         }
     }
 
+    public CompletableFuture<Void> leaveGame() {
+        return runAsync(() -> {
+            GameClient activeClient = requireClient();
+            String gameName = currentGameName;
+            String nickname = currentNickname;
+            if (gameName != null && nickname != null) {
+                try {
+                    activeClient.unsubscribe(new UnsubscribeGameRequest(gameName, nickname));
+                } catch (IOException ignored) {
+                }
+                currentGameName = null;
+            }
+            return null;
+        });
+    }
+
     public CompletableFuture<GameOperationResult> createGame(String gameName, int playerCount) {
         return runAsync(() -> requireClient().createGame(new CreateGameRequest(gameName, playerCount)));
     }

@@ -745,7 +745,10 @@ public final class MesosGameBoardView extends BorderPane {
         rankingBox.getChildren().add(title);
 
         List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
-        ranking.sort(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed()
+        String winner = snapshot.winnerNickname();
+        ranking.sort(Comparator.<PlayerSummary, Boolean>comparing(
+                p -> p.nickname().equals(winner), Comparator.reverseOrder())
+                .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
                 .thenComparing(PlayerSummary::nickname));
 
         int rank = 1;
@@ -792,7 +795,10 @@ public final class MesosGameBoardView extends BorderPane {
         finalLeaderboardBox.getChildren().add(title);
 
         List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
-        ranking.sort(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed()
+        String winner = snapshot.winnerNickname();
+        ranking.sort(Comparator.<PlayerSummary, Boolean>comparing(
+                p -> p.nickname().equals(winner), Comparator.reverseOrder())
+                .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
                 .thenComparing(PlayerSummary::nickname));
 
         int rank = 1;

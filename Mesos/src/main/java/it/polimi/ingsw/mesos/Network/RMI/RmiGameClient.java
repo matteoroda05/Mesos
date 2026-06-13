@@ -251,6 +251,7 @@ public class RmiGameClient implements GameClient {
             GameOperationResult result = remoteServer.unsubscribe(request, remoteListener);
             if (result.success()) {
                 activeSubscription = null;
+                heartbeatGameName = null;
                 RemoteGameUpdateListener listenerToClose = remoteListener;
                 remoteListener = null;
                 UnicastRemoteObject.unexportObject(listenerToClose, true);

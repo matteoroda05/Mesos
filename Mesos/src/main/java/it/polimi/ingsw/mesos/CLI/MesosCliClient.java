@@ -344,11 +344,12 @@ public final class MesosCliClient {
      * @throws IOException if subscription, unsubscription, or command I/O fails
      */
     private GameLoopExit enterGame(GameClient client) throws IOException {
-        handleResult(client.subscribe(new SubscribeGameRequest(gameName, nickname), this::handleRemoteUpdate), false);
+        String name = gameName;
+        handleResult(client.subscribe(new SubscribeGameRequest(name, nickname), this::handleRemoteUpdate), false);
         try {
             return mainLoop(client);
         } finally {
-            client.unsubscribe(new UnsubscribeGameRequest(gameName, nickname));
+            client.unsubscribe(new UnsubscribeGameRequest(name, nickname));
         }
     }
 
