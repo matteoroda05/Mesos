@@ -438,6 +438,7 @@ public class MesosServerCore implements MesosServerService {
         if (session != null && !session.finished()) {
             disconnectedGameByNickname.put(nickname, session.context.getGameName());
             session.markPlayerDisconnected(nickname);
+            session.removeSubscribers(nickname);
             session.publishAndSnapshot("Player disconnected: " + nickname);
         } else if (session == null) {
             disconnectedGameByNickname.put(nickname, null);
@@ -511,7 +512,7 @@ public class MesosServerCore implements MesosServerService {
         private GameFlowController controller;
         private final List<String> joinedNicknames;
         private final Map<String, Color> colorsByNickname;
-        private final Set<GameUpdateSink> subscribers;
+        private final Map<String, GameUpdateSink> subscribersByNickname;
         private long singleConnectedSince;
         private String forcedWinnerNickname;
 
@@ -524,7 +525,7 @@ public class MesosServerCore implements MesosServerService {
             this.context = context;
             this.joinedNicknames = new ArrayList<>();
             this.colorsByNickname = new LinkedHashMap<>();
-            this.subscribers = new LinkedHashSet<>();
+            this.subscribersByNickname = new LinkedHashMap<>();
             this.singleConnectedSince = -1;
         }
 
@@ -817,7 +818,7 @@ public class MesosServerCore implements MesosServerService {
                 );
             }
 
-            subscribers.add(updateSink);
+            subscribersByNickname.put(nickname, updateSink);
             markConnected(nickname);
             applyResilienceRules();
             return GameOperationResult.success(
@@ -836,7 +837,7 @@ public class MesosServerCore implements MesosServerService {
          */
         private GameOperationResult unsubscribe(String nickname, GameUpdateSink updateSink) {
             if (updateSink != null) {
-                subscribers.remove(updateSink);
+                subscribersByNickname.remove(nickname, updateSink);
             }
             return GameOperationResult.success(
                     "Update subscription disabled",
@@ -1047,7 +1048,7 @@ public class MesosServerCore implements MesosServerService {
          */
         private void publish(GameServerMessage update) {
             List<GameUpdateSink> failedSubscribers = new ArrayList<>();
-            for (GameUpdateSink subscriber : subscribers) {
+            for (GameUpdateSink subscriber : subscribersByNickname.values()) {
                 try {
                     subscriber.accept(update);
                 } catch (IOException exception) {
@@ -1057,7 +1058,13 @@ public class MesosServerCore implements MesosServerService {
                     failedSubscribers.add(subscriber);
                 }
             }
-            failedSubscribers.forEach(subscribers::remove);
+            if (!failedSubscribers.isEmpty()) {
+                subscribersByNickname.values().removeAll(failedSubscribers);
+            }
+        }
+
+        private void removeSubscribers(String nickname) {
+            subscribersByNickname.remove(nickname);
         }
 
         /**
