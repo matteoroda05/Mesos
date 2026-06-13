@@ -311,6 +311,60 @@ class MesosServerCoreTest {
     }
 
     @Test
+    void optionalAfterEveryoneChoiceAllowsOnlyOneExtraTopCard() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore(singleTopPickCardData(2));
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("one-extra-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("one-extra-room", "Alice")).success());
+        GameOperationResult secondJoin = serverCore.joinGame(new JoinGameRequest("one-extra-room", "Bob"));
+        assertTrue(secondJoin.success());
+
+        String firstPlayer = secondJoin.snapshot().currentPlayerNickname();
+        String secondPlayer = "Alice".equals(firstPlayer) ? "Bob" : "Alice";
+        giveAfterEveryoneBuilding(serverCore, "one-extra-room", firstPlayer);
+        giveFood(serverCore, "one-extra-room", 20);
+
+        assertTrue(serverCore.chooseOffer(new ChooseOfferRequest("one-extra-room", firstPlayer, 0)).success());
+        GameOperationResult secondOffer =
+                serverCore.chooseOffer(new ChooseOfferRequest("one-extra-room", secondPlayer, 1));
+        assertTrue(secondOffer.success());
+        assertTrue(serverCore.chooseCard(new ChooseCardRequest(
+                "one-extra-room",
+                firstPlayer,
+                firstPickableTopCardIndex(secondOffer.snapshot()),
+                true
+        )).success());
+
+        GameOperationResult secondAction =
+                serverCore.chooseCard(new ChooseCardRequest(
+                        "one-extra-room",
+                        secondPlayer,
+                        firstPickableTopCardIndex(serverCore.getSnapshot(new SnapshotRequest("one-extra-room")).snapshot()),
+                        true
+                ));
+        assertTrue(secondAction.success());
+        assertTrue(secondAction.snapshot().passAvailable());
+        assertEquals(firstPlayer, secondAction.snapshot().currentPlayerNickname());
+
+        GameOperationResult extraPick =
+                serverCore.chooseCard(new ChooseCardRequest(
+                        "one-extra-room",
+                        firstPlayer,
+                        firstPickableTopCardIndex(secondAction.snapshot()),
+                        true
+                ));
+        assertTrue(extraPick.success());
+        assertNotNull(extraPick.snapshot());
+        assertEquals(GameStatus.ROUND_OFFER, extraPick.snapshot().status());
+        assertEquals(2, extraPick.snapshot().currentRound());
+        assertFalse(extraPick.snapshot().passAvailable());
+
+        GameOperationResult secondExtraPick =
+                serverCore.chooseCard(new ChooseCardRequest("one-extra-room", firstPlayer, 0, true));
+        assertFalse(secondExtraPick.success());
+    }
+
+    @Test
     void disconnectedActivePlayerIsSkippedThroughResiliencePipelineDuringRoundActions() throws Exception {
         MesosServerCore serverCore = new MesosServerCore(singleTopPickCardData(3));
 
@@ -472,6 +526,14 @@ class MesosServerCoreTest {
     private static void giveFood(MesosServerCore serverCore, String gameName, int amount) throws Exception {
         GameContext context = contextForGame(serverCore, gameName);
         context.getPlayers().forEach(player -> player.gainFood(amount));
+    }
+
+    private static int firstPickableTopCardIndex(GameSnapshot snapshot) {
+        return snapshot.topRow().stream()
+                .filter(card -> !card.event())
+                .findFirst()
+                .orElseThrow()
+                .selectionIndex();
     }
 
     private static CardLoader.CardData singleTopPickCardData(int playerCount) throws IOException {

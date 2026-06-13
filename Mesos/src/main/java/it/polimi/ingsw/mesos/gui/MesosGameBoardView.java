@@ -127,6 +127,7 @@ public final class MesosGameBoardView extends BorderPane {
 
     private GameSnapshot snapshot;
     private List<EventLogEntry> eventLog = List.of();
+    private boolean actionPending;
 
     public MesosGameBoardView(
             String localNickname,
@@ -162,6 +163,11 @@ public final class MesosGameBoardView extends BorderPane {
         this.actionHintLabel.setWrapText(true);
 
         this.passButton = buildInfoActionButton("Pass", this.onPass);
+        this.passButton.setOnAction(event -> {
+            if (lockActionUntilNextSnapshot()) {
+                this.onPass.run();
+            }
+        });
         this.passButton.setVisible(false);
         this.passButton.setManaged(false);
         this.actionRow = new FlowPane(
@@ -282,6 +288,7 @@ public final class MesosGameBoardView extends BorderPane {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
         hideInfoPopup();
+        actionPending = false;
         this.snapshot = snapshot;
         if (snapshot == null) {
             setFinalMode(false);
@@ -298,8 +305,8 @@ public final class MesosGameBoardView extends BorderPane {
         setFinalMode(false);
 
         titleLabel.setText("Game Status:");
-        subtitleLabel.setText("Round " + snapshot.currentRound() + "/3");
-        turnLabel.setText("Era: " + formatEraName(snapshot.currentEra()));
+        subtitleLabel.setText("Round " + snapshot.currentRound() + "/10");
+        turnLabel.setText("Era: " + formatEra(snapshot.currentEra()));
         actionHintLabel.setText("Player Turn: " + (snapshot.currentPlayerNickname() == null
                 ? "-"
                 : snapshot.currentPlayerNickname()));
@@ -637,7 +644,11 @@ public final class MesosGameBoardView extends BorderPane {
 
         if (clickable) {
             tileNode.setCursor(Cursor.HAND);
-            tileNode.setOnMouseClicked(event -> onChooseOffer.accept(tile.index()));
+            tileNode.setOnMouseClicked(event -> {
+                if (lockActionUntilNextSnapshot()) {
+                    onChooseOffer.accept(tile.index());
+                }
+            });
         }
 
         Tooltip.install(tileNode, new Tooltip("Offer " + tile.id()
@@ -1352,7 +1363,11 @@ public final class MesosGameBoardView extends BorderPane {
 
         if (clickable) {
             surface.setCursor(Cursor.HAND);
-            surface.setOnMouseClicked(event -> onChooseCard.accept(cardSummary.selectionIndex(), Boolean.TRUE.equals(topRow)));
+            surface.setOnMouseClicked(event -> {
+                if (lockActionUntilNextSnapshot()) {
+                    onChooseCard.accept(cardSummary.selectionIndex(), Boolean.TRUE.equals(topRow));
+                }
+            });
         }
 
         Tooltip tooltip = new Tooltip(buildTooltipText(cardSummary));
@@ -1526,10 +1541,18 @@ public final class MesosGameBoardView extends BorderPane {
         if (snapshot == null || cardSummary == null) {
             return false;
         }
-        if (!isLocalTurn() || snapshot.status() != GameStatus.ROUND_ACTIONS || cardSummary.event()) {
+        if (actionPending || !isLocalTurn() || snapshot.status() != GameStatus.ROUND_ACTIONS || cardSummary.event()) {
             return false;
         }
         return topRow ? snapshot.remainingTopChoices() > 0 : snapshot.remainingBottomChoices() > 0;
+    }
+
+    private boolean lockActionUntilNextSnapshot() {
+        if (actionPending) {
+            return false;
+        }
+        actionPending = true;
+        return true;
     }
 
     private boolean isLocalTurn() {
@@ -1539,7 +1562,7 @@ public final class MesosGameBoardView extends BorderPane {
     }
 
     private boolean canUsePass() {
-        return snapshot != null && isLocalTurn() && snapshot.passAvailable();
+        return snapshot != null && !actionPending && isLocalTurn() && snapshot.passAvailable();
     }
 
     private String formatEra(Era era) {
@@ -1550,17 +1573,6 @@ public final class MesosGameBoardView extends BorderPane {
             case FIRST -> "I";
             case SECOND -> "II";
             case THIRD -> "III";
-        };
-    }
-
-    private String formatEraName(Era era) {
-        if (era == null) {
-            return "-";
-        }
-        return switch (era) {
-            case FIRST -> "Paleolithic";
-            case SECOND -> "Mesolithic";
-            case THIRD -> "Neolithic";
         };
     }
 

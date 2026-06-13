@@ -29,6 +29,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -70,6 +71,8 @@ class MesosGameBoardViewTest {
             assertEquals(Region.USE_PREF_SIZE, ((Region) leftColumn.getChildren().get(0)).getMaxHeight());
             assertEquals(Region.USE_PREF_SIZE, ((Region) leftColumn.getChildren().get(1)).getMaxHeight());
             assertEquals(1, view.lookupAll(".info-panel-color-indicator").size());
+            assertTrue(hasLabelText(leftColumn.getChildren().get(0), "Round 1/10"));
+            assertTrue(hasLabelText(leftColumn.getChildren().get(0), "Era: I"));
             return null;
         });
     }
@@ -371,6 +374,41 @@ class MesosGameBoardViewTest {
         });
     }
 
+    @Test
+    void cardClicksAreLockedUntilNextSnapshotArrives() throws Exception {
+        runOnFxThread(() -> {
+            AtomicInteger pickedCards = new AtomicInteger();
+            MesosGameBoardView view = buildView((ignoredIndex, ignoredTopRow) -> pickedCards.incrementAndGet());
+
+            view.updateSnapshot(snapshotWithRows(2, 0), "Extra pick available.");
+            Node topCard = singleNode(singleNode(view, ".table-row-top", HBox.class), ".interactive-card", Node.class);
+
+            topCard.getOnMouseClicked().handle(null);
+            topCard.getOnMouseClicked().handle(null);
+
+            assertEquals(1, pickedCards.get());
+            view.updateSnapshot(snapshotWithRows(1, 0), "Card selected.");
+            Node refreshedTopCard = singleNode(singleNode(view, ".table-row-top", HBox.class), ".interactive-card", Node.class);
+            refreshedTopCard.getOnMouseClicked().handle(null);
+
+            assertEquals(2, pickedCards.get());
+            return null;
+        });
+    }
+
+    @Test
+    void optionalExtraChoiceShowsPassButton() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+
+            view.updateSnapshot(snapshotWithPassAvailable(), "Extra pick available.");
+
+            VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
+            assertTrue(hasVisibleButtonText(leftColumn.getChildren().get(0), "Pass"));
+            return null;
+        });
+    }
+
     private static MesosGameBoardView buildView() {
         return buildView((ignoredIndex, ignoredTopRow) -> { });
     }
@@ -439,6 +477,26 @@ class MesosGameBoardViewTest {
         );
     }
 
+    private static GameSnapshot snapshotWithPassAvailable() {
+        return snapshot(
+                List.of(
+                        tribeCard(10, "Hunter", "hunter_era_1_a")
+                ),
+                List.of(),
+                1,
+                0,
+                List.of(
+                        tribeCard(0, "Hunter", "hunter_era_1_a")
+                ),
+                List.of(),
+                List.of(),
+                List.of(),
+                GameStatus.ROUND_ACTIONS,
+                false,
+                true
+        );
+    }
+
     private static GameSnapshot snapshotWithManyRows(int topCount, int bottomCount) {
         return snapshot(
                 tribeCards(topCount, 100, "Hunter", "hunter_era_1_a"),
@@ -494,7 +552,7 @@ class MesosGameBoardViewTest {
             List<CardSummary> buildingCards
     ) {
         return snapshot(topRow, bottomRow, remainingTopChoices, remainingBottomChoices, characterCards, buildingCards,
-                List.of(), List.of(), GameStatus.ROUND_ACTIONS, false);
+                List.of(), List.of(), GameStatus.ROUND_ACTIONS, false, false);
     }
 
     private static GameSnapshot snapshot(
@@ -517,6 +575,7 @@ class MesosGameBoardViewTest {
                 opponentCharacterCards,
                 opponentBuildingCards,
                 GameStatus.ROUND_ACTIONS,
+                false,
                 false
         );
     }
@@ -532,6 +591,34 @@ class MesosGameBoardViewTest {
             List<CardSummary> opponentBuildingCards,
             GameStatus status,
             boolean finished
+    ) {
+        return snapshot(
+                topRow,
+                bottomRow,
+                remainingTopChoices,
+                remainingBottomChoices,
+                characterCards,
+                buildingCards,
+                opponentCharacterCards,
+                opponentBuildingCards,
+                status,
+                finished,
+                false
+        );
+    }
+
+    private static GameSnapshot snapshot(
+            List<CardSummary> topRow,
+            List<CardSummary> bottomRow,
+            int remainingTopChoices,
+            int remainingBottomChoices,
+            List<CardSummary> characterCards,
+            List<CardSummary> buildingCards,
+            List<CardSummary> opponentCharacterCards,
+            List<CardSummary> opponentBuildingCards,
+            GameStatus status,
+            boolean finished,
+            boolean passAvailable
     ) {
         List<PlayerSummary> players = List.of(
                 new PlayerSummary(
@@ -578,7 +665,7 @@ class MesosGameBoardViewTest {
                 turnOrder,
                 topRow,
                 bottomRow,
-                false,
+                passAvailable,
                 null
         );
     }
@@ -603,6 +690,20 @@ class MesosGameBoardViewTest {
         Set<Node> matches = root.lookupAll(selector);
         assertEquals(1, matches.size());
         return expectedType.cast(matches.iterator().next());
+    }
+
+    private static boolean hasLabelText(Node root, String text) {
+        return root.lookupAll(".label").stream()
+                .filter(Label.class::isInstance)
+                .map(Label.class::cast)
+                .anyMatch(label -> text.equals(label.getText()));
+    }
+
+    private static boolean hasVisibleButtonText(Node root, String text) {
+        return root.lookupAll(".button").stream()
+                .filter(Button.class::isInstance)
+                .map(Button.class::cast)
+                .anyMatch(button -> button.isVisible() && text.equals(button.getText()));
     }
 
     private static <T> T runOnFxThread(Callable<T> callable) throws Exception {
