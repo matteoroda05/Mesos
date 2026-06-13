@@ -683,6 +683,11 @@
     -fx-padding: 8 10 8 10;
 }
 
+.final-leaderboard-player-name {
+    -fx-text-fill: -mesos-text;
+    -fx-font-weight: bold;
+}
+
 .final-leaderboard-lobby-button {
     -fx-padding: 7 13 7 13;
 }

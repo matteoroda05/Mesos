@@ -806,10 +806,12 @@ public final class MesosGameBoardView extends BorderPane {
             HBox row = new HBox(10);
             row.getStyleClass().add("final-leaderboard-row");
             row.setAlignment(Pos.CENTER_LEFT);
+            Label playerName = new Label(player.nickname());
+            playerName.getStyleClass().add("final-leaderboard-player-name");
             row.getChildren().addAll(
                     badgeLabel("#" + rank),
                     buildColorIndicator(player.color(), "final-leaderboard-color-indicator"),
-                    new Label(player.nickname()),
+                    playerName,
                     spacer(),
                     badgeLabel("Food " + player.food()),
                     badgeLabel(player.prestigePoints() + " PP")
