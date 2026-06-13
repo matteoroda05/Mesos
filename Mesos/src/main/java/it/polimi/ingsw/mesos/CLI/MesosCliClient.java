@@ -570,6 +570,28 @@ public final class MesosCliClient {
                 }
                 handleActionResult(client.pass(new PassRequest(gameName, nickname)));
             }
+            case "show-mine" -> {
+                if (tokens.length != 1) {
+                    throw new IllegalArgumentException("use: show-mine");
+                }
+                snapshot.players().stream()
+                        .filter(p -> p.nickname().equals(nickname))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                p -> printLine(printer.renderPlayerCards(p)),
+                                () -> printLine("Your player data is not yet available."));
+            }
+            case "show-cards" -> {
+                if (tokens.length != 2) {
+                    throw new IllegalArgumentException("use: show-cards <nickname>");
+                }
+                snapshot.players().stream()
+                        .filter(p -> p.nickname().equalsIgnoreCase(tokens[1]))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                p -> printLine(printer.renderPlayerCards(p)),
+                                () -> printLine("Player '" + tokens[1] + "' not found."));
+            }
             default -> throw new IllegalArgumentException("unknown command '" + tokens[0] + "'");
         }
     }

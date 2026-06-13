@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -133,9 +135,59 @@ final class CliPrinter {
                 "  card top <index>      takes a card from the top row",
                 "  card bottom <index>   takes a card from the bottom row",
                 "  pass | passa          skips the turn when you have extra cards to take",
+                "  show-mine             shows your own cards and tribe stats",
+                "  show-cards <name>     shows another player's cards and tribe stats",
                 "  wait [seconds]        waits briefly and refreshes",
                 "  help | aiuto          shows this help",
                 "  quit | esci | exit    closes the client");
+    }
+
+    String renderPlayerCards(PlayerSummary player) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(playerLabel(player.nickname(), player.color()))
+                .append(" | food ").append(player.food())
+                .append(" | prestige ").append(player.prestigePoints());
+
+        Map<String, List<CardSummary>> byType = new LinkedHashMap<>();
+        for (CardSummary card : player.characterCards()) {
+            byType.computeIfAbsent(card.type(), k -> new ArrayList<>()).add(card);
+        }
+
+        for (Map.Entry<String, List<CardSummary>> entry : byType.entrySet()) {
+            String key = entry.getKey().toLowerCase(Locale.ROOT).replace(" ", "");
+            String extra = switch (key) {
+                case "shaman"   -> "★ " + player.shamanStars();
+                case "builder"  -> "-" + player.buildersDiscount() + " food  +" + player.buildersPrestige() + " pts";
+                case "gatherer" -> "-" + player.gatherersDiscount() + " food";
+                case "inventor" -> player.inventorTypeCount() + " types";
+                default         -> "";
+            };
+            sb.append(NEW_LINE).append(entry.getKey()).append("s (").append(entry.getValue().size()).append(")");
+            if (!extra.isEmpty()) sb.append("  · ").append(extra);
+            for (CardSummary card : entry.getValue()) {
+                sb.append(NEW_LINE).append("  ").append(card.type());
+                if (card.era() != null) sb.append(" [").append(card.era()).append("]");
+                if (!card.details().isEmpty()) sb.append("  — ").append(card.details());
+            }
+        }
+
+        if (!player.buildingCards().isEmpty()) {
+            sb.append(NEW_LINE).append("Buildings (").append(player.buildingCards().size())
+                    .append(")  · ").append(player.buildingsPrestige()).append(" pts");
+            for (CardSummary card : player.buildingCards()) {
+                sb.append(NEW_LINE).append("  ").append(card.type());
+                if (card.era() != null) sb.append(" [").append(card.era()).append("]");
+                if (card.foodCost() != null) sb.append("  cost ").append(card.foodCost());
+                if (card.prestigePoints() != null) sb.append("  pts ").append(card.prestigePoints());
+                if (!card.details().isEmpty()) sb.append("  — ").append(card.details());
+            }
+        }
+
+        if (player.characterCards().isEmpty() && player.buildingCards().isEmpty()) {
+            sb.append(NEW_LINE).append("  No cards yet.");
+        }
+
+        return sb.toString();
     }
 
     /**

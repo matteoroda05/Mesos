@@ -16,6 +16,7 @@ import it.polimi.ingsw.mesos.Controller.GameFlowController;
 import it.polimi.ingsw.mesos.Controller.GameSetup;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
+import it.polimi.ingsw.mesos.Controller.PlayerData;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
@@ -1157,20 +1158,27 @@ public class MesosServerCore implements MesosServerService {
                         .toList();
             }
 
+            ModelController modelController = new ModelController(context);
             int forcedWinnerScore = forcedWinnerNickname == null
                     ? 0
-                    : context.getPlayers().stream().mapToInt(Player::getPrestigePoints).max().orElse(0) + 1;
+                    : modelController.getPlayerData().stream().mapToInt(PlayerData::prestigePoints).max().orElse(0) + 1;
 
-            return context.getPlayers().stream()
-                    .map(player -> new PlayerSummary(
-                            player.getNickname(),
-                            player.getColor(),
-                            player.getFood(),
-                            player.getNickname().equals(forcedWinnerNickname) ? forcedWinnerScore : player.getPrestigePoints(),
-                            player.getTribe().getNumCharacters(),
-                            player.getTribe().getNumBuildings(),
-                            summarizeOwnedCards(player.getTribe().getCharacterCards()),
-                            summarizeOwnedCards(player.getTribe().getBuildingCards())
+            return modelController.getPlayerData().stream()
+                    .map(pd -> new PlayerSummary(
+                            pd.nickname(),
+                            pd.color(),
+                            pd.food(),
+                            pd.nickname().equals(forcedWinnerNickname) ? forcedWinnerScore : pd.prestigePoints(),
+                            pd.characterCards().size(),
+                            pd.buildingCards().size(),
+                            summarizeOwnedCards(pd.characterCards()),
+                            summarizeOwnedCards(pd.buildingCards()),
+                            pd.shamanStars(),
+                            pd.buildersDiscount(),
+                            pd.gatherersDiscount(),
+                            pd.buildersPrestige(),
+                            pd.buildingsPrestige(),
+                            pd.inventorTypeCount()
                     ))
                     .toList();
         }

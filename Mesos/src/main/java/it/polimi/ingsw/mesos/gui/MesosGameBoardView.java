@@ -831,16 +831,28 @@ public final class MesosGameBoardView extends BorderPane {
         }
 
         PlayerSummary player = localPlayer.get();
-        Label title = new Label("Owned Cards:");
+        Label title = new Label("Tribe stats:");
         title.getStyleClass().add("subsection-title");
         ownedCardsDebugBox.getChildren().add(title);
 
-        ownedCardsDebugBox.getChildren().addAll(
+        VBox leftCol = new VBox(6,
                 ownedCardsStatRow("Food " + player.food()),
                 ownedCardsStatRow("Prestige " + player.prestigePoints()),
                 ownedCardsStatRow("Characters " + player.characterCount()),
                 ownedCardsStatRow("Buildings " + player.buildingCount())
         );
+
+        VBox rightCol = new VBox(6,
+                ownedCardsStatRow("Shamanic stars " + player.shamanStars()),
+                ownedCardsStatRow("Gatherers discount " + player.gatherersDiscount()),
+                ownedCardsStatRow("Builders discount " + player.buildersDiscount()),
+                ownedCardsStatRow("Builders prestige " + player.buildersPrestige()),
+                ownedCardsStatRow("Buildings prestige " + player.buildingsPrestige()),
+                ownedCardsStatRow("Unique inventors " + player.inventorTypeCount())
+        );
+
+        HBox columns = new HBox(16, leftCol, rightCol);
+        ownedCardsDebugBox.getChildren().add(columns);
 
         ownedCardsDebugBox.setVisible(true);
         ownedCardsDebugBox.setManaged(true);
@@ -1089,7 +1101,14 @@ public final class MesosGameBoardView extends BorderPane {
             }
             List<CardSummary> cards = cardsByType.getOrDefault(definition.key(), List.of());
             if (!cards.isEmpty()) {
-                groups.getChildren().add(buildPlayerTribeCardGroup(definition.label(), cards));
+                String extra = switch (definition.key()) {
+                    case "shaman"   -> player.shamanStars() + " shamanic stars";
+                    case "builder"  -> player.buildersDiscount() + " food discount" + "   ◆   " + player.buildersPrestige() + " prestige points";
+                    case "gatherer" -> player.gatherersDiscount() + " food discount";
+                    case "inventor" -> player.inventorTypeCount() + " unique types";
+                    default         -> "";
+                };
+                groups.getChildren().add(buildPlayerTribeCardGroup(definition.label(), cards, extra));
                 hasCharacterCards = true;
             }
         }
@@ -1100,7 +1119,8 @@ public final class MesosGameBoardView extends BorderPane {
         if (player.buildingCards().isEmpty()) {
             groups.getChildren().add(playerTribeEmptyLabel("No building cards"));
         } else {
-            groups.getChildren().add(buildPlayerTribeCardGroup("Buildings", player.buildingCards()));
+            groups.getChildren().add(buildPlayerTribeCardGroup(
+                    "Buildings", player.buildingCards(), player.buildingsPrestige() + " prestige points"));
         }
         return groups;
     }
@@ -1111,8 +1131,9 @@ public final class MesosGameBoardView extends BorderPane {
         return label;
     }
 
-    private VBox buildPlayerTribeCardGroup(String title, List<CardSummary> cards) {
-        Label label = new Label(title + " (" + cards.size() + ")");
+    private VBox buildPlayerTribeCardGroup(String title, List<CardSummary> cards, String extra) {
+        String suffix = extra.isEmpty() ? "" : "   ◆   " + extra;
+        Label label = new Label(title + " (" + cards.size() + ")" + suffix);
         label.getStyleClass().add("player-tribe-card-group-title");
 
         FlowPane cardGrid = new FlowPane(6, 6);

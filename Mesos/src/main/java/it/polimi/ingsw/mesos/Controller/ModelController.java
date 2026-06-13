@@ -140,6 +140,30 @@ public class ModelController {
     }
 
     /**
+     * Returns a snapshot of each player's data for use by the network layer.
+     *
+     * @return player data in model order
+     */
+    public List<PlayerData> getPlayerData() {
+        return game_context.getPlayers().stream()
+                .map(p -> new PlayerData(
+                        p.getNickname(),
+                        p.getColor(),
+                        p.getFood(),
+                        p.getPrestigePoints(),
+                        p.getTribe().getCharacterCards(),
+                        p.getTribe().getBuildingCards(),
+                        p.getTribe().countShamanStars(),
+                        p.getTribe().buildersDiscount(),
+                        p.getTribe().gatherersDiscount(),
+                        p.getTribe().buildersEndGamePrestige(),
+                        p.getTribe().buildingsPrestige(),
+                        p.getTribe().inventionIcons().size()
+                ))
+                .toList();
+    }
+
+    /**
      * Finds every owned building that reacts to the given trigger.
      *
      * @param trigger trigger to search for across all player tribes
