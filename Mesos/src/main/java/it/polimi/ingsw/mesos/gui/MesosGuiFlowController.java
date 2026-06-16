@@ -51,20 +51,20 @@ public final class MesosGuiFlowController {
     }
 
     public void handleRemoteUpdate(GameServerMessage update) {
-        Platform.runLater(() -> {
-            if (update instanceof EventNotification notification) {
+        Platform.runLater(() -> update.accept(new GameServerMessageVisitor() {
+            public void visitEventNotification(EventNotification notification) {
                 eventLog.add(notification.entry());
                 if (gameBoardView != null) {
                     gameBoardView.setEventLog(eventLog);
                 }
-                return;
             }
 
-            GameViewUpdate view = update instanceof GameViewUpdate gameViewUpdate ? gameViewUpdate : null;
-            String message = MesosUserMessageMapper.describeUpdate(view);
-            host.updateStatus(message);
-            renderSnapshot(view == null ? null : view.snapshot(), message);
-        });
+            public void visitGameViewUpdate(GameViewUpdate view) {
+                String message = MesosUserMessageMapper.describeUpdate(view);
+                host.updateStatus(message);
+                renderSnapshot(view.snapshot(), message);
+            }
+        }));
     }
 
     private void showConnectionScreen() {

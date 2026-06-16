@@ -11,6 +11,7 @@ import it.polimi.ingsw.mesos.Network.ConnectionType;
 import it.polimi.ingsw.mesos.Network.GameClient;
 import it.polimi.ingsw.mesos.Network.GameClientFactory;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
+import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
@@ -717,27 +718,28 @@ public final class MesosCliClient {
      * @param update remote update payload
      */
     private void handleRemoteUpdate(GameServerMessage update) {
-        if (update instanceof EventNotification notification) {
-            synchronized (consoleLock) {
-                System.out.println();
-                System.out.println("[event] " + EventMessageFormatter.format(notification.entry()));
-                System.out.print("mesos> ");
-                System.out.flush();
+        update.accept(new GameServerMessageVisitor() {
+            public void visitEventNotification(EventNotification notification) {
+                synchronized (consoleLock) {
+                    System.out.println();
+                    System.out.println("[event] " + EventMessageFormatter.format(notification.entry()));
+                    System.out.print("mesos> ");
+                    System.out.flush();
+                }
             }
-            return;
-        }
-        if (!(update instanceof GameViewUpdate view)) {
-            return;
-        }
-        snapshot = view.snapshot();
-        synchronized (consoleLock) {
-            System.out.println();
-            System.out.println("[update] " + view.message());
-            System.out.println(printer.renderSnapshot(snapshot, nickname));
-            System.out.print("mesos> ");
-            System.out.flush();
-            lastRenderedSnapshot = snapshot;
-        }
+
+            public void visitGameViewUpdate(GameViewUpdate view) {
+                snapshot = view.snapshot();
+                synchronized (consoleLock) {
+                    System.out.println();
+                    System.out.println("[update] " + view.message());
+                    System.out.println(printer.renderSnapshot(snapshot, nickname));
+                    System.out.print("mesos> ");
+                    System.out.flush();
+                    lastRenderedSnapshot = snapshot;
+                }
+            }
+        });
     }
 
     /**

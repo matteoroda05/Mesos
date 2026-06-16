@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
@@ -123,11 +124,17 @@ final class NetworkTestSupport {
 
         GameOperationResult aliceSubscription = aliceClient.subscribe(
                 new SubscribeGameRequest(gameName, "Alice"),
-                update -> { if (update instanceof GameViewUpdate view) aliceUpdates.offer(view); }
+                update -> update.accept(new GameServerMessageVisitor() {
+                    public void visitEventNotification(EventNotification n) {}
+                    public void visitGameViewUpdate(GameViewUpdate v) { aliceUpdates.offer(v); }
+                })
         );
         GameOperationResult bobSubscription = bobClient.subscribe(
                 new SubscribeGameRequest(gameName, "Bob"),
-                update -> { if (update instanceof GameViewUpdate view) bobUpdates.offer(view); }
+                update -> update.accept(new GameServerMessageVisitor() {
+                    public void visitEventNotification(EventNotification n) {}
+                    public void visitGameViewUpdate(GameViewUpdate v) { bobUpdates.offer(v); }
+                })
         );
         assertTrue(aliceSubscription.success());
         assertTrue(bobSubscription.success());
@@ -218,7 +225,10 @@ final class NetworkTestSupport {
         LinkedBlockingQueue<GameViewUpdate> bobUpdates = new LinkedBlockingQueue<>();
         assertTrue(aliceClient.subscribe(new SubscribeGameRequest(gameName, "Alice"), update -> { }).success());
         assertTrue(bobClient.subscribe(new SubscribeGameRequest(gameName, "Bob"),
-                update -> { if (update instanceof GameViewUpdate view) bobUpdates.offer(view); }).success());
+                update -> update.accept(new GameServerMessageVisitor() {
+                    public void visitEventNotification(EventNotification n) {}
+                    public void visitGameViewUpdate(GameViewUpdate v) { bobUpdates.offer(v); }
+                })).success());
 
         GameOperationResult aliceChooseBlue =
                 aliceClient.chooseColor(new ChooseColorRequest(gameName, "Alice", Color.BLUE));

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Network.Messages;
 
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
+import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
@@ -43,6 +44,11 @@ public record GameViewUpdate(
      * @param context socket client context containing the optional listener
      * @throws NullPointerException if the context is null
      */
+    @Override
+    public void accept(GameServerMessageVisitor visitor) {
+        visitor.visitGameViewUpdate(this);
+    }
+
     @Override
     public void messageExecute(SocketGameClient.SocketClientContext context) {
         GameUpdateListener listener = context.updateListener();
