@@ -718,6 +718,9 @@ public final class MesosCliClient {
      * @param update remote update payload
      */
     private void handleRemoteUpdate(GameServerMessage update) {
+        if (update == null) {
+            return;
+        }
         update.accept(new GameServerMessageVisitor() {
             public void visitEventNotification(EventNotification notification) {
                 synchronized (consoleLock) {
@@ -729,6 +732,9 @@ public final class MesosCliClient {
             }
 
             public void visitGameViewUpdate(GameViewUpdate view) {
+                if (isSnapshotAlreadyRendered(view.snapshot())) {
+                    return;
+                }
                 snapshot = view.snapshot();
                 synchronized (consoleLock) {
                     System.out.println();

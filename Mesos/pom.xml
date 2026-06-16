@@ -6,7 +6,7 @@
 
     <groupId>it.polimi.ingsw</groupId>
     <artifactId>Mesos</artifactId>
-    <version>final</version>
+    <version>1.0-final</version>
     <name>Mesos</name>
 
     <properties>
