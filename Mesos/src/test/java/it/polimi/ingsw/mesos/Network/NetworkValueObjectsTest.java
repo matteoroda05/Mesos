@@ -1,8 +1,10 @@
 package it.polimi.ingsw.mesos.Network;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
@@ -184,6 +186,48 @@ class NetworkValueObjectsTest {
         IOException exception = assertThrows(IOException.class, () -> unsupported.messageExecute(null));
         assertTrue(exception.getMessage().contains("Unsupported server message"));
         assertThrows(IllegalArgumentException.class, () -> GameClientFactory.connect(null));
+    }
+
+    @Test
+    void playerSummaryRejectsEveryNegativeNumericFieldAndDefaultsNullCardLists() {
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(-1, 0, 0, 0, 0, 0, 0, 0, 0)); // food
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, -1, 0, 0, 0, 0, 0, 0, 0)); // shamanStars
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, -1, 0, 0, 0, 0, 0, 0)); // buildersPrestige
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, -1, 0, 0, 0, 0, 0)); // buildingsPrestige
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, -1, 0, 0, 0, 0)); // inventorTypeCount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, -1, 0, 0, 0)); // buildersDiscount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, -1, 0, 0)); // gatherersDiscount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, 0, -1, 0)); // characterCount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, 0, 0, -1)); // buildingCount
+
+        PlayerSummary summary = new PlayerSummary("Alice", Color.BLUE, 0, 0, 0, 0,
+                null, null, 0, 0, 0, 0, 0, 0);
+        assertTrue(summary.characterCards().isEmpty());
+        assertTrue(summary.buildingCards().isEmpty());
+    }
+
+    @Test
+    void eventNotificationValidatesFieldsAndDeliversOnlyWhenListenerIsPresent() {
+        EventLogEntry entry = new EventLogEntry.Notice("Round", "Body");
+
+        assertThrows(IllegalArgumentException.class, () -> new EventNotification(null, entry));
+        assertThrows(IllegalArgumentException.class, () -> new EventNotification(" ", entry));
+        assertThrows(IllegalArgumentException.class, () -> new EventNotification("game", null));
+
+        EventNotification notification = new EventNotification("game", entry);
+        List<GameServerMessage> received = new ArrayList<>();
+        notification.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), received::add));
+        notification.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), null));
+
+        assertEquals(List.of(notification), received);
+    }
+
+    private static PlayerSummary numericSummary(int food, int shamanStars, int buildersPrestige,
+            int buildingsPrestige, int inventorTypeCount, int buildersDiscount, int gatherersDiscount,
+            int characterCount, int buildingCount) {
+        return new PlayerSummary("Alice", Color.BLUE, food, 0, characterCount, buildingCount,
+                List.of(), List.of(), shamanStars, buildersDiscount, gatherersDiscount,
+                buildersPrestige, buildingsPrestige, inventorTypeCount);
     }
 
     private static GameSnapshot snapshot(String gameName, int playerCount, int joinedPlayers, GameStatus status, int round) {

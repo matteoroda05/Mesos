@@ -6,7 +6,10 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.CardLoader;
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
@@ -363,6 +366,82 @@ class ModelControllerTest {
         assertEquals(
                 List.of(blockingPlayer.getColor(), restoredPlayer.getColor()),
                 game_context.getGameTable().getTurnOrderTile().currentOrderTopToBottom());
+    }
+
+    @Test
+    void captureDelta_nullColor_throwsIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> model_controller.captureDelta(null, () -> { }));
+    }
+
+    @Test
+    void logBuildingActivation_ownerlessBuildingWithGains_describesGrantsWithoutOwner() {
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 1, 1);
+
+        model_controller.logBuildingActivation(building, new AppliedDelta(2, 3), null);
+
+        String body = lastNoticeBody();
+        assertTrue(body.contains("Building After Everyone has been activated"));
+        assertFalse(body.contains("from player"));
+        assertTrue(body.contains("granting 2 food and granting 3 prestige points"));
+    }
+
+    @Test
+    void logBuildingActivation_ownedBuildingWithLosses_describesCostsWithOwner() {
+        Player owner = firstPlayer();
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 1, 1);
+        building.setOwner(owner);
+
+        model_controller.logBuildingActivation(building, new AppliedDelta(-1, -2), null);
+
+        String body = lastNoticeBody();
+        assertTrue(body.contains("from player " + owner.getColor()));
+        assertTrue(body.contains("costing 1 food and costing 2 prestige points"));
+    }
+
+    @Test
+    void logBuildingActivation_prestigeOnlyChange_describesPrestigeClauseOnly() {
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 1, 1);
+
+        model_controller.logBuildingActivation(building, new AppliedDelta(0, 4), null);
+
+        String body = lastNoticeBody();
+        assertTrue(body.contains("granting 4 prestige points"));
+        assertFalse(body.contains("food"));
+    }
+
+    @Test
+    void logBuildingActivation_foodOnlyChange_describesFoodClauseOnly() {
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 1, 1);
+
+        model_controller.logBuildingActivation(building, new AppliedDelta(3, 0), null);
+
+        String body = lastNoticeBody();
+        assertTrue(body.contains("granting 3 food"));
+        assertFalse(body.contains("prestige"));
+    }
+
+    @Test
+    void logBuildingActivation_noResourceChangeWithExtra_appendsExtraNote() {
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 1, 1);
+
+        model_controller.logBuildingActivation(building, new AppliedDelta(0, 0), "granting an extra card pick");
+
+        assertTrue(lastNoticeBody().endsWith("granting an extra card pick"));
+    }
+
+    @Test
+    void logBuildingActivation_noResourceChangeAndBlankExtra_appendsNoFurtherEffect() {
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 1, 1);
+
+        model_controller.logBuildingActivation(building, new AppliedDelta(0, 0), "   ");
+
+        assertTrue(lastNoticeBody().endsWith("with no further effect"));
+    }
+
+    private String lastNoticeBody() {
+        List<EventLogEntry> entries = game_context.drainEventLog();
+        return entries.getLast().body();
     }
 
     private Player firstPlayer() {

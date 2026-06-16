@@ -55,6 +55,18 @@ class EndGameStateTest extends StateTestSupport {
         assertEquals(1, building.calls);
     }
 
+    @Test
+    void processWithOwnedEndGameBuildingCapturesDeltaAndStillScores() {
+        CountingEndGameBuilding building = new CountingEndGameBuilding();
+        building.setOwner(game_context.getPlayer(player_colors.getFirst()));
+        EndGameSpyController spy = new EndGameSpyController(game_context, List.of(building));
+
+        GameState nextState = new EndGameState(spy).process();
+
+        assertNull(nextState);
+        assertEquals(1, building.calls);
+    }
+
     private static final class EndGameSpyController extends ModelController {
         private final Map<Color, Tribe> tribes;
         private final List<BuildingCard> buildings;

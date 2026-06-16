@@ -23,6 +23,8 @@ import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import org.junit.jupiter.api.Test;
 
@@ -480,6 +482,184 @@ class MesosServerCoreTest {
         GameOperationResult takenAgain = serverCore.nickname(new NicknameRequest("Alice"));
         assertFalse(takenAgain.success());
         assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, takenAgain.errorCode());
+    }
+
+    @Test
+    void operationsOnMissingGameReturnGameNotFound() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.getSnapshot(new SnapshotRequest("nope")).errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.chooseOffer(new ChooseOfferRequest("nope", "Alice", 0)).errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.chooseCard(new ChooseCardRequest("nope", "Alice", 0, true)).errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.chooseColor(new ChooseColorRequest("nope", "Alice", Color.BLUE)).errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.subscribe(new SubscribeGameRequest("nope", "Alice"), update -> { }).errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.unsubscribe(new UnsubscribeGameRequest("nope", "Alice"), update -> { }).errorCode());
+    }
+
+    @Test
+    void commandsBeforeGameStartAreRejected() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("waiting-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("waiting-room", "Alice")).success());
+
+        assertFalse(serverCore.chooseOffer(new ChooseOfferRequest("waiting-room", "Alice", 0)).success());
+        assertFalse(serverCore.chooseCard(new ChooseCardRequest("waiting-room", "Alice", 0, true)).success());
+        assertFalse(serverCore.pass(new PassRequest("waiting-room", "Alice")).success());
+    }
+
+    @Test
+    void startedGameRejectsCommandsFromUnknownPlayers() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("started-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("started-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("started-room", "Bob")).success());
+
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
+                serverCore.chooseOffer(new ChooseOfferRequest("started-room", "Mallory", 0)).errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
+                serverCore.chooseCard(new ChooseCardRequest("started-room", "Mallory", 0, true)).errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
+                serverCore.pass(new PassRequest("started-room", "Mallory")).errorCode());
+    }
+
+    @Test
+    void chooseColorBeforeStartRejectsNonMemberNickname() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("color-wait", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("color-wait", "Alice")).success());
+
+        GameOperationResult result =
+                serverCore.chooseColor(new ChooseColorRequest("color-wait", "Stranger", Color.BLUE));
+
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, result.errorCode());
+    }
+
+    @Test
+    void subscribeRejectsNullSinkAndNonMembersThenUnsubscribes() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("subs-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("subs-room", "Alice")).success());
+
+        assertEquals(OperationErrorCode.INVALID_LISTENER,
+                serverCore.subscribe(new SubscribeGameRequest("subs-room", "Alice"), null).errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
+                serverCore.subscribe(new SubscribeGameRequest("subs-room", "Ghost"), update -> { }).errorCode());
+
+        GameUpdateSink sink = update -> { };
+        assertTrue(serverCore.subscribe(new SubscribeGameRequest("subs-room", "Alice"), sink).success());
+        assertTrue(serverCore.unsubscribe(new UnsubscribeGameRequest("subs-room", "Alice"), sink).success());
+    }
+
+    @Test
+    void singleConnectedPlayerSuspendsCommandsThenForcedWinAfterTimeout() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("resilience-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("resilience-room", "Alice")).success());
+        GameOperationResult started = serverCore.joinGame(new JoinGameRequest("resilience-room", "Bob"));
+        assertTrue(started.success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("resilience-room", "Alice", true)).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("resilience-room", "Bob", true)).success());
+
+        expireHeartbeat(serverCore, "Bob");
+        checkDisconnectedClients(serverCore);
+
+        GameOperationResult suspended =
+                serverCore.chooseOffer(new ChooseOfferRequest("resilience-room", "Alice", 0));
+        assertFalse(suspended.success());
+        assertTrue(suspended.message().toLowerCase().contains("suspended"));
+        assertFalse(serverCore.chooseCard(new ChooseCardRequest("resilience-room", "Alice", 0, true)).success());
+        assertFalse(serverCore.pass(new PassRequest("resilience-room", "Alice")).success());
+
+        forceSingleConnectedTimeout(serverCore, "resilience-room");
+        checkDisconnectedClients(serverCore);
+
+        GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("resilience-room"));
+        assertTrue(snapshot.success());
+        assertTrue(snapshot.snapshot().finished());
+        assertEquals(GameStatus.END_GAME, snapshot.snapshot().status());
+        assertEquals("Alice", snapshot.snapshot().winnerNickname());
+
+        assertFalse(serverCore.chooseOffer(new ChooseOfferRequest("resilience-room", "Alice", 0)).success());
+        assertTrue(serverCore.unsubscribe(
+                new UnsubscribeGameRequest("resilience-room", "Alice"), update -> { }).success());
+    }
+
+    @Test
+    void joinAndRejoinEdgeCasesAreHandled() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND,
+                serverCore.joinGame(new JoinGameRequest("ghost-room", "Alice")).errorCode());
+
+        assertTrue(serverCore.nickname(new NicknameRequest("Lobster")).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("Lobster")).success());
+        expireHeartbeat(serverCore, "Lobster");
+        checkDisconnectedClients(serverCore);
+        assertTrue(serverCore.joinGame(new JoinGameRequest(null, "Lobster", true)).success());
+
+        assertTrue(serverCore.createGame(new CreateGameRequest("room-a", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("room-a", "Cara")).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("room-a", "Cara", true)).success());
+        expireHeartbeat(serverCore, "Cara");
+        checkDisconnectedClients(serverCore);
+        assertTrue(serverCore.createGame(new CreateGameRequest("room-b", 2)).success());
+        assertEquals(OperationErrorCode.NICKNAME_DISCONNECTED,
+                serverCore.joinGame(new JoinGameRequest("room-b", "Cara")).errorCode());
+    }
+
+    @Test
+    void publishRemovesSubscriberThatThrowsOnDelivery() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("publish-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("publish-room", "Alice")).success());
+
+        GameUpdateSink throwingSink = update -> { throw new IOException("boom"); };
+        assertTrue(serverCore.subscribe(new SubscribeGameRequest("publish-room", "Alice"), throwingSink).success());
+
+        assertTrue(serverCore.joinGame(new JoinGameRequest("publish-room", "Bob")).success());
+    }
+
+    @Test
+    void chooseColorAllowsReReservingTheSameColor() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("recolor-room", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("recolor-room", "Alice")).success());
+
+        assertTrue(serverCore.chooseColor(new ChooseColorRequest("recolor-room", "Alice", Color.BLUE)).success());
+        assertTrue(serverCore.chooseColor(new ChooseColorRequest("recolor-room", "Alice", Color.BLUE)).success());
+    }
+
+    @Test
+    void allPlayersDisconnectedResetsSingleConnectedTracking() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("alloff-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("alloff-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("alloff-room", "Bob")).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("alloff-room", "Alice", true)).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("alloff-room", "Bob", true)).success());
+
+        expireHeartbeat(serverCore, "Alice");
+        expireHeartbeat(serverCore, "Bob");
+        checkDisconnectedClients(serverCore);
+
+        assertTrue(serverCore.getSnapshot(new SnapshotRequest("alloff-room")).success());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void forceSingleConnectedTimeout(MesosServerCore serverCore, String gameName) throws Exception {
+        Field sessions = MesosServerCore.class.getDeclaredField("sessions");
+        sessions.setAccessible(true);
+        Object session = ((Map<String, Object>) sessions.get(serverCore)).get(gameName);
+        Field since = session.getClass().getDeclaredField("singleConnectedSince");
+        since.setAccessible(true);
+        since.setLong(session, System.currentTimeMillis()
+                - NetworkDefaults.SINGLE_PLAYER_WIN_TIMEOUT_MILLIS - 1);
     }
 
     @SuppressWarnings("unchecked")

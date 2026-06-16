@@ -187,6 +187,36 @@ class GameSetupTest {
         assertNotSame(Color.YELLOW, assignedColors.get("Dana"));
     }
 
+    @Test
+    void createMapOfPlayers_invalidReservedColors_areRejected() throws Exception {
+        GameSetup setup = new GameSetup();
+        CardLoader.CardData data = CardLoader.load();
+        List<String> nicknames = List.of("Alice", "Bob", "Charlie");
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedNull", 3, data), nicknames, null));
+
+        java.util.Map<String, Color> blankNickname = new java.util.HashMap<>();
+        blankNickname.put("  ", Color.BLUE);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedBlankNick", 3, data), nicknames, blankNickname));
+
+        java.util.Map<String, Color> nullColor = new java.util.HashMap<>();
+        nullColor.put("Alice", null);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedNullColor", 3, data), nicknames, nullColor));
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedUnknownNick", 3, data), nicknames,
+                java.util.Map.of("Zoe", Color.BLUE)));
+
+        java.util.Map<String, Color> duplicateColors = new java.util.HashMap<>();
+        duplicateColors.put("Alice", Color.BLUE);
+        duplicateColors.put("Bob", Color.BLUE);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedDupColor", 3, data), nicknames, duplicateColors));
+    }
+
     private static List<String> createNicknames(int playerCount) {
         List<String> nicknames = new ArrayList<>();
         for (int i = 1; i <= playerCount; i++) {
