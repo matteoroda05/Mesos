@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Network.Messages;
 
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
+import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
@@ -125,6 +126,20 @@ public record GameOperationResult(
      */
     public static GameOperationResult successNickname(String message, boolean rejoinAvailable) {
         return new GameOperationResult(true, message, OperationErrorCode.NONE, null, null, rejoinAvailable);
+    }
+
+    /**
+     * Not supported: a {@code GameOperationResult} is a request/response result
+     * delivered through the dedicated responses queue, never a broadcast update
+     * dispatched through the {@link GameServerMessageVisitor}.
+     *
+     * @param visitor update visitor (unused)
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public void accept(GameServerMessageVisitor visitor) {
+        throw new UnsupportedOperationException(
+                "GameOperationResult is a request/response result, not a broadcast update");
     }
 
     /**
