@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.GameRequest;
 import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -172,7 +172,7 @@ public class SocketGameServer implements AutoCloseable {
          * @throws IOException if writing to the socket fails
          */
         @Override
-        public void accept(GameViewUpdate update) throws IOException {
+        public void accept(GameServerMessage update) throws IOException {
             sendMessage(update);
         }
 

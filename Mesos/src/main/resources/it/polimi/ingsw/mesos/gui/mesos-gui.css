@@ -1,0 +1,1051 @@
+.root {
+    -mesos-bg: #090612;
+    -mesos-panel: rgba(32, 18, 41, 0.80);
+    -mesos-panel-strong: rgba(22, 14, 34, 0.92);
+    -mesos-outline: rgba(255, 178, 98, 0.20);
+    -mesos-shadow: rgba(4, 3, 8, 0.48);
+    -mesos-shadow-soft: rgba(4, 3, 8, 0.30);
+    -mesos-primary: #ff9e42;
+    -mesos-primary-soft: #ff6a47;
+    -mesos-accent: #4cc2c8;
+    -mesos-accent-soft: rgba(76, 194, 200, 0.16);
+    -mesos-text: #f5e6cc;
+    -mesos-muted: #d6b189;
+    -mesos-cream: rgba(255, 230, 184, 0.14);
+    -fx-font-family: "Palatino Linotype";
+    -fx-background-color: -mesos-bg;
+    -fx-background-image: url("/cards_png/sfondo1.png");
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+}
+
+.app-shell {
+    -fx-background-color:
+        linear-gradient(to bottom, rgba(10, 6, 18, 0.42), rgba(8, 5, 16, 0.62)),
+        linear-gradient(to bottom right, rgba(9, 20, 34, 0.24), rgba(89, 17, 41, 0.12));
+}
+
+.board-root {
+    -fx-background-color: transparent;
+}
+
+.board-top-bar {
+    -fx-alignment: center-left;
+    -fx-padding: 12 0 10 0;
+}
+
+.screen-shell {
+    -fx-alignment: top-center;
+    -fx-spacing: 22;
+}
+
+.screen-shell-compact {
+    -fx-spacing: 18;
+}
+
+.connection-screen-root,
+.connection-screen-content,
+.app-shell-connection {
+    -fx-background-color: #000000;
+    -fx-background-image: none;
+}
+
+.screen-flow {
+    -fx-alignment: top-center;
+}
+
+.screen-grid {
+    -fx-alignment: top-center;
+}
+
+.screen-sidebar {
+    -fx-spacing: 18;
+}
+
+.top-shell,
+.panel-shell,
+.player-card,
+.offer-tile-card,
+.market-card,
+.status-bar-shell,
+.turn-order-space,
+.empty-state,
+.message-card,
+.busy-overlay,
+.ranking-row {
+    -fx-background-color: -mesos-panel;
+    -fx-background-radius: 24;
+    -fx-border-color: -mesos-outline;
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(gaussian, -mesos-shadow, 18, 0.18, 0, 7);
+}
+
+.panel-shell,
+.top-shell,
+.status-bar-shell,
+.message-card,
+.busy-overlay {
+    -fx-padding: 20;
+}
+
+.top-shell {
+    -fx-background-color: rgba(28, 16, 39, 0.92);
+}
+
+.view-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.section-title {
+    -fx-font-size: 21px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.subsection-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.card-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.muted-label,
+.details-label {
+    -fx-text-fill: -mesos-muted;
+}
+
+.details-label {
+    -fx-font-size: 12px;
+    -fx-line-spacing: 1px;
+}
+
+.stat-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.status-pill,
+.meta-badge {
+    -fx-background-radius: 999;
+    -fx-padding: 6 11 6 11;
+    -fx-background-color: rgba(143, 76, 31, 0.10);
+    -fx-border-color: rgba(143, 76, 31, 0.20);
+    -fx-border-radius: 999;
+    -fx-text-fill: -mesos-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.status-pill {
+    -fx-background-color: rgba(44, 111, 99, 0.10);
+    -fx-border-color: rgba(44, 111, 99, 0.18);
+    -fx-text-fill: -mesos-accent;
+}
+
+.meta-wrap,
+.actions-row,
+.field-grid {
+    -fx-alignment: top-left;
+}
+
+.board-action-row {
+    -fx-alignment: top-left;
+}
+
+.field-box {
+    -fx-min-width: 170;
+}
+
+.field-stack,
+.actions-stack,
+.players-list {
+    -fx-spacing: 14;
+}
+
+.form-card,
+.table-card,
+.help-card,
+.players-column,
+.board-section,
+.sidebar-column {
+    -fx-background-color: -mesos-panel-strong;
+}
+
+.hero-info-card {
+    -fx-background-color: linear-gradient(to bottom, rgba(34, 19, 45, 0.94), rgba(20, 13, 32, 0.96));
+    -fx-spacing: 18;
+}
+
+.hero-visual {
+    -fx-background-color: linear-gradient(to bottom right, rgba(255, 112, 57, 0.14), rgba(15, 22, 45, 0.32));
+    -fx-background-radius: 28;
+    -fx-border-color: rgba(255, 176, 92, 0.12);
+    -fx-border-radius: 28;
+    -fx-padding: 14;
+}
+
+.hero-tint {
+    -fx-background-color: linear-gradient(to top, rgba(15, 9, 24, 0.26), rgba(15, 9, 24, 0.00));
+    -fx-background-radius: 28;
+}
+
+.players-column,
+.sidebar-column {
+    -fx-padding: 18;
+}
+
+.board-column {
+    -fx-spacing: 18;
+}
+
+.board-section {
+    -fx-padding: 16;
+}
+
+.primary-button,
+.secondary-button,
+.combo-box,
+.text-field,
+.spinner,
+.spinner .text-field {
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+}
+
+.primary-button,
+.secondary-button {
+    -fx-padding: 10 18 10 18;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.primary-button {
+    -fx-background-color: linear-gradient(to right, -mesos-primary, -mesos-primary-soft);
+    -fx-text-fill: white;
+}
+
+.primary-button:hover {
+    -fx-background-color: linear-gradient(to right, derive(-mesos-primary, 4%), derive(-mesos-primary-soft, 6%));
+}
+
+.secondary-button {
+    -fx-background-color: rgba(38, 24, 48, 0.86);
+    -fx-text-fill: -mesos-text;
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+}
+
+.secondary-button:hover {
+    -fx-background-color: rgba(52, 31, 64, 0.96);
+}
+
+.text-field,
+.combo-box,
+.spinner,
+.spinner .text-field {
+    -fx-background-color: rgba(23, 14, 34, 0.92);
+    -fx-border-color: rgba(255, 176, 92, 0.14);
+    -fx-padding: 8 10 8 10;
+}
+
+.combo-box .list-cell,
+.spinner .text-field,
+.text-field {
+    -fx-text-fill: -mesos-text;
+}
+
+.status-bar-shell {
+    -fx-background-color: rgba(17, 11, 27, 0.92);
+    -fx-border-color: rgba(255, 176, 92, 0.08);
+}
+
+.status-bar {
+    -fx-text-fill: -mesos-text;
+    -fx-font-size: 13px;
+}
+
+.transparent-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.transparent-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.transparent-scroll .scroll-bar:vertical,
+.transparent-scroll .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.transparent-scroll .thumb {
+    -fx-background-color: rgba(143, 76, 31, 0.22);
+    -fx-background-radius: 999;
+}
+
+.player-card,
+.turn-order-space,
+.ranking-row {
+    -fx-padding: 14;
+}
+
+.player-card-you {
+    -fx-border-color: rgba(44, 111, 99, 0.34);
+}
+
+.player-card-active {
+    -fx-background-color: rgba(44, 111, 99, 0.10);
+}
+
+.offer-tile-card,
+.market-card {
+    -fx-padding: 12;
+    -fx-background-color: -mesos-panel-strong;
+}
+
+.owned-card {
+    -fx-background-color: rgba(248, 242, 231, 0.98);
+}
+
+.interactive-card {
+    -fx-border-color: rgba(44, 111, 99, 0.30);
+}
+
+.interactive-card:hover {
+    -fx-background-color: rgba(255, 255, 255, 1.00);
+    -fx-translate-y: -2;
+    -fx-effect: dropshadow(gaussian, rgba(44, 111, 99, 0.18), 18, 0.16, 0, 7);
+}
+
+.art-surface {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.92), rgba(221, 204, 174, 0.78));
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(58, 34, 16, 0.12);
+    -fx-border-radius: 18;
+    -fx-padding: 8;
+}
+
+.placeholder-card {
+    -fx-padding: 14;
+}
+
+.message-card {
+    -fx-font-size: 13px;
+    -fx-text-fill: -mesos-text;
+    -fx-background-color: linear-gradient(to bottom, rgba(255,252,246,0.98), rgba(241,232,214,0.92));
+}
+
+.totem-fallback {
+    -fx-background-color: linear-gradient(to bottom, #934d20, #5a2d13);
+    -fx-background-radius: 999;
+}
+
+.turn-order-space {
+    -fx-min-width: 108;
+    -fx-max-width: 108;
+    -fx-background-color: rgba(255, 251, 241, 0.82);
+}
+
+.empty-state {
+    -fx-background-color: rgba(33, 20, 43, 0.62);
+}
+
+.busy-overlay {
+    -fx-background-color: rgba(35, 24, 18, 0.44);
+    -fx-text-fill: white;
+}
+
+.busy-overlay .label {
+    -fx-text-fill: white;
+}
+
+.game-table {
+    -fx-background-color: rgba(23, 14, 34, 0.90);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: rgba(255, 176, 92, 0.12);
+    -fx-padding: 6;
+}
+
+.game-table .column-header-background {
+    -fx-background-color: rgba(47, 25, 44, 0.92);
+    -fx-background-radius: 14 14 0 0;
+}
+
+.game-table .column-header,
+.game-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(58, 34, 16, 0.08);
+}
+
+.game-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -mesos-text;
+}
+
+.game-table .table-cell,
+.game-table .column-header .label {
+    -fx-text-fill: -mesos-text;
+}
+
+.game-table .table-row-cell:filled:selected {
+    -fx-background-color: rgba(76, 194, 200, 0.16);
+}
+
+.game-table .placeholder .label {
+    -fx-text-fill: -mesos-muted;
+}
+
+.board-viewport {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.game-canvas {
+    -fx-spacing: 6;
+}
+
+.tabletop-shell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-spacing: 6;
+}
+
+.board-info-box {
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-padding: 14 16 14 16;
+}
+
+.deck-dock {
+    -fx-min-width: 100;
+}
+
+.deck-dock-slot {
+    -fx-alignment: center;
+}
+
+.deck-stack {
+    -fx-background-color: transparent;
+}
+
+.table-row {
+    -fx-alignment: center;
+    -fx-spacing: 6;
+}
+
+.table-row-cards {
+    -fx-alignment: center;
+    -fx-spacing: 12;
+}
+
+.table-row-section {
+    -fx-alignment: center;
+    -fx-spacing: 4;
+}
+
+.market-slot-placeholder {
+    -fx-background-color: rgba(255, 244, 220, 0.05);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255, 176, 92, 0.14);
+    -fx-border-radius: 18;
+}
+
+.center-stage {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+}
+
+.track-stage {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.turn-panel {
+    -fx-background-color: rgba(17, 11, 28, 0.74);
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(255, 176, 92, 0.12);
+    -fx-border-radius: 24;
+    -fx-padding: 12;
+    -fx-spacing: 8;
+    -fx-pref-width: 296;
+}
+
+.turn-meta-wrap {
+    -fx-alignment: center-left;
+    -fx-hgap: 6;
+    -fx-vgap: 6;
+}
+
+.offer-stage-free {
+    -fx-alignment: center-left;
+    -fx-spacing: 2;
+}
+
+.track-token {
+    -fx-background-color: rgba(30, 16, 39, 0.92);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 999;
+    -fx-effect: dropshadow(gaussian, rgba(60, 36, 17, 0.14), 10, 0.14, 0, 3);
+}
+
+.track-token-empty {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+    -fx-border-color: rgba(78, 48, 21, 0.08);
+}
+
+.action-copy {
+    -fx-background-color: rgba(19, 42, 48, 0.42);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(76, 194, 200, 0.16);
+    -fx-border-radius: 18;
+    -fx-padding: 8 10 8 10;
+    -fx-text-fill: -mesos-text;
+    -fx-font-size: 12px;
+}
+
+.market-card,
+.owned-card {
+    -fx-padding: 0;
+}
+
+.market-card {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: none;
+}
+
+.owned-card {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(gaussian, rgba(60, 36, 17, 0.12), 8, 0.12, 0, 3);
+}
+
+.owned-card-slot {
+    -fx-alignment: bottom-center;
+}
+
+.market-card-slot {
+    -fx-alignment: center;
+}
+
+.art-surface {
+    -fx-background-color: rgba(255,255,255,0.04);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255, 176, 92, 0.06);
+    -fx-border-radius: 18;
+    -fx-padding: 0;
+}
+
+.offer-detail-pill {
+    -fx-background-color: rgba(31, 18, 42, 0.92);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4 10 4 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.offer-tile-art {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(60, 36, 17, 0.12), 8, 0.12, 0, 3);
+}
+
+.minimal-turn-bar {
+    -fx-alignment: top-left;
+}
+
+.turn-order-mini-box {
+    -fx-background-color:
+        linear-gradient(to bottom, rgba(35, 20, 48, 0.90), rgba(17, 11, 28, 0.86));
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 20;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.28), 12, 0.14, 0, 4);
+}
+
+.turn-order-tile-entry {
+    -fx-alignment: center-left;
+    -fx-background-color: rgba(255, 236, 201, 0.12);
+    -fx-background-radius: 9;
+    -fx-border-color: rgba(255, 230, 184, 0.12);
+    -fx-border-radius: 9;
+    -fx-padding: 2 5 2 5;
+}
+
+.turn-order-tile-entry-active {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.turn-order-tile-entry-empty {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+}
+
+.turn-order-tile-name {
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.turn-order-tile-name-empty,
+.turn-order-tile-waiting {
+    -fx-font-size: 8px;
+    -fx-text-fill: -mesos-muted;
+}
+
+.turn-order-tile-waiting {
+    -fx-padding: 50 0 0 10;
+}
+
+.turn-order-list {
+    -fx-background-color: rgba(23, 14, 34, 0.86);
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(255, 176, 92, 0.10);
+    -fx-border-radius: 22;
+    -fx-padding: 12;
+    -fx-spacing: 8;
+    -fx-alignment: top-center;
+}
+
+.turn-order-row {
+    -fx-background-color: rgba(36, 22, 46, 0.82);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 176, 92, 0.10);
+    -fx-border-radius: 16;
+    -fx-padding: 8 10 8 10;
+}
+
+.turn-order-row-active {
+    -fx-background-color: rgba(16, 55, 63, 0.84);
+    -fx-border-color: rgba(76, 194, 200, 0.28);
+}
+
+.turn-order-row-empty {
+    -fx-background-color: rgba(36, 22, 46, 0.48);
+}
+
+.turn-order-index {
+    -fx-min-width: 18;
+    -fx-alignment: center;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-muted;
+}
+
+.ranking-box {
+    -fx-spacing: 10;
+}
+
+.final-leaderboard-overlay {
+    -fx-alignment: center;
+    -fx-padding: 12;
+}
+
+.final-leaderboard-box {
+    -fx-background-color: rgba(17, 11, 28, 0.94);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(255, 176, 92, 0.26);
+    -fx-border-radius: 18;
+    -fx-padding: 18 22 20 22;
+    -fx-pref-width: 430;
+    -fx-max-width: 430;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.52), 28, 0.28, 0, 8);
+}
+
+.final-leaderboard-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.final-leaderboard-row {
+    -fx-background-color: rgba(255, 236, 201, 0.08);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.12);
+    -fx-border-radius: 12;
+    -fx-padding: 8 10 8 10;
+}
+
+.final-leaderboard-player-name {
+    -fx-text-fill: -mesos-text;
+    -fx-font-weight: bold;
+}
+
+.final-leaderboard-lobby-button {
+    -fx-padding: 7 13 7 13;
+}
+
+.waiting-player-row {
+    -fx-background-color: rgba(30, 18, 40, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.12);
+}
+
+.board-action-button {
+    -fx-padding: 8 14 8 14;
+}
+
+.totem-dialog-pane {
+    -fx-background-color: rgba(18, 12, 28, 0.98);
+}
+
+.totem-dialog-pane > *.header-panel {
+    -fx-background-color: linear-gradient(to right, rgba(255, 158, 66, 0.18), rgba(76, 194, 200, 0.14));
+}
+
+.totem-dialog-pane .header-panel .label {
+    -fx-text-fill: -mesos-text;
+}
+
+.totem-dialog-pane .header-panel .label,
+.totem-dialog-content .details-label {
+    -fx-effect: dropshadow(gaussian, rgba(9, 6, 18, 0.98), 9, 0.85, 0, 2);
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.totem-dialog-pane .content.label {
+    -fx-text-fill: -mesos-muted;
+}
+
+.totem-dialog-content {
+    -fx-padding: 4 0 2 0;
+    -fx-alignment: center;
+}
+
+.totem-dialog-grid {
+    -fx-alignment: center;
+}
+
+.totem-option-button {
+    -fx-background-color: rgba(30, 18, 40, 0.96);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 12;
+}
+
+.totem-option-label {
+    -fx-effect: dropshadow(gaussian, rgba(9, 6, 18, 0.95), 7, 0.75, 0, 1);
+}
+
+.totem-option-button:hover {
+    -fx-background-color: rgba(46, 28, 58, 1.0);
+}
+
+.totem-option-button:selected {
+    -fx-background-color: linear-gradient(to right, -mesos-primary, -mesos-primary-soft);
+    -fx-border-color: rgba(255, 224, 184, 0.40);
+}
+
+.totem-option-button:disabled {
+    -fx-opacity: 0.42;
+}
+
+.owned-cards-debug-box {
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 14 18 14 18;
+    -fx-pref-width: 340;
+    -fx-max-width: 340;
+}
+
+.info-panel {
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-border-color: rgba(255, 176, 92, 0.16);
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10;
+}
+
+.left-hud-column {
+    -fx-pref-width: 340;
+    -fx-max-width: 340;
+}
+
+.player-buttons-pane {
+    -fx-alignment: top-left;
+    -fx-spacing: 6;
+}
+
+.player-summary-button {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 999;
+    -fx-padding: 5 10 5 7;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-graphic-text-gap: 7;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.24), 10, 0.14, 0, 3);
+}
+
+.player-summary-button:hover,
+.player-summary-button-active {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.player-summary-button-local {
+    -fx-border-color: rgba(255, 230, 184, 0.34);
+}
+
+.player-summary-button:disabled {
+    -fx-opacity: 0.72;
+}
+
+.player-tribe-overlay {
+    -fx-alignment: center;
+}
+
+.player-tribe-popup {
+    -fx-background-color: rgba(17, 11, 28, 0.94);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(255, 176, 92, 0.22);
+    -fx-border-radius: 16;
+    -fx-padding: 14 16 16 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 24, 0.26, 0, 7);
+}
+
+.player-tribe-header {
+    -fx-alignment: center-left;
+}
+
+.player-tribe-popup-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+}
+
+.player-tribe-close-button {
+    -fx-padding: 6 12 6 12;
+}
+
+.player-tribe-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.player-tribe-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.player-tribe-card-groups {
+    -fx-spacing: 10;
+}
+
+.player-tribe-card-group {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.10);
+    -fx-border-radius: 12;
+    -fx-padding: 9;
+}
+
+.event-log-overlay {
+    -fx-alignment: center;
+}
+
+.event-log-button {
+    -fx-background-color: rgba(17, 11, 28, 0.84);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 176, 92, 0.18);
+    -fx-border-radius: 999;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-effect: dropshadow(gaussian, rgba(5, 4, 10, 0.24), 10, 0.14, 0, 3);
+}
+
+.event-log-button:hover {
+    -fx-background-color: rgba(21, 82, 93, 0.86);
+    -fx-border-color: rgba(76, 194, 200, 0.34);
+}
+
+.event-log-entry {
+    -fx-background-color: rgba(255, 236, 201, 0.06);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 230, 184, 0.10);
+    -fx-border-radius: 12;
+    -fx-padding: 9;
+}
+
+.player-tribe-card-group-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-primary;
+}
+
+.player-tribe-card-grid {
+    -fx-alignment: center-left;
+}
+
+.player-tribe-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.42), 8, 0.20, 0, 2);
+}
+
+.player-tribe-empty {
+    -fx-padding: 4 0 4 0;
+}
+
+.owned-tribe-decks-strip {
+    -fx-padding: 0 2 0 0;
+    -fx-spacing: 0;
+}
+
+.owned-tribe-deck,
+.owned-card-deck-slot {
+    -fx-padding: 4;
+}
+
+.owned-card-deck-empty {
+    -fx-opacity: 0.82;
+}
+
+.owned-card-deck-placeholder {
+    -fx-background-color: rgba(255, 236, 201, 0.07);
+    -fx-background-radius: 11;
+    -fx-border-color: rgba(255, 230, 184, 0.24);
+    -fx-border-radius: 11;
+}
+
+.owned-card-deck-placeholder-label {
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+    -fx-text-fill: rgba(245, 230, 204, 0.72);
+}
+
+.owned-tribe-deck-card,
+.owned-card-deck-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 8, 0.24, 0, 2);
+}
+
+.owned-tribe-deck-count {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-text;
+    -fx-background-color: rgba(17, 11, 28, 0.88);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 236, 201, 0.40);
+    -fx-border-radius: 999;
+    -fx-padding: 1 5 1 5;
+}
+
+.owned-tribe-deck-popup {
+    -fx-background-color: rgba(17, 11, 28, 0.90);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(255, 176, 92, 0.22);
+    -fx-border-radius: 12;
+    -fx-padding: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 18, 0.24, 0, 5);
+}
+
+.owned-tribe-popup-card {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 10, 0.20, 0, 2);
+}
+
+.owned-card-preview-overlay {
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.owned-card-preview-grid {
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.owned-card-preview-card {
+    -fx-background-color: rgba(255, 238, 202, 0.30);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 238, 202, 0.92);
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.82), 34, 0.42, 0, 11);
+}
+
+.player-color-indicator {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255, 236, 201, 0.36);
+    -fx-border-radius: 999;
+    -fx-padding: 1;
+}
+
+.player-color-indicator-dot {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.34), 3, 0.2, 0, 1);
+}
+
+.owned-cards-debug-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mesos-primary;
+}
+
+.owned-cards-debug-row {
+    -fx-font-size: 15px;
+    -fx-text-fill: -mesos-text;
+}
+
+.mesos-alert-pane {
+    -fx-background-color: rgba(14, 9, 22, 0.98);
+}
+
+.mesos-alert-pane > *.header-panel {
+    -fx-background-color: linear-gradient(to right, rgba(255, 158, 66, 0.16), rgba(76, 194, 200, 0.12));
+    -fx-padding: 18 22 18 22;
+}
+
+.mesos-alert-pane .header-panel .label {
+    -fx-background-color: rgba(9, 6, 18, 0.78);
+    -fx-background-radius: 8;
+    -fx-padding: 5 8 5 8;
+    -fx-text-fill: -mesos-text;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.mesos-alert-pane .content {
+    -fx-background-color: transparent;
+    -fx-padding: 14 22 10 22;
+}
+
+.mesos-alert-pane .content.label {
+    -fx-background-color: rgba(9, 6, 18, 0.78);
+    -fx-background-radius: 8;
+    -fx-padding: 6 8 6 8;
+    -fx-text-fill: -mesos-muted;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 1px;
+}
+
+.mesos-alert-pane .button-bar {
+    -fx-background-color: rgba(17, 11, 27, 0.94);
+    -fx-padding: 14 18 14 18;
+}
+
+.mesos-alert-pane .button-bar .primary-button {
+    -fx-padding: 8 15 8 15;
+    -fx-font-size: 12px;
+    -fx-translate-y: -2;
+}

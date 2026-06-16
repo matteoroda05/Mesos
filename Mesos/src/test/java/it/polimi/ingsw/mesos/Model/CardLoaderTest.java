@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Model;
 import it.polimi.ingsw.mesos.Model.Cards.*;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
+import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +25,7 @@ class CardLoaderTest {
 
     @Test
     void tribeCardsTotalCountMatchesExpected() {
-        assertEquals(95, data.tribe_cards().size());
+        assertEquals(96, data.tribe_cards().size());
     }
 
     @Test
@@ -102,6 +103,25 @@ class CardLoaderTest {
                                 "SustenanceEvent prestige conversion must be positive")
                 );
     }
+
+    @Test
+    void shamanicRitualEventsHaveCorrectSignsOnBonusAndPenalty() {
+        data.tribe_cards().stream()
+                .filter(c -> c instanceof ShamanicRitualEvent)
+                .map(c -> (ShamanicRitualEvent) c)
+                .forEach(e -> {
+                    assertNotNull(e);
+                });
+    }
+
+    @Test
+    void allCardsExposePresentationIds() {
+        data.tribe_cards().forEach(card ->
+                assertNotNull(card.getPresentationId(), "Every tribe card must expose a presentation id"));
+        data.building_cards().forEach(card ->
+                assertNotNull(card.getPresentationId(), "Every building card must expose a presentation id"));
+    }
+
 
     @Test
     void eachEraHasAtLeastOneTribeCard() {

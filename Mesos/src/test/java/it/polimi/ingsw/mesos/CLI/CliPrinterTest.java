@@ -35,6 +35,7 @@ class CliPrinterTest {
                     Color.BLUE,
                     1,
                     2,
+                    List.of(Color.BLUE, Color.YELLOW),
                     List.of(
                             new PlayerSummary("Alice", Color.BLUE, 6, 12, 5, 2),
                             new PlayerSummary("Bob", Color.YELLOW, 4, 10, 4, 1)
@@ -65,11 +66,10 @@ class CliPrinterTest {
             String rendering = printer.renderSnapshot(snapshot, "Alice");
 
             assertTrue(rendering.contains("MESOS | test-room"));
-            assertTrue(rendering.contains("Game table"));
+            assertTrue(rendering.contains("GAME TABLE"));
             assertTrue(rendering.contains("TOP ROW"));
             assertTrue(rendering.contains("BOTTOM ROW"));
             assertTrue(rendering.contains("TURN ORDER"));
-            assertTrue(rendering.contains("OFFER TILES"));
             assertTrue(rendering.contains("card top 0"));
             assertTrue(rendering.contains("card top 7"));
             assertTrue(rendering.contains("offer 1"));

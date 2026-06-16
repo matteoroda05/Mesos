@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.*;
@@ -122,7 +123,7 @@ public class BuildingBonusEvent extends BuildingCard {
         final int prev_penalty = output.get(owner.getColor()).penalty();
 
         Result outcome = new Result(food_change, prestige_change, prev_penalty);
-        output.replace(owner.getColor(),outcome);
+        output.replace(owner.getColor(), outcome);
     }
 
     /**
@@ -150,5 +151,15 @@ public class BuildingBonusEvent extends BuildingCard {
      */
     public Class<? extends CharacterCard> getCharacterType() {
         return character_type;
+    }
+
+    @Override
+    public String accept(CardDescriptionVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public String getReadableName() {
+        return "Building Bonus Event";
     }
 }

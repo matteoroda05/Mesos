@@ -3,6 +3,7 @@ package it.polimi.ingsw.mesos.Network;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,27 +18,13 @@ import it.polimi.ingsw.mesos.Controller.GameFlowController;
 import it.polimi.ingsw.mesos.Controller.GameSetup;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
+import it.polimi.ingsw.mesos.Controller.PlayerData;
 import it.polimi.ingsw.mesos.Database.DatabaseManager;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Card;
-import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 import it.polimi.ingsw.mesos.Model.GameContext;
@@ -45,9 +32,20 @@ import it.polimi.ingsw.mesos.Model.MarketRow;
 import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
-import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
+import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
+import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
+import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
+import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
 /**
  * Thread-safe in-memory implementation of the network server service.
@@ -61,7 +59,6 @@ public class MesosServerCore implements MesosServerService {
     private final Set<String> takenNicknames;
     private final Map<String, String> disconnectedGameByNickname;
     private final Map<String, Long> lastHeartbeatByNickname;
-    private final ScheduledExecutorService resilienceTimer;
 
     /**
      * Creates a server core using card data loaded from default resources.
@@ -90,12 +87,12 @@ public class MesosServerCore implements MesosServerService {
         this.takenNicknames = new LinkedHashSet<>();
         this.lastHeartbeatByNickname = new LinkedHashMap<>();
 
-        this.resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
+        ScheduledExecutorService resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
             Thread thread = new Thread(task, "mesos-server-resilience");
             thread.setDaemon(true);
             return thread;
         });
-        this.resilienceTimer.scheduleAtFixedRate(
+        resilienceTimer.scheduleAtFixedRate(
                 this::checkDisconnectedClients,
                 1_000,
                 1_000,
@@ -236,7 +233,7 @@ public class MesosServerCore implements MesosServerService {
             );
         }
 
-        return session.join(request.nickname(), gameSetup);
+        return session.join(request.nickname());
     }
 
     /**
@@ -297,7 +294,27 @@ public class MesosServerCore implements MesosServerService {
     }
 
     /**
-     * Applies a pass command to a game session.
+     * Reserves a pre-game color for a joined player.
+     *
+     * @param request color-choice request
+     * @return operation result, including GAME_NOT_FOUND for missing games
+     */
+    @Override
+    public synchronized GameOperationResult chooseColor(ChooseColorRequest request) {
+        GameSession session = sessions.get(request.gameName());
+        if (session == null) {
+            return GameOperationResult.failure(
+                    "La partita '" + request.gameName() + "' non esiste",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
+        }
+        return session.chooseColor(request.nickname(), request.color());
+    }
+
+    /**
+     * Applies the optional manual pass request used to decline the extra
+     * top-row pick granted by the after-everyone building.
      *
      * @param request pass request
      * @return operation result, including GAME_NOT_FOUND for missing games
@@ -431,11 +448,14 @@ public class MesosServerCore implements MesosServerService {
     private void markDisconnected(String nickname) {
         lastHeartbeatByNickname.remove(nickname);
         GameSession session = getSessionByNickname(nickname);
-        if (session != null && !session.finished()) {
+        if (session != null) {
             disconnectedGameByNickname.put(nickname, session.context.getGameName());
-            session.markPlayerDisconnected(nickname);
-            session.publishAndSnapshot("Player disconnected: " + nickname);
-        } else if (session == null) {
+            if (!session.finished()) {
+                session.markPlayerDisconnected(nickname);
+                session.removeSubscribers(nickname);
+                session.publishAndSnapshot("Player disconnected: " + nickname);
+            }
+        } else {
             disconnectedGameByNickname.put(nickname, null);
         }
     }
@@ -468,7 +488,8 @@ public class MesosServerCore implements MesosServerService {
      * @return true when a session contains the nickname
      */
     private boolean hasNicknameJoined (String nickname) {
-        return sessions.values().stream().anyMatch(session -> session.containsNickname(nickname));
+        return sessions.values().stream()
+                .anyMatch(session -> !session.finished() && session.containsNickname(nickname));
     }
 
     /**
@@ -507,7 +528,7 @@ public class MesosServerCore implements MesosServerService {
         private GameFlowController controller;
         private final List<String> joinedNicknames;
         private final Map<String, Color> colorsByNickname;
-        private final Set<GameUpdateSink> subscribers;
+        private final Map<String, GameUpdateSink> subscribersByNickname;
         private long singleConnectedSince;
         private String forcedWinnerNickname;
         private final DatabaseManager databaseManager;
@@ -523,7 +544,7 @@ public class MesosServerCore implements MesosServerService {
             this.context = context;
             this.joinedNicknames = new ArrayList<>();
             this.colorsByNickname = new LinkedHashMap<>();
-            this.subscribers = new LinkedHashSet<>();
+            this.subscribersByNickname = new LinkedHashMap<>();
             this.singleConnectedSince = -1;
             this.databaseManager = new DatabaseManager();
             this.gameTimestamp = new Timestamp(System.currentTimeMillis());
@@ -534,21 +555,12 @@ public class MesosServerCore implements MesosServerService {
          * becomes full.
          *
          * @param nickname joining nickname
-         * @param gameSetup setup helper used to create players at start
          * @return operation result with a snapshot and update publication
          */
-        private GameOperationResult join(String nickname, GameSetup gameSetup) {
+        private GameOperationResult join(String nickname) {
             joinedNicknames.add(nickname);
             markConnected(nickname);
-
-            if (joinedNicknames.size() == context.getGameSize()) {
-                gameSetup.createMapOfPlayers(context, joinedNicknames);
-                controller = new GameFlowController(context);
-                colorsByNickname.clear();
-                for (Player player : context.getPlayers()) {
-                    colorsByNickname.put(player.getNickname(), player.getColor());
-                }
-            }
+            boolean startedNow = startGameIfFull();
 
             return GameOperationResult.success(
                     started() ? "Player joined: the game starts" : "Player joined the lobby",
@@ -600,6 +612,34 @@ public class MesosServerCore implements MesosServerService {
         }
 
         /**
+         * Builds model players from the joined lobby and creates the game
+         * controller exactly once.
+         *
+         * @return true when the controller was created by this call
+         */
+        private boolean startGameIfFull() {
+            if (started() || !isFull()) {
+                return false;
+            }
+
+            Map<String, Color> joinedReservedColors = new LinkedHashMap<>();
+            for (String joinedNickname : joinedNicknames) {
+                Color reservedColor = colorsByNickname.get(joinedNickname);
+                if (reservedColor != null) {
+                    joinedReservedColors.put(joinedNickname, reservedColor);
+                }
+            }
+
+            gameSetup.createMapOfPlayers(context, joinedNicknames, joinedReservedColors);
+            controller = new GameFlowController(context);
+            colorsByNickname.clear();
+            for (Player player : context.getPlayers()) {
+                colorsByNickname.put(player.getNickname(), player.getColor());
+            }
+            return true;
+        }
+
+        /**
          * Builds a lobby summary for this not-yet-started game.
          *
          * @return lobby game summary with available seats
@@ -610,6 +650,57 @@ public class MesosServerCore implements MesosServerService {
                     context.getGameSize(),
                     joinedNicknames.size(),
                     context.getGameSize() - joinedNicknames.size()
+            );
+        }
+
+        /**
+         * Reserves or changes a player's pre-game color selection.
+         * Joined players may update their color while the lobby is open, and a
+         * nickname already reserved through the nickname flow may also reserve
+         * a color before joining the waiting room.
+         *
+         * @param nickname player making the request
+         * @param color requested color
+         * @return operation result with the updated pre-start snapshot
+         */
+        private GameOperationResult chooseColor(String nickname, Color color) {
+            if (started()) {
+                return GameOperationResult.failure(
+                        "La scelta del colore e' chiusa",
+                        OperationErrorCode.COLOR_SELECTION_CLOSED,
+                        toSnapshot()
+                );
+            }
+            boolean joinedPlayer = joinedNicknames.contains(nickname);
+            boolean waitingRoomReservation = !joinedPlayer
+                    && takenNicknames.contains(nickname)
+                    && !hasNicknameJoined(nickname)
+                    && !disconnectedGameByNickname.containsKey(nickname)
+                    && !isFull();
+            if (!joinedPlayer && !waitingRoomReservation) {
+                return GameOperationResult.failure(
+                        "Il giocatore '" + nickname + "' non e' presente nella partita",
+                        OperationErrorCode.PLAYER_NOT_IN_GAME,
+                        toSnapshot()
+                );
+            }
+
+            markConnected(nickname);
+
+            for (Map.Entry<String, Color> entry : colorsByNickname.entrySet()) {
+                if (!entry.getKey().equals(nickname) && entry.getValue() == color) {
+                    return GameOperationResult.failure(
+                        "Il colore '" + color + "' e' gia' stato scelto",
+                            OperationErrorCode.COLOR_ALREADY_TAKEN,
+                            toSnapshot()
+                    );
+                }
+            }
+
+            colorsByNickname.put(nickname, color);
+            return GameOperationResult.success(
+                    "Colore riservato",
+                    publishAndSnapshot("Colore riservato: " + nickname)
             );
         }
 
@@ -689,8 +780,8 @@ public class MesosServerCore implements MesosServerService {
         }
 
         /**
-         * Applies a pass command after checking game state, player membership
-         * and resilience blocking rules.
+         * Applies the optional pass command after checking game state and
+         * player membership.
          *
          * @param nickname requesting player nickname
          * @return operation result with updated snapshot or validation failure
@@ -716,8 +807,8 @@ public class MesosServerCore implements MesosServerService {
             try {
                 controller.pass(playerColor);
                 return GameOperationResult.success(
-                        "Turn passed",
-                        publishAndSnapshot("Turn passed")
+                        "Turn passed, extra card not picked",
+                        publishAndSnapshot("Turn passed, extra card not picked")
                 );
             } catch (RuntimeException exception) {
                 return GameOperationResult.failure(exception.getMessage(), toSnapshot());
@@ -748,7 +839,7 @@ public class MesosServerCore implements MesosServerService {
                 );
             }
 
-            subscribers.add(updateSink);
+            subscribersByNickname.put(nickname, updateSink);
             markConnected(nickname);
             applyResilienceRules();
             return GameOperationResult.success(
@@ -767,7 +858,10 @@ public class MesosServerCore implements MesosServerService {
          */
         private GameOperationResult unsubscribe(String nickname, GameUpdateSink updateSink) {
             if (updateSink != null) {
-                subscribers.remove(updateSink);
+                subscribersByNickname.remove(nickname, updateSink);
+            }
+            if (finished()) {
+                joinedNicknames.remove(nickname);
             }
             return GameOperationResult.success(
                     "Update subscription disabled",
@@ -903,6 +997,9 @@ public class MesosServerCore implements MesosServerService {
          * @param nickname connected nickname
          */
         private void markPlayerConnected(String nickname) {
+            if (!started()) {
+                return;
+            }
             Color color = colorsByNickname.get(nickname);
             if (color == null) {
                 return;
@@ -924,6 +1021,9 @@ public class MesosServerCore implements MesosServerService {
          * @param nickname disconnected nickname
          */
         private void markPlayerDisconnected(String nickname) {
+            if (!started()) {
+                return;
+            }
             Color color = colorsByNickname.get(nickname);
             if (color == null) {
                 return;
@@ -948,7 +1048,20 @@ public class MesosServerCore implements MesosServerService {
         private GameSnapshot publishAndSnapshot(String message) {
             GameSnapshot snapshot = toSnapshot();
             publish(new GameViewUpdate(context.getGameName(), message, snapshot));
+            broadcastEventLog();
             return snapshot;
+        }
+
+        /**
+         * Drains the structured events accumulated by the model during the last
+         * command and broadcasts one {@link EventNotification} per entry. Called
+         * right after the snapshot update so the board is already up to date when
+         * the popup arrives.
+         */
+        private void broadcastEventLog() {
+            for (EventLogEntry entry : context.drainEventLog()) {
+                publish(new EventNotification(context.getGameName(), entry));
+            }
         }
 
         /**
@@ -957,9 +1070,9 @@ public class MesosServerCore implements MesosServerService {
          *
          * @param update update to publish
          */
-        private void publish(GameViewUpdate update) {
+        private void publish(GameServerMessage update) {
             List<GameUpdateSink> failedSubscribers = new ArrayList<>();
-            for (GameUpdateSink subscriber : subscribers) {
+            for (GameUpdateSink subscriber : subscribersByNickname.values()) {
                 try {
                     subscriber.accept(update);
                 } catch (IOException exception) {
@@ -969,7 +1082,13 @@ public class MesosServerCore implements MesosServerService {
                     failedSubscribers.add(subscriber);
                 }
             }
-            subscribers.removeAll(failedSubscribers);
+            if (!failedSubscribers.isEmpty()) {
+                subscribersByNickname.values().removeAll(failedSubscribers);
+            }
+        }
+
+        private void removeSubscribers(String nickname) {
+            subscribersByNickname.remove(nickname);
         }
 
         /**
@@ -997,12 +1116,32 @@ public class MesosServerCore implements MesosServerService {
                     activeColor,
                     currentState == null ? 0 : currentState.getRemainingTopChoices(),
                     currentState == null ? 0 : currentState.getRemainingBottomChoices(),
+                    reservedColors(),
                     summarizePlayers(),
                     summarizeOfferTiles(),
                     summarizeTurnOrder(),
                     summarizeRow(context.getGameTable().getTopRow()),
-                    summarizeRow(context.getGameTable().getBottomRow())
+                    summarizeRow(context.getGameTable().getBottomRow()),
+                    currentState != null && currentState.isPassAvailable(),
+                    computeWinnerNickname()
             );
+        }
+
+        private String computeWinnerNickname() {
+            if (forcedWinnerNickname != null) {
+                return forcedWinnerNickname;
+            }
+            if (started() && controller.isGameFinished()) {
+                return new ModelController(context).getPlayerData().stream()
+                        .max(Comparator.comparingInt(PlayerData::prestigePoints))
+                        .map(PlayerData::nickname)
+                        .orElse(null);
+            }
+            return null;
+        }
+
+        private List<Color> reservedColors() {
+            return colorsByNickname.values().stream().distinct().toList();
         }
 
         /**
@@ -1083,22 +1222,26 @@ public class MesosServerCore implements MesosServerService {
         private List<PlayerSummary> summarizePlayers() {
             if (!started()) {
                 return joinedNicknames.stream()
-                        .map(nickname -> new PlayerSummary(nickname, null, 0, 0, 0, 0))
+                        .map(nickname -> new PlayerSummary(nickname, colorsByNickname.get(nickname), 0, 0, 0, 0))
                         .toList();
             }
 
-            int forcedWinnerScore = forcedWinnerNickname == null
-                    ? 0
-                    : context.getPlayers().stream().mapToInt(Player::getPrestigePoints).max().orElse(0) + 1;
-
-            return context.getPlayers().stream()
-                    .map(player -> new PlayerSummary(
-                            player.getNickname(),
-                            player.getColor(),
-                            player.getFood(),
-                            player.getNickname().equals(forcedWinnerNickname) ? forcedWinnerScore : player.getPrestigePoints(),
-                            player.getTribe().getNumCharacters(),
-                            player.getTribe().getNumBuildings()
+            return new ModelController(context).getPlayerData().stream()
+                    .map(pd -> new PlayerSummary(
+                            pd.nickname(),
+                            pd.color(),
+                            pd.food(),
+                            pd.prestigePoints(),
+                            pd.characterCards().size(),
+                            pd.buildingCards().size(),
+                            summarizeOwnedCards(pd.characterCards()),
+                            summarizeOwnedCards(pd.buildingCards()),
+                            pd.shamanStars(),
+                            pd.buildersDiscount(),
+                            pd.gatherersDiscount(),
+                            pd.buildersPrestige(),
+                            pd.buildingsPrestige(),
+                            pd.inventorTypeCount()
                     ))
                     .toList();
         }
@@ -1180,166 +1323,15 @@ public class MesosServerCore implements MesosServerService {
          *                               the network summary layer
          */
         private CardSummary summarizeCard(Card card, int selectionIndex) {
-            return switch (card) {
-                case BuildingCard buildingCard -> new CardSummary(
-                        selectionIndex,
-                        formatName(buildingCard.getClass().getSimpleName()),
-                        buildingCard.getEra(),
-                        false,
-                        describeCard(buildingCard),
-                        buildingCard.getFoodCost(),
-                        buildingCard.getPrestigePoints()
-                );
-                case EventCard eventCard -> new CardSummary(
-                        selectionIndex,
-                        formatName(eventCard.getClass().getSimpleName()),
-                        eventCard.getEra(),
-                        true,
-                        describeCard(eventCard),
-                        null,
-                        null
-                );
-                case CharacterCard characterCard -> new CardSummary(
-                        selectionIndex,
-                        formatName(characterCard.getClass().getSimpleName()),
-                        characterCard.getEra(),
-                        false,
-                        describeCard(characterCard),
-                        null,
-                        null
-                );
-                default -> throw new IllegalStateException("Unsupported card type: " + card.getClass().getSimpleName());
-            };
+            return card.getSummary(selectionIndex);
         }
 
-        /**
-         * Builds a short human-readable description for a known card type.
-         * Unknown card types deliberately fall back to an empty description.
-         *
-         * @param card card to describe
-         * @return localized effect summary or an empty string
-         */
-        private String describeCard(Card card) {
-            return switch (card) {
-                case BuilderCard builderCard ->
-                        "building discount " + builderCard.getBuildingDiscount()
-                                + ", end game +" + builderCard.getPrestigePoints() + " pp";
-                case GathererCard gathererCard ->
-                        "sustenance discount " + gathererCard.getDiscount() + " food";
-                case HunterCard hunterCard ->
-                        hunterCard.isActiveHunter() ? "active hunter" : "hunter";
-                case InventorCard inventorCard ->
-                        "icon " + inventorCard.getInventionIcon();
-                case ShamanCard shamanCard ->
-                        shamanCard.getStars() + " shamanic stars";
-                case HuntEvent huntEvent ->
-                        "+" + huntEvent.getPrestigePerHunter() + " pp and +" + huntEvent.getFoodPerHunter()
-                                + " food per hunter";
-                case CavePaintingEvent cavePaintingEvent ->
-                        "with at least " + cavePaintingEvent.getThreshold() + " artists: +"
-                                + cavePaintingEvent.getPointsPerArtist()
-                                + " pp each, otherwise " + cavePaintingEvent.getPenalty() + " pp";
-                case ShamanicRitualEvent shamanicRitualEvent ->
-                        "winners +" + shamanicRitualEvent.getWinnerBonus()
-                                + " pp, losers " + shamanicRitualEvent.getLoserPenalty() + " pp";
-                case SustenanceEvent sustenanceEvent ->
-                        sustenanceEvent.getFoodPerCharacter() + " food per character, each deficit costs "
-                                + sustenanceEvent.getPointPenalty() + " pp";
-                case BuildingBonusEvent buildingBonusEvent ->
-                        "on " + formatTrigger(buildingBonusEvent.getTrigger())
-                                + ": " + formatName(buildingBonusEvent.getCharacterType().getSimpleName())
-                                + " gives " + signed(buildingBonusEvent.getFoodBonus(), " food")
-                                + ", +" + buildingBonusEvent.getPrestigeBonus() + " pp";
-                case BuildingEndTurn buildingEndTurn ->
-                        "end turn: +" + buildingEndTurn.getFoodBonus() + " food with positive turn bonus";
-                case BuildingOnCard buildingOnCard ->
-                        buildingOnCard.isSetCompletion()
-                                ? "when taking cards: +" + buildingOnCard.getFoodBonus() + " food if you complete a set"
-                                : "inventor pair: +" + buildingOnCard.getFoodBonus() + " food with duplicate icon";
-                case BuildingShamanicRitual buildingShamanicRitual ->
-                        buildingShamanicRitual.getStarBonus() != 0
-                                ? "ritual: +" + buildingShamanicRitual.getStarBonus() + " stars before scoring"
-                                : buildingShamanicRitual.getWinMultiplier() != 0
-                                        ? "ritual: the winner multiplies by x" + buildingShamanicRitual.getWinMultiplier()
-                                        : "ritual: cancel your penalty if you lose";
-                case BuildingEndGame buildingEndGame ->
-                        describeEndGameBuilding(buildingEndGame);
-                default -> "";
-            };
-        }
-
-        /**
-         * Builds the specific description for an end-game building.
-         *
-         * @param buildingEndGame end-game building to describe
-         * @return description, or an empty string when the building has no
-         *         recognized scoring configuration
-         */
-        private String describeEndGameBuilding(BuildingEndGame buildingEndGame) {
-            if (buildingEndGame.isDoubleBuildersPrestige()) {
-                return "end game: double builder prestige";
+        private List<CardSummary> summarizeOwnedCards(List<? extends Card> cards) {
+            List<CardSummary> summaries = new ArrayList<>();
+            for (int index = 0; index < cards.size(); index++) {
+                summaries.add(summarizeCard(cards.get(index), index));
             }
-            if (buildingEndGame.getCharacterSetBonusPrestige() != 0) {
-                return "end game: +" + buildingEndGame.getCharacterSetBonusPrestige() + " pp per complete character set";
-            }
-            if (buildingEndGame.getCharacterMultiplier() != 0 && buildingEndGame.getCharacterType() != null) {
-                return "end game: +" + buildingEndGame.getCharacterMultiplier() + " pp per "
-                        + formatName(buildingEndGame.getCharacterType().getSimpleName());
-            }
-            if (buildingEndGame.getPrestigeBonus() != 0) {
-                return "end game: +" + buildingEndGame.getPrestigeBonus() + " pp";
-            }
-            return "";
-        }
-
-        /**
-         * Converts a class-style name into a readable display name.
-         *
-         * @param rawName raw class or type name
-         * @return formatted display name
-         */
-        private String formatName(String rawName) {
-            String baseName = rawName
-                    .replace("Card", "")
-                    .replace("Event", " Event");
-
-            StringBuilder builder = new StringBuilder();
-            for (int index = 0; index < baseName.length(); index++) {
-                char character = baseName.charAt(index);
-                if (index > 0 && Character.isUpperCase(character) && baseName.charAt(index - 1) != ' ') {
-                    builder.append(' ');
-                }
-                builder.append(character);
-            }
-            return builder.toString().trim();
-        }
-
-        /**
-         * Formats a building trigger enum for display.
-         *
-         * @param trigger trigger to format
-         * @return lowercase trigger label without the event prefix
-         * @throws NullPointerException if trigger is null
-         */
-        private String formatTrigger(it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger trigger) {
-            return trigger.name()
-                    .replace("ON_EVENT_", "")
-                    .replace('_', ' ')
-                    .toLowerCase();
-        }
-
-        /**
-         * Formats a signed numeric value with a suffix.
-         *
-         * @param value value to format
-         * @param suffix suffix appended after the value
-         * @return value with a leading plus sign when non-negative
-         */
-        private String signed(int value, String suffix) {
-            if (value >= 0) {
-                return "+" + value + suffix;
-            }
-            return value + suffix;
+            return summaries;
         }
 
         /**

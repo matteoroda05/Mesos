@@ -21,6 +21,8 @@ public interface RemoteMesosServer extends Remote {
 
     GameOperationResult chooseCard(ChooseCardRequest request) throws RemoteException;
 
+    GameOperationResult chooseColor(ChooseColorRequest request) throws RemoteException;
+
     GameOperationResult pass(PassRequest request) throws RemoteException;
 
     GameOperationResult subscribe(SubscribeGameRequest request, RemoteGameUpdateListener listener) throws RemoteException;

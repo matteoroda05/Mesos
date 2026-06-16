@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +88,7 @@ final class CliPrinter {
                         snapshot.players(),
                         snapshot.playerCount(),
                         localNickname,
-                        snapshot.finished(),
+                        snapshot.winnerNickname(),
                         snapshot.currentPlayerNickname(),
                         boardWidth
                 )
@@ -133,9 +135,59 @@ final class CliPrinter {
                 "  card top <index>      takes a card from the top row",
                 "  card bottom <index>   takes a card from the bottom row",
                 "  pass | passa          skips the turn when you have extra cards to take",
+                "  show-mine             shows your own cards and tribe stats",
+                "  show-cards <name>     shows another player's cards and tribe stats",
                 "  wait [seconds]        waits briefly and refreshes",
                 "  help | aiuto          shows this help",
                 "  quit | esci | exit    closes the client");
+    }
+
+    String renderPlayerCards(PlayerSummary player) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(playerLabel(player.nickname(), player.color()))
+                .append(" | food ").append(player.food())
+                .append(" | prestige ").append(player.prestigePoints());
+
+        Map<String, List<CardSummary>> byType = new LinkedHashMap<>();
+        for (CardSummary card : player.characterCards()) {
+            byType.computeIfAbsent(card.type(), k -> new ArrayList<>()).add(card);
+        }
+
+        for (Map.Entry<String, List<CardSummary>> entry : byType.entrySet()) {
+            String key = entry.getKey().toLowerCase(Locale.ROOT).replace(" ", "");
+            String extra = switch (key) {
+                case "shaman"   -> "★ " + player.shamanStars();
+                case "builder"  -> "-" + player.buildersDiscount() + " food  +" + player.buildersPrestige() + " pts";
+                case "gatherer" -> "-" + player.gatherersDiscount() + " food";
+                case "inventor" -> player.inventorTypeCount() + " types";
+                default         -> "";
+            };
+            sb.append(NEW_LINE).append(entry.getKey()).append("s (").append(entry.getValue().size()).append(")");
+            if (!extra.isEmpty()) sb.append("  · ").append(extra);
+            for (CardSummary card : entry.getValue()) {
+                sb.append(NEW_LINE).append("  ").append(card.type());
+                if (card.era() != null) sb.append(" [").append(card.era()).append("]");
+                if (!card.details().isEmpty()) sb.append("  — ").append(card.details());
+            }
+        }
+
+        if (!player.buildingCards().isEmpty()) {
+            sb.append(NEW_LINE).append("Buildings (").append(player.buildingCards().size())
+                    .append(")  · ").append(player.buildingsPrestige()).append(" pts");
+            for (CardSummary card : player.buildingCards()) {
+                sb.append(NEW_LINE).append("  ").append(card.type());
+                if (card.era() != null) sb.append(" [").append(card.era()).append("]");
+                if (card.foodCost() != null) sb.append("  cost ").append(card.foodCost());
+                if (card.prestigePoints() != null) sb.append("  pts ").append(card.prestigePoints());
+                if (!card.details().isEmpty()) sb.append("  — ").append(card.details());
+            }
+        }
+
+        if (player.characterCards().isEmpty() && player.buildingCards().isEmpty()) {
+            sb.append(NEW_LINE).append("  No cards yet.");
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -208,13 +260,13 @@ final class CliPrinter {
 
     /**
      * Appends the player summary list.
-     * Finished games are sorted by prestige, while active games keep the
+     * When a winner is known the winner is listed first, followed by the
+     * remaining players sorted by prestige descending; active games keep the
      * snapshot order.
      *
-     * @param builder destination builder
      * @param players player summaries to render
      * @param localNickname nickname to mark as local
-     * @param finished whether the game is finished
+     * @param winnerNickname winner's nickname, or null during an active game
      * @param currentPlayerNickname nickname to mark as active
      * @throws NullPointerException if the builder or player list is null
      */
@@ -222,7 +274,7 @@ final class CliPrinter {
             List<PlayerSummary> players,
             int playerCount,
             String localNickname,
-            boolean finished,
+            String winnerNickname,
             String currentPlayerNickname,
             int boardWidth
     ) {
@@ -232,11 +284,13 @@ final class CliPrinter {
             return createAutoDoubleBox(fitLines(body, playerSlots(playerCount), boardWidth - boxFixedContentWidth()), boardWidth, null);
         }
 
-        List<PlayerSummary> orderedPlayers = finished
-                ? players.stream()
-                .sorted(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
-                .toList()
-                : players;
+        List<PlayerSummary> orderedPlayers = winnerNickname == null
+                ? players
+                : players.stream()
+                .sorted(Comparator.<PlayerSummary, Boolean>comparing(
+                        p -> p.nickname().equals(winnerNickname), Comparator.reverseOrder())
+                        .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed()))
+                .toList();
 
         for (PlayerSummary player : orderedPlayers) {
             StringBuilder line = new StringBuilder();
@@ -269,7 +323,6 @@ final class CliPrinter {
      * Appends the turn-order and offer-track panels side by side when they fit,
      * otherwise stacks them vertically.
      *
-     * @param builder destination builder
      * @param turnOrder turn-order spaces
      * @param offerTiles offer tiles
      * @param boardWidth available board width
@@ -415,7 +468,7 @@ final class CliPrinter {
     private int preferredCardsPerShelf(int cardCount, int boardWidth) {
         int maxColumns = Math.max(1, (boardWidth + COLUMN_GAP.length()) / (MIN_CARD_WIDTH + COLUMN_GAP.length()));
         int preferredColumns = Math.max(1, (boardWidth + COLUMN_GAP.length()) / (PREFERRED_CARD_WIDTH + COLUMN_GAP.length()));
-        return Math.max(1, Math.min(cardCount, Math.min(maxColumns, preferredColumns)));
+        return Math.clamp(cardCount, 1, Math.min(maxColumns, preferredColumns));
     }
 
     /**
@@ -441,12 +494,12 @@ final class CliPrinter {
         if (tilesInRow <= 0) {
             return MIN_OFFER_TILE_WIDTH;
         }
-        int targetWidth = 21;
+        int targetWidth;
         if (tilesInRow >= 5) {
             targetWidth = 26;
         } else if (tilesInRow == 4) {
             targetWidth = 28;
-        } else if (tilesInRow <= 3) {
+        } else {
             targetWidth = 30;
         }
         return clamp(targetWidth, MIN_OFFER_TILE_WIDTH, MAX_OFFER_TILE_WIDTH);
@@ -1140,8 +1193,7 @@ final class CliPrinter {
             return tputWidth;
         }
 
-        Integer sttyWidth = runTerminalQuery("stty size");
-        return sttyWidth;
+        return runTerminalQuery("stty size");
     }
 
     /**
@@ -1216,6 +1268,6 @@ final class CliPrinter {
      * @return value constrained to the inclusive range
      */
     private int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
+        return Math.clamp(value, min, max);
     }
 }

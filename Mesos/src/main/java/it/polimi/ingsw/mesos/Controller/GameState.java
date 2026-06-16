@@ -105,4 +105,15 @@ abstract public class GameState {
     public int getRemainingBottomChoices() {
         return 0;
     }
+
+    /**
+     * Reports whether the current state exposes the optional manual pass
+     * action to the active player.
+     *
+     * @return true only when the active player may skip an optional extra
+     *         choice with {@code pass}
+     */
+    public boolean isPassAvailable() {
+        return false;
+    }
 }

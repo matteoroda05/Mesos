@@ -6,6 +6,7 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.Network.CardSummary;
 import it.polimi.ingsw.mesos.Result;
 
 
@@ -31,5 +32,19 @@ abstract public class EventCard extends TribeCard {
     @Override
     public boolean isEvent() {
         return true;
+    }
+
+    @Override
+    public CardSummary getSummary(int selectionIndex) {
+        return new CardSummary(
+                selectionIndex,
+                this.getReadableName(),
+                this.getEra(),
+                true,
+                this.accept(CardDescriptionVisitorImpl.INSTANCE),
+                null,
+                null,
+                this.getPresentationId()
+        );
     }
 }

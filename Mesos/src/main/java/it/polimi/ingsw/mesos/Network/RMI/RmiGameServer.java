@@ -210,6 +210,17 @@ public class RmiGameServer implements AutoCloseable {
         }
 
         /**
+         * Delegates color choice to the server service.
+         *
+         * @param request color-choice request
+         * @return operation result from the service
+         */
+        @Override
+        public GameOperationResult chooseColor(ChooseColorRequest request) {
+            return serverService.chooseColor(request);
+        }
+
+        /**
          * Delegates pass requests to the server service.
          *
          * @param request pass request

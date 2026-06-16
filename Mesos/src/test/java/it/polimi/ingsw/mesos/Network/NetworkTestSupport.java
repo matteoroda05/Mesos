@@ -11,9 +11,12 @@ import java.net.ServerSocket;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
@@ -121,11 +124,17 @@ final class NetworkTestSupport {
 
         GameOperationResult aliceSubscription = aliceClient.subscribe(
                 new SubscribeGameRequest(gameName, "Alice"),
-                aliceUpdates::offer
+                update -> update.accept(new GameServerMessageVisitor() {
+                    public void visitEventNotification(EventNotification n) {}
+                    public void visitGameViewUpdate(GameViewUpdate v) { aliceUpdates.offer(v); }
+                })
         );
         GameOperationResult bobSubscription = bobClient.subscribe(
                 new SubscribeGameRequest(gameName, "Bob"),
-                bobUpdates::offer
+                update -> update.accept(new GameServerMessageVisitor() {
+                    public void visitEventNotification(EventNotification n) {}
+                    public void visitGameViewUpdate(GameViewUpdate v) { bobUpdates.offer(v); }
+                })
         );
         assertTrue(aliceSubscription.success());
         assertTrue(bobSubscription.success());
@@ -198,6 +207,80 @@ final class NetworkTestSupport {
         assertNull(fullJoin.snapshot());
     }
 
+    static void assertWaitingRoomColorSelection(
+            GameClient aliceClient,
+            GameClient bobClient,
+            GameClient carolClient,
+            String gameName
+    ) throws IOException {
+        GameOperationResult createGame = aliceClient.createGame(new CreateGameRequest(gameName, 3));
+        assertTrue(createGame.success());
+
+        GameOperationResult aliceJoin = aliceClient.joinGame(new JoinGameRequest(gameName, "Alice"));
+        assertTrue(aliceJoin.success());
+        GameOperationResult bobJoin = bobClient.joinGame(new JoinGameRequest(gameName, "Bob"));
+        assertTrue(bobJoin.success());
+        assertEquals(GameStatus.LOGIN, bobJoin.snapshot().status());
+
+        LinkedBlockingQueue<GameViewUpdate> bobUpdates = new LinkedBlockingQueue<>();
+        assertTrue(aliceClient.subscribe(new SubscribeGameRequest(gameName, "Alice"), update -> { }).success());
+        assertTrue(bobClient.subscribe(new SubscribeGameRequest(gameName, "Bob"),
+                update -> update.accept(new GameServerMessageVisitor() {
+                    public void visitEventNotification(EventNotification n) {}
+                    public void visitGameViewUpdate(GameViewUpdate v) { bobUpdates.offer(v); }
+                })).success());
+
+        GameOperationResult aliceChooseBlue =
+                aliceClient.chooseColor(new ChooseColorRequest(gameName, "Alice", Color.BLUE));
+        assertTrue(aliceChooseBlue.success());
+        assertEquals(Color.BLUE, playerColor(aliceChooseBlue.snapshot(), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE), aliceChooseBlue.snapshot().reservedColors());
+
+        GameViewUpdate aliceBlueUpdate = pollUpdateMatching(
+                bobUpdates,
+                update -> update.snapshot() != null && Color.BLUE.equals(playerColor(update.snapshot(), "Alice"))
+        );
+        assertNotNull(aliceBlueUpdate);
+        assertEquals(gameName, aliceBlueUpdate.gameName());
+        assertEquals(Color.BLUE, playerColor(aliceBlueUpdate.snapshot(), "Alice"));
+
+        GameOperationResult bobChooseBlue =
+                bobClient.chooseColor(new ChooseColorRequest(gameName, "Bob", Color.BLUE));
+        assertFalse(bobChooseBlue.success());
+        assertEquals(OperationErrorCode.COLOR_ALREADY_TAKEN, bobChooseBlue.errorCode());
+        assertEquals(Color.BLUE, playerColor(bobChooseBlue.snapshot(), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE), bobChooseBlue.snapshot().reservedColors());
+        assertNull(playerColorOrNull(bobChooseBlue.snapshot(), "Bob"));
+        assertNull(pollUpdate(bobUpdates, 300));
+
+        GameOperationResult carolNickname = carolClient.nickname(new NicknameRequest("Carol"));
+        assertTrue(carolNickname.success());
+        GameOperationResult carolChooseBlack =
+                carolClient.chooseColor(new ChooseColorRequest(gameName, "Carol", Color.BLACK));
+        assertTrue(carolChooseBlack.success());
+        assertEquals(Color.BLUE, playerColor(carolChooseBlack.snapshot(), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE, Color.BLACK), carolChooseBlack.snapshot().reservedColors());
+
+        GameViewUpdate carolReservedUpdate = pollUpdateMatching(
+                bobUpdates,
+                update -> update.message() != null && update.message().contains("Carol")
+        );
+        assertNotNull(carolReservedUpdate);
+        assertEquals(gameName, carolReservedUpdate.gameName());
+        assertNotNull(carolReservedUpdate.snapshot());
+        assertFalse(carolReservedUpdate.snapshot().started());
+        assertEquals(2, carolReservedUpdate.snapshot().joinedPlayers());
+        assertEquals(Color.BLUE, playerColor(carolReservedUpdate.snapshot(), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE, Color.BLACK), carolReservedUpdate.snapshot().reservedColors());
+        assertNull(playerColorOrNull(carolReservedUpdate.snapshot(), "Bob"));
+
+        GameOperationResult carolJoin = carolClient.joinGame(new JoinGameRequest(gameName, "Carol"));
+        assertTrue(carolJoin.success());
+        assertTrue(carolJoin.snapshot().started());
+        assertEquals(GameStatus.ROUND_OFFER, carolJoin.snapshot().status());
+        assertEquals(Color.BLACK, playerColor(carolJoin.snapshot(), "Carol"));
+    }
+
     private static GameViewUpdate pollUpdate(LinkedBlockingQueue<GameViewUpdate> queue) {
         return pollUpdate(queue, 2_000);
     }
@@ -209,5 +292,38 @@ final class NetworkTestSupport {
             Thread.currentThread().interrupt();
             throw new AssertionError("Interrupted while waiting for a pushed update", exception);
         }
+    }
+
+    private static GameViewUpdate pollUpdateMatching(
+            LinkedBlockingQueue<GameViewUpdate> queue,
+            Predicate<GameViewUpdate> predicate
+    ) {
+        long deadline = System.currentTimeMillis() + 2_000;
+        while (System.currentTimeMillis() < deadline) {
+            GameViewUpdate update = pollUpdate(queue, deadline - System.currentTimeMillis());
+            if (update == null) {
+                return null;
+            }
+            if (predicate.test(update)) {
+                return update;
+            }
+        }
+        return null;
+    }
+
+    private static Color playerColor(GameSnapshot snapshot, String nickname) {
+        return snapshot.players().stream()
+                .filter(player -> nickname.equals(player.nickname()))
+                .findFirst()
+                .orElseThrow()
+                .color();
+    }
+
+    private static Color playerColorOrNull(GameSnapshot snapshot, String nickname) {
+        return snapshot.players().stream()
+                .filter(player -> nickname.equals(player.nickname()))
+                .findFirst()
+                .map(PlayerSummary::color)
+                .orElse(null);
     }
 }

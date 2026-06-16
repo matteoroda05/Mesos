@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +16,8 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Result;
 
 public class ModelController {
@@ -137,6 +140,30 @@ public class ModelController {
     }
 
     /**
+     * Returns a snapshot of each player's data for use by the network layer.
+     *
+     * @return player data in model order
+     */
+    public List<PlayerData> getPlayerData() {
+        return game_context.getPlayers().stream()
+                .map(p -> new PlayerData(
+                        p.getNickname(),
+                        p.getColor(),
+                        p.getFood(),
+                        p.getPrestigePoints(),
+                        p.getTribe().getCharacterCards(),
+                        p.getTribe().getBuildingCards(),
+                        p.getTribe().countShamanStars(),
+                        p.getTribe().buildersDiscount(),
+                        p.getTribe().gatherersDiscount(),
+                        p.getTribe().buildersEndGamePrestige(),
+                        p.getTribe().buildingsPrestige(),
+                        p.getTribe().inventionIcons().size()
+                ))
+                .toList();
+    }
+
+    /**
      * Finds every owned building that reacts to the given trigger.
      *
      * @param trigger trigger to search for across all player tribes
@@ -233,7 +260,9 @@ public class ModelController {
         GameTable game_table = this.game_context.getGameTable();
         Color player_color = game_table.getOfferTrack().getOccupiedTiles().getFirst().clear();
         Result placing_result = game_table.getTurnOrderTile().placeTotem(player_color);
-        playerApplyOutcome(placing_result, player_color);
+        AppliedDelta applied = playerApplyOutcome(placing_result, player_color);
+        this.game_context.logEventEntry(
+                new EventLogEntry.TurnOrder(player_color, applied.foodDelta(), applied.prestigeDelta()));
     }
 
     /**
@@ -271,6 +300,11 @@ public class ModelController {
             card_to_buy.setOwner(player);
             int check = player.loseFood(cost);
             if (check > 0) throw new IllegalStateException("player lost more food than than available");
+            if (cost > 0) {
+                logNotice("Building purchased", "Player " + player_color + " bought building "
+                        + EventLogEntry.formatBuildingName(card_to_buy.getClass().getSimpleName())
+                        + " losing " + cost + " food");
+            }
         } else {
             // For character cards
             CharacterCard wanted;
@@ -282,7 +316,10 @@ public class ModelController {
 
             Class<? extends CharacterCard> card_type = player.getTribe().addCard(wanted);
             if (card_type == HunterCard.class && ((HunterCard)wanted).isActiveHunter()) {
-                player.gainFood(player.getTribe().getNumCharacterOfType(HunterCard.class));
+                int gained = player.getTribe().getNumCharacterOfType(HunterCard.class);
+                player.gainFood(gained);
+                logNotice("Character effect", "Player " + player_color
+                        + " took an active Hunter, gaining " + gained + " food");
             }
             return Optional.ofNullable(wanted);
         }
@@ -365,8 +402,12 @@ public class ModelController {
      */
     public void restoreSkippedPlayer(Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
-        Result placing_result = this.game_context.getGameTable().getTurnOrderTile().placeTotem(player_color);
-        playerApplyOutcome(placing_result, player_color);
+        GameTable gameTable = this.game_context.getGameTable();
+        gameTable.getOfferTrack().clearOccupantByColor(player_color);
+        Result placing_result = gameTable.getTurnOrderTile().placeTotem(player_color);
+        AppliedDelta applied = playerApplyOutcome(placing_result, player_color);
+        this.game_context.logEventEntry(
+                new EventLogEntry.TurnOrder(player_color, applied.foodDelta(), applied.prestigeDelta()));
     }
 
 
@@ -403,12 +444,15 @@ public class ModelController {
      *
      * @param outcome result to apply
      * @param player_color color of the affected player
+     * @return the food and prestige change actually applied to the player
      * @throws IllegalArgumentException if the player color is null or unknown
      * @throws NullPointerException if the outcome is null
      */
-    public void playerApplyOutcome(Result outcome, Color player_color) {
+    public AppliedDelta playerApplyOutcome(Result outcome, Color player_color) {
         if (player_color == null) throw new IllegalArgumentException("player_color cannot be null");
         Player p = this.game_context.getPlayer(player_color);
+        int food_before = p.getFood();
+        int prestige_before = p.getPrestigePoints();
         int penalty = 0;
         if (outcome.food() > 0){
             p.gainFood(outcome.food());
@@ -418,5 +462,75 @@ public class ModelController {
         if (outcome.prestige() - penalty != 0){
             p.changePrestigePoints(outcome.prestige() - penalty);
         }
+        return new AppliedDelta(p.getFood() - food_before, p.getPrestigePoints() - prestige_before);
+    }
+
+    /**
+     * Runs an action that may change a player's resources and reports the food
+     * and prestige actually applied, by reading model state before and after.
+     *
+     * @param color color of the player whose resources may change
+     * @param action mutation to run
+     * @return the food and prestige change applied to the player
+     * @throws IllegalArgumentException if the color is null or unknown
+     */
+    public AppliedDelta captureDelta(Color color, Runnable action) {
+        if (color == null) throw new IllegalArgumentException("color cannot be null");
+        Player p = this.game_context.getPlayer(color);
+        int food_before = p.getFood();
+        int prestige_before = p.getPrestigePoints();
+        action.run();
+        return new AppliedDelta(p.getFood() - food_before, p.getPrestigePoints() - prestige_before);
+    }
+
+    /**
+     * Records that a building was activated, describing its owner and the
+     * food/prestige outcome (or a special action when there was no resource
+     * change), so the event can be broadcast to clients.
+     *
+     * @param building building that was activated
+     * @param delta food/prestige change applied by the activation
+     * @param extra special-action description when there is no resource change,
+     *              or null
+     * @throws NullPointerException if the building has no owner
+     */
+    public void logBuildingActivation(BuildingCard building, AppliedDelta delta, String extra) {
+        String name = EventLogEntry.formatBuildingName(building.getClass().getSimpleName());
+        Player ownerPlayer = building.getOwner();
+        String ownerSuffix = ownerPlayer == null ? "" : " from player " + ownerPlayer.getColor();
+        StringBuilder body = new StringBuilder("Building " + name + ownerSuffix + " has been activated");
+        if (delta.foodDelta() != 0 || delta.prestigeDelta() != 0) {
+            body.append(", ").append(describeBuildingOutcome(delta));
+        } else if (extra != null && !extra.isBlank()) {
+            body.append(", ").append(extra);
+        } else {
+            body.append(" with no further effect");
+        }
+        this.game_context.logEventEntry(new EventLogEntry.Notice("Building activated", body.toString()));
+    }
+
+    /**
+     * Records a free-form notification to be broadcast to clients.
+     *
+     * @param title heading of the notification
+     * @param body descriptive body
+     */
+    public void logNotice(String title, String body) {
+        this.game_context.logEventEntry(new EventLogEntry.Notice(title, body));
+    }
+
+    private static String describeBuildingOutcome(AppliedDelta delta) {
+        List<String> parts = new ArrayList<>();
+        if (delta.foodDelta() != 0) {
+            parts.add(buildingVerb(delta.foodDelta()) + " " + Math.abs(delta.foodDelta()) + " food");
+        }
+        if (delta.prestigeDelta() != 0) {
+            parts.add(buildingVerb(delta.prestigeDelta()) + " " + Math.abs(delta.prestigeDelta()) + " prestige points");
+        }
+        return String.join(" and ", parts);
+    }
+
+    private static String buildingVerb(int delta) {
+        return delta > 0 ? "granting" : "costing";
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Controller.States.ActionState;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameTable;
@@ -50,7 +51,7 @@ public class BuildingAfterEveryone extends BuildingCard {
         final boolean cards_available = !table.getTopRow()
                 .getTakeableCards(owner.getFood(), owner.getTribe().buildersDiscount()).isEmpty();
         if (cards_available) {
-            return new ActionState(controller, owner.getColor(), 1, true);
+            return new ActionState(controller, owner.getColor(), 1, true, true);
         }
         return null;
     }
@@ -69,5 +70,15 @@ public class BuildingAfterEveryone extends BuildingCard {
      */
     public void reset() {
         to_apply = true;
+    }
+
+    @Override
+    public String accept(CardDescriptionVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public String getReadableName() {
+        return "Building After Everyone";
     }
 }

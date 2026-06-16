@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Model.Cards.Characters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
@@ -36,5 +37,15 @@ public final class InventorCard extends CharacterCard {
      */
     public InventionIcon getInventionIcon() {
         return this.invention_icon;
+    }
+
+    @Override
+    public String accept(CardDescriptionVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public String getReadableName() {
+        return "Inventor";
     }
 }

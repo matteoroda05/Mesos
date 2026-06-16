@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
+import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
@@ -136,5 +137,15 @@ public class BuildingOnCard extends BuildingCard {
      */
     public boolean isSetCompletion() {
         return !inventors_pair;
+    }
+
+    @Override
+    public String accept(CardDescriptionVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public String getReadableName() {
+        return "Building On Card";
     }
 }

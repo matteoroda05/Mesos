@@ -40,7 +40,7 @@ class BuildingBonusEventTest extends BuildingTestSupport {
     }
 
     @Test
-    void effectRewardsFoodAndPrestigePerMatchingCharacter() {
+    void effectDoesNotRewardPlayersOnEvent() {
         Fixture fixture = createFixture();
         BuildingBonusEvent building = new BuildingBonusEvent(
                 Era.SECOND, 2, 4, 3, 1, 1, HunterCard.class, BuildingTrigger.ON_EVENT_HUNT);
@@ -55,12 +55,12 @@ class BuildingBonusEventTest extends BuildingTestSupport {
 
         building.effect(output, fixture.controller());
 
-        assertEquals(foodBefore + 5, fixture.owner().getFood());
-        assertEquals(2, fixture.owner().getPrestigePoints());
+        assertEquals(foodBefore, fixture.owner().getFood());
+        assertEquals(0, fixture.owner().getPrestigePoints());
     }
 
     @Test
-    void effectKeepsOnlyTheBaseFoodDeltaWhenOwnerHasNoMatchingCharacters() {
+    void effectDoesNotChangePlayerFoodOnEvent() {
         Fixture fixture = createFixture();
         BuildingBonusEvent building = new BuildingBonusEvent(
                 Era.SECOND, 2, 4, 3, 1, 1, ArtistCard.class, BuildingTrigger.ON_EVENT_CAVE_PAINTINGS);
@@ -71,7 +71,7 @@ class BuildingBonusEventTest extends BuildingTestSupport {
         output.put(Color.YELLOW, new Result(2, 0, 0));
         building.effect(output, fixture.controller());
 
-        assertEquals(14, fixture.owner().getFood());
+        assertEquals(10, fixture.owner().getFood());
         assertEquals(0, fixture.owner().getPrestigePoints());
     }
 }

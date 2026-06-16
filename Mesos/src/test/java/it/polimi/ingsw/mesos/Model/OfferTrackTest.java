@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OfferTrackTest {
 
@@ -119,6 +120,18 @@ class OfferTrackTest {
     @Test
     void getOccupiedTilesReturnsEmptyListWhenNoTileIsOccupied() {
         assertEquals(List.of(), offer_track.getOccupiedTiles());
+    }
+
+    @Test
+    void clearOccupantByColorClearsOnlyMatchingTile() {
+        tile_b.occupy(Color.BLUE);
+        tile_d.occupy(Color.YELLOW);
+
+        offer_track.clearOccupantByColor(Color.BLUE);
+
+        assertTrue(tile_b.isAvailable());
+        assertEquals(Color.YELLOW, tile_d.getOccupant());
+        assertEquals(List.of(tile_d), offer_track.getOccupiedTiles());
     }
 
     @Test

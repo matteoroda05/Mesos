@@ -351,6 +351,24 @@ class ModelControllerTest {
         assertEquals(initialFood + 2, player.getFood());
     }
 
+    @Test
+    void restoreSkippedPlayerClearsStaleOfferOccupancyBeforeRestoringFirstAvailableTurnOrderSlot() {
+        Player restoredPlayer = firstPlayer();
+        Player blockingPlayer = game_context.getPlayers().get(1);
+        OfferTile staleOfferTile = game_context.getGameTable().getOfferTrack().getTile(0);
+
+        game_context.getGameTable().getTurnOrderTile().clear();
+        game_context.getGameTable().getTurnOrderTile().getSpaces().get(0).setOccupant(blockingPlayer.getColor());
+        staleOfferTile.occupy(restoredPlayer.getColor());
+
+        model_controller.restoreSkippedPlayer(restoredPlayer.getColor());
+
+        assertTrue(staleOfferTile.isAvailable());
+        assertEquals(
+                List.of(blockingPlayer.getColor(), restoredPlayer.getColor()),
+                game_context.getGameTable().getTurnOrderTile().currentOrderTopToBottom());
+    }
+
     private Player firstPlayer() {
         return game_context.getPlayers().getFirst();
     }
