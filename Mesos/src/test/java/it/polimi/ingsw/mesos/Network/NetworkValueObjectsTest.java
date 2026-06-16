@@ -176,7 +176,10 @@ class NetworkValueObjectsTest {
 
     @Test
     void unsupportedServerMessagesAndNullClientFactoryFailFast() {
-        GameServerMessage unsupported = new GameServerMessage() { };
+        GameServerMessage unsupported = new GameServerMessage() {
+            @Override
+            public void accept(GameServerMessageVisitor visitor) { }
+        };
 
         IOException exception = assertThrows(IOException.class, () -> unsupported.messageExecute(null));
         assertTrue(exception.getMessage().contains("Unsupported server message"));
