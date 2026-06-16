@@ -34,7 +34,7 @@ public class ShamanicRitualEventTest {
     }
 
     @Test
-    void calcOutComeReturnsCorrectly1() {
+    void calculateOutcome_distinctHighestAndLowestStarCounts_awardsBonusToTopAndPenaltyToBottom() {
         Tribe tribe1 = new Tribe();
         Tribe tribe2 = new Tribe();
         Tribe tribe3 = new Tribe();
@@ -62,7 +62,7 @@ public class ShamanicRitualEventTest {
     }
 
     @Test
-    void calcOutComeReturnsCorrectly2() {
+    void calculateOutcome_multiplePlayersTiedForMostStars_awardsBonusToEachWinner() {
         Tribe tribe1 = new Tribe();
         Tribe tribe2 = new Tribe();
         Tribe tribe3 = new Tribe();
@@ -90,7 +90,7 @@ public class ShamanicRitualEventTest {
     }
 
     @Test
-    void calcOutComeReturnsCorrectly3() {
+    void calculateOutcome_multiplePlayersTiedForFewestStars_appliesPenaltyToEachLoser() {
         Tribe tribe1 = new Tribe();
         Tribe tribe2 = new Tribe();
         Tribe tribe3 = new Tribe();

@@ -28,13 +28,9 @@ class ModelControllerTest {
     private GameContext game_context;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         GameSetup game_setup = new GameSetup();
-        try {
-            game_context = game_setup.createGame("TestGame", 3, CardLoader.load());
-        } catch (IOException e) {
-            return;
-        }
+        game_context = game_setup.createGame("TestGame", 3, CardLoader.load());
 
         List<String> player_names = List.of("Nicola", "Mathis", "Elia");
         game_setup.createMapOfPlayers(game_context, player_names);

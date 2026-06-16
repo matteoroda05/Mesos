@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -94,24 +95,33 @@ class CardLoaderTest {
     }
 
     @Test
-    void huntEventsHaveNegativePenaltyByConstruction() {
-        data.tribe_cards().stream()
+    void sustenanceEventsHaveNegativePointPenaltyByConstruction() {
+        List<SustenanceEvent> events = data.tribe_cards().stream()
                 .filter(c -> c instanceof SustenanceEvent)
                 .map(c -> (SustenanceEvent) c)
-                .forEach(e ->
-                        assertTrue(e.getPointPenalty() < 0,
-                                "SustenanceEvent prestige conversion must be positive")
-                );
+                .toList();
+
+        assertFalse(events.isEmpty(), "Card data must contain at least one SustenanceEvent");
+        events.forEach(e ->
+                assertTrue(e.getPointPenalty() < 0,
+                        "SustenanceEvent point penalty must be negative")
+        );
     }
 
     @Test
     void shamanicRitualEventsHaveCorrectSignsOnBonusAndPenalty() {
-        data.tribe_cards().stream()
+        List<ShamanicRitualEvent> events = data.tribe_cards().stream()
                 .filter(c -> c instanceof ShamanicRitualEvent)
                 .map(c -> (ShamanicRitualEvent) c)
-                .forEach(e -> {
-                    assertNotNull(e);
-                });
+                .toList();
+
+        assertFalse(events.isEmpty(), "Card data must contain at least one ShamanicRitualEvent");
+        events.forEach(e -> {
+            assertTrue(e.getWinnerBonus() > 0,
+                    "ShamanicRitualEvent winner bonus must be positive");
+            assertTrue(e.getLoserPenalty() < 0,
+                    "ShamanicRitualEvent loser penalty must be negative");
+        });
     }
 
     @Test

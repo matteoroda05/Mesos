@@ -279,14 +279,22 @@ class MesosServerCoreTest {
         assertFalse(secondOffer.snapshot().passAvailable());
 
         GameOperationResult firstAction =
-                serverCore.chooseCard(new ChooseCardRequest("pass-extra-room", firstPlayer, 0, true));
+                serverCore.chooseCard(new ChooseCardRequest(
+                        "pass-extra-room",
+                        firstPlayer,
+                        firstPickableTopCardIndex(secondOffer.snapshot()),
+                        true));
         assertTrue(firstAction.success());
         assertNotNull(firstAction.snapshot());
         assertEquals(secondPlayer, firstAction.snapshot().currentPlayerNickname());
         assertFalse(firstAction.snapshot().passAvailable());
 
         GameOperationResult secondAction =
-                serverCore.chooseCard(new ChooseCardRequest("pass-extra-room", secondPlayer, 0, true));
+                serverCore.chooseCard(new ChooseCardRequest(
+                        "pass-extra-room",
+                        secondPlayer,
+                        firstPickableTopCardIndex(firstAction.snapshot()),
+                        true));
         assertTrue(secondAction.success());
         assertNotNull(secondAction.snapshot());
         assertEquals(GameStatus.ROUND_ACTIONS, secondAction.snapshot().status());

@@ -1,12 +1,10 @@
 package it.polimi.ingsw.mesos.Controller;
 
 import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
@@ -229,22 +227,6 @@ class GameSetupTest {
         @Override
         public CardSummary getSummary(int selectionIndex) {
             return null;
-        }
-
-        @Override
-        public String getReadableName() {
-            return "";
-        }
-    }
-
-    private static final class TestBuildingCard extends BuildingCard {
-        private TestBuildingCard(Era era) {
-            super(era, 2, 1, 1, BuildingTrigger.ON_END_TURN);
-        }
-
-        @Override
-        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
-            throw new UnsupportedOperationException();
         }
 
         @Override
