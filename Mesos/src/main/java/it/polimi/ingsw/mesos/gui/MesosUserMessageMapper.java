@@ -79,6 +79,30 @@ public final class MesosUserMessageMapper {
         }
     }
 
+    /**
+     * Reports whether a throwable represents a lost or unreachable network
+     * connection, unwrapping runtime wrappers the same way
+     * {@link #describeException} does.
+     *
+     * @param throwable throwable to classify, may be null
+     * @return true when the failure is a connection or transport error
+     */
+    public static boolean isConnectionLost(Throwable throwable) {
+        if (throwable == null) {
+            return false;
+        }
+        try {
+            throw throwable;
+        } catch (IOException networkFailure) {
+            return true;
+        } catch (RuntimeException runtimeException) {
+            return runtimeException.getCause() != null
+                    && isConnectionLost(runtimeException.getCause());
+        } catch (Throwable other) {
+            return false;
+        }
+    }
+
     private static String describeErrorCode(OperationErrorCode errorCode) {
         if (errorCode == null) {
             return null;

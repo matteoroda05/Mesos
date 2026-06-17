@@ -71,9 +71,17 @@ public final class MesosCliClient {
     private void run() throws Exception {
         printBanner();
 
-        try (GameClient client = connectWithRetry()) {
-            if (!chooseNickname(client)) {
-                lobbyLoop(client);
+        while (true) {
+            GameClient client = connectWithRetry();
+            try (client) {
+                if (!chooseNickname(client)) {
+                    lobbyLoop(client);
+                }
+                return;
+            } catch (IOException connectionLost) {
+                printLine("\n##################################");
+                printLine("FAILURE: \nConnection to the server was lost, make sure the server is running.");
+                printLine("##################################\n");
             }
         }
     }
@@ -350,7 +358,12 @@ public final class MesosCliClient {
         try {
             return mainLoop(client);
         } finally {
-            client.unsubscribe(new UnsubscribeGameRequest(name, nickname));
+            try {
+                client.unsubscribe(new UnsubscribeGameRequest(name, nickname));
+            } catch (IOException unsubscribeFailure) {
+                // best-effort cleanup: the connection may already be gone, so a
+                // failure here must not mask the real error or crash the client
+            }
         }
     }
 
