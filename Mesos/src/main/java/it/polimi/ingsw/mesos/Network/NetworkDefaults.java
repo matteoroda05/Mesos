@@ -1,6 +1,5 @@
 package it.polimi.ingsw.mesos.Network;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -145,7 +144,8 @@ public final class NetworkDefaults {
      *         link-local
      */
     private static boolean isUsableIpv4Address(InetAddress address) {
-        return address instanceof Inet4Address
+        // IPv4 raw addresses are 4 bytes long; IPv6 addresses are 16 bytes.
+        return address.getAddress().length == 4
                 && !address.isAnyLocalAddress()
                 && !address.isLoopbackAddress()
                 && !address.isLinkLocalAddress();

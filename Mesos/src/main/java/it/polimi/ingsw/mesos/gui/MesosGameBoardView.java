@@ -1492,12 +1492,14 @@ public final class MesosGameBoardView extends BorderPane {
         Circle dot = new Circle(5);
         dot.getStyleClass().add("player-color-indicator-dot");
         indicator.getChildren().add(dot);
+        indicator.setUserData(dot);
         updateColorIndicator(indicator, color);
         return indicator;
     }
 
     private void updateColorIndicator(StackPane indicator, it.polimi.ingsw.mesos.Model.Enums.Color color) {
-        if (!indicator.getChildren().isEmpty() && indicator.getChildren().getFirst() instanceof Circle dot) {
+        Circle dot = (Circle) indicator.getUserData();
+        if (dot != null) {
             dot.setFill(toIndicatorColor(color));
             dot.setStroke(Color.rgb(255, 236, 201, 0.72));
             dot.setStrokeWidth(1);
