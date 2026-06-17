@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.Model.Cards.Events;
 
+import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -107,5 +108,28 @@ public class ShamanicRitualEventTest {
         assertEquals(7, output.get(Color.BLACK).prestige());
         assertEquals(-5, output.get(Color.BLUE).prestige());
         assertEquals(-5, output.get(Color.ORANGE).prestige());
+    }
+
+    @Test
+    void calculateOutcome_preEventStarBonus_appliesBeforeWinnerAndLoserAreDecided() {
+        Tribe tribe1 = new Tribe();
+        Tribe tribe2 = new Tribe();
+        Tribe tribe3 = new Tribe();
+
+        // Base stars: BLACK = 1, BLUE = 3, ORANGE = 1.
+        tribe1.addCard(new ShamanCard(Era.FIRST, 2, 1));
+        tribe2.addCard(new ShamanCard(Era.FIRST, 2, 3));
+        tribe3.addCard(new ShamanCard(Era.FIRST, 2, 1));
+
+        // Pre-event building grants ORANGE +3 stars, lifting it from 1 to 4
+        // and making it the sole highest, ahead of BLUE's 3.
+        tribe3.addCard(new BuildingShamanicRitual(Era.FIRST, 2, 3, 4, 3, 0));
+
+        Map<Color, Tribe> tribes = Map.of(Color.BLACK, tribe1, Color.BLUE, tribe2, Color.ORANGE, tribe3);
+        Map<Color, Result> output = shamanic_ritual_event.calculateOutcome(tribes);
+
+        assertEquals(-5, output.get(Color.BLACK).prestige()); // lowest (1)
+        assertEquals(0, output.get(Color.BLUE).prestige());   // middle (3)
+        assertEquals(7, output.get(Color.ORANGE).prestige()); // highest after bonus (4)
     }
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
 import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
@@ -64,30 +65,27 @@ public class ShamanicRitualEvent extends EventCard {
         Map<Color, Integer> player_stars = new HashMap<>();
         Map<Color, Result> player_outcomes = new HashMap<>();
 
-        int lowest_stars = Integer.MAX_VALUE;
-        int highest_stars = Integer.MIN_VALUE;
-
         for (Map.Entry<Color, Tribe> tribe : players_tribes.entrySet()) {
-            int stars = tribe.getValue().countShamanStars();
-            player_stars.put(tribe.getKey(), stars);
-
-            if (stars < lowest_stars) {
-                lowest_stars = stars;
-            }
-            if (stars > highest_stars) {
-                highest_stars = stars;
-            }
+            player_stars.put(tribe.getKey(), tribe.getValue().countShamanStars());
         }
 
         Map<Color, List<BuildingCard>> buildings = players_tribes.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
                 entry -> entry.getValue().getBuildingsWithTrigger(asTrigger()).stream()
                         .filter(building ->
-                                ((BuildingShamanicRitual) building).getPhase() != EventPhase.PRE_EVENT).toList()
+                                ((BuildingShamanicRitual) building).getPhase() == EventPhase.PRE_EVENT).toList()
         ));
 
         buildings.forEach((key, list) -> list.forEach(building ->
                 player_stars.replace(key, player_stars.get(key) + ((BuildingShamanicRitual) building).getStarBonus())));
+
+        // Thresholds must reflect the pre-event star bonuses applied above.
+        int lowest_stars = Integer.MAX_VALUE;
+        int highest_stars = Integer.MIN_VALUE;
+        for (int stars : player_stars.values()) {
+            lowest_stars = Math.min(lowest_stars, stars);
+            highest_stars = Math.max(highest_stars, stars);
+        }
 
         for (Map.Entry<Color, Integer> stars : player_stars.entrySet()) {
             int prestige_diff = 0;
