@@ -39,7 +39,7 @@ public final class HunterCard extends CharacterCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeHunterCard(this);
     }
 
     @Override

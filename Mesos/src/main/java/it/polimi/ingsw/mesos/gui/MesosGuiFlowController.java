@@ -436,17 +436,31 @@ public final class MesosGuiFlowController {
                 "Disconnecting...",
                 guiService.disconnect(),
                 ignored -> {
-                    connectedType = null;
-                    connectedHost = null;
-                    gameBoardView = null;
-                    nicknameScreen = null;
-                    preJoinColorByGame.clear();
-                    eventLog.clear();
+                    clearSessionState();
                     showConnectionScreen();
                     host.updateStatus("Disconnected.");
                 },
                 "Disconnect failed"
         );
+    }
+
+    private void clearSessionState() {
+        connectedType = null;
+        connectedHost = null;
+        gameBoardView = null;
+        nicknameScreen = null;
+        preJoinColorByGame.clear();
+        eventLog.clear();
+    }
+
+    private void returnToConnectionScreen(String status) {
+        // The transport is already gone, so release the dead client best-effort
+        // (disconnect() closes quietly) and reset the UI to the connection screen,
+        // letting the user reconnect instead of being stranded on a dead board.
+        guiService.disconnect();
+        clearSessionState();
+        showConnectionScreen();
+        host.updateStatus(status);
     }
 
     private <T> void withBusy(
@@ -460,7 +474,11 @@ public final class MesosGuiFlowController {
             host.setBusy(false, null);
             if (throwable != null) {
                 String message = MesosUserMessageMapper.describeException(throwable);
-                host.updateStatus(message);
+                if (connectedType != null && MesosUserMessageMapper.isConnectionLost(throwable)) {
+                    returnToConnectionScreen(message);
+                } else {
+                    host.updateStatus(message);
+                }
                 host.showAlert(errorTitle, message);
                 return;
             }

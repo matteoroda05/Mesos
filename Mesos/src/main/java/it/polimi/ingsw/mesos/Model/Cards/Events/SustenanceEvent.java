@@ -100,7 +100,7 @@ public final class SustenanceEvent extends EventCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeSustenanceEvent(this);
     }
 
     @Override

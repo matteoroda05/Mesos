@@ -383,14 +383,12 @@ public final class MesosGuiScreenFactory {
         return row;
     }
 
-    private Node buildField(String label, Node input, double preferredWidth) {
+    private Node buildField(String label, Region input, double preferredWidth) {
         Label title = new Label(label);
         title.getStyleClass().add("subsection-title");
 
-        if (input instanceof Region region) {
-            region.setPrefWidth(preferredWidth);
-            region.setMaxWidth(Double.MAX_VALUE);
-        }
+        input.setPrefWidth(preferredWidth);
+        input.setMaxWidth(Double.MAX_VALUE);
 
         VBox box = new VBox(8, title, input);
         box.getStyleClass().add("field-box");

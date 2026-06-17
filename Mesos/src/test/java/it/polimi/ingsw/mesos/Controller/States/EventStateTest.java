@@ -17,6 +17,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,6 +109,28 @@ class EventStateTest extends StateTestSupport {
         assertEquals(player_colors.size(), spy.appliedResults.size());
     }
 
+    @Test
+    void processInFinalRoundLogsFinalEventsWithAppliedLinesAndOwnedBuildingNote() {
+        for (int i = 0; i < 10; i++) {
+            game_context.newRound();
+        }
+        CountingBonusBuilding huntBuilding = new CountingBonusBuilding(BuildingTrigger.ON_EVENT_HUNT);
+        huntBuilding.setOwner(game_context.getPlayer(player_colors.getFirst()));
+        EventSpyController spy = new EventSpyController(
+                game_context,
+                List.of(),
+                List.of(new HuntEvent(Era.FIRST, 1, 1)));
+        spy.appliedDelta = new AppliedDelta(2, 1);
+        spy.addBuilding(BuildingTrigger.ON_EVENT_HUNT, huntBuilding);
+
+        GameState nextState = new EventState(spy).process();
+
+        assertInstanceOf(EndGameState.class, nextState);
+        EventLogEntry entry = game_context.drainEventLog().getLast();
+        assertEquals("Final events", entry.title());
+        assertTrue(entry.body().contains("from player " + player_colors.getFirst()));
+    }
+
     private static final class EventSpyController extends ModelController {
         private final List<EventCard> bottomEvents;
         private final List<EventCard> allEvents;
@@ -115,6 +138,7 @@ class EventStateTest extends StateTestSupport {
         private final Map<Color, Tribe> tribes;
         private final List<Result> appliedResults = new ArrayList<>();
         private final List<String> effectOrder = new ArrayList<>();
+        private AppliedDelta appliedDelta = new AppliedDelta(0, 0);
 
         private EventSpyController(GameContext context, List<EventCard> bottomEvents, List<EventCard> allEvents) {
             super(context);
@@ -151,7 +175,7 @@ class EventStateTest extends StateTestSupport {
         @Override
         public AppliedDelta playerApplyOutcome(Result outcome, Color player_color) {
             appliedResults.add(outcome);
-            return new AppliedDelta(0, 0);
+            return appliedDelta;
         }
     }
 

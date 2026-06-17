@@ -1232,10 +1232,10 @@ final class CliPrinter {
                 return parsePositiveInt(tokens[1]);
             }
             return parsePositiveInt(output);
-        } catch (IOException | InterruptedException exception) {
-            if (exception instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (IOException exception) {
             return null;
         }
     }

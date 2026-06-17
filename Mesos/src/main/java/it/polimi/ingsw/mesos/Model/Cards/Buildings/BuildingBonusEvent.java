@@ -155,7 +155,7 @@ public class BuildingBonusEvent extends BuildingCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuildingBonusEvent(this);
     }
 
     @Override

@@ -71,4 +71,11 @@ class BuildingEndGameTest extends BuildingTestSupport {
 
         assertEquals(6, fixture.owner().getPrestigePoints());
     }
+
+    @Test
+    void getReadableName_returnsDisplayName() {
+        BuildingEndGame building = new BuildingEndGame(Era.THIRD, 2, 5, 4, false, 0, 0, null, 25);
+
+        assertEquals("Building End Game", building.getReadableName());
+    }
 }

@@ -9,7 +9,11 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -94,24 +98,33 @@ class CardLoaderTest {
     }
 
     @Test
-    void huntEventsHaveNegativePenaltyByConstruction() {
-        data.tribe_cards().stream()
+    void sustenanceEventsHaveNegativePointPenaltyByConstruction() {
+        List<SustenanceEvent> events = data.tribe_cards().stream()
                 .filter(c -> c instanceof SustenanceEvent)
                 .map(c -> (SustenanceEvent) c)
-                .forEach(e ->
-                        assertTrue(e.getPointPenalty() < 0,
-                                "SustenanceEvent prestige conversion must be positive")
-                );
+                .toList();
+
+        assertFalse(events.isEmpty(), "Card data must contain at least one SustenanceEvent");
+        events.forEach(e ->
+                assertTrue(e.getPointPenalty() < 0,
+                        "SustenanceEvent point penalty must be negative")
+        );
     }
 
     @Test
     void shamanicRitualEventsHaveCorrectSignsOnBonusAndPenalty() {
-        data.tribe_cards().stream()
+        List<ShamanicRitualEvent> events = data.tribe_cards().stream()
                 .filter(c -> c instanceof ShamanicRitualEvent)
                 .map(c -> (ShamanicRitualEvent) c)
-                .forEach(e -> {
-                    assertNotNull(e);
-                });
+                .toList();
+
+        assertFalse(events.isEmpty(), "Card data must contain at least one ShamanicRitualEvent");
+        events.forEach(e -> {
+            assertTrue(e.getWinnerBonus() > 0,
+                    "ShamanicRitualEvent winner bonus must be positive");
+            assertTrue(e.getLoserPenalty() < 0,
+                    "ShamanicRitualEvent loser penalty must be negative");
+        });
     }
 
     @Test
@@ -185,6 +198,34 @@ class CardLoaderTest {
                 "All building cards from JSON should be addable to a Tribe");
     }
 
+
+    @Test
+    void loadRejectsCardWithMissingPresentationId() {
+        String json = "{\"tribeCards\":[{\"type\":\"HUNTER\",\"era\":\"FIRST\",\"minPlayers\":2,\"activeHunter\":true}],"
+                + "\"buildingCards\":[],\"offerTiles\":[]}";
+
+        assertThrows(IllegalArgumentException.class, () -> CardLoader.load(stream(json)));
+    }
+
+    @Test
+    void loadRejectsDuplicatePresentationId() {
+        String card = "{\"type\":\"HUNTER\",\"era\":\"FIRST\",\"minPlayers\":2,\"activeHunter\":true,"
+                + "\"presentation_id\":\"dup\"}";
+        String json = "{\"tribeCards\":[" + card + "," + card + "],\"buildingCards\":[],\"offerTiles\":[]}";
+
+        assertThrows(IllegalArgumentException.class, () -> CardLoader.load(stream(json)));
+    }
+
+    @Test
+    void loadRejectsNullCardEntry() {
+        String json = "{\"tribeCards\":[null],\"buildingCards\":[],\"offerTiles\":[]}";
+
+        assertThrows(IllegalArgumentException.class, () -> CardLoader.load(stream(json)));
+    }
+
+    private static InputStream stream(String json) {
+        return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+    }
 
     @Test
     void allCardsHaveNonNegativeMinPlayers() {

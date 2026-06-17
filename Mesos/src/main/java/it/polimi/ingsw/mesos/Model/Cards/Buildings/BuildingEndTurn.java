@@ -80,7 +80,7 @@ public class BuildingEndTurn extends BuildingCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuildingEndTurn(this);
     }
 
     @Override

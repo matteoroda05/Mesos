@@ -1,6 +1,7 @@
 package it.polimi.ingsw.mesos.Controller.States;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Controller.GameSetup;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.CardLoader;
@@ -20,6 +21,8 @@ import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,19 +70,15 @@ class ActionStateTest extends StateTestSupport {
     }
 
     @Test
-    void chooseCardDecrementsPicks() {
-        int initialTop = state.getRemainingTopChoices();
-        int initialBottom = state.getRemainingBottomChoices();
+    void chooseCardOnTopRow_withPicksRemaining_decrementsRemainingTopChoices() {
+        Color player = player_colors.getFirst();
+        ActionSpyController spy = new ActionSpyController(game_context, Optional.empty(), List.of());
+        ActionState multiPick = new ActionState(spy, player, 2, true);
 
-        Color p = state.getActivePlayer();
+        multiPick.chooseCard(player, 0, true);
 
-        if (initialTop > 0) {
-            state.chooseCard(p, 0, true);
-            assertEquals(initialTop - 1, state.getRemainingTopChoices());
-        } else if (initialBottom > 0) {
-            state.chooseCard(p, 0, false);
-            assertEquals(initialBottom - 1, state.getRemainingBottomChoices());
-        }
+        assertEquals(1, multiPick.getRemainingTopChoices());
+        assertEquals(0, multiPick.getRemainingBottomChoices());
     }
 
     @Test
@@ -182,21 +181,7 @@ class ActionStateTest extends StateTestSupport {
 
     @Test
     void passSkipsOptionalAfterEveryoneExtraPickAndContinuesNormally() throws Exception {
-        java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
-        }
-
-        CardLoader.CardData baseData = CardLoader.load();
-        CardLoader.CardData customData = new CardLoader.CardData(
-                baseData.tribe_cards(), baseData.building_cards(), customTiles);
-
-        it.polimi.ingsw.mesos.Controller.GameSetup setup = new it.polimi.ingsw.mesos.Controller.GameSetup();
-        game_context = setup.createGame("OptionalPassFlow", 3, customData);
-        setup.createMapOfPlayers(game_context, java.util.List.of("N", "M", "E"));
-        model_controller = new it.polimi.ingsw.mesos.Controller.ModelController(game_context);
-        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
-        game_context.getGameTable().getTurnOrderTile().clear();
+        rebuildGameWithOfferTiles("OptionalPassFlow", noPickOfferTiles());
 
         Color player = player_colors.getFirst();
         game_context.getGameTable().getOfferTrack().getTile(0).occupy(player);
@@ -219,22 +204,7 @@ class ActionStateTest extends StateTestSupport {
 
     @Test
     void processWithFoodGainAddsFoodAndTransitions() throws Exception {
-        java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
-        customTiles.add(new OfferTile('A', 0, 0, 3, 2));
-        for (int i = 1; i < 5; i++) {
-            customTiles.add(new OfferTile((char)('A' + i), 1, 1, 0, 2));
-        }
-
-        CardLoader.CardData baseData = CardLoader.load();
-        CardLoader.CardData customData = new CardLoader.CardData(
-                baseData.tribe_cards(), baseData.building_cards(), customTiles);
-
-        it.polimi.ingsw.mesos.Controller.GameSetup setup = new it.polimi.ingsw.mesos.Controller.GameSetup();
-        game_context = setup.createGame("CustomGame", 3, customData);
-        setup.createMapOfPlayers(game_context, java.util.List.of("N", "M", "E"));
-        model_controller = new it.polimi.ingsw.mesos.Controller.ModelController(game_context);
-        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
-        game_context.getGameTable().getTurnOrderTile().clear();
+        rebuildGameWithOfferTiles("CustomGame", foodGainOfferTiles());
 
         Color p = player_colors.getFirst();
         game_context.getGameTable().getOfferTrack().getTile(0).occupy(p);
@@ -250,28 +220,12 @@ class ActionStateTest extends StateTestSupport {
 
     @Test
     void processTriggersExtrasWhenNoMorePlayers() throws Exception {
-        java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
-        }
-
-        CardLoader.CardData baseData = CardLoader.load();
-        CardLoader.CardData customData = new CardLoader.CardData(
-                baseData.tribe_cards(), baseData.building_cards(), customTiles);
-
-        it.polimi.ingsw.mesos.Controller.GameSetup setup = new it.polimi.ingsw.mesos.Controller.GameSetup();
-        game_context = setup.createGame("CustomGame2", 3, customData);
-        setup.createMapOfPlayers(game_context, java.util.List.of("N", "M", "E"));
-        model_controller = new it.polimi.ingsw.mesos.Controller.ModelController(game_context);
-        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
-        game_context.getGameTable().getTurnOrderTile().clear();
+        rebuildGameWithOfferTiles("CustomGame2", noPickOfferTiles());
 
         Color p = player_colors.getFirst();
         game_context.getGameTable().getOfferTrack().getTile(0).occupy(p);
 
-        BuildingAfterEveryone building =
-                new BuildingAfterEveryone(
-                        Era.FIRST, 2, 0, 0);
+        BuildingAfterEveryone building = new BuildingAfterEveryone(Era.FIRST, 2, 0, 0);
         building.setOwner(game_context.getPlayer(p));
         game_context.getPlayer(p).getTribe().addCard(building);
 
@@ -288,21 +242,7 @@ class ActionStateTest extends StateTestSupport {
 
     @Test
     void processEndsStandardTurnRunsOnlyActivePlayerEndTurnBuildingsAndLoadsNextOfferTile() throws Exception {
-        java.util.List<OfferTile> customTiles = new java.util.ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            customTiles.add(new OfferTile((char)('A' + i), 0, 0, 0, 2));
-        }
-
-        CardLoader.CardData baseData = CardLoader.load();
-        CardLoader.CardData customData = new CardLoader.CardData(
-                baseData.tribe_cards(), baseData.building_cards(), customTiles);
-
-        it.polimi.ingsw.mesos.Controller.GameSetup setup = new it.polimi.ingsw.mesos.Controller.GameSetup();
-        game_context = setup.createGame("StandardTurnLoadsNext", 3, customData);
-        setup.createMapOfPlayers(game_context, java.util.List.of("N", "M", "E"));
-        model_controller = new it.polimi.ingsw.mesos.Controller.ModelController(game_context);
-        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
-        game_context.getGameTable().getTurnOrderTile().clear();
+        rebuildGameWithOfferTiles("StandardTurnLoadsNext", noPickOfferTiles());
 
         Color first = player_colors.get(0);
         Color second = player_colors.get(1);
@@ -385,6 +325,36 @@ class ActionStateTest extends StateTestSupport {
         assertInstanceOf(EventState.class, nextState);
         assertEquals(1, spy.chooseCardCalls);
         assertEquals(0, building.calls);
+    }
+
+    private void rebuildGameWithOfferTiles(String gameName, List<OfferTile> offerTiles) throws IOException {
+        CardLoader.CardData baseData = CardLoader.load();
+        CardLoader.CardData customData = new CardLoader.CardData(
+                baseData.tribe_cards(), baseData.building_cards(), offerTiles);
+
+        GameSetup setup = new GameSetup();
+        game_context = setup.createGame(gameName, 3, customData);
+        setup.createMapOfPlayers(game_context, List.of("N", "M", "E"));
+        model_controller = new ModelController(game_context);
+        player_colors = game_context.getPlayers().stream().map(Player::getColor).toList();
+        game_context.getGameTable().getTurnOrderTile().clear();
+    }
+
+    private static List<OfferTile> noPickOfferTiles() {
+        List<OfferTile> tiles = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            tiles.add(new OfferTile((char) ('A' + i), 0, 0, 0, 2));
+        }
+        return tiles;
+    }
+
+    private static List<OfferTile> foodGainOfferTiles() {
+        List<OfferTile> tiles = new ArrayList<>();
+        tiles.add(new OfferTile('A', 0, 0, 3, 2));
+        for (int i = 1; i < 5; i++) {
+            tiles.add(new OfferTile((char) ('A' + i), 1, 1, 0, 2));
+        }
+        return tiles;
     }
 
     private static final class ActionSpyController extends ModelController {

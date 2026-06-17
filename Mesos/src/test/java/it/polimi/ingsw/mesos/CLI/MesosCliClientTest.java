@@ -129,7 +129,7 @@ class MesosCliClientTest {
         setField(cli, "snapshot", snapshot);
         invoke(cli, "printSnapshotIfAvailable");
 
-        invoke(cli, "handleRemoteUpdate", GameViewUpdate.class, new GameViewUpdate("room", "updated", snapshot));
+        invoke(cli, "handleRemoteUpdate", GameServerMessage.class, new GameViewUpdate("room", "updated", snapshot));
 
         String text = output.toString(StandardCharsets.UTF_8);
         assertFalse(text.contains("[update] updated"));

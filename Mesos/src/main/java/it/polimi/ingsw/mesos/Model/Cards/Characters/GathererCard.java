@@ -34,7 +34,7 @@ public final class GathererCard extends CharacterCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeGathererCard(this);
     }
 
     @Override

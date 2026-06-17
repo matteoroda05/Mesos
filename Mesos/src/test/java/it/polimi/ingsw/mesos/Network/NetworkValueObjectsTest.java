@@ -1,15 +1,16 @@
 package it.polimi.ingsw.mesos.Network;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -132,17 +133,6 @@ class NetworkValueObjectsTest {
     }
 
     @Test
-    void networkDefaultsResolveRmiClientHostForLoopbackAndLanServers() throws Exception {
-        Method method = NetworkDefaults.class.getDeclaredMethod("resolveRmiClientHost", String.class, String.class);
-        method.setAccessible(true);
-
-        assertEquals("127.0.0.1", method.invoke(null, "localhost", "10.0.0.8"));
-        assertEquals("127.0.0.1", method.invoke(null, "127.0.0.1", "10.0.0.8"));
-        assertEquals("10.0.0.8", method.invoke(null, "192.168.1.20", "10.0.0.8"));
-        assertEquals(NetworkDefaults.detectLocalNetworkHost(), method.invoke(null, "192.168.1.20", null));
-    }
-
-    @Test
     void operationResultsAndViewUpdatesExecuteAgainstSocketContext() {
         GameOperationResult success = new GameOperationResult(true, null, null, null, null, false);
         assertEquals("Operation completed", success.message());
@@ -184,6 +174,132 @@ class NetworkValueObjectsTest {
         IOException exception = assertThrows(IOException.class, () -> unsupported.messageExecute(null));
         assertTrue(exception.getMessage().contains("Unsupported server message"));
         assertThrows(IllegalArgumentException.class, () -> GameClientFactory.connect(null));
+    }
+
+    @Test
+    void playerSummaryRejectsEveryNegativeNumericFieldAndDefaultsNullCardLists() {
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(-1, 0, 0, 0, 0, 0, 0, 0, 0)); // food
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, -1, 0, 0, 0, 0, 0, 0, 0)); // shamanStars
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, -1, 0, 0, 0, 0, 0, 0)); // buildersPrestige
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, -1, 0, 0, 0, 0, 0)); // buildingsPrestige
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, -1, 0, 0, 0, 0)); // inventorTypeCount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, -1, 0, 0, 0)); // buildersDiscount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, -1, 0, 0)); // gatherersDiscount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, 0, -1, 0)); // characterCount
+        assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, 0, 0, -1)); // buildingCount
+
+        PlayerSummary summary = new PlayerSummary("Alice", Color.BLUE, 0, 0, 0, 0,
+                null, null, 0, 0, 0, 0, 0, 0);
+        assertTrue(summary.characterCards().isEmpty());
+        assertTrue(summary.buildingCards().isEmpty());
+    }
+
+    @Test
+    void eventNotificationValidatesFieldsAndDeliversOnlyWhenListenerIsPresent() {
+        EventLogEntry entry = new EventLogEntry.Notice("Round", "Body");
+
+        assertThrows(IllegalArgumentException.class, () -> new EventNotification(null, entry));
+        assertThrows(IllegalArgumentException.class, () -> new EventNotification(" ", entry));
+        assertThrows(IllegalArgumentException.class, () -> new EventNotification("game", null));
+
+        EventNotification notification = new EventNotification("game", entry);
+        List<GameServerMessage> received = new ArrayList<>();
+        notification.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), received::add));
+        notification.messageExecute(new SocketGameClient.SocketClientContext(new LinkedBlockingQueue<>(), null));
+
+        assertEquals(List.of(notification), received);
+    }
+
+    private static PlayerSummary numericSummary(int food, int shamanStars, int buildersPrestige,
+            int buildingsPrestige, int inventorTypeCount, int buildersDiscount, int gatherersDiscount,
+            int characterCount, int buildingCount) {
+        return new PlayerSummary("Alice", Color.BLUE, food, 0, characterCount, buildingCount,
+                List.of(), List.of(), shamanStars, buildersDiscount, gatherersDiscount,
+                buildersPrestige, buildingsPrestige, inventorTypeCount);
+    }
+
+    @Test
+    void cardSummaryBlankPresentationIdNormalizesToNull() {
+        CardSummary summary = new CardSummary(0, "Hunter", Era.FIRST, false, "details", null, null, "   ");
+
+        assertNull(summary.presentationId());
+    }
+
+    @Test
+    void eventNotificationAcceptDispatchesToVisitor() {
+        EventNotification notification = new EventNotification("game", new EventLogEntry.Notice("title", "body"));
+        List<EventNotification> received = new ArrayList<>();
+
+        notification.accept(new GameServerMessageVisitor() {
+            @Override public void visitEventNotification(EventNotification n) { received.add(n); }
+            @Override public void visitGameViewUpdate(GameViewUpdate v) { }
+        });
+
+        assertEquals(List.of(notification), received);
+    }
+
+    @Test
+    void gameOperationResultAcceptThrowsAndThreeArgSuccessKeepsLobbySnapshot() {
+        GameOperationResult result = GameOperationResult.success("ok", null);
+
+        assertThrows(UnsupportedOperationException.class, () -> result.accept(new GameServerMessageVisitor() {
+            @Override public void visitEventNotification(EventNotification n) { }
+            @Override public void visitGameViewUpdate(GameViewUpdate v) { }
+        }));
+
+        LobbySnapshot lobby = new LobbySnapshot(List.of(new LobbyGameSummary("g", 2, 1, 1)));
+        GameOperationResult withLobby = GameOperationResult.success("joined", null, lobby);
+
+        assertTrue(withLobby.success());
+        assertEquals(lobby, withLobby.lobbySnapshot());
+    }
+
+    @Test
+    void serverEndpointRmiWithExplicitPortUsesDefaultServiceName() {
+        ServerEndpoint endpoint = ServerEndpoint.rmi("10.0.0.5", 2000);
+
+        assertEquals(ConnectionType.RMI, endpoint.connectionType());
+        assertEquals("10.0.0.5", endpoint.host());
+        assertEquals(2000, endpoint.port());
+        assertEquals(NetworkDefaults.DEFAULT_RMI_SERVICE_NAME, endpoint.serviceName());
+    }
+
+    @Test
+    void networkDefaultsResolveLoopbackServerHostsToCanonicalLoopback() {
+        assertEquals("127.0.0.1", NetworkDefaults.resolveRmiClientHost("localhost"));
+        assertEquals("127.0.0.1", NetworkDefaults.resolveRmiClientHost("127.0.0.1"));
+        // an IPv6 loopback literal is still treated as loopback, even with a routed hint
+        assertEquals("127.0.0.1", NetworkDefaults.resolveRmiClientHost("::1", "10.0.0.8"));
+    }
+
+    @Test
+    void networkDefaultsResolveConfiguredAndRoutedLanAddresses() {
+        // a configured (non-loopback) server host wins, trimmed
+        assertEquals("192.168.1.50", NetworkDefaults.resolveRmiServerHost("192.168.1.50"));
+        assertEquals("203.0.113.7", NetworkDefaults.resolveRmiServerHost("  203.0.113.7  "));
+
+        // for a non-loopback server the routed local address is advertised back, trimmed
+        assertEquals("10.0.0.8", NetworkDefaults.resolveRmiClientHost("192.168.1.20", "10.0.0.8"));
+        assertEquals("172.16.0.5", NetworkDefaults.resolveRmiClientHost("198.51.100.4", "  172.16.0.5  "));
+
+        // with no routed hint, a non-loopback server falls back to the detected local host
+        assertEquals(NetworkDefaults.detectLocalNetworkHost(),
+                NetworkDefaults.resolveRmiClientHost("192.168.1.20"));
+    }
+
+    @Test
+    void networkDefaultsConfigureClientHostnameAppliesResolvedHost() {
+        String previous = System.getProperty("java.rmi.server.hostname");
+        try {
+            NetworkDefaults.configureRmiClientHostname("localhost");
+            assertEquals("127.0.0.1", System.getProperty("java.rmi.server.hostname"));
+        } finally {
+            if (previous == null) {
+                System.clearProperty("java.rmi.server.hostname");
+            } else {
+                System.setProperty("java.rmi.server.hostname", previous);
+            }
+        }
     }
 
     private static GameSnapshot snapshot(String gameName, int playerCount, int joinedPlayers, GameStatus status, int round) {

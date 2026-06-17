@@ -40,6 +40,6 @@ module it.polimi.ingsw.mesos {
     exports it.polimi.ingsw.mesos.Network.Messages;
     exports it.polimi.ingsw.mesos.Launcher;
     exports it.polimi.ingsw.mesos.gui;
-    opens it.polimi.ingsw.mesos.Launcher to javafx.graphics;
+    opens it.polimi.ingsw.mesos.Launcher to javafx.graphics, org.junit.platform.commons;
     opens it.polimi.ingsw.mesos.gui to javafx.graphics;
 }

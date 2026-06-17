@@ -1,7 +1,9 @@
 package it.polimi.ingsw.mesos.Model.Cards.Buildings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -101,6 +103,12 @@ class BuildingOnCardTest extends BuildingTestSupport {
         building.effect(new ArtistCard(Era.FIRST, 2), fixture.controller());
 
         assertEquals(foodBefore, fixture.owner().getFood());
+    }
+
+    @Test
+    void isInventorsPair_reflectsConstructorFlag() {
+        assertTrue(new BuildingOnCard(Era.FIRST, 2, 3, 4, 3, false, true).isInventorsPair());
+        assertFalse(new BuildingOnCard(Era.FIRST, 2, 3, 4, 5, true, false).isInventorsPair());
     }
 
     private void addTwoCardsOfEachNonHunterType(Tribe tribe) {

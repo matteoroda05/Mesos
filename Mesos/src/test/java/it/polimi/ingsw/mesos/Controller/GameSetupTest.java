@@ -1,12 +1,10 @@
 package it.polimi.ingsw.mesos.Controller;
 
 import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
@@ -189,6 +187,36 @@ class GameSetupTest {
         assertNotSame(Color.YELLOW, assignedColors.get("Dana"));
     }
 
+    @Test
+    void createMapOfPlayers_invalidReservedColors_areRejected() throws Exception {
+        GameSetup setup = new GameSetup();
+        CardLoader.CardData data = CardLoader.load();
+        List<String> nicknames = List.of("Alice", "Bob", "Charlie");
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedNull", 3, data), nicknames, null));
+
+        java.util.Map<String, Color> blankNickname = new java.util.HashMap<>();
+        blankNickname.put("  ", Color.BLUE);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedBlankNick", 3, data), nicknames, blankNickname));
+
+        java.util.Map<String, Color> nullColor = new java.util.HashMap<>();
+        nullColor.put("Alice", null);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedNullColor", 3, data), nicknames, nullColor));
+
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedUnknownNick", 3, data), nicknames,
+                java.util.Map.of("Zoe", Color.BLUE)));
+
+        java.util.Map<String, Color> duplicateColors = new java.util.HashMap<>();
+        duplicateColors.put("Alice", Color.BLUE);
+        duplicateColors.put("Bob", Color.BLUE);
+        assertThrows(IllegalArgumentException.class, () -> setup.createMapOfPlayers(
+                setup.createGame("ReservedDupColor", 3, data), nicknames, duplicateColors));
+    }
+
     private static List<String> createNicknames(int playerCount) {
         List<String> nicknames = new ArrayList<>();
         for (int i = 1; i <= playerCount; i++) {
@@ -229,22 +257,6 @@ class GameSetupTest {
         @Override
         public CardSummary getSummary(int selectionIndex) {
             return null;
-        }
-
-        @Override
-        public String getReadableName() {
-            return "";
-        }
-    }
-
-    private static final class TestBuildingCard extends BuildingCard {
-        private TestBuildingCard(Era era) {
-            super(era, 2, 1, 1, BuildingTrigger.ON_END_TURN);
-        }
-
-        @Override
-        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
-            throw new UnsupportedOperationException();
         }
 
         @Override

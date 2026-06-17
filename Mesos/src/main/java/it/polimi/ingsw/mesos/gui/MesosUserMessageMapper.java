@@ -56,23 +56,51 @@ public final class MesosUserMessageMapper {
     }
 
     public static String describeException(Throwable throwable) {
-        Throwable cause = unwrap(throwable);
-        if (cause instanceof ConnectException || cause instanceof java.rmi.ConnectException) {
+        try {
+            throw throwable;
+        } catch (ConnectException | java.rmi.ConnectException connectException) {
             return "Could not reach the MESOS server. Check the host and make sure the server is running.";
-        }
-        if (cause instanceof IOException ioException) {
+        } catch (IOException ioException) {
             String message = ioException.getMessage();
             if (message == null || message.isBlank()) {
                 return "A network error interrupted the connection to the MESOS server.";
             }
             return "Network error: " + message;
+        } catch (RuntimeException runtimeException) {
+            // Runtime wrappers (e.g. CompletionException) hide the real cause: peel
+            // one layer and classify it the same way.
+            Throwable cause = runtimeException.getCause();
+            if (cause != null) {
+                return describeException(cause);
+            }
+            return describeFallback(runtimeException);
+        } catch (Throwable other) {
+            return describeFallback(other);
         }
+    }
 
-        String message = cause.getMessage();
-        if (message == null || message.isBlank()) {
-            return cause.getClass().getSimpleName();
+    /**
+     * Reports whether a throwable represents a lost or unreachable network
+     * connection, unwrapping runtime wrappers the same way
+     * {@link #describeException} does.
+     *
+     * @param throwable throwable to classify, may be null
+     * @return true when the failure is a connection or transport error
+     */
+    public static boolean isConnectionLost(Throwable throwable) {
+        if (throwable == null) {
+            return false;
         }
-        return translateFreeform(message);
+        try {
+            throw throwable;
+        } catch (IOException networkFailure) {
+            return true;
+        } catch (RuntimeException runtimeException) {
+            return runtimeException.getCause() != null
+                    && isConnectionLost(runtimeException.getCause());
+        } catch (Throwable other) {
+            return false;
+        }
     }
 
     private static String describeErrorCode(OperationErrorCode errorCode) {
@@ -110,12 +138,11 @@ public final class MesosUserMessageMapper {
                 .orElse(lower);
     }
 
-    private static Throwable unwrap(Throwable throwable) {
-        Throwable current = throwable;
-        while (current.getCause() != null
-                && current instanceof RuntimeException) {
-            current = current.getCause();
+    private static String describeFallback(Throwable cause) {
+        String message = cause.getMessage();
+        if (message == null || message.isBlank()) {
+            return cause.getClass().getSimpleName();
         }
-        return current;
+        return translateFreeform(message);
     }
 }

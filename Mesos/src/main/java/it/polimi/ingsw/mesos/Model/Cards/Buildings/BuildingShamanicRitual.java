@@ -119,7 +119,7 @@ public class BuildingShamanicRitual extends BuildingCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuildingShamanicRitual(this);
     }
 
     @Override
