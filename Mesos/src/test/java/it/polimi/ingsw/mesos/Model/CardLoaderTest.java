@@ -9,7 +9,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -195,6 +198,34 @@ class CardLoaderTest {
                 "All building cards from JSON should be addable to a Tribe");
     }
 
+
+    @Test
+    void loadRejectsCardWithMissingPresentationId() {
+        String json = "{\"tribeCards\":[{\"type\":\"HUNTER\",\"era\":\"FIRST\",\"minPlayers\":2,\"activeHunter\":true}],"
+                + "\"buildingCards\":[],\"offerTiles\":[]}";
+
+        assertThrows(IllegalArgumentException.class, () -> CardLoader.load(stream(json)));
+    }
+
+    @Test
+    void loadRejectsDuplicatePresentationId() {
+        String card = "{\"type\":\"HUNTER\",\"era\":\"FIRST\",\"minPlayers\":2,\"activeHunter\":true,"
+                + "\"presentation_id\":\"dup\"}";
+        String json = "{\"tribeCards\":[" + card + "," + card + "],\"buildingCards\":[],\"offerTiles\":[]}";
+
+        assertThrows(IllegalArgumentException.class, () -> CardLoader.load(stream(json)));
+    }
+
+    @Test
+    void loadRejectsNullCardEntry() {
+        String json = "{\"tribeCards\":[null],\"buildingCards\":[],\"offerTiles\":[]}";
+
+        assertThrows(IllegalArgumentException.class, () -> CardLoader.load(stream(json)));
+    }
+
+    private static InputStream stream(String json) {
+        return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+    }
 
     @Test
     void allCardsHaveNonNegativeMinPlayers() {

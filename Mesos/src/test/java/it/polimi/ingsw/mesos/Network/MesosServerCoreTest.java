@@ -554,6 +554,7 @@ class MesosServerCoreTest {
         GameUpdateSink sink = update -> { };
         assertTrue(serverCore.subscribe(new SubscribeGameRequest("subs-room", "Alice"), sink).success());
         assertTrue(serverCore.unsubscribe(new UnsubscribeGameRequest("subs-room", "Alice"), sink).success());
+        assertTrue(serverCore.unsubscribe(new UnsubscribeGameRequest("subs-room", "Alice"), null).success());
     }
 
     @Test
@@ -649,6 +650,111 @@ class MesosServerCoreTest {
         checkDisconnectedClients(serverCore);
 
         assertTrue(serverCore.getSnapshot(new SnapshotRequest("alloff-room")).success());
+    }
+
+    @Test
+    void naturallyFinishedGameReportsEndGameStatusAndWinner() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("finished-room", 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("finished-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("finished-room", "Bob")).success());
+
+        finishGameNaturally(serverCore, "finished-room");
+
+        GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("finished-room"));
+        assertTrue(snapshot.success());
+        assertTrue(snapshot.snapshot().finished());
+        assertEquals(GameStatus.END_GAME, snapshot.snapshot().status());
+        assertNotNull(snapshot.snapshot().winnerNickname());
+
+        // disconnecting a player in a finished game must not touch model connection state
+        expireHeartbeat(serverCore, "Alice");
+        checkDisconnectedClients(serverCore);
+        assertTrue(serverCore.getSnapshot(new SnapshotRequest("finished-room")).snapshot().finished());
+    }
+
+    @Test
+    void skippedPlayerReconnectionAndRedisconnectionDriveModelStatusTransitions() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("skip-room", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("skip-room", "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("skip-room", "Bob")).success());
+        GameOperationResult started = serverCore.joinGame(new JoinGameRequest("skip-room", "Carol"));
+        assertTrue(started.success());
+
+        String activePlayer = started.snapshot().currentPlayerNickname();
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", "Alice", true)).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", "Bob", true)).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", "Carol", true)).success());
+
+        // disconnect the active player: disconnected, then skipped by the resilience pipeline
+        expireHeartbeat(serverCore, activePlayer);
+        checkDisconnectedClients(serverCore);
+
+        // reconnecting moves the skipped player to rejoined
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", activePlayer, true)).success());
+
+        // disconnecting again moves the rejoined player back to skipped
+        expireHeartbeat(serverCore, activePlayer);
+        checkDisconnectedClients(serverCore);
+
+        assertTrue(serverCore.getSnapshot(new SnapshotRequest("skip-room")).success());
+    }
+
+    @Test
+    void chooseColorWaitingRoomRejectsAlreadyJoinedAndDisconnectedNicknames() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("wait-a", 3)).success());
+        assertTrue(serverCore.createGame(new CreateGameRequest("wait-b", 3)).success());
+
+        // a reserved nickname that joined another game cannot reserve a color here
+        assertTrue(serverCore.nickname(new NicknameRequest("Dave")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("wait-b", "Dave")).success());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
+                serverCore.chooseColor(new ChooseColorRequest("wait-a", "Dave", Color.BLUE)).errorCode());
+
+        // a reserved nickname whose session is disconnected cannot reserve a color either
+        assertTrue(serverCore.nickname(new NicknameRequest("Eve")).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("Eve")).success());
+        expireHeartbeat(serverCore, "Eve");
+        checkDisconnectedClients(serverCore);
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
+                serverCore.chooseColor(new ChooseColorRequest("wait-a", "Eve", Color.YELLOW)).errorCode());
+    }
+
+    @Test
+    void rejoinReturnsGameNotFoundWhenPreviousGameDisappeared() throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest("ghost-game", 3)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest("ghost-game", "Frank")).success());
+        assertTrue(serverCore.heartbeat(new HeartbeatRequest("ghost-game", "Frank", true)).success());
+        expireHeartbeat(serverCore, "Frank");
+        checkDisconnectedClients(serverCore);
+
+        removeSession(serverCore, "ghost-game");
+
+        GameOperationResult rejoin = serverCore.joinGame(new JoinGameRequest(null, "Frank", true));
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND, rejoin.errorCode());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void finishGameNaturally(MesosServerCore serverCore, String gameName) throws Exception {
+        Field sessions = MesosServerCore.class.getDeclaredField("sessions");
+        sessions.setAccessible(true);
+        Object session = ((Map<String, Object>) sessions.get(serverCore)).get(gameName);
+        Field controllerField = session.getClass().getDeclaredField("controller");
+        controllerField.setAccessible(true);
+        Object controller = controllerField.get(session);
+        Field currentState = controller.getClass().getDeclaredField("current_state");
+        currentState.setAccessible(true);
+        currentState.set(controller, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void removeSession(MesosServerCore serverCore, String gameName) throws Exception {
+        Field sessions = MesosServerCore.class.getDeclaredField("sessions");
+        sessions.setAccessible(true);
+        ((Map<String, Object>) sessions.get(serverCore)).remove(gameName);
     }
 
     @SuppressWarnings("unchecked")

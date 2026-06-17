@@ -13,6 +13,7 @@ import it.polimi.ingsw.mesos.Network.RMI.RmiGameServer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,6 +27,29 @@ class RmiGameIntegrationTest {
              GameClient aliceClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestService"));
              GameClient bobClient = GameClientFactory.connect(ServerEndpoint.rmi("127.0.0.1", rmiServer.getPort(), "MesosTestService"))) {
             NetworkTestSupport.assertBasicRemoteTurn(aliceClient, bobClient, "rmi-room");
+        }
+    }
+
+    @Test
+    void rmiServerExposesAdvertisedHost() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        int rmiPort = NetworkTestSupport.findFreePort();
+
+        try (RmiGameServer rmiServer = new RmiGameServer(serverCore, rmiPort, "MesosHostService")) {
+            assertNotNull(rmiServer.getAdvertisedHost());
+            assertFalse(rmiServer.getAdvertisedHost().isBlank());
+        }
+    }
+
+    @Test
+    void rmiClientFactoryConnectsViaConnectionTypeOverload() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+        int rmiPort = NetworkTestSupport.findFreePort();
+
+        try (RmiGameServer rmiServer = new RmiGameServer(serverCore, rmiPort, "MesosFactoryService");
+             GameClient client = GameClientFactory.connect(
+                     ConnectionType.RMI, "127.0.0.1", rmiServer.getPort(), "MesosFactoryService")) {
+            assertTrue(client.createGame(new CreateGameRequest("rmi-factory-room", 2)).success());
         }
     }
 

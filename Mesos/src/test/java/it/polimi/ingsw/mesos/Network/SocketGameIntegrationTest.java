@@ -48,6 +48,16 @@ class SocketGameIntegrationTest {
     }
 
     @Test
+    void socketClientFactoryConnectsViaConnectionTypeOverload() throws IOException {
+        MesosServerCore serverCore = new MesosServerCore();
+
+        try (SocketGameServer socketServer = new SocketGameServer(serverCore, 0);
+             GameClient client = GameClientFactory.connect(ConnectionType.SOCKET, "127.0.0.1", socketServer.getPort())) {
+            assertTrue(client.createGame(new CreateGameRequest("socket-factory-room", 2)).success());
+        }
+    }
+
+    @Test
     void socketClientsReceivePushUpdates() throws IOException {
         MesosServerCore serverCore = new MesosServerCore();
 

@@ -52,9 +52,13 @@ class NetworkRequestTest {
         assertThrows(IllegalArgumentException.class, () -> new SnapshotRequest(null));
         assertThrows(IllegalArgumentException.class, () -> new SnapshotRequest(" "));
         assertThrows(IllegalArgumentException.class, () -> new SubscribeGameRequest(null, "Alice"));
+        assertThrows(IllegalArgumentException.class, () -> new SubscribeGameRequest(" ", "Alice"));
         assertThrows(IllegalArgumentException.class, () -> new SubscribeGameRequest("game", null));
+        assertThrows(IllegalArgumentException.class, () -> new SubscribeGameRequest("game", " "));
         assertThrows(IllegalArgumentException.class, () -> new UnsubscribeGameRequest(null, "Alice"));
+        assertThrows(IllegalArgumentException.class, () -> new UnsubscribeGameRequest(" ", "Alice"));
         assertThrows(IllegalArgumentException.class, () -> new UnsubscribeGameRequest("game", null));
+        assertThrows(IllegalArgumentException.class, () -> new UnsubscribeGameRequest("game", " "));
 
         assertThrows(IllegalArgumentException.class, () -> new NicknameRequest(null));
         assertThrows(IllegalArgumentException.class, () -> new NicknameRequest(" "));
