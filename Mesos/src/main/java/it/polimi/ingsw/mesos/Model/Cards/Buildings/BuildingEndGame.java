@@ -193,7 +193,7 @@ public class BuildingEndGame extends BuildingCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuildingEndGame(this);
     }
 
     @Override

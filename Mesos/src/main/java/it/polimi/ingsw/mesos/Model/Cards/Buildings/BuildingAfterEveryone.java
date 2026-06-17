@@ -74,7 +74,7 @@ public class BuildingAfterEveryone extends BuildingCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuildingAfterEveryone(this);
     }
 
     @Override

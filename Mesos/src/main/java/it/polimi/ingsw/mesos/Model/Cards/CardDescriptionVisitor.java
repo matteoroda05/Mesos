@@ -22,20 +22,20 @@ import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
  * Each concrete card type accepts this visitor through {@link Card#accept}.
  */
 public interface CardDescriptionVisitor {
-    String visit(BuilderCard card);
-    String visit(GathererCard card);
-    String visit(HunterCard card);
-    String visit(InventorCard card);
-    String visit(ShamanCard card);
-    String visit(ArtistCard card);
-    String visit(HuntEvent card);
-    String visit(CavePaintingEvent card);
-    String visit(ShamanicRitualEvent card);
-    String visit(SustenanceEvent card);
-    String visit(BuildingBonusEvent card);
-    String visit(BuildingEndTurn card);
-    String visit(BuildingOnCard card);
-    String visit(BuildingShamanicRitual card);
-    String visit(BuildingEndGame card);
-    String visit(BuildingAfterEveryone card);
+    String describeBuilderCard(BuilderCard card);
+    String describeGathererCard(GathererCard card);
+    String describeHunterCard(HunterCard card);
+    String describeInventorCard(InventorCard card);
+    String describeShamanCard(ShamanCard card);
+    String describeArtistCard(ArtistCard card);
+    String describeHuntEvent(HuntEvent card);
+    String describeCavePaintingEvent(CavePaintingEvent card);
+    String describeShamanicRitualEvent(ShamanicRitualEvent card);
+    String describeSustenanceEvent(SustenanceEvent card);
+    String describeBuildingBonusEvent(BuildingBonusEvent card);
+    String describeBuildingEndTurn(BuildingEndTurn card);
+    String describeBuildingOnCard(BuildingOnCard card);
+    String describeBuildingShamanicRitual(BuildingShamanicRitual card);
+    String describeBuildingEndGame(BuildingEndGame card);
+    String describeBuildingAfterEveryone(BuildingAfterEveryone card);
 }

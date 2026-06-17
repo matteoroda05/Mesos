@@ -116,7 +116,7 @@ public class CavePaintingEvent extends EventCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeCavePaintingEvent(this);
     }
 
     @Override

@@ -42,7 +42,7 @@ public final class ShamanCard extends CharacterCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeShamanCard(this);
     }
 
     @Override

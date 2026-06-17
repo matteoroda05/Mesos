@@ -105,7 +105,7 @@ public class HuntEvent extends EventCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeHuntEvent(this);
     }
 
     @Override

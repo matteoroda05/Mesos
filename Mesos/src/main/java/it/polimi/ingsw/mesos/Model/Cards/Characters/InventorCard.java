@@ -41,7 +41,7 @@ public final class InventorCard extends CharacterCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeInventorCard(this);
     }
 
     @Override

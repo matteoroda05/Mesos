@@ -141,7 +141,7 @@ public class BuildingOnCard extends BuildingCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuildingOnCard(this);
     }
 
     @Override

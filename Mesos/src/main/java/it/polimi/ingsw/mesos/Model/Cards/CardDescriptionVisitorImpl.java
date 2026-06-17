@@ -30,63 +30,63 @@ public class CardDescriptionVisitorImpl implements CardDescriptionVisitor {
     private CardDescriptionVisitorImpl() {}
 
     @Override
-    public String visit(BuilderCard card) {
+    public String describeBuilderCard(BuilderCard card) {
         return "Building discount " + card.getBuildingDiscount()
                 + ", end game +" + card.getPrestigePoints() + " pp";
     }
 
     @Override
-    public String visit(GathererCard card) {
+    public String describeGathererCard(GathererCard card) {
         return "Sustenance discount " + card.getDiscount() + " food";
     }
 
     @Override
-    public String visit(HunterCard card) {
+    public String describeHunterCard(HunterCard card) {
         return card.isActiveHunter() ? "Active hunter" : "Hunter";
     }
 
     @Override
-    public String visit(InventorCard card) {
+    public String describeInventorCard(InventorCard card) {
         return "Icon " + card.getInventionIcon();
     }
 
     @Override
-    public String visit(ShamanCard card) {
+    public String describeShamanCard(ShamanCard card) {
         return card.getStars() + " shamanic stars";
     }
 
     @Override
-    public String visit(ArtistCard card) {
+    public String describeArtistCard(ArtistCard card) {
         return "";
     }
 
     @Override
-    public String visit(HuntEvent card) {
+    public String describeHuntEvent(HuntEvent card) {
         return "+" + card.getPrestigePerHunter() + " pp and +" + card.getFoodPerHunter()
                 + " food per hunter";
     }
 
     @Override
-    public String visit(CavePaintingEvent card) {
+    public String describeCavePaintingEvent(CavePaintingEvent card) {
         return "With at least " + card.getThreshold() + " artists: +"
                 + card.getPointsPerArtist()
                 + " pp each, otherwise " + card.getPenalty() + " pp";
     }
 
     @Override
-    public String visit(ShamanicRitualEvent card) {
+    public String describeShamanicRitualEvent(ShamanicRitualEvent card) {
         return "Winners +" + card.getWinnerBonus()
                 + " pp, losers " + card.getLoserPenalty() + " pp";
     }
 
     @Override
-    public String visit(SustenanceEvent card) {
+    public String describeSustenanceEvent(SustenanceEvent card) {
         return card.getFoodPerCharacter() + " food per character, each deficit costs "
                 + card.getPointPenalty() + " pp";
     }
 
     @Override
-    public String visit(BuildingBonusEvent card) {
+    public String describeBuildingBonusEvent(BuildingBonusEvent card) {
         return "On " + formatTrigger(card.getTrigger())
                 + ": " + formatName(card.getCharacterType().getSimpleName())
                 + " gives " + signed(card.getFoodBonus(), " food")
@@ -94,19 +94,19 @@ public class CardDescriptionVisitorImpl implements CardDescriptionVisitor {
     }
 
     @Override
-    public String visit(BuildingEndTurn card) {
+    public String describeBuildingEndTurn(BuildingEndTurn card) {
         return "End turn: +" + card.getFoodBonus() + " food with positive turn order tile bonus";
     }
 
     @Override
-    public String visit(BuildingOnCard card) {
+    public String describeBuildingOnCard(BuildingOnCard card) {
         return card.isSetCompletion()
                 ? "When taking cards: +" + card.getFoodBonus() + " food if you complete a set"
                 : "Inventor pair: +" + card.getFoodBonus() + " food with duplicate icon";
     }
 
     @Override
-    public String visit(BuildingShamanicRitual card) {
+    public String describeBuildingShamanicRitual(BuildingShamanicRitual card) {
         return card.getStarBonus() != 0
                 ? "Ritual: +" + card.getStarBonus() + " stars before scoring"
                 : card.getWinMultiplier() != 0
@@ -115,7 +115,7 @@ public class CardDescriptionVisitorImpl implements CardDescriptionVisitor {
     }
 
     @Override
-    public String visit(BuildingEndGame card) {
+    public String describeBuildingEndGame(BuildingEndGame card) {
         if (card.isDoubleBuildersPrestige()) {
             return "End game: double builders' prestige";
         }
@@ -133,7 +133,7 @@ public class CardDescriptionVisitorImpl implements CardDescriptionVisitor {
     }
 
     @Override
-    public String visit(BuildingAfterEveryone card) {
+    public String describeBuildingAfterEveryone(BuildingAfterEveryone card) {
         return "";
     }
 

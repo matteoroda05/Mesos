@@ -26,7 +26,7 @@ public final class ArtistCard extends CharacterCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeArtistCard(this);
     }
 
     @Override

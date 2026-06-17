@@ -57,7 +57,7 @@ public final class BuilderCard extends CharacterCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeBuilderCard(this);
     }
 
     @Override

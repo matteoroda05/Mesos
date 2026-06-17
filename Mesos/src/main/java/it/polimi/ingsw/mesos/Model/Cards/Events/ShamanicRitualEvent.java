@@ -132,7 +132,7 @@ public class ShamanicRitualEvent extends EventCard {
 
     @Override
     public String accept(CardDescriptionVisitor visitor) {
-        return visitor.visit(this);
+        return visitor.describeShamanicRitualEvent(this);
     }
 
     @Override
