@@ -1,7 +1,9 @@
 package it.polimi.ingsw.mesos.Launcher;
 
+import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.gui.MesosAssetResolver;
+import it.polimi.ingsw.mesos.gui.MesosEventPopupOverlay;
 import it.polimi.ingsw.mesos.gui.MesosGuiFlowController;
 import it.polimi.ingsw.mesos.gui.MesosGuiScreenFactory;
 import it.polimi.ingsw.mesos.gui.MesosGuiService;
@@ -48,6 +50,7 @@ public final class MesosClientApplication extends Application implements MesosGu
     private Label busyLabel;
     private Label statusBarLabel;
     private MesosGuiFlowController flowController;
+    private MesosEventPopupOverlay eventPopupOverlay;
 
     @Override
     public void start(Stage stage) {
@@ -63,7 +66,8 @@ public final class MesosClientApplication extends Application implements MesosGu
         appShell.setBottom(buildStatusBar());
 
         busyOverlay = buildBusyOverlay();
-        rootStack = new StackPane(appShell, busyOverlay);
+        eventPopupOverlay = new MesosEventPopupOverlay();
+        rootStack = new StackPane(appShell, busyOverlay, eventPopupOverlay.getNode());
         rootStack.setMinSize(0, 0);
         busyOverlay.setVisible(false);
         busyOverlay.setManaged(false);
@@ -132,6 +136,11 @@ public final class MesosClientApplication extends Application implements MesosGu
             if (ok != null) ok.getStyleClass().add("primary-button");
         });
         alert.show();
+    }
+
+    @Override
+    public void showEventPopup(EventLogEntry entry) {
+        eventPopupOverlay.show(entry);
     }
 
     @Override

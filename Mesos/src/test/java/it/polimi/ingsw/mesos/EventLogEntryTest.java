@@ -27,21 +27,21 @@ class EventLogEntryTest {
 
     @Test
     void turnOrderTitle_anyEntry_returnsTurnOrderHeading() {
-        assertEquals("Turn order", new EventLogEntry.TurnOrder(Color.BLUE, 0, 0).title());
+        assertEquals("Turn order", new EventLogEntry.TurnOrder("Alice", Color.BLUE, 0, 0).title());
     }
 
     @Test
     void turnOrderBody_withFoodAndPrestigeChanges_describesGainsAndLosses() {
         assertEquals(
-                "Player BLUE return to the turn order tile gained 2 food and lost 1 prestige points",
-                new EventLogEntry.TurnOrder(Color.BLUE, 2, -1).body());
+                "Player Alice (BLUE) return to the turn order tile gained 2 food and lost 1 prestige points",
+                new EventLogEntry.TurnOrder("Alice", Color.BLUE, 2, -1).body());
     }
 
     @Test
     void turnOrderBody_withNoChanges_appendsNoChangeSuffix() {
         assertEquals(
-                "Player YELLOW return to the turn order tile with no change",
-                new EventLogEntry.TurnOrder(Color.YELLOW, 0, 0).body());
+                "Player Bob (YELLOW) return to the turn order tile with no change",
+                new EventLogEntry.TurnOrder("Bob", Color.YELLOW, 0, 0).body());
     }
 
     @Test
@@ -50,11 +50,11 @@ class EventLogEntryTest {
                 "EVENTS ROUND",
                 List.of(new EventSummary(
                         "Hunt Event",
-                        List.of(new PlayerEventLine(Color.BLUE, 2, 1)),
+                        List.of(new PlayerEventLine("Alice", Color.BLUE, 2, 1)),
                         List.of("Shamanic Ritual activated"))));
 
         assertEquals(
-                "Hunt Event\n- Player BLUE gained 2 food and gained 1 prestige points\nShamanic Ritual activated",
+                "Hunt Event\n- Player Alice (BLUE) gained 2 food and gained 1 prestige points\nShamanic Ritual activated",
                 round.body());
     }
 }

@@ -3,6 +3,8 @@ package it.polimi.ingsw.mesos;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polimi.ingsw.mesos.Model.Enums.Color;
+
 /**
  * Renders {@link EventLogEntry} payloads into the human-readable text shown to
  * players (e.g. in a GUI popup or on the CLI). The server sends structured data;
@@ -45,6 +47,18 @@ public final class EventMessageFormatter {
         return title(entry) + "\n" + body(entry);
     }
 
+    /**
+     * Formats a player citation as {@code "<nickname> (<COLOR>)"} so events name
+     * the player rather than only their color.
+    *
+    * @param nickname player nickname
+    * @param color player color
+    * @return the combined citation label
+    */
+   public static String playerLabel(String nickname, Color color) {
+       return nickname + " (" + color + ")";
+    }
+    
     /**
      * Formatting utility
      * @param foodDelta food bonus/penalty

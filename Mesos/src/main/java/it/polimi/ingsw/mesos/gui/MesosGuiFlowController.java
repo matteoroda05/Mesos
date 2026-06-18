@@ -57,6 +57,7 @@ public final class MesosGuiFlowController {
                 if (gameBoardView != null) {
                     gameBoardView.setEventLog(eventLog);
                 }
+                host.showEventPopup(notification.entry());
             }
 
             public void visitGameViewUpdate(GameViewUpdate view) {
@@ -616,6 +617,8 @@ public final class MesosGuiFlowController {
         void setBusy(boolean busy, String message);
 
         void showAlert(String title, String message);
+
+        void showEventPopup(EventLogEntry entry);
 
         boolean showConfirmation(String title, String message);
 

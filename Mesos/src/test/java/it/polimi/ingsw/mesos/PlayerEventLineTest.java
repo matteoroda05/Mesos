@@ -11,12 +11,12 @@ class PlayerEventLineTest {
     @Test
     void describeLine_foodAndPrestigeChanges_describesBothDeltas() {
         assertEquals(
-                "Player BLUE gained 2 food and lost 3 prestige points",
-                new PlayerEventLine(Color.BLUE, 2, -3).describeLine());
+                "Player Alice (BLUE) gained 2 food and lost 3 prestige points",
+                new PlayerEventLine("Alice", Color.BLUE, 2, -3).describeLine());
     }
 
     @Test
     void describeLine_noChanges_returnsPlayerPrefixWithEmptyChange() {
-        assertEquals("Player ORANGE ", new PlayerEventLine(Color.ORANGE, 0, 0).describeLine());
+        assertEquals("Player Bob (ORANGE) ", new PlayerEventLine("Bob", Color.ORANGE, 0, 0).describeLine());
     }
 }

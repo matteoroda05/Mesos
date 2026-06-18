@@ -72,7 +72,7 @@ public class BuildingBonusEvent extends BuildingCard {
      * @param trigger event trigger this building reacts to
      * @throws IllegalArgumentException if the trigger is not one of the
      *                                  supported event triggers, both bonuses
-     *                                  are zero, the food bonus is outside -1
+     *                                  are zero, the food bonus is outside 0
      *                                  to 1, or the prestige bonus is outside
      *                                  0 to 1
      */
@@ -94,7 +94,9 @@ public class BuildingBonusEvent extends BuildingCard {
                 BuildingTrigger.ON_EVENT_CAVE_PAINTINGS);
         if (!valid.contains(trigger)) throw new IllegalArgumentException("Invalid trigger: " + trigger);
         if (food_bonus == 0 && pp_bonus == 0) throw new IllegalArgumentException("Building must have one effect.");
-        if (food_bonus < -1 || food_bonus > 1) throw new IllegalArgumentException("Invalid food bonus: " + food_bonus);
+        // A food bonus represents food gained during Hunt/Cave Paintings or food discounted
+        // during Sustenance; it is never a food loss, so negative values are rejected.
+        if (food_bonus < 0 || food_bonus > 1) throw new IllegalArgumentException("Invalid food bonus: " + food_bonus);
         if (pp_bonus < 0 || pp_bonus > 1) throw new IllegalArgumentException("Invalid prestige points bonus: " + pp_bonus);
 
         this.food_bonus = food_bonus;
@@ -118,9 +120,17 @@ public class BuildingBonusEvent extends BuildingCard {
         final int multiplier = owner.getTribe().getNumCharacterOfType(character_type);
         final int prev_food = output.get(owner.getColor()).food();
         final int prev_prestige = output.get(owner.getColor()).prestige();
-        final int food_change = prev_food + multiplier * food_bonus;
+        int food_change = prev_food + multiplier * food_bonus;
         final int prestige_change = prev_prestige + multiplier * pp_bonus;
         final int prev_penalty = output.get(owner.getColor()).penalty();
+
+        // During Sustenance the food value is the (non-positive) food owed and it carries a
+        // non-zero penalty. A discount can at most cancel the food owed: it must never turn
+        // into a food gain, which would also make the Result invalid (positive food with a
+        // penalty). Clamp the food at zero for the Sustenance event.
+        if (getTrigger() == BuildingTrigger.ON_EVENT_SUSTENANCE) {
+            food_change = Math.min(0, food_change);
+        }
 
         Result outcome = new Result(food_change, prestige_change, prev_penalty);
         output.replace(owner.getColor(), outcome);
@@ -129,7 +139,7 @@ public class BuildingBonusEvent extends BuildingCard {
     /**
      * Returns the food change applied per matching character.
      *
-     * @return food bonus, which may be negative
+     * @return food bonus, a non-negative value (0 or 1)
      */
     public int getFoodBonus() {
         return food_bonus;

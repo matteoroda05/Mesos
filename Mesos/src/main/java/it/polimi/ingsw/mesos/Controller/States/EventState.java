@@ -10,12 +10,12 @@ import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.EventSummary;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
-import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.EventCard;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
@@ -60,8 +60,7 @@ public class EventState extends GameState {
         Map<Color, Tribe> tribes = controller.getTribes();
         List<EventSummary> summaries = new ArrayList<>();
 
-        System.out.println("EVENT STATE");
-        printTribeCards(tribes);
+        // System.out.println("EVENT STATE");
 
         while (!events.isEmpty()) {
             EventCard curr = events.removeFirst();
@@ -70,7 +69,7 @@ public class EventState extends GameState {
             if (trigger == BuildingTrigger.ON_EVENT_SUSTENANCE) {
                 sustenance.add((SustenanceEvent) curr);
             } else {
-                System.out.println("Current event: " + formatCard(curr));
+                // System.out.println("Current event: " + curr.getReadableName());
                 Map<Color, Result> outcome = curr.calculateOutcome(tribes);
                 List<BuildingCard> buildings = controller.getBuildingsWithTrigger(trigger);
                 List<String> activations = new ArrayList<>();
@@ -94,7 +93,7 @@ public class EventState extends GameState {
             SustenanceEvent event = sustenance.removeFirst();
             BuildingTrigger trigger = event.asTrigger();
 
-            System.out.println("Current event: " + formatCard(event));
+            // System.out.println("Current event: " + event.getReadableName());
             Map<Color, Result> outcome = event.calculateOutcome(tribes);
             List<BuildingBonusEvent> buildings = controller.getBuildingsWithTrigger(trigger)
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();
@@ -143,7 +142,9 @@ public class EventState extends GameState {
                 .forEach(entry -> {
                     AppliedDelta applied = controller.playerApplyOutcome(entry.getValue(), entry.getKey());
                     if (applied.foodDelta() != 0 || applied.prestigeDelta() != 0) {
-                        lines.add(new PlayerEventLine(entry.getKey(), applied.foodDelta(), applied.prestigeDelta()));
+                        lines.add(new PlayerEventLine(
+                                controller.getGameContext().getPlayer(entry.getKey()).getNickname(),
+                                entry.getKey(), applied.foodDelta(), applied.prestigeDelta()));
                     }
                 });
         if (!lines.isEmpty() || !buildingActivations.isEmpty()) {
@@ -163,7 +164,8 @@ public class EventState extends GameState {
      */
     private static String eventBuildingNote(BuildingCard building) {
         Player owner = building.getOwner();
-        String ownerSuffix = owner == null ? "" : " from player " + owner.getColor();
+        String ownerSuffix = owner == null ? ""
+                : " from player " + EventMessageFormatter.playerLabel(owner.getNickname(), owner.getColor());
         return "Building " + EventLogEntry.formatBuildingName(building.getClass().getSimpleName())
                 + ownerSuffix + " has been activated";
     }
@@ -180,22 +182,4 @@ public class EventState extends GameState {
         return last_round ? GameStatus.FINAL_EVENTS : GameStatus.ROUND_EVENTS;
     }
 
-    // TODO: REMOVE THIS FUNCTION USEFUL: FOR DEBUG ONLY
-    private static void printTribeCards(Map<Color, Tribe> tribes) {
-        tribes.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    System.out.println(entry.getKey());
-                    List<Card> cards = entry.getValue().getCards();
-                    if (cards.isEmpty()) {
-                        System.out.println("  (no cards)");
-                    } else {
-                        cards.forEach(card -> System.out.println("  - " + formatCard(card)));
-                    }
-                });
-    }
-
-    private static String formatCard(Card card) {
-        return card.getClass().getSimpleName() + " (" + card.getEra() + ")";
-    }
 }
