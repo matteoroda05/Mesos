@@ -438,9 +438,11 @@ public class MesosServerCore implements MesosServerService {
         GameSession session = getSessionByNickname(nickname);
         if (session != null) {
             disconnectedGameByNickname.put(nickname, session.context.getGameName());
+            // Always drop the dead callback sink, even for a finished game, so a
+            // later broadcast (e.g. on rejoin) never tries to push to a gone client.
+            session.removeSubscribers(nickname);
             if (!session.finished()) {
                 session.markPlayerDisconnected(nickname);
-                session.removeSubscribers(nickname);
                 session.publishAndSnapshot("Player disconnected: " + nickname);
             }
         } else {
