@@ -53,6 +53,8 @@ public class BuildingShamanicRitual extends BuildingCard {
     /**
      * Adjusts shamanic ritual results after the base event outcome: it either
      * doubles a sole winner's prestige or cancels the owner's prestige loss.
+     * Pre-event (star-bonus) buildings are a no-op here, since their effect is
+     * already accounted for while computing the ritual outcome.
      *
      * @param points mutable ritual outcomes keyed by player color
      * @throws NullPointerException if the owner, points map, or owner result is
@@ -82,6 +84,13 @@ public class BuildingShamanicRitual extends BuildingCard {
             Result prev = points.get(owner.getColor());
             Result new_points = new Result(prev.food(), player_points * win_multiplier, prev.penalty());
             points.replace(owner.getColor(), new_points);
+            return;
+        }
+
+        // Pre-event star-bonus buildings contribute through their star bonus (read directly
+        // while computing the ritual outcome) and must not be treated as "no prestige loss"
+        // buildings here.
+        if (star_bonus != 0) {
             return;
         }
 

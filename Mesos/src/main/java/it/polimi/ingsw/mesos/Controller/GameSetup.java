@@ -98,10 +98,12 @@ public class GameSetup {
 
     /**
      * Creates players from nicknames, honoring any reserved colors first and
-     * assigning unique fallback colors to the remaining players.
+     * assigning unique fallback colors to the remaining players. The initial
+     * turn order is randomized, and starting food is assigned by each player's
+     * resulting turn-order position.
      *
      * @param game_context game context to populate
-     * @param nicknames player nicknames in seating order
+     * @param nicknames player nicknames (join order; the turn order is randomized)
      * @param reservedColors reserved colors keyed by nickname
      * @throws IllegalArgumentException if the context, nickname list, or
      *                                  reserved color map is invalid, if the
@@ -154,17 +156,23 @@ public class GameSetup {
         availableColors.removeAll(usedColors);
         shuffle(availableColors);
 
+        // Randomize the initial turn order (rule setup step 9): the iteration order of this
+        // map is the order in which totems are placed on the turn-order tile, and starting
+        // food is then assigned by that random position (step 10).
+        List<String> seatingOrder = new ArrayList<>(nicknames);
+        shuffle(seatingOrder);
+
         Map<Color, Player> players_by_color = new LinkedHashMap<>();
         int[] starting_food = PLAYER_STARTING_FOOD();
         int fallbackColorIndex = 0;
-        for (int i = 0; i < nicknames.size(); i++) {
-            String nickname = nicknames.get(i);
+        for (int seat = 0; seat < seatingOrder.size(); seat++) {
+            String nickname = seatingOrder.get(seat);
             Color assignedColor = reservedColors.get(nickname);
             if (assignedColor == null) {
                 assignedColor = availableColors.get(fallbackColorIndex);
                 fallbackColorIndex++;
             }
-            int initial_food = starting_food[i];
+            int initial_food = starting_food[seat];
             Player player = new Player(nickname, assignedColor, initial_food);
             players_by_color.put(assignedColor, player);
         }

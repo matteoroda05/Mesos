@@ -146,7 +146,9 @@ class ModelControllerTest {
         MarketRow topRow = game_context.getGameTable().getTopRow();
         int firstInvalidIndex = topRow.getTribeCards().size() + topRow.getBuildingCards().size();
 
-        assertThrows(IndexOutOfBoundsException.class,
+        // The first index past the last building is out of range and is rejected with the
+        // friendly validation error rather than surfacing a raw index-out-of-bounds.
+        assertThrows(IllegalArgumentException.class,
                 () -> model_controller.playerChooseCard(player.getColor(), firstInvalidIndex, true));
     }
 

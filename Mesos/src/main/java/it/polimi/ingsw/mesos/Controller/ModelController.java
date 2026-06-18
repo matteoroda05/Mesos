@@ -292,15 +292,17 @@ public class ModelController {
         if (card >= market_row.getTribeCards().size()){
             // For building cards
             card -= market_row.getTribeCards().size();
-            if (card > market_row.getBuildingCards().size()) throw new IllegalArgumentException("card is out of range");
-            int cost = market_row.getBuildingCost(card) - player.getTribe().buildersDiscount();
+            if (card >= market_row.getBuildingCards().size()) throw new IllegalArgumentException("card is out of range");
+            // Builder discounts can never reduce a building's cost below zero; clamp it so
+            // that when the discount covers the full cost the building is taken for free.
+            int cost = Math.max(0, market_row.getBuildingCost(card) - player.getTribe().buildersDiscount());
             if (cost > player.getFood()) throw new IllegalArgumentException("player cannot afford this building");
             BuildingCard card_to_buy = market_row.takeBuildingCard(card);
             player.getTribe().addCard(card_to_buy);
             card_to_buy.setOwner(player);
-            int check = player.loseFood(cost);
-            if (check > 0) throw new IllegalStateException("player lost more food than than available");
             if (cost > 0) {
+                int check = player.loseFood(cost);
+                if (check > 0) throw new IllegalStateException("player lost more food than than available");
                 logNotice("Building purchased", "Player " + player_color + " bought building "
                         + EventLogEntry.formatBuildingName(card_to_buy.getClass().getSimpleName())
                         + " losing " + cost + " food");
