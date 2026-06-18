@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.AppliedDelta;
 import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Model.CardLoader;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
@@ -397,7 +398,8 @@ class ModelControllerTest {
         model_controller.logBuildingActivation(building, new AppliedDelta(-1, -2), null);
 
         String body = lastNoticeBody();
-        assertTrue(body.contains("from player " + owner.getColor()));
+        assertTrue(body.contains("from player "
+                + EventMessageFormatter.playerLabel(owner.getNickname(), owner.getColor())));
         assertTrue(body.contains("costing 1 food and costing 2 prestige points"));
     }
 

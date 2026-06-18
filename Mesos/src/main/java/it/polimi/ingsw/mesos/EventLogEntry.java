@@ -29,12 +29,28 @@ public sealed interface EventLogEntry extends Serializable
     String body();
 
     /**
+     * Reports whether this entry describes a resolved event round, as opposed to
+     * an ancillary notification (turn-order return, building/character notice).
+     * Front-ends can use this to give actual events more emphasis.
+     *
+     * @return true only for a {@link Round} entry
+     */
+    default boolean isEventRound() {
+        return false;
+    }
+
+    /**
      * Summary of a whole event round.
      *
      * @param title popup header (e.g. {@code "EVENTS ROUND"} or {@code "FINAL EVENTS"})
      * @param events the resolved events in resolution order
      */
     record Round(String title, List<EventSummary> events) implements EventLogEntry {
+        @Override
+        public boolean isEventRound() {
+            return true;
+        }
+
         @Override
         public String body() {
             StringBuilder builder = new StringBuilder();
@@ -53,11 +69,12 @@ public sealed interface EventLogEntry extends Serializable
     /**
      * A single player returning to the turn-order tile.
      *
+     * @param nickname nickname of the player who returned to the turn-order tile
      * @param color player who returned to the turn-order tile
      * @param foodDelta signed food change applied to the player
      * @param prestigeDelta signed prestige change applied to the player
      */
-    record TurnOrder(Color color, int foodDelta, int prestigeDelta) implements EventLogEntry {
+    record TurnOrder(String nickname, Color color, int foodDelta, int prestigeDelta) implements EventLogEntry {
         @Override
         public String title() {
             return "Turn order";
@@ -69,7 +86,8 @@ public sealed interface EventLogEntry extends Serializable
                     " with no change" :
                     " " + joinChanges(this.foodDelta(), this.prestigeDelta());
 
-            return "Player " + this.color() + " return to the turn order tile" + suffix;
+            return "Player " + EventMessageFormatter.playerLabel(this.nickname(), this.color())
+                    + " return to the turn order tile" + suffix;
         }
     }
 

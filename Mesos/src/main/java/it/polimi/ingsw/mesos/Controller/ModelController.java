@@ -18,6 +18,7 @@ import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 import it.polimi.ingsw.mesos.AppliedDelta;
 import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Result;
 
 public class ModelController {
@@ -262,7 +263,8 @@ public class ModelController {
         Result placing_result = game_table.getTurnOrderTile().placeTotem(player_color);
         AppliedDelta applied = playerApplyOutcome(placing_result, player_color);
         this.game_context.logEventEntry(
-                new EventLogEntry.TurnOrder(player_color, applied.foodDelta(), applied.prestigeDelta()));
+                new EventLogEntry.TurnOrder(this.game_context.getPlayer(player_color).getNickname(),
+                        player_color, applied.foodDelta(), applied.prestigeDelta()));
     }
 
     /**
@@ -303,7 +305,7 @@ public class ModelController {
             if (cost > 0) {
                 int check = player.loseFood(cost);
                 if (check > 0) throw new IllegalStateException("player lost more food than than available");
-                logNotice("Building purchased", "Player " + player_color + " bought building "
+                logNotice("Building purchased", "Player " + EventMessageFormatter.playerLabel(player.getNickname(), player_color) + " bought building "
                         + EventLogEntry.formatBuildingName(card_to_buy.getClass().getSimpleName())
                         + " losing " + cost + " food");
             }
@@ -320,7 +322,7 @@ public class ModelController {
             if (card_type == HunterCard.class && ((HunterCard)wanted).isActiveHunter()) {
                 int gained = player.getTribe().getNumCharacterOfType(HunterCard.class);
                 player.gainFood(gained);
-                logNotice("Character effect", "Player " + player_color
+                logNotice("Character effect", "Player " + EventMessageFormatter.playerLabel(player.getNickname(), player_color)
                         + " took an active Hunter, gaining " + gained + " food");
             }
             return Optional.ofNullable(wanted);
@@ -409,7 +411,8 @@ public class ModelController {
         Result placing_result = gameTable.getTurnOrderTile().placeTotem(player_color);
         AppliedDelta applied = playerApplyOutcome(placing_result, player_color);
         this.game_context.logEventEntry(
-                new EventLogEntry.TurnOrder(player_color, applied.foodDelta(), applied.prestigeDelta()));
+                new EventLogEntry.TurnOrder(this.game_context.getPlayer(player_color).getNickname(),
+                        player_color, applied.foodDelta(), applied.prestigeDelta()));
     }
 
 
@@ -499,7 +502,8 @@ public class ModelController {
     public void logBuildingActivation(BuildingCard building, AppliedDelta delta, String extra) {
         String name = EventLogEntry.formatBuildingName(building.getClass().getSimpleName());
         Player ownerPlayer = building.getOwner();
-        String ownerSuffix = ownerPlayer == null ? "" : " from player " + ownerPlayer.getColor();
+        String ownerSuffix = ownerPlayer == null ? ""
+                : " from player " + EventMessageFormatter.playerLabel(ownerPlayer.getNickname(), ownerPlayer.getColor());
         StringBuilder body = new StringBuilder("Building " + name + ownerSuffix + " has been activated");
         if (delta.foodDelta() != 0 || delta.prestigeDelta() != 0) {
             body.append(", ").append(describeBuildingOutcome(delta));

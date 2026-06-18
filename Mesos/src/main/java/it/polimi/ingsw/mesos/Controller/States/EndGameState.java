@@ -4,6 +4,7 @@ import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
@@ -41,7 +42,9 @@ public class EndGameState extends GameState {
 
         StringBuilder body = new StringBuilder();
         points.keySet().stream().sorted().forEach(color ->
-                body.append("Player ").append(color)
+                body.append("Player ")
+                        .append(EventMessageFormatter.playerLabel(
+                                controller.getGameContext().getPlayer(color).getNickname(), color))
                         .append(" gained ").append(points.get(color)).append(" prestige points\n"));
         controller.logNotice("FINAL SCORING", body.toString().stripTrailing());
 

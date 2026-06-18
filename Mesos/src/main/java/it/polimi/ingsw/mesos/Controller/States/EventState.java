@@ -10,6 +10,7 @@ import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.EventSummary;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
@@ -141,7 +142,9 @@ public class EventState extends GameState {
                 .forEach(entry -> {
                     AppliedDelta applied = controller.playerApplyOutcome(entry.getValue(), entry.getKey());
                     if (applied.foodDelta() != 0 || applied.prestigeDelta() != 0) {
-                        lines.add(new PlayerEventLine(entry.getKey(), applied.foodDelta(), applied.prestigeDelta()));
+                        lines.add(new PlayerEventLine(
+                                controller.getGameContext().getPlayer(entry.getKey()).getNickname(),
+                                entry.getKey(), applied.foodDelta(), applied.prestigeDelta()));
                     }
                 });
         if (!lines.isEmpty() || !buildingActivations.isEmpty()) {
@@ -161,7 +164,8 @@ public class EventState extends GameState {
      */
     private static String eventBuildingNote(BuildingCard building) {
         Player owner = building.getOwner();
-        String ownerSuffix = owner == null ? "" : " from player " + owner.getColor();
+        String ownerSuffix = owner == null ? ""
+                : " from player " + EventMessageFormatter.playerLabel(owner.getNickname(), owner.getColor());
         return "Building " + EventLogEntry.formatBuildingName(building.getClass().getSimpleName())
                 + ownerSuffix + " has been activated";
     }

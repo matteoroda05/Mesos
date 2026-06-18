@@ -15,9 +15,11 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameContext;
+import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.AppliedDelta;
 import it.polimi.ingsw.mesos.EventLogEntry;
+import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,7 +130,9 @@ class EventStateTest extends StateTestSupport {
         assertInstanceOf(EndGameState.class, nextState);
         EventLogEntry entry = game_context.drainEventLog().getLast();
         assertEquals("Final events", entry.title());
-        assertTrue(entry.body().contains("from player " + player_colors.getFirst()));
+        Player owner = game_context.getPlayer(player_colors.getFirst());
+        assertTrue(entry.body().contains("from player "
+                + EventMessageFormatter.playerLabel(owner.getNickname(), owner.getColor())));
     }
 
     private static final class EventSpyController extends ModelController {

@@ -341,6 +341,31 @@ public final class MesosGameBoardView extends BorderPane {
         playerButtonsPane.setManaged(!finalMode && snapshot != null && !snapshot.players().isEmpty());
         finalLeaderboardOverlay.setVisible(finalMode);
         finalLeaderboardOverlay.setManaged(finalMode);
+        relocateEventLogPane(finalMode);
+    }
+
+    /**
+     * Keeps the event-log button reachable on the end screen by hosting it in
+     * the final leaderboard overlay (top-left, clear of the "Back to Lobby"
+     * button) while in final mode, and back in the in-game top-right bar
+     * otherwise.
+     *
+     * @param finalMode whether the final leaderboard is being shown
+     */
+    private void relocateEventLogPane(boolean finalMode) {
+        if (finalMode) {
+            topRightBar.getChildren().remove(eventLogPane);
+            if (!finalLeaderboardOverlay.getChildren().contains(eventLogPane)) {
+                finalLeaderboardOverlay.getChildren().add(eventLogPane);
+                StackPane.setAlignment(eventLogPane, Pos.TOP_LEFT);
+                StackPane.setMargin(eventLogPane, new Insets(12, 0, 0, 12));
+            }
+        } else {
+            finalLeaderboardOverlay.getChildren().remove(eventLogPane);
+            if (!topRightBar.getChildren().contains(eventLogPane)) {
+                topRightBar.getChildren().add(0, eventLogPane);
+            }
+        }
     }
 
     private void rebuildMinimalTurnBar() {
