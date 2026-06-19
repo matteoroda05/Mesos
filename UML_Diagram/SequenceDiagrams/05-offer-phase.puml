@@ -1,0 +1,32 @@
+@startuml
+
+title Offer phase
+
+participant Client1
+participant Server
+participant Client2
+
+loop each player chooses one available offer tile
+Server-->Client1: GameViewUpdate(active player and offers)
+Client1->Server: ChooseOfferRequest(offerTileIndex)
+
+alt valid choice by the active player
+Server->Server: assign offer and advance turn
+opt this was the final offer choice
+Server->Server: enter ROUND_ACTIONS
+end
+Server-->Client1: GameViewUpdate(updated snapshot and status)
+Server-->Client2: GameViewUpdate(updated snapshot and status)
+Server-->Client1: GameOperationResult(Offer tile chosen, same snapshot)
+else invalid offer, wrong phase, or wrong player
+Server-->Client1: GameOperationResult(failure, current snapshot)
+end
+end
+
+note over Client1, Client2
+Only subscribers receive asynchronous GameViewUpdate messages.
+The final offer update already reports ROUND_ACTIONS.
+The acting client also receives the direct operation result.
+end note
+
+@enduml

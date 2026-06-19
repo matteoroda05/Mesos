@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
@@ -584,7 +585,11 @@ class MesosServerCoreTest {
         assertTrue(snapshot.success());
         assertTrue(snapshot.snapshot().finished());
         assertEquals(GameStatus.END_GAME, snapshot.snapshot().status());
-        assertEquals("Alice", snapshot.snapshot().winnerNickname());
+        List<String> forcedWinners = snapshot.snapshot().players().stream()
+                .filter(PlayerSummary::winner)
+                .map(PlayerSummary::nickname)
+                .toList();
+        assertEquals(List.of("Alice"), forcedWinners);
 
         assertFalse(serverCore.chooseOffer(new ChooseOfferRequest("resilience-room", "Alice", 0)).success());
         assertTrue(serverCore.unsubscribe(
@@ -665,12 +670,42 @@ class MesosServerCoreTest {
         assertTrue(snapshot.success());
         assertTrue(snapshot.snapshot().finished());
         assertEquals(GameStatus.END_GAME, snapshot.snapshot().status());
-        assertNotNull(snapshot.snapshot().winnerNickname());
+        assertTrue(snapshot.snapshot().players().stream().anyMatch(PlayerSummary::winner));
 
         // disconnecting a player in a finished game must not touch model connection state
         expireHeartbeat(serverCore, "Alice");
         checkDisconnectedClients(serverCore);
         assertTrue(serverCore.getSnapshot(new SnapshotRequest("finished-room")).snapshot().finished());
+    }
+
+    @Test
+    void prestigeTieIsBrokenByFoodYieldingSingleWinner() throws Exception {
+        MesosServerCore serverCore = finishedTwoPlayerGame("food-tiebreak-room");
+        setPlayerScore(serverCore, "food-tiebreak-room", "Alice", 10, 5);
+        setPlayerScore(serverCore, "food-tiebreak-room", "Bob", 10, 8);
+
+        assertEquals(List.of("Bob"), winnerNicknames(serverCore, "food-tiebreak-room"));
+    }
+
+    @Test
+    void fullTieOnPrestigeAndFoodYieldsSharedVictory() throws Exception {
+        MesosServerCore serverCore = finishedTwoPlayerGame("shared-room");
+        setPlayerScore(serverCore, "shared-room", "Alice", 10, 5);
+        setPlayerScore(serverCore, "shared-room", "Bob", 10, 5);
+
+        List<String> winners = winnerNicknames(serverCore, "shared-room");
+        assertEquals(2, winners.size());
+        assertTrue(winners.contains("Alice"));
+        assertTrue(winners.contains("Bob"));
+    }
+
+    @Test
+    void strictlyHighestPrestigeYieldsSingleWinnerRegardlessOfFood() throws Exception {
+        MesosServerCore serverCore = finishedTwoPlayerGame("strict-room");
+        setPlayerScore(serverCore, "strict-room", "Alice", 12, 0);
+        setPlayerScore(serverCore, "strict-room", "Bob", 9, 99);
+
+        assertEquals(List.of("Alice"), winnerNicknames(serverCore, "strict-room"));
     }
 
     @Test
@@ -820,6 +855,40 @@ class MesosServerCoreTest {
     private static void giveFood(MesosServerCore serverCore, String gameName, int amount) throws Exception {
         GameContext context = contextForGame(serverCore, gameName);
         context.getPlayers().forEach(player -> player.gainFood(amount));
+    }
+
+    private static MesosServerCore finishedTwoPlayerGame(String gameName) throws Exception {
+        MesosServerCore serverCore = new MesosServerCore();
+        assertTrue(serverCore.createGame(new CreateGameRequest(gameName, 2)).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest(gameName, "Alice")).success());
+        assertTrue(serverCore.joinGame(new JoinGameRequest(gameName, "Bob")).success());
+        finishGameNaturally(serverCore, gameName);
+        return serverCore;
+    }
+
+    private static void setPlayerScore(MesosServerCore serverCore, String gameName, String nickname,
+            int prestige, int food) throws Exception {
+        GameContext context = contextForGame(serverCore, gameName);
+        Player player = context.getPlayers().stream()
+                .filter(candidate -> nickname.equals(candidate.getNickname()))
+                .findFirst()
+                .orElseThrow();
+        player.changePrestigePoints(prestige - player.getPrestigePoints());
+        int foodDelta = food - player.getFood();
+        if (foodDelta >= 0) {
+            player.gainFood(foodDelta);
+        } else {
+            player.loseFood(-foodDelta);
+        }
+    }
+
+    private static List<String> winnerNicknames(MesosServerCore serverCore, String gameName) {
+        GameOperationResult result = serverCore.getSnapshot(new SnapshotRequest(gameName));
+        assertTrue(result.success());
+        return result.snapshot().players().stream()
+                .filter(PlayerSummary::winner)
+                .map(PlayerSummary::nickname)
+                .toList();
     }
 
     private static int firstPickableTopCardIndex(GameSnapshot snapshot) {

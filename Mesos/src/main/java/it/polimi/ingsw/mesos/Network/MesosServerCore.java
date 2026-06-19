@@ -1124,22 +1124,35 @@ public class MesosServerCore implements MesosServerService {
                     summarizeTurnOrder(),
                     summarizeRow(context.getGameTable().getTopRow()),
                     summarizeRow(context.getGameTable().getBottomRow()),
-                    currentState != null && currentState.isPassAvailable(),
-                    computeWinnerNickname()
+                    currentState != null && currentState.isPassAvailable()
             );
         }
 
-        private String computeWinnerNickname() {
+        /**
+         * Computes the set of winning nicknames.
+         * A forced resilience winner is the sole winner regardless of score.
+         * Otherwise winners are the players tied for the highest prestige, then
+         * the highest food; if several remain tied on both, victory is shared.
+         *
+         * @return winning nicknames, empty when the game is not finished
+         */
+        private Set<String> computeWinnerNicknames() {
             if (forcedWinnerNickname != null) {
-                return forcedWinnerNickname;
+                return Set.of(forcedWinnerNickname);
             }
-            if (started() && controller.isGameFinished()) {
-                return new ModelController(context).getPlayerData().stream()
-                        .max(Comparator.comparingInt(PlayerData::prestigePoints))
-                        .map(PlayerData::nickname)
-                        .orElse(null);
+            if (!(started() && controller.isGameFinished())) {
+                return Set.of();
             }
-            return null;
+            List<PlayerData> data = new ModelController(context).getPlayerData();
+            return data.stream()
+                    .max(Comparator.comparingInt(PlayerData::prestigePoints)
+                            .thenComparingInt(PlayerData::food))
+                    .map(best -> data.stream()
+                            .filter(p -> p.prestigePoints() == best.prestigePoints()
+                                    && p.food() == best.food())
+                            .map(PlayerData::nickname)
+                            .collect(java.util.stream.Collectors.toSet()))
+                    .orElseGet(Set::of);
         }
 
         private List<Color> reservedColors() {
@@ -1228,6 +1241,7 @@ public class MesosServerCore implements MesosServerService {
                         .toList();
             }
 
+            Set<String> winners = computeWinnerNicknames();
             return new ModelController(context).getPlayerData().stream()
                     .map(pd -> new PlayerSummary(
                             pd.nickname(),
@@ -1243,7 +1257,8 @@ public class MesosServerCore implements MesosServerService {
                             pd.gatherersDiscount(),
                             pd.buildersPrestige(),
                             pd.buildingsPrestige(),
-                            pd.inventorTypeCount()
+                            pd.inventorTypeCount(),
+                            winners.contains(pd.nickname())
                     ))
                     .toList();
         }

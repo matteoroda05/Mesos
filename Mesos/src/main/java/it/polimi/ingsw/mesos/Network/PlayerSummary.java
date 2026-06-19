@@ -20,6 +20,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
  * @param buildersPrestige total end-game prestige printed on builder cards
  * @param buildingsPrestige total static prestige printed on owned building cards
  * @param inventorTypeCount number of distinct invention icon types owned
+ * @param winner true when this player is among the game winners
  */
 public record PlayerSummary(
         String nickname,
@@ -35,7 +36,8 @@ public record PlayerSummary(
         int gatherersDiscount,
         int buildersPrestige,
         int buildingsPrestige,
-        int inventorTypeCount
+        int inventorTypeCount,
+        boolean winner
 ) implements Serializable {
 
     public PlayerSummary(
@@ -47,7 +49,7 @@ public record PlayerSummary(
             int buildingCount
     ) {
         this(nickname, color, food, prestigePoints, characterCount, buildingCount,
-                List.of(), List.of(), 0, 0, 0, 0, 0, 0);
+                List.of(), List.of(), 0, 0, 0, 0, 0, 0, false);
     }
 
     public PlayerSummary(
@@ -61,7 +63,7 @@ public record PlayerSummary(
             List<CardSummary> buildingCards
     ) {
         this(nickname, color, food, prestigePoints, characterCount, buildingCount,
-                characterCards, buildingCards, 0, 0, 0, 0, 0, 0);
+                characterCards, buildingCards, 0, 0, 0, 0, 0, 0, false);
     }
 
     /**

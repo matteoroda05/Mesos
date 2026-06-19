@@ -1,0 +1,37 @@
+@startuml
+
+title Connection and nickname
+
+participant Client
+participant Server
+
+group transport connection
+alt socket
+Client->Server: open TCP connection
+Server-->Client: object streams ready
+else RMI
+Client->Server: registry lookup
+Server-->Client: RemoteMesosServer stub
+end
+end
+
+Client->Server: NicknameRequest
+
+alt nickname is available
+Server-->Client: GameOperationResult(success)
+loop every 2 seconds
+Client->Server: HeartbeatRequest(lobby)
+Server-->Client: GameOperationResult(success)
+end
+else nickname belongs to a disconnected player
+Server-->Client: GameOperationResult(rejoinAvailable = true)
+else nickname is already active
+Server-->Client: GameOperationResult(PLAYER_NAME_TAKEN)
+end
+
+note over Client, Server
+The same request API is used by Socket and RMI clients.
+Only the transport connection is different.
+end note
+
+@enduml

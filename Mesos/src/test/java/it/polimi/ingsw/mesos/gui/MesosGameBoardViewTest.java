@@ -325,6 +325,24 @@ class MesosGameBoardViewTest {
     }
 
     @Test
+    void finishedGameHighlightsEveryWinnerRow() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(sharedWinnersSnapshot(), "Game over.");
+            view.applyCss();
+            view.layout();
+
+            StackPane finalOverlay = singleNode(view, ".final-leaderboard-overlay", StackPane.class);
+            assertEquals(2, finalOverlay.lookupAll(".final-leaderboard-row").size());
+            assertEquals(2, finalOverlay.lookupAll(".final-leaderboard-row-winner").size());
+            return null;
+        });
+    }
+
+    @Test
     void turnOrderEntriesShowColorIndicatorOnlyWhenOccupied() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
@@ -607,6 +625,20 @@ class MesosGameBoardViewTest {
         );
     }
 
+    private static GameSnapshot sharedWinnersSnapshot() {
+        List<PlayerSummary> players = List.of(
+                new PlayerSummary("dio", Color.ORANGE, 5, 10, 0, 0,
+                        List.of(), List.of(), 0, 0, 0, 0, 0, 0, true),
+                new PlayerSummary("Carlo2", Color.BLUE, 5, 10, 0, 0,
+                        List.of(), List.of(), 0, 0, 0, 0, 0, 0, true)
+        );
+        return new GameSnapshot(
+                "dio", 2, 2, true, true, GameStatus.END_GAME, 1, Era.FIRST,
+                "dio", Color.ORANGE, 0, 0, List.of(Color.ORANGE, Color.BLUE),
+                players, List.of(), List.of(), List.of(), List.of(), false
+        );
+    }
+
     private static GameSnapshot snapshot(
             List<CardSummary> topRow,
             List<CardSummary> bottomRow,
@@ -665,8 +697,7 @@ class MesosGameBoardViewTest {
                 turnOrder,
                 topRow,
                 bottomRow,
-                passAvailable,
-                null
+                passAvailable
         );
     }
 

@@ -1,0 +1,37 @@
+@startuml
+
+title Events and round transition
+
+participant Client1
+participant Server
+participant Client2
+
+Client1->Server: final ChooseCardRequest of the round
+Server->Server: apply card
+Server->Server: resolve visible events automatically
+Server->Server: apply event and building effects
+
+alt another round remains
+Server->Server: end round and create next round
+Server->Server: enter ROUND_OFFER
+else final round completed
+Server->Server: resolve final events
+Server->Server: calculate winners and enter END_GAME
+end
+
+Server-->Client1: GameViewUpdate(updated board snapshot)
+Server-->Client2: GameViewUpdate(updated board snapshot)
+
+loop each structured event entry produced
+Server-->Client1: EventNotification
+Server-->Client2: EventNotification
+end
+
+Server-->Client1: GameOperationResult(Card chosen, same snapshot)
+
+note over Client1, Client2
+The board snapshot is sent before EventNotification,
+so the UI already contains the resolved event effects.
+end note
+
+@enduml

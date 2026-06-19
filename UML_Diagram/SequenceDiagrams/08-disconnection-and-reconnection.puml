@@ -1,0 +1,45 @@
+@startuml
+
+title Disconnection and reconnection
+
+participant Client1
+participant Server
+participant Client2
+
+loop every 2 seconds while connected
+Client1->Server: HeartbeatRequest(game, nickname)
+Server-->Client1: GameOperationResult(I am active)
+end
+
+Client1 -x Server: connection or heartbeat stops
+Server->Server: heartbeat expires after 8 seconds
+Server->Server: mark player disconnected and remove subscriber
+Server-->Client2: GameViewUpdate(player disconnected)
+
+alt at least two players remain connected
+opt disconnected player owns the active turn
+Server->Server: skip disconnected player's turn
+Server-->Client2: GameViewUpdate(turn skipped)
+end
+else only one player remains connected
+Server-->Client2: GameViewUpdate(game suspended)
+alt player reconnects within 60 seconds
+Client1->Server: NicknameRequest
+Server-->Client1: GameOperationResult(rejoinAvailable = true)
+Client1->Server: JoinGameRequest(rejoin = true)
+Server-->Client2: GameViewUpdate(player reconnected)
+Server-->Client1: GameOperationResult(Player reconnected, snapshot)
+Client1->Server: SubscribeGameRequest
+Server-->Client1: GameOperationResult(current snapshot)
+else 60-second timeout expires
+Server->Server: declare the only connected player winner
+Server-->Client2: GameViewUpdate(END_GAME)
+end
+end
+
+note over Client1, Client2
+Rejoining restores the game session, but the client must
+subscribe again because the old update sink was removed.
+end note
+
+@enduml
