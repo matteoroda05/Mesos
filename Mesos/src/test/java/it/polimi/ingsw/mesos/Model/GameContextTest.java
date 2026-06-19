@@ -183,24 +183,6 @@ class GameContextTest {
         assertThrows(IllegalStateException.class, context_game::newEra);
     }
 
-    @Test
-    void computeFinalScoresAddsTribePrestigeToEachPlayer() {
-        GameContext context_game = new GameContext("MyGame", 2, createRealGameTable());
-        Map<Color, Player> players_map = createPlayersForTwoPlayerGame();
-
-        players_map.get(Color.BLUE).changePrestigePoints(3);
-        players_map.get(Color.YELLOW).changePrestigePoints(1);
-
-        players_map.get(Color.BLUE).getTribe().addCard(new BuildingAfterEveryone(Era.FIRST, 2, 1, 4));
-        players_map.get(Color.YELLOW).getTribe().addCard(new BuildingAfterEveryone(Era.FIRST, 2, 1, 7));
-
-        context_game.setupPlayers(players_map);
-        context_game.computeFinalScores();
-
-        assertEquals(7, players_map.get(Color.BLUE).getPrestigePoints());
-        assertEquals(8, players_map.get(Color.YELLOW).getPrestigePoints());
-    }
-
     private static Map<Color, Player> createPlayersForTwoPlayerGame() {
         Map<Color, Player> players_map = new EnumMap<>(Color.class);
         players_map.put(Color.BLUE, new Player("Alice", Color.BLUE, 3));

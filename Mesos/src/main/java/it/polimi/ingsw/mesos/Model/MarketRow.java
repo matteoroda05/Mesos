@@ -99,29 +99,6 @@ public class MarketRow {
         return takeable;
     }
 
-    // TODO: remove this method after fixing tests
-    /**
-     * Removes and returns a card from one of the row markets.
-     * This legacy helper does not prevent event cards from being removed from
-     * the tribe market.
-     *
-     * @param index position in the chosen market
-     * @param isBuilding true to remove from the building market, false to
-     *                   remove from the tribe market
-     * @return removed card
-     * @throws IndexOutOfBoundsException if the index is outside the chosen
-     *                                   market
-     */
-    public Card takeCard(int index, boolean isBuilding) {
-        if (isBuilding) {
-            checkIndex(index, building_market.size(), "building_market");
-            return building_market.remove(index);
-        } else {
-            checkIndex(index, tribe_market.size(), "tribe_market");
-            return tribe_market.remove(index);
-        }
-    }
-
     /**
      * Removes and returns a building card at the requested position.
      *

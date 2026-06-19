@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.Card;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
@@ -131,16 +130,6 @@ public class Tribe {
 
     public List<BuildingCard> getBuildingCards() {
         return List.copyOf(this.buildings);
-    }
-
-    // TODO: REMOVE THIS FUNCTION USEFUL: FOR DEBUG ONLY
-    public List<Card> getCards() {
-        List<Card> cards = new ArrayList<>();
-        for (List<CharacterCard> character_cards : this.characters.values()) {
-            cards.addAll(character_cards);
-        }
-        cards.addAll(this.buildings);
-        return cards;
     }
 
     /**

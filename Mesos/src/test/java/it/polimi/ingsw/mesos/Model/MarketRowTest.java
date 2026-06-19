@@ -197,76 +197,29 @@ class MarketRowTest {
     }
 
     @Test
-    void takeCardRemovesAndReturnsSelectedTribeCard() {
-        TribeDeck tribe_deck = new TribeDeck(2, List.of(tribe_card_one, tribe_card_two, tribe_card_three));
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-
-        Card taken_card = market_row.takeCard(1, false);
-
-        assertSame(tribe_card_two, taken_card);
-        assertIterableEquals(List.of(tribe_card_three, tribe_card_one), market_row.getTribeCards());
-    }
-
-    @Test
-    void takeCardRemovesAndReturnsSelectedBuildingCard() {
+    void typedTakeHelpersRemoveSelectedCardsAndRejectInvalidChoices() {
         TribeDeck tribe_deck = new TribeDeck(2, List.of(tribe_card_one, tribe_card_two, tribe_card_three));
         MarketRow market_row = new MarketRow(false, tribe_deck, null);
         market_row.placeCard(building_card_low_cost);
         market_row.placeCard(building_card_medium_cost);
 
-        Card taken_card = market_row.takeCard(0, true);
-
-        assertSame(building_card_low_cost, taken_card);
-        assertIterableEquals(List.of(building_card_medium_cost), market_row.getBuildingCards());
-    }
-
-    @Test
-    void takeCardThrowsWhenTribeIndexIsNegative() {
-        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-
-        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeCard(-1, false));
-    }
-
-    @Test
-    void takeCardThrowsWhenTribeIndexIsOutOfBounds() {
-        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-
-        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeCard(3, false));
-    }
-
-    @Test
-    void takeCardThrowsWhenBuildingIndexIsOutOfBounds() {
-        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-        market_row.placeCard(building_card_low_cost);
-
-        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeCard(1, true));
-    }
-
-    @Test
-    void takeCardThrowsWhenBuildingIndexIsNegative() {
-        TribeDeck tribe_deck = createTribeDeckForInitialBottomRow();
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-        market_row.placeCard(building_card_low_cost);
-
-        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeCard(-1, true));
-    }
-
-    @Test
-    void typedTakeHelpersRemoveSelectedCardsAndRejectInvalidChoices() {
-        TribeDeck tribe_deck = new TribeDeck(2, List.of(tribe_card_one, tribe_card_two, tribe_card_three));
-        MarketRow market_row = new MarketRow(false, tribe_deck, null);
-        market_row.placeCard(building_card_low_cost);
-
-        assertSame(tribe_card_three, market_row.takeCharacterCard(0));
+        assertSame(tribe_card_two, market_row.takeCharacterCard(1));
+        assertIterableEquals(List.of(tribe_card_three, tribe_card_one), market_row.getTribeCards());
         assertSame(building_card_low_cost, market_row.takeBuildingCard(0));
+        assertIterableEquals(List.of(building_card_medium_cost), market_row.getBuildingCards());
+
         assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeCharacterCard(-1));
-        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeBuildingCard(0));
+        assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> market_row.takeCharacterCard(market_row.getTribeCards().size()));
+        assertThrows(IndexOutOfBoundsException.class, () -> market_row.takeBuildingCard(-1));
+        assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> market_row.takeBuildingCard(market_row.getBuildingCards().size()));
 
         market_row.placeCard(event_card_one);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(
+                IllegalArgumentException.class,
                 () -> market_row.takeCharacterCard(market_row.getTribeCards().size() - 1));
     }
 

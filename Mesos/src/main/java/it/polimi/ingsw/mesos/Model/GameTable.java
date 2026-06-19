@@ -127,13 +127,8 @@ public class GameTable {
      * @param curr_era the era of the cards moved down during this refill
      * @return true when at least one newly drawn card belongs to a different
      *         era
-     * @throws IllegalArgumentException if the tribe deck is unexpectedly null
      */
     private boolean restoreTopRow(Era curr_era) {
-        if (tribe_deck == null) {
-            throw new IllegalArgumentException("Tribe deck null at start of new era.");
-        }
-
         List<TribeCard> drawn_cards = tribe_deck.drawTopRow();
         boolean new_era = false;
 

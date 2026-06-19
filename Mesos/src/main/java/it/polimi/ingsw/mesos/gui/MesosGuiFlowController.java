@@ -128,7 +128,7 @@ public final class MesosGuiFlowController {
                     )
             );
         }
-        gameBoardView.updateSnapshot(snapshot, message);
+        gameBoardView.updateSnapshot(snapshot);
         gameBoardView.setEventLog(eventLog);
         host.setContent(gameBoardView);
     }

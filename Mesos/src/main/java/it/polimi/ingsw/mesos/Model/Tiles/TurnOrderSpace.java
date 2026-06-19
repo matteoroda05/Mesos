@@ -5,7 +5,7 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 public class TurnOrderSpace {
 
     private final int foodBonus;
-    private Color occupant = null;   // null se lo spazio è libero
+    private Color occupant;   // null se lo spazio è libero
 
     /**
      * Creates a turn-order space with the configured food bonus or penalty.

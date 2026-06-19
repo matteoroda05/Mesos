@@ -13,7 +13,6 @@ package "Model" {
     - building_decks: BuildingDeck
 
     + setupGame(player_count: int): void
-    + computeFinalScores(): ScoreBoard
   }
 
   class GameTable {
@@ -38,7 +37,6 @@ package "Model" {
 
     + getCards(): List<Card>
     + getTakeableCards(player_food: int, builders_discount: int): List<Card>  'no Events or expensive buildings
-    + takeCard(index: int, is_building: boolean): Card
     + placeCard(c: Card): void
     + removeTribeCards(): List<TribeCard>
     + removeBuildingCards(): List<BuildingCard>

@@ -61,8 +61,6 @@ public class OfferTrack {
      *                               happen during a valid offer phase
      */
     public List<OfferTile> getAvailableTiles() {
-        ensureTilesInitialized();
-
         List<OfferTile> output = this.tiles.stream()
                 .filter(Objects::nonNull)
                 .filter(OfferTile::isAvailable)
@@ -82,8 +80,6 @@ public class OfferTrack {
      *         occupied
      */
     public List<OfferTile> getOccupiedTiles() {
-        ensureTilesInitialized();
-
         return this.tiles.stream()
                 .filter(Objects::nonNull)
                 .filter(tile -> !tile.isAvailable())
@@ -96,12 +92,9 @@ public class OfferTrack {
      * @param index tile position in the offer track
      * @return the offer tile at the requested index
      * @throws IndexOutOfBoundsException if the index is outside the track
-     * @throws IllegalStateException if the tile list is unexpectedly null or
-     *                               the requested entry is null
+     * @throws IllegalStateException if the requested entry is null
      */
     public OfferTile getTile(int index){
-        ensureTilesInitialized();
-
         if (index < 0 || index >= this.tiles.size()) {
             throw new IndexOutOfBoundsException("Index " + index + " out of bounds for offer track with size " + tiles.size());
         }
@@ -122,8 +115,6 @@ public class OfferTrack {
      * @throws IllegalArgumentException if the player color is null
      */
     public void clearOccupantByColor(Color playerColor) {
-        ensureTilesInitialized();
-
         if (playerColor == null) {
             throw new IllegalArgumentException("playerColor cannot be null");
         }
@@ -133,18 +124,6 @@ public class OfferTrack {
                 tile.clear();
                 return;
             }
-        }
-    }
-    
-    // TODO: remove since constructor ensures tiles is never null since its never modified
-    /**
-     * Verifies that the track storage has been initialized.
-     *
-     * @throws IllegalStateException if the tile list is unexpectedly null
-     */
-    private void ensureTilesInitialized() {
-        if (tiles == null) {
-            throw new IllegalStateException("Offer track tiles are not initialized");
         }
     }
 }

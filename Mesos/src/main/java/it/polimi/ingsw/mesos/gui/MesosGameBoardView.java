@@ -89,8 +89,6 @@ public final class MesosGameBoardView extends BorderPane {
 
     private final String localNickname;
     private final MesosAssetResolver assetResolver;
-    private final Runnable onRefresh;
-    private final Runnable onDisconnect;
     private final Runnable onPass;
     private final Runnable onBackToLobby;
     private final IntConsumer onChooseOffer;
@@ -141,8 +139,6 @@ public final class MesosGameBoardView extends BorderPane {
     ) {
         this.localNickname = localNickname;
         this.assetResolver = assetResolver;
-        this.onRefresh = onRefresh;
-        this.onDisconnect = onDisconnect;
         this.onChooseOffer = onChooseOffer;
         this.onChooseCard = onChooseCard;
         this.onPass = onPass;
@@ -284,7 +280,7 @@ public final class MesosGameBoardView extends BorderPane {
         buildLayout();
     }
 
-    public void updateSnapshot(GameSnapshot snapshot, String updateMessage) {
+    public void updateSnapshot(GameSnapshot snapshot) {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
         hideInfoPopup();
