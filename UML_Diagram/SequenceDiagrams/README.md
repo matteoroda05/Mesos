@@ -9,7 +9,7 @@ errors, loops for repeated behavior, and short explanatory notes.
 |---|---|---|---|
 | 1 | Connection and nickname | [01-connection-and-nickname.puml](01-connection-and-nickname.puml) | [01-connection-and-nickname.svg](01-connection-and-nickname.svg) |
 | 2 | Lobby and game creation | [02-lobby-and-game-creation.puml](02-lobby-and-game-creation.puml) | [02-lobby-and-game-creation.svg](02-lobby-and-game-creation.svg) |
-| 3 | Join, color selection, and start | [03-join-color-and-start.puml](03-join-color-and-start.puml) | [03-join-color-and-start.svg](03-join-color-and-start.svg) |
+| 3 | Color selection, join, and start | [03-join-color-and-start.puml](03-join-color-and-start.puml) | [03-join-color-and-start.svg](03-join-color-and-start.svg) |
 | 4 | Subscription and live updates | [04-subscription-and-live-updates.puml](04-subscription-and-live-updates.puml) | [04-subscription-and-live-updates.svg](04-subscription-and-live-updates.svg) |
 | 5 | Offer phase | [05-offer-phase.puml](05-offer-phase.puml) | [05-offer-phase.svg](05-offer-phase.svg) |
 | 6 | Card phase and pass | [06-card-phase-and-pass.puml](06-card-phase-and-pass.puml) | [06-card-phase-and-pass.svg](06-card-phase-and-pass.svg) |

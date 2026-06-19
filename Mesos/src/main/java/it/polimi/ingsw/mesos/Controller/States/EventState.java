@@ -60,8 +60,6 @@ public class EventState extends GameState {
         Map<Color, Tribe> tribes = controller.getTribes();
         List<EventSummary> summaries = new ArrayList<>();
 
-        // System.out.println("EVENT STATE");
-
         while (!events.isEmpty()) {
             EventCard curr = events.removeFirst();
             BuildingTrigger trigger = curr.asTrigger();
@@ -69,7 +67,6 @@ public class EventState extends GameState {
             if (trigger == BuildingTrigger.ON_EVENT_SUSTENANCE) {
                 sustenance.add((SustenanceEvent) curr);
             } else {
-                // System.out.println("Current event: " + curr.getReadableName());
                 Map<Color, Result> outcome = curr.calculateOutcome(tribes);
                 List<BuildingCard> buildings = controller.getBuildingsWithTrigger(trigger);
                 List<String> activations = new ArrayList<>();
@@ -93,7 +90,6 @@ public class EventState extends GameState {
             SustenanceEvent event = sustenance.removeFirst();
             BuildingTrigger trigger = event.asTrigger();
 
-            // System.out.println("Current event: " + event.getReadableName());
             Map<Color, Result> outcome = event.calculateOutcome(tribes);
             List<BuildingBonusEvent> buildings = controller.getBuildingsWithTrigger(trigger)
                     .stream().map(building -> ((BuildingBonusEvent) building)).toList();

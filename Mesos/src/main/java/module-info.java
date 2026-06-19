@@ -1,5 +1,4 @@
 module it.polimi.ingsw.mesos {
-    requires java.desktop;
     requires java.rmi;
     requires javafx.controls;
     requires javafx.graphics;

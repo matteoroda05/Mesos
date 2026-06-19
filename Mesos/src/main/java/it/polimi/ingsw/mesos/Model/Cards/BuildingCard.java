@@ -1,8 +1,6 @@
 package it.polimi.ingsw.mesos.Model.Cards;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.polimi.ingsw.mesos.Model.Cards.Buildings.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;

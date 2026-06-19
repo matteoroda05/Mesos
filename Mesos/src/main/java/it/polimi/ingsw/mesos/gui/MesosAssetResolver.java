@@ -1,7 +1,6 @@
 package it.polimi.ingsw.mesos.gui;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
@@ -66,31 +65,6 @@ public final class MesosAssetResolver {
         };
     }
 
-    public Optional<Image> resolveTurnOrderTile(int playerCount) {
-        if (playerCount < 2 || playerCount > 5) {
-            return Optional.empty();
-        }
-        return load("/cards_png/carte_front/turn_order_tile/turn_order_tile_" + playerCount + ".png");
-    }
-
-    public Optional<Image> resolveHeroImage() {
-        return load("/cards_png/Box_ITA_ART_1.png");
-    }
-
-    public Optional<Image> resolveTribeBack(Era era) {
-        if (era == null) {
-            return Optional.empty();
-        }
-        return load("/cards_png/carte_back/tribe_" + eraSuffix(era) + ".png");
-    }
-
-    public Optional<Image> resolveBuildingBack(Era era) {
-        if (era == null) {
-            return Optional.empty();
-        }
-        return load("/cards_png/carte_back/building_" + eraSuffix(era) + ".png");
-    }
-
     public Optional<Image> resolveRoundEventInfo() {
         return load("/cards_png/card_event_info_118.png");
     }
@@ -114,14 +88,6 @@ public final class MesosAssetResolver {
             return "/cards_png/carte_front/events/" + presentationId + ".png";
         }
         return null;
-    }
-
-    private String eraSuffix(Era era) {
-        return switch (era) {
-            case FIRST -> "era_1";
-            case SECOND -> "era_2";
-            case THIRD -> "era_3";
-        };
     }
 
     private Optional<Image> load(String resourcePath) {

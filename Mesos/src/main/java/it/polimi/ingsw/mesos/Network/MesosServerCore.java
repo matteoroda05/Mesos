@@ -568,7 +568,7 @@ public class MesosServerCore implements MesosServerService {
         private GameOperationResult join(String nickname) {
             joinedNicknames.add(nickname);
             markConnected(nickname);
-            boolean startedNow = startGameIfFull();
+            startGameIfFull();
 
             return GameOperationResult.success(
                     started() ? "Player joined: the game starts" : "Player joined the lobby",
@@ -620,14 +620,12 @@ public class MesosServerCore implements MesosServerService {
         }
 
         /**
-         * Builds model players from the joined lobby and creates the game
-         * controller exactly once.
-         *
-         * @return true when the controller was created by this call
+         * Builds model players from the joined lobby and creates the game controller
+         * exactly once when the lobby is full.
          */
-        private boolean startGameIfFull() {
+        private void startGameIfFull() {
             if (started() || !isFull()) {
-                return false;
+                return;
             }
 
             Map<String, Color> joinedReservedColors = new LinkedHashMap<>();
@@ -644,7 +642,6 @@ public class MesosServerCore implements MesosServerService {
             for (Player player : context.getPlayers()) {
                 colorsByNickname.put(player.getNickname(), player.getColor());
             }
-            return true;
         }
 
         /**

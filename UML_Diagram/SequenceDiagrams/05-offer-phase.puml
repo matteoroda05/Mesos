@@ -25,7 +25,6 @@ end
 
 note over Client1, Client2
 Only subscribers receive asynchronous GameViewUpdate messages.
-The final offer update already reports ROUND_ACTIONS.
 The acting client also receives the direct operation result.
 end note
 

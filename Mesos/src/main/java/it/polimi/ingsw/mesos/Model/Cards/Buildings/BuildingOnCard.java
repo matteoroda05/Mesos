@@ -120,16 +120,6 @@ public class BuildingOnCard extends BuildingCard {
         return food_bonus;
     }
 
-    // TODO: remove this method??
-    /**
-     * Checks whether this building rewards repeated inventor icons.
-     *
-     * @return true for inventor-pair buildings
-     */
-    public boolean isInventorsPair() {
-        return inventors_pair;
-    }
-
     /**
      * Checks whether this building rewards completing character sets.
      *
