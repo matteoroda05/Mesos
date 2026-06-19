@@ -1,0 +1,44 @@
+@startuml
+
+title Multiple simultaneous games
+
+participant Client1
+participant Client2
+participant Server
+participant Client3
+participant Client4
+
+group Game A
+Client1->Server: CreateGameRequest(Game A)
+Server-->Client1: GameOperationResult(Game created)
+Client1->Server: JoinGameRequest(Game A)
+Client2->Server: JoinGameRequest(Game A)
+Client1->Server: SubscribeGameRequest(Game A)
+Client2->Server: SubscribeGameRequest(Game A)
+end
+
+group Game B
+Client3->Server: CreateGameRequest(Game B)
+Server-->Client3: GameOperationResult(Game created)
+Client3->Server: JoinGameRequest(Game B)
+Client4->Server: JoinGameRequest(Game B)
+Client3->Server: SubscribeGameRequest(Game B)
+Client4->Server: SubscribeGameRequest(Game B)
+end
+
+par command in Game A
+Client1->Server: ChooseOfferRequest(Game A)
+Server-->Client1: GameViewUpdate(Game A)
+Server-->Client2: GameViewUpdate(Game A)
+else command in Game B
+Client3->Server: ChooseCardRequest(Game B)
+Server-->Client3: GameViewUpdate(Game B)
+Server-->Client4: GameViewUpdate(Game B)
+end
+
+note over Client1, Client4
+The server owns one independent GameSession per game name.
+Commands and updates are delivered only to that session's subscribers.
+end note
+
+@enduml

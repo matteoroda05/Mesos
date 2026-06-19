@@ -1,0 +1,44 @@
+@startuml
+
+title Join, color selection, and game start
+
+participant Client1
+participant Server
+participant Client2
+
+group first player enters the waiting room
+Client1->Server: JoinGameRequest
+
+alt game exists and has space
+Server-->Client1: GameOperationResult(Player joined, snapshot)
+else game does not exist
+Server-->Client1: GameOperationResult(GAME_NOT_FOUND)
+else game is full or already started
+Server-->Client1: GameOperationResult(GAME_FULL)
+end
+end
+
+group color reservation while waiting
+Client1->Server: ChooseColorRequest(BLUE)
+Server-->Client1: GameOperationResult(success, snapshot)
+
+Client2->Server: ChooseColorRequest(BLUE)
+Server-->Client2: GameOperationResult(COLOR_ALREADY_TAKEN)
+
+Client2->Server: ChooseColorRequest(RED)
+Server-->Client2: GameOperationResult(success, snapshot)
+end
+
+group last player joins
+Client2->Server: JoinGameRequest
+Server->Server: create players and start game
+Server-->Client1: GameViewUpdate(game starts)
+Server-->Client2: GameOperationResult(game starts, snapshot)
+end
+
+note over Client1, Client2
+A reserved nickname may choose a color before joining.
+A joined player may also change color until the game starts.
+end note
+
+@enduml

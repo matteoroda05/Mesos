@@ -1,0 +1,31 @@
+@startuml
+
+title Lobby and game creation
+
+participant Client
+participant Server
+
+Client->Server: LobbyRequest
+Server-->Client: GameOperationResult(lobby snapshot)
+
+loop while the player remains in the lobby
+Client->Server: LobbyRequest
+Server-->Client: joinable games and available seats
+end
+
+group create a game
+Client->Server: CreateGameRequest(gameName, playerCount)
+
+alt game name is available
+Server-->Client: GameOperationResult(Game created, snapshot)
+else game name already exists
+Server-->Client: GameOperationResult(GAME_NAME_TAKEN, lobby snapshot)
+end
+end
+
+note over Client, Server
+The lobby only exposes games that have not started
+and still have at least one available seat.
+end note
+
+@enduml

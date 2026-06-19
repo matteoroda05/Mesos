@@ -1,0 +1,47 @@
+@startuml
+
+title Subscription and live updates
+
+participant Client1
+participant Server
+participant Client2
+
+group subscribe after joining
+alt socket subscription
+Client1->Server: SubscribeGameRequest over TCP
+Server-->Client1: GameOperationResult(current snapshot)
+note over Client1, Server
+Future updates use the same TCP object stream.
+end note
+else RMI subscription
+Client1->Client1: export RemoteGameUpdateListener
+Client1->Server: subscribe(request, listener stub)
+Server-->Client1: GameOperationResult(current snapshot)
+note over Client1, Server
+Future updates use a reverse RMI connection to
+the hostname and callback port advertised by Client1.
+end note
+end
+end
+
+Client2->Server: game command
+Server->Server: update model and build snapshot
+
+alt live update reaches Client1
+Server-->Client1: GameViewUpdate(snapshot)
+Client1->Client1: listener refreshes CLI or GUI
+else RMI callback is unreachable
+Server -x Client1: onUpdate fails
+Server->Server: remove failed subscriber
+Client1->Server: SnapshotRequest (manual refresh)
+Server-->Client1: GameOperationResult(current snapshot)
+end
+
+Server-->Client2: GameOperationResult(same snapshot)
+
+note over Client1, Client2
+The command response and the subscriber update are separate messages.
+A successful command response does not prove that an RMI callback is reachable.
+end note
+
+@enduml

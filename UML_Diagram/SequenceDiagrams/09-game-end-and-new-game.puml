@@ -1,0 +1,44 @@
+@startuml
+
+title Game end and new game
+
+participant Client1
+participant Server
+participant Client2
+
+Client1->Server: final game command
+Server->Server: resolve final events and end-game effects
+Server->Server: calculate winner(s) by prestige, then food
+Server-->Client1: GameViewUpdate(END_GAME, winners)
+Server-->Client2: GameViewUpdate(END_GAME, winners)
+Server-->Client1: GameOperationResult(final snapshot)
+
+group leave the finished game
+Client1->Server: UnsubscribeGameRequest
+Server->Server: remove update sink and finished-game membership
+Server-->Client1: GameOperationResult(subscription disabled)
+
+Client2->Server: UnsubscribeGameRequest
+Server->Server: remove update sink and finished-game membership
+Server-->Client2: GameOperationResult(subscription disabled)
+end
+
+group return to lobby and start again
+Client1->Server: LobbyRequest
+Server-->Client1: GameOperationResult(joinable games)
+
+alt create another game
+Client1->Server: CreateGameRequest
+Server-->Client1: GameOperationResult(Game created)
+else join another game
+Client1->Server: JoinGameRequest
+Server-->Client1: GameOperationResult(Player joined)
+end
+end
+
+note over Client1, Client2
+Natural victories may be shared when prestige and food are tied.
+A forced disconnection victory has one winner.
+end note
+
+@enduml
