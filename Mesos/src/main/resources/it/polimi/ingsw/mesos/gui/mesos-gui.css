@@ -683,6 +683,16 @@
     -fx-padding: 8 10 8 10;
 }
 
+.final-leaderboard-row-winner {
+    -fx-background-color: rgba(255, 153, 51, 0.28);
+    -fx-border-color: rgba(255, 153, 51, 0.85);
+}
+
+.ranking-row-winner {
+    -fx-background-color: rgba(255, 153, 51, 0.28);
+    -fx-border-color: rgba(255, 153, 51, 0.85);
+}
+
 .final-leaderboard-player-name {
     -fx-text-fill: -mesos-text;
     -fx-font-weight: bold;

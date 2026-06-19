@@ -39,8 +39,6 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
  * @param passAvailable true when the active player may use {@code pass} to
  *                      skip the optional extra top-row pick granted by the
  *                      after-everyone building
- * @param winnerNickname nickname of the winning player when the game is
- *                       finished, null otherwise
  */
 public record GameSnapshot(
         String gameName,
@@ -61,8 +59,7 @@ public record GameSnapshot(
         List<TurnOrderSpaceSummary> turnOrder,
         List<CardSummary> topRow,
         List<CardSummary> bottomRow,
-        boolean passAvailable,
-        String winnerNickname
+        boolean passAvailable
 ) implements Serializable {
 
     public GameSnapshot(
@@ -104,8 +101,7 @@ public record GameSnapshot(
                 turnOrder,
                 topRow,
                 bottomRow,
-                false,
-                null
+                false
         );
     }
 

@@ -189,7 +189,7 @@ class NetworkValueObjectsTest {
         assertThrows(IllegalArgumentException.class, () -> numericSummary(0, 0, 0, 0, 0, 0, 0, 0, -1)); // buildingCount
 
         PlayerSummary summary = new PlayerSummary("Alice", Color.BLUE, 0, 0, 0, 0,
-                null, null, 0, 0, 0, 0, 0, 0);
+                null, null, 0, 0, 0, 0, 0, 0, false);
         assertTrue(summary.characterCards().isEmpty());
         assertTrue(summary.buildingCards().isEmpty());
     }
@@ -215,7 +215,7 @@ class NetworkValueObjectsTest {
             int characterCount, int buildingCount) {
         return new PlayerSummary("Alice", Color.BLUE, food, 0, characterCount, buildingCount,
                 List.of(), List.of(), shamanStars, buildersDiscount, gatherersDiscount,
-                buildersPrestige, buildingsPrestige, inventorTypeCount);
+                buildersPrestige, buildingsPrestige, inventorTypeCount, false);
     }
 
     @Test

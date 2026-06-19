@@ -781,10 +781,10 @@ public final class MesosGameBoardView extends BorderPane {
         rankingBox.getChildren().add(title);
 
         List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
-        String winner = snapshot.winnerNickname();
         ranking.sort(Comparator.<PlayerSummary, Boolean>comparing(
-                p -> p.nickname().equals(winner), Comparator.reverseOrder())
+                PlayerSummary::winner, Comparator.reverseOrder())
                 .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
+                .thenComparing(Comparator.comparingInt(PlayerSummary::food).reversed())
                 .thenComparing(PlayerSummary::nickname));
 
         int rank = 1;
@@ -792,6 +792,9 @@ public final class MesosGameBoardView extends BorderPane {
             HBox row = new HBox(10);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("ranking-row");
+            if (player.winner()) {
+                row.getStyleClass().add("ranking-row-winner");
+            }
             row.getChildren().addAll(
                     badgeLabel("#" + rank),
                     buildTotem(player.color(), 22),
@@ -831,16 +834,19 @@ public final class MesosGameBoardView extends BorderPane {
         finalLeaderboardBox.getChildren().add(title);
 
         List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
-        String winner = snapshot.winnerNickname();
         ranking.sort(Comparator.<PlayerSummary, Boolean>comparing(
-                p -> p.nickname().equals(winner), Comparator.reverseOrder())
+                PlayerSummary::winner, Comparator.reverseOrder())
                 .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
+                .thenComparing(Comparator.comparingInt(PlayerSummary::food).reversed())
                 .thenComparing(PlayerSummary::nickname));
 
         int rank = 1;
         for (PlayerSummary player : ranking) {
             HBox row = new HBox(10);
             row.getStyleClass().add("final-leaderboard-row");
+            if (player.winner()) {
+                row.getStyleClass().add("final-leaderboard-row-winner");
+            }
             row.setAlignment(Pos.CENTER_LEFT);
             Label playerName = new Label(player.nickname());
             playerName.getStyleClass().add("final-leaderboard-player-name");

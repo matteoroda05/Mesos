@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.CLI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -88,6 +89,42 @@ class CliPrinterTest {
                 System.setProperty("mesos.cli.width", previousWidth);
             }
         }
+    }
+
+    @Test
+    void renderSnapshotTagsEverySharedWinner() {
+        CliPrinter printer = new CliPrinter();
+        GameSnapshot snapshot = new GameSnapshot(
+                "tie-room",
+                2,
+                2,
+                true,
+                true,
+                GameStatus.END_GAME,
+                5,
+                Era.THIRD,
+                null,
+                null,
+                0,
+                0,
+                List.of(Color.BLUE, Color.YELLOW),
+                List.of(
+                        new PlayerSummary("Alice", Color.BLUE, 5, 10, 0, 0,
+                                List.of(), List.of(), 0, 0, 0, 0, 0, 0, true),
+                        new PlayerSummary("Bob", Color.YELLOW, 5, 10, 0, 0,
+                                List.of(), List.of(), 0, 0, 0, 0, 0, 0, true)
+                ),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        String rendering = printer.renderSnapshot(snapshot, "Alice");
+
+        assertTrue(rendering.contains("WINNER: Alice"));
+        assertTrue(rendering.contains("WINNER: Bob"));
+        assertEquals(2, rendering.split("WINNER:", -1).length - 1);
     }
 
     @Test
