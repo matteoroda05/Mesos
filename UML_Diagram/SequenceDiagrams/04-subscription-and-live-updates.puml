@@ -30,11 +30,11 @@ Server->Server: update model and build snapshot
 alt live update reaches Client1
 Server-->Client1: GameViewUpdate(snapshot)
 Client1->Client1: listener refreshes CLI or GUI
-else RMI callback is unreachable
-Server -x Client1: onUpdate fails
+else client disconnected before heartbeat timeout
+Server -x Client1: update delivery fails
+Server->Server: remember failed subscriber
+Server->Server: finish broadcasting to other subscribers
 Server->Server: remove failed subscriber
-Client1->Server: SnapshotRequest (manual refresh)
-Server-->Client1: GameOperationResult(current snapshot)
 end
 
 Server-->Client2: GameOperationResult(same snapshot)
