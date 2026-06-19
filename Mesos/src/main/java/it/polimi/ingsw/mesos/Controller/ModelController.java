@@ -525,6 +525,13 @@ public class ModelController {
         this.game_context.logEventEntry(new EventLogEntry.Notice(title, body));
     }
 
+    /**
+     * Converts a building activation delta into a human-readable outcome.
+     *
+     * @param delta food and prestige changes caused by the activation
+     * @return joined descriptions of the non-zero changes, or an empty string
+     *         when neither value changed
+     */
     private static String describeBuildingOutcome(AppliedDelta delta) {
         List<String> parts = new ArrayList<>();
         if (delta.foodDelta() != 0) {
@@ -536,6 +543,12 @@ public class ModelController {
         return String.join(" and ", parts);
     }
 
+    /**
+     * Selects the wording used for a signed building effect.
+     *
+     * @param delta signed resource or prestige change
+     * @return {@code "granting"} for positive changes, otherwise {@code "costing"}
+     */
     private static String buildingVerb(int delta) {
         return delta > 0 ? "granting" : "costing";
     }

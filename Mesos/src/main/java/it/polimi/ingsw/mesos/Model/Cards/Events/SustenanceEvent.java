@@ -98,11 +98,22 @@ public final class SustenanceEvent extends EventCard {
         return points_penalty;
     }
 
+    /**
+     * Delegates this sustenance event's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes sustenance events
+     * @return visitor-provided event description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeSustenanceEvent(this);
     }
 
+    /**
+     * Returns the display name of this event type.
+     *
+     * @return {@code "Sustenance Event"}
+     */
     @Override
     public String getReadableName() {
         return "Sustenance Event";

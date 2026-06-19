@@ -750,6 +750,11 @@ public final class MesosCliClient {
             return;
         }
         update.accept(new GameServerMessageVisitor() {
+            /**
+             * Prints an incoming event notification while holding the console lock.
+             *
+             * @param notification notification to display
+             */
             public void visitEventNotification(EventNotification notification) {
                 synchronized (consoleLock) {
                     System.out.println();
@@ -759,6 +764,11 @@ public final class MesosCliClient {
                 }
             }
 
+            /**
+             * Renders a newly received game snapshot unless it was already displayed.
+             *
+             * @param view server update containing the snapshot and status message
+             */
             public void visitGameViewUpdate(GameViewUpdate view) {
                 if (isSnapshotAlreadyRendered(view.snapshot())) {
                     return;

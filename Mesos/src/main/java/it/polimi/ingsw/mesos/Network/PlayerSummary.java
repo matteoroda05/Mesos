@@ -40,6 +40,9 @@ public record PlayerSummary(
         boolean winner
 ) implements Serializable {
 
+    /**
+     * Creates a basic player summary without owned-card or effect details.
+     */
     public PlayerSummary(
             String nickname,
             Color color,
@@ -52,6 +55,9 @@ public record PlayerSummary(
                 List.of(), List.of(), 0, 0, 0, 0, 0, 0, false);
     }
 
+    /**
+     * Creates a player summary with owned-card lists but default effect details.
+     */
     public PlayerSummary(
             String nickname,
             Color color,

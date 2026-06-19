@@ -62,6 +62,10 @@ public record GameSnapshot(
         boolean passAvailable
 ) implements Serializable {
 
+    /**
+     * Creates a snapshot for clients that do not receive pass availability.
+     * The resulting snapshot sets {@code passAvailable} to false.
+     */
     public GameSnapshot(
             String gameName,
             int playerCount,

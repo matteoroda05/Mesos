@@ -12,6 +12,9 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
  */
 public final class EventMessageFormatter {
 
+    /**
+     * Prevents instantiation of this static formatting utility.
+     */
     private EventMessageFormatter() {
     }
 
@@ -60,10 +63,11 @@ public final class EventMessageFormatter {
     }
     
     /**
-     * Formatting utility
+     * Formats the non-zero food and prestige changes as one event message.
      * @param foodDelta food bonus/penalty
      * @param prestigeDelta prestige gained/lost
-     * @return message listing the changes
+     * @return clauses such as {@code "gained 2 food and lost 1 prestige points"},
+     *         or an empty string when both changes are zero
      */
     public static String joinChanges(int foodDelta, int prestigeDelta) {
         List<String> clauses = new ArrayList<>();
@@ -76,6 +80,12 @@ public final class EventMessageFormatter {
         return String.join(" and ", clauses);
     }
 
+    /**
+     * Formats one signed amount using the matching past-tense verb.
+     *
+     * @param delta signed amount to format
+     * @return gained or lost amount text
+     */
     private static String verb(int delta) {
         return (delta > 0 ? "gained" : "lost") + " " + Math.abs(delta);
     }

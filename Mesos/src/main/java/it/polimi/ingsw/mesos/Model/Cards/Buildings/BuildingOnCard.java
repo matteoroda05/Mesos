@@ -129,11 +129,22 @@ public class BuildingOnCard extends BuildingCard {
         return !inventors_pair;
     }
 
+    /**
+     * Delegates this card-selection building's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes on-card buildings
+     * @return visitor-provided building description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuildingOnCard(this);
     }
 
+    /**
+     * Returns the display name of this building type.
+     *
+     * @return {@code "Building On Card"}
+     */
     @Override
     public String getReadableName() {
         return "Building On Card";

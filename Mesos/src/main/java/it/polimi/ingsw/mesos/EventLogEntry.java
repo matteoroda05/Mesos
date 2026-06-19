@@ -46,11 +46,22 @@ public sealed interface EventLogEntry extends Serializable
      * @param events the resolved events in resolution order
      */
     record Round(String title, List<EventSummary> events) implements EventLogEntry {
+        /**
+         * Identifies this entry as a summary of an event round.
+         *
+         * @return always true
+         */
         @Override
         public boolean isEventRound() {
             return true;
         }
 
+        /**
+         * Builds a multi-line description of all resolved events in the round.
+         *
+         * @return event summaries and their building activations without a
+         *         trailing newline
+         */
         @Override
         public String body() {
             StringBuilder builder = new StringBuilder();
@@ -75,11 +86,21 @@ public sealed interface EventLogEntry extends Serializable
      * @param prestigeDelta signed prestige change applied to the player
      */
     record TurnOrder(String nickname, Color color, int foodDelta, int prestigeDelta) implements EventLogEntry {
+        /**
+         * Supplies the fixed heading for a turn-order notification.
+         *
+         * @return {@code "Turn order"}
+         */
         @Override
         public String title() {
             return "Turn order";
         }
 
+        /**
+         * Describes the player's return to the turn-order tile and its outcome.
+         *
+         * @return player label followed by any food and prestige changes
+         */
         @Override
         public String body() {
             String suffix = (this.foodDelta() == 0 && this.prestigeDelta() == 0) ?

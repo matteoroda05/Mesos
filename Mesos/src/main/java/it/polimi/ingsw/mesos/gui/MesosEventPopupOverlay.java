@@ -39,6 +39,9 @@ public final class MesosEventPopupOverlay {
     private final StackPane container;
     private final List<Node> activePopups = new ArrayList<>();
 
+    /**
+     * Creates the transparent overlay that hosts transient event popups.
+     */
     public MesosEventPopupOverlay() {
         this.container = new StackPane();
         this.container.getStyleClass().add("event-popup-layer");
@@ -95,6 +98,12 @@ public final class MesosEventPopupOverlay {
         sequence.play();
     }
 
+    /**
+     * Creates the styled popup card for one event entry.
+     *
+     * @param entry event whose title and body are displayed
+     * @return fixed-width card sized vertically to its visible text
+     */
     private Region buildCard(EventLogEntry entry) {
         VBox card = new VBox(8);
         card.getStyleClass().add("event-popup");

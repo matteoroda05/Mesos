@@ -17,6 +17,11 @@ import static it.polimi.ingsw.mesos.EventMessageFormatter.playerLabel;
  * @param prestigeDelta signed prestige change applied to the player
  */
 public record PlayerEventLine(String nickname, Color color, int foodDelta, int prestigeDelta) implements Serializable {
+    /**
+     * Builds the human-readable sentence for this player's event result.
+     *
+     * @return player label followed by the food and prestige changes
+     */
     public String describeLine() {
         String change = joinChanges(this.foodDelta, this.prestigeDelta);
         return "Player " + playerLabel(this.nickname, this.color) + " " + change;

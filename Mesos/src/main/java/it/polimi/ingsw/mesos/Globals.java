@@ -24,21 +24,26 @@ public class Globals {
     );
 
     /**
-     * Returns the shared starting food table.
+     * Returns the starting-food table indexed by zero-based turn-order seat.
+     * The first player in turn order receives the first value, and so on.
      */
     public static int[] PLAYER_STARTING_FOOD() {
         return _PLAYER_STARTING_FOOD;
     }
 
     /**
-     * Returns building counts by era for the given player count.
+     * Returns the number of building cards to select for each era at a given game size.
+     *
+     * @param player_count number of players in the game
+     * @return immutable era-to-card-count map, or {@code null} for an unsupported game size
      */
     public static Map<Era, Integer> BUILDING_COUNT_BY_ERA(int player_count) {
         return _BUILDING_COUNT_BY_ERA.get(player_count);
     }
 
     /**
-     * Builds an immutable era-count map.
+     * Builds an immutable count map whose arguments correspond to the first,
+     * second, and third eras in that order.
      */
     private static Map<Era, Integer> eraCounts(int first, int second, int third) {
         EnumMap<Era, Integer> counts = new EnumMap<>(Era.class);

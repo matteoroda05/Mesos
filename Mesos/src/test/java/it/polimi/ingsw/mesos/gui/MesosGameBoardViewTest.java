@@ -290,7 +290,7 @@ class MesosGameBoardViewTest {
     }
 
     @Test
-    void finishedGameShowsOnlyCenteredLeaderboardAndLobbyButton() throws Exception {
+    void finishedGameShowsCenteredLeaderboardsAndLobbyButton() throws Exception {
         runOnFxThread(() -> {
             AtomicInteger lobbyClicks = new AtomicInteger();
             MesosGameBoardView view = buildView((ignoredIndex, ignoredTopRow) -> { }, lobbyClicks::incrementAndGet);
@@ -310,7 +310,15 @@ class MesosGameBoardViewTest {
             assertFalse(singleNode(view, ".top-right-bar", HBox.class).isVisible());
             assertEquals(2, finalOverlay.lookupAll(".final-leaderboard-row").size());
             assertEquals(2, finalOverlay.lookupAll(".final-leaderboard-player-name").size());
-            VBox leaderboardBox = singleNode(finalOverlay, ".final-leaderboard-box", VBox.class);
+            List<VBox> leaderboardBoxes = finalOverlay.lookupAll(".final-leaderboard-box").stream()
+                    .filter(VBox.class::isInstance)
+                    .map(VBox.class::cast)
+                    .toList();
+            assertEquals(2, leaderboardBoxes.size());
+            VBox leaderboardBox = leaderboardBoxes.stream()
+                    .filter(box -> box.lookupAll(".final-leaderboard-row").size() == 2)
+                    .findFirst()
+                    .orElseThrow();
             Bounds overlayBounds = finalOverlay.localToScene(finalOverlay.getBoundsInLocal());
             Bounds leaderboardBounds = leaderboardBox.localToScene(leaderboardBox.getBoundsInLocal());
             assertTrue(leaderboardBounds.getHeight() < overlayBounds.getHeight() * 0.45);

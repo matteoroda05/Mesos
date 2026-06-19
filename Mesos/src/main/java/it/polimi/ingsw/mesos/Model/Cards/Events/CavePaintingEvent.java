@@ -114,11 +114,22 @@ public class CavePaintingEvent extends EventCard {
         return BuildingTrigger.ON_EVENT_CAVE_PAINTINGS;
     }
 
+    /**
+     * Delegates this cave-painting event's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes cave-painting events
+     * @return visitor-provided event description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeCavePaintingEvent(this);
     }
 
+    /**
+     * Returns the display name of this event type.
+     *
+     * @return {@code "Cave Painting Event"}
+     */
     @Override
     public String getReadableName() {
         return "Cave Painting Event";

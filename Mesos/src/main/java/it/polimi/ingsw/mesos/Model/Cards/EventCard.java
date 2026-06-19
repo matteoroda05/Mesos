@@ -20,8 +20,19 @@ abstract public class EventCard extends TribeCard {
         super(era, 0);
     }
 
+    /**
+     * Calculates this event's outcome for each participating tribe.
+     *
+     * @param player_tribes tribes keyed by their players' colors
+     * @return results keyed by player color
+     */
     abstract public Map<Color, Result> calculateOutcome(Map<Color, Tribe> player_tribes);
 
+    /**
+     * Returns the building trigger associated with this event type.
+     *
+     * @return trigger used to activate matching buildings
+     */
     abstract public BuildingTrigger asTrigger();
 
     /**
@@ -34,6 +45,12 @@ abstract public class EventCard extends TribeCard {
         return true;
     }
 
+    /**
+     * Creates the client-facing summary of this event card.
+     *
+     * @param selectionIndex index used to select this card in its source row
+     * @return event summary with no building cost or prestige
+     */
     @Override
     public CardSummary getSummary(int selectionIndex) {
         return new CardSummary(

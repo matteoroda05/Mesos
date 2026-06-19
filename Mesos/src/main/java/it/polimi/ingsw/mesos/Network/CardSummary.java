@@ -45,6 +45,12 @@ public record CardSummary(
         this(selectionIndex, type, era, event, details, foodCost, prestigePoints, null);
     }
 
+    /**
+     * Validates canonical card data and normalizes nullable display fields.
+     *
+     * @throws IllegalArgumentException if the selection index is negative or
+     *                                  the type is null or blank
+     */
     public CardSummary {
         if (selectionIndex < 0) {
             throw new IllegalArgumentException("selectionIndex cannot be negative");

@@ -55,11 +55,22 @@ public final class BuilderCard extends CharacterCard {
         return food_discount;
     }
 
+    /**
+     * Delegates this builder card's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes builder cards
+     * @return visitor-provided builder description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuilderCard(this);
     }
 
+    /**
+     * Returns the display name of this character type.
+     *
+     * @return {@code "Builder"}
+     */
     @Override
     public String getReadableName() {
         return "Builder";

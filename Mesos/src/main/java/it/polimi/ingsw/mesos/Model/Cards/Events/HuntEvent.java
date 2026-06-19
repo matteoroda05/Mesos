@@ -103,11 +103,22 @@ public class HuntEvent extends EventCard {
         return BuildingTrigger.ON_EVENT_HUNT;
     }
 
+    /**
+     * Delegates this hunt event's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes hunt events
+     * @return visitor-provided event description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeHuntEvent(this);
     }
 
+    /**
+     * Returns the display name of this event type.
+     *
+     * @return {@code "Hunt Event"}
+     */
     @Override
     public String getReadableName() {
         return "Hunt Event";

@@ -24,11 +24,22 @@ public final class ArtistCard extends CharacterCard {
         super(era, min_players);
     }
 
+    /**
+     * Delegates this artist card's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes artist cards
+     * @return visitor-provided artist description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeArtistCard(this);
     }
 
+    /**
+     * Returns the display name of this character type.
+     *
+     * @return {@code "Artist"}
+     */
     @Override
     public String getReadableName() {
         return "Artist";

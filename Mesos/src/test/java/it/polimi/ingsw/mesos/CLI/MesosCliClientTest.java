@@ -350,7 +350,7 @@ class MesosCliClientTest {
 
     @Test
     void mainLoopPromptsForFinishedGameExitChoice() throws Exception {
-        MesosCliClient lobbyCli = newCli("yes\n");
+        MesosCliClient lobbyCli = newCli("lobby\n");
         setField(lobbyCli, "gameName", "Room");
         setField(lobbyCli, "snapshot", snapshot(GameStatus.END_GAME, true));
 
@@ -358,7 +358,7 @@ class MesosCliClientTest {
         assertNull(field(lobbyCli, "gameName"));
         assertNull(field(lobbyCli, "snapshot"));
 
-        MesosCliClient quitCli = newCli("no\n");
+        MesosCliClient quitCli = newCli("quit\n");
         ByteArrayOutputStream output = captureOutput();
         setField(quitCli, "gameName", "Room");
         setField(quitCli, "snapshot", snapshot(GameStatus.END_GAME, true));

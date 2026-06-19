@@ -78,11 +78,22 @@ public class BuildingEndTurn extends BuildingCard {
         return food_bonus;
     }
 
+    /**
+     * Delegates this end-turn building's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes end-turn buildings
+     * @return visitor-provided building description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuildingEndTurn(this);
     }
 
+    /**
+     * Returns the display name of this building type.
+     *
+     * @return {@code "Building End Turn"}
+     */
     @Override
     public String getReadableName() {
         return "Building End Turn";

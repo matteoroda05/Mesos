@@ -111,6 +111,12 @@ public class Tribe {
         return this.buildings.size();
     }
 
+    /**
+     * Returns all owned character cards in the presentation order used by clients.
+     *
+     * @return immutable list ordered by hunter, shaman, artist, builder,
+     *         inventor, then gatherer
+     */
     public List<CharacterCard> getCharacterCards() {
         List<CharacterCard> ownedCards = new ArrayList<>();
         List<Class<? extends CharacterCard>> orderedTypes = List.of(
@@ -128,6 +134,11 @@ public class Tribe {
         return List.copyOf(ownedCards);
     }
 
+    /**
+     * Returns an immutable snapshot of the tribe's owned buildings.
+     *
+     * @return building cards in acquisition order
+     */
     public List<BuildingCard> getBuildingCards() {
         return List.copyOf(this.buildings);
     }

@@ -28,6 +28,7 @@ import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
 import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
+import it.polimi.ingsw.mesos.Network.Requests.RankingsRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
@@ -416,6 +417,11 @@ class SocketGameIntegrationTest {
         @Override
         public GameOperationResult heartbeat(HeartbeatRequest request) {
             return GameOperationResult.success("heartbeat", null);
+        }
+
+        @Override
+        public GameOperationResult getRankings(RankingsRequest request) {
+            return GameOperationResult.successRankings("rankings", null);
         }
     }
 

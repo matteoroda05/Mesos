@@ -273,6 +273,13 @@ public class RmiGameServer implements AutoCloseable {
             return serverService.heartbeat(request);
         }
 
+        /**
+         * Delegates a ranking request to the backing game server service.
+         *
+         * @param request ranking request that identifies the game
+         * @return operation result returned by the service
+         * @throws RemoteException if the RMI invocation cannot be completed
+         */
         @Override
         public GameOperationResult getRankings(RankingsRequest request) throws RemoteException {
             return serverService.getRankings(request);

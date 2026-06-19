@@ -123,6 +123,18 @@ public final class MesosGameBoardView extends BorderPane {
     private List<EventLogEntry> eventLog = List.of();
     private boolean actionPending;
 
+    /**
+     * Creates the interactive board view and wires its user actions to callbacks.
+     *
+     * @param localNickname nickname controlled by this view
+     * @param assetResolver resolver for card and totem artwork
+     * @param onRefresh callback to request a fresh snapshot
+     * @param onDisconnect callback to leave the current connection
+     * @param onChooseOffer callback accepting an offer-tile index
+     * @param onChooseCard callback accepting a card index and row flag
+     * @param onPass callback to skip an optional action
+     * @param onBackToLobby callback to return after a finished game
+     */
     public MesosGameBoardView(
             String localNickname,
             MesosAssetResolver assetResolver,
@@ -283,6 +295,12 @@ public final class MesosGameBoardView extends BorderPane {
         buildLayout();
     }
 
+    /**
+     * Rebuilds the board from a received snapshot and resets pending input state.
+     * A final snapshot replaces the tabletop with the final leaderboard.
+     *
+     * @param snapshot latest game state, possibly null
+     */
     public void updateSnapshot(GameSnapshot snapshot) {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
@@ -324,6 +342,11 @@ public final class MesosGameBoardView extends BorderPane {
         rebuildPlayerButtonsPane();
     }
 
+    /**
+     * Determines whether the current snapshot should display the final screen.
+     *
+     * @return true for finished, end-game, or end-screen snapshots
+     */
     private boolean isFinalSnapshot() {
         return snapshot != null
                 && (snapshot.finished()
@@ -331,6 +354,11 @@ public final class MesosGameBoardView extends BorderPane {
                 || snapshot.status() == GameStatus.END_SCREEN);
     }
 
+    /**
+     * Switches between the tabletop UI and the final-leaderboard overlay.
+     *
+     * @param finalMode whether to show the final leaderboard
+     */
     private void setFinalMode(boolean finalMode) {
         tabletopCanvas.setVisible(!finalMode);
         topRightBar.setVisible(!finalMode);
@@ -368,11 +396,17 @@ public final class MesosGameBoardView extends BorderPane {
         }
     }
 
+    /**
+     * Replaces the compact turn-order bar with entries from the current snapshot.
+     */
     private void rebuildMinimalTurnBar() {
         VBox refreshedBar = buildMinimalTurnOrderBar();
         minimalTurnBarPane.getChildren().setAll(refreshedBar.getChildren());
     }
 
+    /**
+     * Updates the information-panel color marker from the local or active player.
+     */
     private void refreshInfoPanelColorIndicator() {
         Optional<it.polimi.ingsw.mesos.Model.Enums.Color> indicatorColor = resolveInfoPanelColor();
         boolean hasColor = indicatorColor.isPresent();
@@ -381,6 +415,11 @@ public final class MesosGameBoardView extends BorderPane {
         indicatorColor.ifPresent(color -> updateColorIndicator(infoPanelColorIndicator, color));
     }
 
+    /**
+     * Selects the local player's color, falling back to the active player's color.
+     *
+     * @return resolved indicator color, or an empty optional without a snapshot
+     */
     private Optional<it.polimi.ingsw.mesos.Model.Enums.Color> resolveInfoPanelColor() {
         if (snapshot == null) {
             return Optional.empty();
@@ -393,6 +432,9 @@ public final class MesosGameBoardView extends BorderPane {
         return localPlayerColor.or(() -> Optional.ofNullable(snapshot.currentPlayerColor()));
     }
 
+    /**
+     * Configures the view root and keeps the tabletop vertically aligned in its viewport.
+     */
     private void buildLayout() {
         getStyleClass().add("board-root");
         // keep horizontal padding at zero so HUD overlays can reach the screen edges
@@ -404,6 +446,11 @@ public final class MesosGameBoardView extends BorderPane {
                 tabletopCanvas.setTranslateY(newValue.doubleValue() * TABLETOP_VERTICAL_OFFSET_RATIO));
     }
 
+    /**
+     * Creates the clipped, scalable viewport containing board layers and overlays.
+     *
+     * @return configured board viewport
+     */
     private StackPane buildViewport() {
         Group wrapper = new Group(tabletopCanvas);
         tabletopCanvas.getTransforms().setAll(boardScale);
@@ -457,6 +504,11 @@ public final class MesosGameBoardView extends BorderPane {
         return pane;
     }
 
+    /**
+     * Scales the fixed design canvas to fit the available viewport dimensions.
+     *
+     * @param viewport region that constrains the board size
+     */
     private void updateBoardScale(Region viewport) {
         double availableWidth = Math.max(0,
                 viewport.getWidth() - viewport.getPadding().getLeft() - viewport.getPadding().getRight());
@@ -471,6 +523,11 @@ public final class MesosGameBoardView extends BorderPane {
         boardScale.setY(scale);
     }
 
+    /**
+     * Creates the fixed-width canvas that holds the tabletop composition.
+     *
+     * @return configured tabletop canvas
+     */
     private VBox buildTabletopCanvas() {
         VBox canvas = new VBox(buildTabletopShell());
         canvas.getStyleClass().add("game-canvas");
@@ -481,6 +538,11 @@ public final class MesosGameBoardView extends BorderPane {
         return canvas;
     }
 
+    /**
+     * Assembles the top market, center band, and bottom market into the tabletop.
+     *
+     * @return configured tabletop shell
+     */
     private Node buildTabletopShell() {
         VBox tableContent = new VBox(
                 6,
@@ -500,6 +562,11 @@ public final class MesosGameBoardView extends BorderPane {
         return shell;
     }
 
+    /**
+     * Creates the bottom HUD with status information and owned-card decks.
+     *
+     * @return configured HUD overlay
+     */
     private StackPane buildBottomHudOverlay() {
         StackPane bottomHudOverlay = new StackPane();
         bottomHudOverlay.getStyleClass().add("bottom-hud-overlay");
@@ -530,6 +597,11 @@ public final class MesosGameBoardView extends BorderPane {
         return bottomHudOverlay;
     }
 
+    /**
+     * Creates the container for the top market row.
+     *
+     * @return styled top-row container
+     */
     private Node buildTopTableRow() {
         HBox row = new HBox(6, topRowPane);
         row.getStyleClass().addAll("table-row", "table-row-top");
@@ -538,6 +610,11 @@ public final class MesosGameBoardView extends BorderPane {
         return row;
     }
 
+    /**
+     * Creates the container for the bottom market row.
+     *
+     * @return styled bottom-row container
+     */
     private Node buildBottomTableRow() {
         HBox row = new HBox(6, bottomRowPane);
         row.getStyleClass().addAll("table-row", "table-row-bottom");
@@ -545,6 +622,11 @@ public final class MesosGameBoardView extends BorderPane {
         return row;
     }
 
+    /**
+     * Creates the central area containing turn order, offer tiles, and ranking.
+     *
+     * @return styled center-band container
+     */
     private Node buildCenterBand() {
         VBox offerStage = new VBox(10, offerTilesPane, rankingBox);
         offerStage.getStyleClass().add("offer-stage-free");
@@ -556,6 +638,11 @@ public final class MesosGameBoardView extends BorderPane {
         return centerBand;
     }
 
+    /**
+     * Creates the compact panel that displays game status and board actions.
+     *
+     * @return configured information panel
+     */
     private VBox buildCompactInfoPanel() {
         HBox titleRow = new HBox(6, infoPanelColorIndicator, titleLabel);
         titleRow.setAlignment(Pos.CENTER_LEFT);
@@ -573,6 +660,13 @@ public final class MesosGameBoardView extends BorderPane {
         return infoPanel;
     }
 
+    /**
+     * Creates a styled board-action button that invokes the supplied callback.
+     *
+     * @param text button label
+     * @param action callback invoked when the button is pressed
+     * @return configured action button
+     */
     private Button buildInfoActionButton(String text, Runnable action) {
         Button button = new Button(text);
         button.getStyleClass().addAll("secondary-button", "board-action-button");
@@ -580,17 +674,33 @@ public final class MesosGameBoardView extends BorderPane {
         return button;
     }
 
+    /**
+     * Creates a label styled as a compact metadata badge.
+     *
+     * @param text badge text
+     * @return styled badge label
+     */
     private Label badgeLabel(String text) {
         Label badge = new Label(text);
         badge.getStyleClass().add("meta-badge");
         return badge;
     }
 
+    /**
+     * Rebuilds both market rows from the latest snapshot.
+     */
     private void rebuildMarketRows() {
         renderSnapshotRow(topRowPane, snapshot.topRow(), true);
         renderSnapshotRow(bottomRowPane, snapshot.bottomRow(), false);
     }
 
+    /**
+     * Renders a market row, including its empty state and card-picking affordances.
+     *
+     * @param targetRow row container to populate
+     * @param cards cards visible in the row
+     * @param topRow whether this is the top rather than bottom market row
+     */
     private void renderSnapshotRow(
             HBox targetRow,
             List<CardSummary> cards,
@@ -615,6 +725,13 @@ public final class MesosGameBoardView extends BorderPane {
         }
     }
 
+    /**
+     * Scales a market row down when its cards exceed the row's design width.
+     *
+     * @param targetRow row container to scale
+     * @param cardCount number of cards in the row
+     * @param topRow whether top-row width limits apply
+     */
     private void updateMarketRowScale(HBox targetRow, int cardCount, boolean topRow) {
         if (cardCount <= 0) {
             targetRow.setScaleX(1.0);
@@ -632,6 +749,9 @@ public final class MesosGameBoardView extends BorderPane {
         targetRow.setPrefWidth(rowWidth);
     }
 
+    /**
+     * Rebuilds the offer-tile strip from the latest snapshot.
+     */
     private void rebuildOfferTiles() {
         offerTilesPane.getChildren().clear();
         if (snapshot.offerTiles().isEmpty()) {
@@ -644,6 +764,12 @@ public final class MesosGameBoardView extends BorderPane {
         }
     }
 
+    /**
+     * Creates an offer-tile surface with availability, occupant, and click behavior.
+     *
+     * @param tile offer tile to render
+     * @return configured offer-tile node
+     */
     private Node buildOfferTile(OfferTileSummary tile) {
         boolean clickable = snapshot.status() == GameStatus.ROUND_OFFER
                 && isLocalTurn()
@@ -683,6 +809,11 @@ public final class MesosGameBoardView extends BorderPane {
         return tileNode;
     }
 
+    /**
+     * Creates the compact turn-order panel shown beside the offer tiles.
+     *
+     * @return configured turn-order panel
+     */
     private VBox buildMinimalTurnOrderBar() {
         VBox bar = new VBox(4);
         bar.getStyleClass().addAll("minimal-turn-bar", "turn-order-mini-box");
@@ -706,6 +837,11 @@ public final class MesosGameBoardView extends BorderPane {
         return bar;
     }
 
+    /**
+     * Returns turn-order spaces, synthesizing one per player for older snapshots.
+     *
+     * @return snapshot spaces, fallback player spaces, or an empty list
+     */
     private List<TurnOrderSpaceSummary> currentTurnOrderSpaces() {
         if (snapshot == null) {
             return List.of();
@@ -730,6 +866,12 @@ public final class MesosGameBoardView extends BorderPane {
         return fallback;
     }
 
+    /**
+     * Creates one compact turn-order entry and marks the active or empty space.
+     *
+     * @param space turn-order space to render
+     * @return configured entry row
+     */
     private HBox buildMinimalTurnOrderEntry(TurnOrderSpaceSummary space) {
         boolean active = snapshot != null
                 && space.occupantNickname() != null
@@ -764,6 +906,9 @@ public final class MesosGameBoardView extends BorderPane {
         return entry;
     }
 
+    /**
+     * Rebuilds the embedded final ranking when the snapshot has reached an end state.
+     */
     private void rebuildRanking() {
         rankingBox.getChildren().clear();
         boolean showRanking = snapshot.finished()
@@ -806,6 +951,11 @@ public final class MesosGameBoardView extends BorderPane {
         }
     }
 
+    /**
+     * Creates the end-game overlay with current-game and all-time leaderboards.
+     *
+     * @return hidden final-leaderboard overlay
+     */
     private StackPane buildFinalLeaderboardOverlay() {
         Button lobbyButton = new Button("Back to Lobby");
         lobbyButton.getStyleClass().addAll("secondary-button", "final-leaderboard-lobby-button");
@@ -831,6 +981,9 @@ public final class MesosGameBoardView extends BorderPane {
         return overlay;
     }
 
+    /**
+     * Sorts current players and rebuilds the final-game leaderboard.
+     */
     private void rebuildFinalLeaderboard() {
         finalLeaderboardBox.getChildren().clear();
 
@@ -930,6 +1083,9 @@ public final class MesosGameBoardView extends BorderPane {
         globalLeaderboardBox.getChildren().add(scrollPane);
     }
 
+    /**
+     * Rebuilds the local player's tribe statistics panel or hides it when unavailable.
+     */
     private void rebuildOwnedCardsDebugBox() {
         ownedCardsDebugBox.getChildren().clear();
         if (snapshot == null) {
@@ -975,12 +1131,21 @@ public final class MesosGameBoardView extends BorderPane {
         ownedCardsDebugBox.setManaged(true);
     }
 
+    /**
+     * Creates one styled line for the local tribe statistics panel.
+     *
+     * @param text statistic text to show
+     * @return styled statistic label
+     */
     private Label ownedCardsStatRow(String text) {
         Label row = new Label(text);
         row.getStyleClass().add("owned-cards-debug-row");
         return row;
     }
 
+    /**
+     * Rebuilds player buttons that open other players' tribe details.
+     */
     private void rebuildPlayerButtonsPane() {
         playerButtonsPane.getChildren().clear();
         if (snapshot == null || snapshot.players().isEmpty()) {
@@ -996,6 +1161,12 @@ public final class MesosGameBoardView extends BorderPane {
         playerButtonsPane.setManaged(true);
     }
 
+    /**
+     * Creates a player button with local and active-player visual state.
+     *
+     * @param player player represented by the button
+     * @return configured player-summary button
+     */
     private Button buildPlayerSummaryButton(PlayerSummary player) {
         Button button = new Button(player.nickname());
         button.getStyleClass().add("player-summary-button");
@@ -1017,6 +1188,11 @@ public final class MesosGameBoardView extends BorderPane {
         return button;
     }
 
+    /**
+     * Opens the tribe-details popup for a selected non-local player.
+     *
+     * @param player player whose cards and resources should be shown
+     */
     private void showPlayerTribePopup(PlayerSummary player) {
         hideOwnedDeckPreview();
         hideInfoPopup();
@@ -1024,6 +1200,9 @@ public final class MesosGameBoardView extends BorderPane {
         playerTribeOverlay.setVisible(true);
     }
 
+    /**
+     * Hides and clears the open player tribe-details popup.
+     */
     private void hidePlayerTribePopup() {
         playerTribeOverlay.setVisible(false);
         playerTribeOverlay.getChildren().clear();
@@ -1043,6 +1222,9 @@ public final class MesosGameBoardView extends BorderPane {
         }
     }
 
+    /**
+     * Recreates the event-log button with the current number of entries.
+     */
     private void rebuildEventLogPane() {
         eventLogPane.getChildren().clear();
         Button button = new Button("Event Log (" + eventLog.size() + ")");
@@ -1052,6 +1234,9 @@ public final class MesosGameBoardView extends BorderPane {
         eventLogPane.getChildren().add(button);
     }
 
+    /**
+     * Opens the event-history popup after closing competing board overlays.
+     */
     private void showEventLogPopup() {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
@@ -1059,11 +1244,19 @@ public final class MesosGameBoardView extends BorderPane {
         eventLogOverlay.setVisible(true);
     }
 
+    /**
+     * Hides and clears the event-history popup.
+     */
     private void hideEventLogPopup() {
         eventLogOverlay.setVisible(false);
         eventLogOverlay.getChildren().clear();
     }
 
+    /**
+     * Creates a scrollable event-history popup ordered from newest to oldest.
+     *
+     * @return configured event-log popup
+     */
     private VBox buildEventLogPopup() {
         HBox titleRow = new HBox(8);
         titleRow.getStyleClass().add("player-tribe-header");
@@ -1103,6 +1296,12 @@ public final class MesosGameBoardView extends BorderPane {
         return popup;
     }
 
+    /**
+     * Creates the visible title and body for one event-history entry.
+     *
+     * @param entry event entry to render
+     * @return styled event-log entry node
+     */
     private Node buildEventLogEntryNode(EventLogEntry entry) {
         Label title = new Label(EventMessageFormatter.title(entry));
         title.getStyleClass().add("subsection-title");
@@ -1116,6 +1315,9 @@ public final class MesosGameBoardView extends BorderPane {
         return group;
     }
 
+    /**
+     * Opens the instruction-card popup after closing conflicting overlays.
+     */
     private void showInfoPopup() {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
@@ -1123,11 +1325,19 @@ public final class MesosGameBoardView extends BorderPane {
         infoPopupOverlay.setVisible(true);
     }
 
+    /**
+     * Hides and clears the instruction-card popup.
+     */
     private void hideInfoPopup() {
         infoPopupOverlay.setVisible(false);
         infoPopupOverlay.getChildren().clear();
     }
 
+    /**
+     * Creates the popup containing round and end-game instruction cards.
+     *
+     * @return configured instruction-card popup
+     */
     private HBox buildInfoPopup() {
         StackPane roundInfoCard = buildSurfaceArt(
                 assetResolver.resolveRoundEventInfo(),
@@ -1155,6 +1365,12 @@ public final class MesosGameBoardView extends BorderPane {
         return popup;
     }
 
+    /**
+     * Creates a scrollable popup with one player's resources and owned cards.
+     *
+     * @param player player whose tribe details are displayed
+     * @return configured tribe-details popup
+     */
     private VBox buildPlayerTribePopup(PlayerSummary player) {
         HBox titleRow = new HBox(8);
         titleRow.getStyleClass().add("player-tribe-header");
@@ -1196,12 +1412,24 @@ public final class MesosGameBoardView extends BorderPane {
         return popup;
     }
 
+    /**
+     * Creates a resource badge for a player tribe-details popup.
+     *
+     * @param text resource text to display
+     * @return styled resource label
+     */
     private Label playerTribeResource(String text) {
         Label label = new Label(text);
         label.getStyleClass().addAll("meta-badge", "player-tribe-resource");
         return label;
     }
 
+    /**
+     * Groups a player's cards by type for the tribe-details popup.
+     *
+     * @param player player whose owned cards are grouped
+     * @return card groups and empty-state labels
+     */
     private VBox buildPlayerTribeCardGroups(PlayerSummary player) {
         VBox groups = new VBox(10);
         groups.getStyleClass().add("player-tribe-card-groups");
@@ -1242,12 +1470,26 @@ public final class MesosGameBoardView extends BorderPane {
         return groups;
     }
 
+    /**
+     * Creates a muted empty-state label for a player tribe section.
+     *
+     * @param text empty-state message
+     * @return styled empty-state label
+     */
     private Label playerTribeEmptyLabel(String text) {
         Label label = new Label(text);
         label.getStyleClass().addAll("muted-label", "player-tribe-empty");
         return label;
     }
 
+    /**
+     * Creates one titled card grid for a player tribe-details popup.
+     *
+     * @param title group heading
+     * @param cards cards displayed in the grid
+     * @param extra optional aggregate statistic shown with the heading
+     * @return configured card-group container
+     */
     private VBox buildPlayerTribeCardGroup(String title, List<CardSummary> cards, String extra) {
         String suffix = extra.isEmpty() ? "" : "   ◆   " + extra;
         Label label = new Label(title + " (" + cards.size() + ")" + suffix);
@@ -1270,6 +1512,9 @@ public final class MesosGameBoardView extends BorderPane {
         return group;
     }
 
+    /**
+     * Rebuilds the local player's compact owned-card decks or hides them when absent.
+     */
     private void rebuildOwnedTribeDecksPane() {
         ownedTribeDecksPane.getChildren().clear();
         if (snapshot == null) {
@@ -1306,6 +1551,13 @@ public final class MesosGameBoardView extends BorderPane {
         ownedTribeDecksPane.setManaged(true);
     }
 
+    /**
+     * Creates one hoverable owned-card deck with a limited visible stack.
+     *
+     * @param definition metadata for the deck type
+     * @param cards cards contained in the deck
+     * @return configured deck node
+     */
     private StackPane buildOwnedCardDeck(OwnedCardDeckDefinition definition, List<CardSummary> cards) {
         StackPane deck = new StackPane();
         deck.getStyleClass().addAll("owned-tribe-deck", "owned-card-deck-slot");
@@ -1347,6 +1599,12 @@ public final class MesosGameBoardView extends BorderPane {
         return deck;
     }
 
+    /**
+     * Creates the empty backdrop displayed beneath an owned-card deck.
+     *
+     * @param labelText deck type label
+     * @return configured placeholder node
+     */
     private StackPane buildOwnedCardDeckPlaceholder(String labelText) {
         Label label = new Label(labelText);
         label.getStyleClass().add("owned-card-deck-placeholder-label");
@@ -1363,6 +1621,11 @@ public final class MesosGameBoardView extends BorderPane {
         return placeholder;
     }
 
+    /**
+     * Displays all cards from a hovered owned deck in a scaled overlay grid.
+     *
+     * @param cards cards to preview
+     */
     private void showOwnedDeckPreview(List<CardSummary> cards) {
         ownedDeckPreviewOverlay.getChildren().clear();
         if (cards.isEmpty()) {
@@ -1403,11 +1666,20 @@ public final class MesosGameBoardView extends BorderPane {
         ownedDeckPreviewOverlay.setVisible(true);
     }
 
+    /**
+     * Hides and clears the owned-deck preview overlay.
+     */
     private void hideOwnedDeckPreview() {
         ownedDeckPreviewOverlay.setVisible(false);
         ownedDeckPreviewOverlay.getChildren().clear();
     }
 
+    /**
+     * Normalizes a card type to the key used by owned-deck definitions.
+     *
+     * @param type card type text, possibly null
+     * @return lowercase type without spaces, underscores, or hyphens
+     */
     private String normalizeDeckKey(String type) {
         if (type == null) {
             return "";
@@ -1418,6 +1690,15 @@ public final class MesosGameBoardView extends BorderPane {
                 .replace("-", "");
     }
 
+    /**
+     * Creates an artwork surface and tooltip for an owned tribe card.
+     *
+     * @param cardSummary card to render
+     * @param width target card width
+     * @param height target card height
+     * @param styleClass additional style class for the surface
+     * @return configured owned-card surface
+     */
     private StackPane buildOwnedTribeCardSurface(
             CardSummary cardSummary,
             double width,
@@ -1439,6 +1720,17 @@ public final class MesosGameBoardView extends BorderPane {
         return surface;
     }
 
+    /**
+     * Creates a market or owned-card node with tooltip and optional card-selection behavior.
+     *
+     * @param cardSummary card to render
+     * @param ownedCard whether the card is rendered as owned
+     * @param clickable whether selecting the card is currently allowed
+     * @param topRow top-row flag supplied to card-selection callbacks
+     * @param width target card width
+     * @param height target card height
+     * @return card node wrapped in the appropriate slot container
+     */
     private Node buildCardNode(
             CardSummary cardSummary,
             boolean ownedCard,
@@ -1499,12 +1791,25 @@ public final class MesosGameBoardView extends BorderPane {
         return slot;
     }
 
+    /**
+     * Locks a region's minimum, preferred, and maximum size to the same values.
+     *
+     * @param region region to size
+     * @param width fixed width
+     * @param height fixed height
+     */
     private void setFixedSize(Region region, double width, double height) {
         region.setMinSize(width, height);
         region.setPrefSize(width, height);
         region.setMaxSize(width, height);
     }
 
+    /**
+     * Builds the tooltip text containing a card's era, costs, and effect details.
+     *
+     * @param cardSummary card whose metadata is formatted
+     * @return multi-line tooltip text
+     */
     private String buildTooltipText(CardSummary cardSummary) {
         StringBuilder builder = new StringBuilder(cardSummary.type())
                 .append("\nEra: ").append(formatEra(cardSummary.era()));
@@ -1520,6 +1825,16 @@ public final class MesosGameBoardView extends BorderPane {
         return builder.toString();
     }
 
+    /**
+     * Creates a fixed-size art surface or textual fallback when artwork is unavailable.
+     *
+     * @param image optional artwork image
+     * @param width target surface width
+     * @param height target surface height
+     * @param placeholderTitle fallback title
+     * @param placeholderSubtitle fallback details, possibly null or blank
+     * @return configured artwork or placeholder surface
+     */
     private StackPane buildSurfaceArt(
             Optional<Image> image,
             double width,
@@ -1563,6 +1878,12 @@ public final class MesosGameBoardView extends BorderPane {
         return surface;
     }
 
+    /**
+     * Creates a padded empty-state node for an unavailable board section.
+     *
+     * @param text message to display
+     * @return styled empty-state node
+     */
     private Node buildEmptyState(String text) {
         Label label = new Label(text);
         label.getStyleClass().add("muted-label");
@@ -1574,6 +1895,13 @@ public final class MesosGameBoardView extends BorderPane {
         return wrapper;
     }
 
+    /**
+     * Creates a colored player marker with an optional extra style class.
+     *
+     * @param color game color represented by the marker, possibly null
+     * @param extraStyleClass optional additional CSS class
+     * @return configured color-indicator node
+     */
     private StackPane buildColorIndicator(
             it.polimi.ingsw.mesos.Model.Enums.Color color,
             String extraStyleClass
@@ -1595,6 +1923,12 @@ public final class MesosGameBoardView extends BorderPane {
         return indicator;
     }
 
+    /**
+     * Updates a previously created color marker's fill and outline.
+     *
+     * @param indicator color marker created by {@link #buildColorIndicator}
+     * @param color game color to display, possibly null
+     */
     private void updateColorIndicator(StackPane indicator, it.polimi.ingsw.mesos.Model.Enums.Color color) {
         Circle dot = (Circle) indicator.getUserData();
         if (dot != null) {
@@ -1604,6 +1938,12 @@ public final class MesosGameBoardView extends BorderPane {
         }
     }
 
+    /**
+     * Maps a game color to the JavaFX paint used by color indicators.
+     *
+     * @param color game color, with null treated as white
+     * @return corresponding JavaFX color
+     */
     private Color toIndicatorColor(it.polimi.ingsw.mesos.Model.Enums.Color color) {
         return switch (color == null ? it.polimi.ingsw.mesos.Model.Enums.Color.WHITE : color) {
             case BLUE -> Color.rgb(57, 146, 218);
@@ -1614,6 +1954,13 @@ public final class MesosGameBoardView extends BorderPane {
         };
     }
 
+    /**
+     * Creates a sized totem image or a letter fallback when artwork is missing.
+     *
+     * @param color player color represented by the totem, possibly null
+     * @param size square size for the totem node
+     * @return image view or fallback node
+     */
     private Node buildTotem(it.polimi.ingsw.mesos.Model.Enums.Color color, double size) {
         Optional<Image> totem = assetResolver.resolveTotem(color);
         if (totem.isPresent()) {
@@ -1637,6 +1984,13 @@ public final class MesosGameBoardView extends BorderPane {
         return fallback;
     }
 
+    /**
+     * Determines whether the local player may select a specific market card now.
+     *
+     * @param cardSummary card to evaluate
+     * @param topRow whether the card is in the top market row
+     * @return true only for a non-event card with an available local choice
+     */
     private boolean canPickCard(CardSummary cardSummary, boolean topRow) {
         if (snapshot == null || cardSummary == null) {
             return false;
@@ -1647,6 +2001,11 @@ public final class MesosGameBoardView extends BorderPane {
         return topRow ? snapshot.remainingTopChoices() > 0 : snapshot.remainingBottomChoices() > 0;
     }
 
+    /**
+     * Marks an action as pending unless another action is already awaiting a snapshot.
+     *
+     * @return true when the caller acquired the action lock
+     */
     private boolean lockActionUntilNextSnapshot() {
         if (actionPending) {
             return false;
@@ -1655,16 +2014,32 @@ public final class MesosGameBoardView extends BorderPane {
         return true;
     }
 
+    /**
+     * Checks whether the snapshot identifies this view's player as active.
+     *
+     * @return true when the local nickname is the current player
+     */
     private boolean isLocalTurn() {
         return snapshot != null
                 && snapshot.currentPlayerNickname() != null
                 && snapshot.currentPlayerNickname().equals(localNickname);
     }
 
+    /**
+     * Checks whether the local player may currently use the optional pass action.
+     *
+     * @return true when the snapshot allows a pass and no action is pending
+     */
     private boolean canUsePass() {
         return snapshot != null && !actionPending && isLocalTurn() && snapshot.passAvailable();
     }
 
+    /**
+     * Formats a game era as its Roman numeral label.
+     *
+     * @param era era to format, possibly null
+     * @return {@code I}, {@code II}, {@code III}, or {@code -} when null
+     */
     private String formatEra(Era era) {
         if (era == null) {
             return "-";
@@ -1676,10 +2051,21 @@ public final class MesosGameBoardView extends BorderPane {
         };
     }
 
+    /**
+     * Converts a nullable value to display text.
+     *
+     * @param value value to render, possibly null
+     * @return value text, or {@code -} when null
+     */
     private String safeText(Object value) {
         return value == null ? "-" : value.toString();
     }
 
+    /**
+     * Creates a horizontally growing spacer for row layouts.
+     *
+     * @return region that consumes available horizontal space
+     */
     private Region spacer() {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

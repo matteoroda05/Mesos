@@ -103,6 +103,13 @@ public abstract class BuildingCard extends Card {
         return trigger;
     }
 
+    /**
+     * Creates the client-facing summary of this building card.
+     *
+     * @param selectionIndex index used to select this card in its source row
+     * @return summary with the building's details, cost, prestige, and
+     *         presentation ID
+     */
     @Override
     public CardSummary getSummary(int selectionIndex) {
         return new CardSummary(

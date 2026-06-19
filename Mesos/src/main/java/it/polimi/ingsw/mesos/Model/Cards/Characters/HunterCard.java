@@ -37,11 +37,22 @@ public final class HunterCard extends CharacterCard {
         return active_hunter;
     }
 
+    /**
+     * Delegates this hunter card's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes hunter cards
+     * @return visitor-provided hunter description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeHunterCard(this);
     }
 
+    /**
+     * Returns the display name of this character type.
+     *
+     * @return {@code "Hunter"}
+     */
     @Override
     public String getReadableName() {
         return "Hunter";

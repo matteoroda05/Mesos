@@ -163,11 +163,22 @@ public class BuildingBonusEvent extends BuildingCard {
         return character_type;
     }
 
+    /**
+     * Delegates this event-bonus building's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes bonus-event buildings
+     * @return visitor-provided building description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuildingBonusEvent(this);
     }
 
+    /**
+     * Returns the display name of this building type.
+     *
+     * @return {@code "Building Bonus Event"}
+     */
     @Override
     public String getReadableName() {
         return "Building Bonus Event";

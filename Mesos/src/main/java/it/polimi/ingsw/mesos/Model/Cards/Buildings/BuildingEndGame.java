@@ -191,11 +191,22 @@ public class BuildingEndGame extends BuildingCard {
         return prestige_bonus;
     }
 
+    /**
+     * Delegates this end-game building's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes end-game buildings
+     * @return visitor-provided building description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuildingEndGame(this);
     }
 
+    /**
+     * Returns the display name of this building type.
+     *
+     * @return {@code "Building End Game"}
+     */
     @Override
     public String getReadableName() {
         return "Building End Game";

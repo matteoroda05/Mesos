@@ -12,6 +12,11 @@ public final class MesosClientLauncher {
     private MesosClientLauncher() {
     }
 
+    /**
+     * Starts the JavaFX Mesos client application.
+     *
+     * @param args command-line arguments forwarded to JavaFX
+     */
     public static void main(String[] args) {
         Application.launch(MesosClientApplication.class, args);
     }

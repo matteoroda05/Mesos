@@ -357,6 +357,12 @@ public class ActionState extends GameState {
         return pick_bottom_row;
     }
 
+    /**
+     * Reports whether the current extra action can be skipped.
+     *
+     * @return true when an optional extra action still has only top-row picks
+     *         remaining
+     */
     @Override
     public boolean isPassAvailable() {
         return optional_pass && is_extra && pick_top_row > 0 && pick_bottom_row == 0;

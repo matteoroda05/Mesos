@@ -6,8 +6,20 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public interface GameServerMessage extends Serializable {
+    /**
+     * Dispatches this server message to the matching visitor method.
+     *
+     * @param visitor visitor that handles this message type
+     */
     void accept(GameServerMessageVisitor visitor);
 
+    /**
+     * Handles this message in a socket client's update context.
+     * The default implementation rejects unsupported message types.
+     *
+     * @param context socket client context that received the message
+     * @throws IOException always, unless an implementation overrides this method
+     */
     default void messageExecute(SocketGameClient.SocketClientContext context) throws IOException {
         throw new IOException("Unsupported server message: " + this.getClass().getSimpleName());
     }

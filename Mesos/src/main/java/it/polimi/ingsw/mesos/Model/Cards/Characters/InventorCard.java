@@ -39,11 +39,22 @@ public final class InventorCard extends CharacterCard {
         return this.invention_icon;
     }
 
+    /**
+     * Delegates this inventor card's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes inventor cards
+     * @return visitor-provided inventor description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeInventorCard(this);
     }
 
+    /**
+     * Returns the display name of this character type.
+     *
+     * @return {@code "Inventor"}
+     */
     @Override
     public String getReadableName() {
         return "Inventor";

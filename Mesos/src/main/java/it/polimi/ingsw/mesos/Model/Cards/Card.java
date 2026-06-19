@@ -44,11 +44,22 @@ abstract public class Card {
         return this.min_players;
     }
 
+    /**
+     * Returns the resource identifier used to select this card's presentation.
+     *
+     * @return configured presentation ID, or null when none has been assigned
+     */
     @JsonProperty("presentation_id")
     public String getPresentationId() {
         return presentationId;
     }
 
+    /**
+     * Assigns the resource identifier used to present this card.
+     * Blank identifiers are normalized to null.
+     *
+     * @param presentationId presentation ID, possibly null or blank
+     */
     @JsonProperty("presentation_id")
     public void setPresentationId(String presentationId) {
         this.presentationId = (presentationId == null || presentationId.isBlank())
@@ -74,9 +85,10 @@ abstract public class Card {
     public abstract String accept(CardDescriptionVisitor visitor);
 
     /**
-     * Creates the card description for serialization.
+     * Creates the transport-friendly description of this card.
      *
-     * @return serializable record
+     * @param selectionIndex index used to select this card in its source row
+     * @return summary containing the card data needed by clients
      */
     public abstract CardSummary getSummary(int selectionIndex);
 

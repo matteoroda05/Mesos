@@ -32,11 +32,22 @@ public final class GathererCard extends CharacterCard {
         return 3;
     }
 
+    /**
+     * Delegates this gatherer card's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes gatherer cards
+     * @return visitor-provided gatherer description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeGathererCard(this);
     }
 
+    /**
+     * Returns the display name of this character type.
+     *
+     * @return {@code "Gatherer"}
+     */
     @Override
     public String getReadableName() {
         return "Gatherer";

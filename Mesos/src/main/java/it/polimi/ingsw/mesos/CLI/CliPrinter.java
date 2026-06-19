@@ -143,6 +143,12 @@ final class CliPrinter {
                 "");
     }
 
+    /**
+     * Formats leaderboard entries as one line per ranking entry.
+     *
+     * @param rankings entries to render in their supplied order
+     * @return newline-separated ranking text
+     */
     public String renderRankings(List<LeaderboardEntry> rankings) {
         StringBuilder builder = new StringBuilder();
         rankings.forEach(entry -> builder.append(entry.toString()).append('\n'));
@@ -271,15 +277,18 @@ final class CliPrinter {
     }
 
     /**
-     * Appends the player summary list.
+     * Builds the bordered player-summary panel for the game board.
      * When the game is won the winners are listed first (sorted by prestige,
      * then food, descending) and tagged (WINNER:); active games keep the
      * snapshot order.
      *
      * @param players player summaries to render
+     * @param playerCount number of player slots that determine the panel height
      * @param localNickname nickname to mark as local
      * @param currentPlayerNickname nickname to mark as active
-     * @throws NullPointerException if the builder or player list is null
+     * @param boardWidth maximum width of the panel
+     * @return bordered lines ready to insert into the board
+     * @throws NullPointerException if the player list is null
      */
     private List<String> createPlayersBox(
             List<PlayerSummary> players,
@@ -335,13 +344,15 @@ final class CliPrinter {
     }
 
     /**
-     * Appends the turn-order and offer-track panels side by side when they fit,
-     * otherwise stacks them vertically.
+     * Builds the turn-order and offer-track area, placing its panels side by
+     * side when they fit and stacking them otherwise.
      *
      * @param turnOrder turn-order spaces
      * @param offerTiles offer tiles
+     * @param playerCount number of players used to size the turn-order panel
      * @param boardWidth available board width
-     * @throws NullPointerException if the builder or either list is null
+     * @return formatted lines for the center area of the game board
+     * @throws NullPointerException if either list is null
      */
     private List<String> renderCenterArea(
             List<TurnOrderSpaceSummary> turnOrder,

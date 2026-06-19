@@ -72,11 +72,22 @@ public class BuildingAfterEveryone extends BuildingCard {
         to_apply = true;
     }
 
+    /**
+     * Delegates this extra-action building's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes after-everyone buildings
+     * @return visitor-provided building description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuildingAfterEveryone(this);
     }
 
+    /**
+     * Returns the display name of this building type.
+     *
+     * @return {@code "Building After Everyone"}
+     */
     @Override
     public String getReadableName() {
         return "Building After Everyone";

@@ -75,6 +75,11 @@ abstract public class GameState {
      */
     public GameState process() { return this; }
 
+    /**
+     * Returns the game-flow status represented by this state.
+     *
+     * @return status exposed to clients while this state is active
+     */
     public abstract GameStatus getStatus();
 
     /**

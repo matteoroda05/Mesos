@@ -325,6 +325,12 @@ public class MesosServerCore implements MesosServerService {
         return session.pass(request.nickname());
     }
 
+    /**
+     * Returns the leaderboard result for the requested game.
+     *
+     * @param request ranking request identifying the game
+     * @return rankings, or a game-not-found failure when no session exists
+     */
     @Override
     public synchronized GameOperationResult getRankings(RankingsRequest request) {
         GameSession session = sessions.get(request.gameName());
@@ -1106,6 +1112,11 @@ public class MesosServerCore implements MesosServerService {
             }
         }
 
+        /**
+         * Removes every update sink registered for a departing nickname.
+         *
+         * @param nickname nickname whose subscriptions must be removed
+         */
         private void removeSubscribers(String nickname) {
             subscribersByNickname.remove(nickname);
         }
@@ -1172,6 +1183,11 @@ public class MesosServerCore implements MesosServerService {
                     .orElseGet(Set::of);
         }
 
+        /**
+         * Lists currently reserved player colors without duplicates.
+         *
+         * @return colors reserved by joined players in map iteration order
+         */
         private List<Color> reservedColors() {
             return colorsByNickname.values().stream().distinct().toList();
         }
@@ -1206,6 +1222,11 @@ public class MesosServerCore implements MesosServerService {
             return forcedWinnerNickname != null || started() && controller.isGameFinished();
         }
 
+        /**
+         * Persists the completed session's score for every player.
+         *
+         * @return true only when every score is saved successfully
+         */
         private boolean saveResult() {
             final var players = this.context.getPlayers();
             final var numPlayers = players.size();
@@ -1360,6 +1381,12 @@ public class MesosServerCore implements MesosServerService {
             return card.getSummary(selectionIndex);
         }
 
+        /**
+         * Converts owned cards to summaries using their list positions as indices.
+         *
+         * @param cards cards to expose to a client
+         * @return summaries in the same order as the input cards
+         */
         private List<CardSummary> summarizeOwnedCards(List<? extends Card> cards) {
             List<CardSummary> summaries = new ArrayList<>();
             for (int index = 0; index < cards.size(); index++) {

@@ -69,12 +69,27 @@ public class CardLoader {
         return new CardData(tribeCards, buildingCards, offerTiles);
     }
 
+    /**
+     * Verifies that every loaded tribe and building card has a unique display ID.
+     *
+     * @param tribeCards loaded tribe cards
+     * @param buildingCards loaded building cards
+     * @throws IllegalArgumentException if an ID is missing or duplicated
+     */
     private static void validatePresentationIds(List<TribeCard> tribeCards, List<BuildingCard> buildingCards) {
         Set<String> ids = new HashSet<>();
         validateCardCollection(tribeCards, ids);
         validateCardCollection(buildingCards, ids);
     }
 
+    /**
+     * Adds card display IDs to the shared set after validating each card.
+     *
+     * @param cards cards to validate
+     * @param ids IDs already encountered across card collections
+     * @throws IllegalArgumentException if a card is null or its display ID is
+     *         absent or duplicated
+     */
     private static void validateCardCollection(List<? extends Card> cards, Set<String> ids) {
         for (Card card : cards) {
             if (card == null) {
@@ -91,6 +106,12 @@ public class CardLoader {
         }
     }
 
+    /**
+     * Produces diagnostic text that identifies a card with its basic metadata.
+     *
+     * @param card card to describe
+     * @return class name with era and minimum-player requirement
+     */
     private static String describeCard(Card card) {
         return card.getClass().getSimpleName() + "(era=" + card.getEra() + ", minPlayers=" + card.getMinPlayers() + ")";
     }

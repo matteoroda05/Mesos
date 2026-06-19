@@ -16,6 +16,12 @@ abstract public class CharacterCard extends TribeCard {
         super(era, min_players);
     }
 
+    /**
+     * Creates the client-facing summary of this character card.
+     *
+     * @param selectionIndex index used to select this card in its source row
+     * @return summary with character details and no building cost or prestige
+     */
     @Override
     public CardSummary getSummary(int selectionIndex) {
         return new CardSummary(

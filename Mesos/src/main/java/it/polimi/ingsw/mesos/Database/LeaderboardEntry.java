@@ -17,6 +17,11 @@ public record LeaderboardEntry(int rank, String nickname, int score, Timestamp m
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Formats this result as a single leaderboard line.
+     *
+     * @return rank, nickname, score, and match timestamp
+     */
     @Override
     public String toString() {
         return rank + "° - " + nickname + " - Points: " + score + " (" + matchDate.toString() + ")";

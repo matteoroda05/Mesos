@@ -130,11 +130,22 @@ public class ShamanicRitualEvent extends EventCard {
         return BuildingTrigger.ON_EVENT_SHAMANIC_RITUAL;
     }
 
+    /**
+     * Delegates this shamanic ritual's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes shamanic-ritual events
+     * @return visitor-provided event description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeShamanicRitualEvent(this);
     }
 
+    /**
+     * Returns the display name of this event type.
+     *
+     * @return {@code "Shamanic Ritual Event"}
+     */
     @Override
     public String getReadableName() {
         return "Shamanic Ritual Event";

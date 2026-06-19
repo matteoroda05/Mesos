@@ -126,11 +126,22 @@ public class BuildingShamanicRitual extends BuildingCard {
         return win_multiplier;
     }
 
+    /**
+     * Delegates this ritual building's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes ritual buildings
+     * @return visitor-provided building description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeBuildingShamanicRitual(this);
     }
 
+    /**
+     * Returns the display name of this building type.
+     *
+     * @return {@code "Building Shamanic Ritual"}
+     */
     @Override
     public String getReadableName() {
         return "Building Shamanic Ritual";

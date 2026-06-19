@@ -33,6 +33,13 @@ public final class MesosUserMessageMapper {
             Map.entry("connessione socket chiusa", "The socket connection was closed.")
     ));
 
+    /**
+     * Converts a server operation result into a user-facing status message.
+     *
+     * @param result server result, possibly null
+     * @param successFallback message used for successful operations
+     * @return translated error or success message
+     */
     public static String describeResult(GameOperationResult result, String successFallback) {
         if (result == null) {
             return "Operation completed.";
@@ -48,6 +55,12 @@ public final class MesosUserMessageMapper {
         return translateFreeform(result.message());
     }
 
+    /**
+     * Converts a pushed game update into a user-facing status message.
+     *
+     * @param update update to describe, possibly null
+     * @return translated update message or a generic refresh message
+     */
     public static String describeUpdate(GameViewUpdate update) {
         if (update == null) {
             return "Board updated.";
@@ -55,6 +68,13 @@ public final class MesosUserMessageMapper {
         return translateFreeform(update.message());
     }
 
+    /**
+     * Classifies an exception and returns a concise connection or fallback message.
+     * Runtime wrappers are unwrapped one level at a time.
+     *
+     * @param throwable failure to describe
+     * @return user-facing failure description
+     */
     public static String describeException(Throwable throwable) {
         try {
             throw throwable;
@@ -103,6 +123,12 @@ public final class MesosUserMessageMapper {
         }
     }
 
+    /**
+     * Maps a structured server error code to its user-facing explanation.
+     *
+     * @param errorCode server error code, possibly null
+     * @return translated explanation, or null when no mapping applies
+     */
     private static String describeErrorCode(OperationErrorCode errorCode) {
         if (errorCode == null) {
             return null;
@@ -121,6 +147,13 @@ public final class MesosUserMessageMapper {
         };
     }
 
+    /**
+     * Translates known free-form server text and normalizes unknown messages.
+     *
+     * @param message server-provided message, possibly null or blank
+     * @return matching translation, normalized lowercase text, or a generic
+     *         completion message
+     */
     private static String translateFreeform(String message) {
         if (message == null || message.isBlank()) {
             return "Operation completed.";
@@ -138,6 +171,12 @@ public final class MesosUserMessageMapper {
                 .orElse(lower);
     }
 
+    /**
+     * Derives a message from an otherwise unrecognized throwable.
+     *
+     * @param cause throwable to inspect
+     * @return translated throwable message or its simple class name
+     */
     private static String describeFallback(Throwable cause) {
         String message = cause.getMessage();
         if (message == null || message.isBlank()) {

@@ -40,11 +40,22 @@ public final class ShamanCard extends CharacterCard {
         return num_stars;
     }
 
+    /**
+     * Delegates this shaman card's description to the supplied visitor.
+     *
+     * @param visitor visitor that describes shaman cards
+     * @return visitor-provided shaman description
+     */
     @Override
     public String accept(CardDescriptionVisitor visitor) {
         return visitor.describeShamanCard(this);
     }
 
+    /**
+     * Returns the display name of this character type.
+     *
+     * @return {@code "Shaman"}
+     */
     @Override
     public String getReadableName() {
         return "Shaman";

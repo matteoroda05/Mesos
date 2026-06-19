@@ -65,6 +65,7 @@ class CliPrinterTest {
             );
 
             String rendering = printer.renderSnapshot(snapshot, "Alice");
+            String visibleRendering = rendering.replaceAll("\u001B\\[[;\\d]*m", "");
 
             assertTrue(rendering.contains("MESOS | test-room"));
             assertTrue(rendering.contains("GAME TABLE"));
@@ -81,7 +82,7 @@ class CliPrinterTest {
             assertTrue(rendering.contains("Top   : 0"));
             assertTrue(rendering.contains("Bottom: 2"));
             assertTrue(rendering.contains("Food  : +1"));
-            assertTrue(rendering.lines().mapToInt(String::length).max().orElse(0) <= 180);
+            assertTrue(visibleRendering.lines().mapToInt(String::length).max().orElse(0) <= 180);
         } finally {
             if (previousWidth == null) {
                 System.clearProperty("mesos.cli.width");
@@ -122,9 +123,10 @@ class CliPrinterTest {
 
         String rendering = printer.renderSnapshot(snapshot, "Alice");
 
-        assertTrue(rendering.contains("WINNER: Alice"));
-        assertTrue(rendering.contains("WINNER: Bob"));
-        assertEquals(2, rendering.split("WINNER:", -1).length - 1);
+        String visibleRendering = rendering.replaceAll("\u001B\\[[;\\d]*m", "");
+        assertTrue(visibleRendering.contains("WINNER: Alice"));
+        assertTrue(visibleRendering.contains("WINNER: Bob"));
+        assertEquals(2, visibleRendering.split("WINNER:", -1).length - 1);
     }
 
     @Test

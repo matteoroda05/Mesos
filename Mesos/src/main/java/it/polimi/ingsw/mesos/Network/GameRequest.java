@@ -10,5 +10,12 @@ public sealed interface GameRequest extends Serializable permits CreateGameReque
         ChooseOfferRequest, ChooseCardRequest, SubscribeGameRequest, UnsubscribeGameRequest, LobbyRequest,
         HeartbeatRequest, NicknameRequest, PassRequest, ChooseColorRequest, RankingsRequest {
 
+    /**
+     * Dispatches this request to the server service for its client connection.
+     *
+     * @param service service that owns the game operations
+     * @param connection connection that submitted the request
+     * @return result produced by the service operation
+     */
     GameOperationResult requestToService (MesosServerService service, ClientConnection connection);
 }

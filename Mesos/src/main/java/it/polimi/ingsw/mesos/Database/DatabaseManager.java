@@ -14,10 +14,19 @@ public class DatabaseManager {
      */
     private static final String DB_URL = "jdbc:sqlite:game_leaderboard.db";
 
+    /**
+     * Initializes the local leaderboard database and creates its table if needed.
+     */
     public DatabaseManager() {
         initializeDatabase();
     }
 
+    /**
+     * Opens a new connection to the local SQLite leaderboard database.
+     *
+     * @return an open database connection
+     * @throws SQLException if the connection cannot be established
+     */
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL);
     }

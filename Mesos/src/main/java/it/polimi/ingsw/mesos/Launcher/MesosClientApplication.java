@@ -52,6 +52,11 @@ public final class MesosClientApplication extends Application implements MesosGu
     private MesosGuiFlowController flowController;
     private MesosEventPopupOverlay eventPopupOverlay;
 
+    /**
+     * Builds and shows the primary JavaFX window for the Mesos client.
+     *
+     * @param stage application stage supplied by JavaFX
+     */
     @Override
     public void start(Stage stage) {
         this.stage = stage;
@@ -93,11 +98,19 @@ public final class MesosClientApplication extends Application implements MesosGu
         stage.show();
     }
 
+    /**
+     * Closes the GUI service when JavaFX stops the application.
+     */
     @Override
     public void stop() {
         guiService.close();
     }
 
+    /**
+     * Replaces the central application content and applies connection-screen styling when needed.
+     *
+     * @param node node to display in the application shell, possibly null
+     */
     @Override
     public void setContent(Node node) {
         appShell.getStyleClass().remove(CONNECTION_SCREEN_SHELL_CLASS);
@@ -107,11 +120,22 @@ public final class MesosClientApplication extends Application implements MesosGu
         appShell.setCenter(node);
     }
 
+    /**
+     * Updates the text shown in the application's status bar.
+     *
+     * @param message status text to display
+     */
     @Override
     public void updateStatus(String message) {
         statusBarLabel.setText(message);
     }
 
+    /**
+     * Shows or hides the busy overlay and optionally updates its message.
+     *
+     * @param busy whether the overlay should be visible and managed
+     * @param message replacement overlay message when busy, possibly null
+     */
     @Override
     public void setBusy(boolean busy, String message) {
         busyOverlay.setVisible(busy);
@@ -121,6 +145,12 @@ public final class MesosClientApplication extends Application implements MesosGu
         }
     }
 
+    /**
+     * Displays a non-blocking informational dialog owned by the main stage.
+     *
+     * @param title dialog heading
+     * @param message dialog body text
+     */
     @Override
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -138,11 +168,23 @@ public final class MesosClientApplication extends Application implements MesosGu
         alert.show();
     }
 
+    /**
+     * Shows an event entry in the application popup overlay.
+     *
+     * @param entry event notification to present
+     */
     @Override
     public void showEventPopup(EventLogEntry entry) {
         eventPopupOverlay.show(entry);
     }
 
+    /**
+     * Shows a confirmation dialog and returns whether the user accepted it.
+     *
+     * @param title dialog heading
+     * @param message dialog body text
+     * @return true only when the user chooses OK
+     */
     @Override
     public boolean showConfirmation(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -153,6 +195,15 @@ public final class MesosClientApplication extends Application implements MesosGu
         return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 
+    /**
+     * Prompts the player to reserve an available totem color for a game.
+     *
+     * @param title dialog heading
+     * @param gameName game for which a color is chosen
+     * @param takenColors colors currently unavailable, possibly null
+     * @param selectedColor color to preselect, possibly null
+     * @return selected color, or null when the dialog is cancelled
+     */
     @Override
     public Color showTotemSelection(String title, String gameName, Set<Color> takenColors, Color selectedColor) {
         Dialog<Color> dialog = new Dialog<>();
@@ -215,6 +266,11 @@ public final class MesosClientApplication extends Application implements MesosGu
         return dialog.showAndWait().orElse(null);
     }
 
+    /**
+     * Creates the status-bar container around the shared status label.
+     *
+     * @return configured status-bar node
+     */
     private Node buildStatusBar() {
         HBox bar = new HBox(statusBarLabel);
         bar.setAlignment(Pos.CENTER_LEFT);
@@ -223,6 +279,11 @@ public final class MesosClientApplication extends Application implements MesosGu
         return bar;
     }
 
+    /**
+     * Creates the progress overlay used while a remote operation is pending.
+     *
+     * @return configured busy-overlay container
+     */
     private VBox buildBusyOverlay() {
         ProgressIndicator indicator = new ProgressIndicator();
         indicator.setPrefSize(84, 84);
@@ -237,6 +298,11 @@ public final class MesosClientApplication extends Application implements MesosGu
         return overlay;
     }
 
+    /**
+     * Adds the Mesos stylesheet to a scene when the stylesheet resource exists.
+     *
+     * @param scene scene to style, possibly null
+     */
     private void applyStylesheet(Scene scene) {
         if (scene == null) {
             return;
@@ -247,6 +313,11 @@ public final class MesosClientApplication extends Application implements MesosGu
         }
     }
 
+    /**
+     * Adds the Mesos stylesheet to a dialog pane unless it is already present.
+     *
+     * @param dialogPane dialog pane to style, possibly null
+     */
     private void applyStylesheet(DialogPane dialogPane) {
         if (dialogPane == null) {
             return;
@@ -257,6 +328,12 @@ public final class MesosClientApplication extends Application implements MesosGu
         }
     }
 
+    /**
+     * Creates the graphical toggle button for one selectable totem color.
+     *
+     * @param color color represented by the button
+     * @return configured totem-choice button
+     */
     private ToggleButton buildTotemChoiceButton(Color color) {
         Label nameLabel = new Label(formatTotemName(color));
         nameLabel.getStyleClass().addAll("subsection-title", "totem-option-label");
@@ -282,6 +359,12 @@ public final class MesosClientApplication extends Application implements MesosGu
         return button;
     }
 
+    /**
+     * Maps a game color to its display name in the totem-selection dialog.
+     *
+     * @param color color to name
+     * @return localized display name used by the GUI
+     */
     private String formatTotemName(Color color) {
         return switch (color) {
             case BLUE -> "Blue";

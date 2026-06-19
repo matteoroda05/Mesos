@@ -33,6 +33,15 @@ public final class MesosGuiFlowController {
     private final Map<String, Color> preJoinColorByGame;
     private final List<EventLogEntry> eventLog = new ArrayList<>();
 
+    /**
+     * Creates the coordinator that connects GUI screens to asynchronous game operations.
+     *
+     * @param host application shell that displays content and dialogs
+     * @param guiService service that performs network operations
+     * @param assetResolver resolver passed to the game board
+     * @param screenFactory factory for connection, nickname, lobby, and waiting screens
+     * @throws NullPointerException if any dependency is null
+     */
     public MesosGuiFlowController(
             Host host,
             MesosGuiService guiService,
@@ -46,12 +55,25 @@ public final class MesosGuiFlowController {
         this.preJoinColorByGame = new LinkedHashMap<>();
     }
 
+    /**
+     * Shows the initial connection screen.
+     */
     public void start() {
         showConnectionScreen();
     }
 
+    /**
+     * Schedules a server-pushed message for dispatch on the JavaFX application thread.
+     *
+     * @param update server message to dispatch
+     */
     public void handleRemoteUpdate(GameServerMessage update) {
         Platform.runLater(() -> update.accept(new GameServerMessageVisitor() {
+            /**
+             * Adds an event notification to history and shows it as a popup.
+             *
+             * @param notification event notification received from the server
+             */
             public void visitEventNotification(EventNotification notification) {
                 eventLog.add(notification.entry());
                 if (gameBoardView != null) {
@@ -60,6 +82,11 @@ public final class MesosGuiFlowController {
                 host.showEventPopup(notification.entry());
             }
 
+            /**
+             * Updates status text and re-renders the board from a pushed snapshot.
+             *
+             * @param view update containing the latest snapshot
+             */
             public void visitGameViewUpdate(GameViewUpdate view) {
                 String message = MesosUserMessageMapper.describeUpdate(view);
                 host.updateStatus(message);
@@ -68,12 +95,20 @@ public final class MesosGuiFlowController {
         }));
     }
 
+    /**
+     * Resets nickname-screen state and displays the transport connection screen.
+     */
     private void showConnectionScreen() {
         nicknameScreen = null;
         host.updateStatus("Choose a connection type and the server host.");
         host.setContent(screenFactory.buildConnectionScreen(this::handleConnect));
     }
 
+    /**
+     * Displays the nickname-registration screen for the current connection.
+     *
+     * @param suggestedNickname text to prefill in the nickname field
+     */
     private void showNicknameScreen(String suggestedNickname) {
         host.updateStatus("Choose your nickname.");
         nicknameScreen = screenFactory.buildNicknameScreen(
@@ -86,6 +121,11 @@ public final class MesosGuiFlowController {
         host.setContent(nicknameScreen.root());
     }
 
+    /**
+     * Displays the lobby using current connection and identity information.
+     *
+     * @param lobbySnapshot lobby data to render
+     */
     private void showLobbyScreen(LobbySnapshot lobbySnapshot) {
         nicknameScreen = null;
         host.setContent(screenFactory.buildLobbyScreen(
@@ -100,6 +140,12 @@ public final class MesosGuiFlowController {
         ));
     }
 
+    /**
+     * Displays the waiting room for a game that has not started yet.
+     *
+     * @param snapshot pre-game state to render
+     * @param message status message to display
+     */
     private void showWaitingRoom(GameSnapshot snapshot, String message) {
         host.setContent(screenFactory.buildWaitingRoomScreen(
                 snapshot,
@@ -110,6 +156,12 @@ public final class MesosGuiFlowController {
         ));
     }
 
+    /**
+     * Displays or refreshes the game board and requests global rankings after a finish.
+     *
+     * @param snapshot game state to render
+     * @param message current status message
+     */
     private void showGameScreen(GameSnapshot snapshot, String message) {
         if (gameBoardView == null) {
             gameBoardView = new MesosGameBoardView(
@@ -139,6 +191,12 @@ public final class MesosGuiFlowController {
         host.setContent(gameBoardView);
     }
 
+    /**
+     * Validates connection input and starts an asynchronous transport connection.
+     *
+     * @param connectionType selected transport type, possibly null
+     * @param hostValue host text entered by the user, possibly null
+     */
     private void handleConnect(ConnectionType connectionType, String hostValue) {
         if (connectionType == null) {
             host.showAlert("Missing connection type", "Choose either SOCKET or RMI before connecting.");
@@ -164,6 +222,11 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Validates and submits the nickname entered on the nickname screen.
+     *
+     * @param rawNickname raw user input, possibly null
+     */
     private void submitNickname(String rawNickname) {
         String nickname = rawNickname == null ? "" : rawNickname.trim();
         if (nickname.isBlank()) {
@@ -179,6 +242,12 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Interprets a nickname response, continuing to lobby or reconnect handling.
+     *
+     * @param nickname nickname that was submitted
+     * @param result server response, possibly null
+     */
     private void handleNicknameResult(String nickname, GameOperationResult result) {
         String message = MesosUserMessageMapper.describeResult(result, "Nickname accepted.");
         host.updateStatus(message);
@@ -216,6 +285,9 @@ public final class MesosGuiFlowController {
         rejoinGame(nickname);
     }
 
+    /**
+     * Clears and selects the nickname field after a duplicate-name rejection.
+     */
     private void handleTakenNickname() {
         guiService.clearCurrentNickname();
         selectNicknameField();
@@ -226,6 +298,11 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Starts an asynchronous attempt to rejoin a disconnected session.
+     *
+     * @param nickname nickname associated with the prior session
+     */
     private void rejoinGame(String nickname) {
         withBusy(
                 "Rejoining previous session...",
@@ -235,6 +312,11 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Routes a rejoin response to a game, lobby, or nickname retry path.
+     *
+     * @param result rejoin response, possibly null
+     */
     private void handleRejoinResult(GameOperationResult result) {
         String successMessage = result != null && result.lobbySnapshot() != null && result.snapshot() == null
                 ? "Lobby refreshed."
@@ -269,6 +351,11 @@ public final class MesosGuiFlowController {
         host.showAlert("Rejoin failed", message);
     }
 
+    /**
+     * Loads the lobby asynchronously and uses the supplied message on success.
+     *
+     * @param successMessage status text for a successful refresh
+     */
     private void loadLobby(String successMessage) {
         withBusy(
                 "Loading lobby...",
@@ -278,6 +365,12 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Displays a lobby response or reports unavailable lobby data.
+     *
+     * @param result lobby response, possibly null
+     * @param successMessage status text for a successful response
+     */
     private void handleLobbyResult(GameOperationResult result, String successMessage) {
         if (result == null) {
             host.updateStatus("Lobby unavailable.");
@@ -296,6 +389,12 @@ public final class MesosGuiFlowController {
         showLobbyScreen(result.lobbySnapshot());
     }
 
+    /**
+     * Prompts for a totem and creates a new game before joining it.
+     *
+     * @param gameName requested game name
+     * @param playerCount requested player count
+     */
     private void createAndJoinGame(String gameName, Integer playerCount) {
         if (!validateLobbyActionFields(gameName)) {
             return;
@@ -320,6 +419,11 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Loads a game's pre-join snapshot before prompting for an available totem.
+     *
+     * @param gameName game to join
+     */
     private void joinGame(String gameName) {
         if (!validateLobbyActionFields(gameName)) {
             return;
@@ -333,6 +437,12 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Checks that a game name and selected nickname exist before a lobby action.
+     *
+     * @param gameName game name to validate, possibly null
+     * @return true when both required inputs are available
+     */
     private boolean validateLobbyActionFields(String gameName) {
         if (gameName == null || gameName.isBlank()) {
             host.showAlert("Missing game name", "Enter a game name or select one from the table.");
@@ -345,6 +455,12 @@ public final class MesosGuiFlowController {
         return true;
     }
 
+    /**
+     * Routes a join response to the game board, a lobby refresh, or an error alert.
+     *
+     * @param result join response, possibly null
+     * @param successMessage status text for a successful join
+     */
     private void handleJoinFlowResult(GameOperationResult result, String successMessage) {
         String message = MesosUserMessageMapper.describeResult(result, successMessage);
         host.updateStatus(message);
@@ -369,6 +485,12 @@ public final class MesosGuiFlowController {
         }
     }
 
+    /**
+     * Routes a snapshot to the waiting room or game board based on its start state.
+     *
+     * @param snapshot state to render, possibly null
+     * @param message status message to display
+     */
     private void renderSnapshot(GameSnapshot snapshot, String message) {
         if (snapshot == null) {
             return;
@@ -382,6 +504,11 @@ public final class MesosGuiFlowController {
         showGameScreen(snapshot, message);
     }
 
+    /**
+     * Submits the local player's chosen offer tile.
+     *
+     * @param offerIndex selected offer-tile index
+     */
     private void chooseOffer(int offerIndex) {
         withBusy(
                 "Sending offer selection...",
@@ -391,6 +518,12 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Submits the local player's chosen market card.
+     *
+     * @param cardIndex selected card index
+     * @param topRow whether the card is in the top market row
+     */
     private void chooseCard(int cardIndex, boolean topRow) {
         withBusy(
                 "Sending card selection...",
@@ -400,6 +533,9 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Requests that the local player skip an optional extra pick.
+     */
     private void choosePass() {
         withBusy(
                 "Skipping optional extra pick...",
@@ -409,6 +545,9 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Requests and renders a fresh snapshot for the current game.
+     */
     private void refreshCurrentSnapshot() {
         withBusy(
                 "Refreshing board...",
@@ -418,6 +557,12 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Updates status and renders the direct response to a mutating game action.
+     *
+     * @param result action response, possibly null
+     * @param successMessage status text for success
+     */
     private void handleMutatingGameActionResult(GameOperationResult result, String successMessage) {
         String message = MesosUserMessageMapper.describeResult(result, successMessage);
         host.updateStatus(message);
@@ -426,22 +571,42 @@ public final class MesosGuiFlowController {
         renderResultSnapshot(result, message);
     }
 
+    /**
+     * Updates status and renders a snapshot response when it contains a snapshot.
+     *
+     * @param result snapshot response, possibly null
+     * @param successMessage status text for success
+     */
     private void handleSnapshotResult(GameOperationResult result, String successMessage) {
         String message = MesosUserMessageMapper.describeResult(result, successMessage);
         host.updateStatus(message);
         renderResultSnapshot(result, message);
     }
 
+    /**
+     * Renders the snapshot embedded in a server result when present.
+     *
+     * @param result response that may contain a snapshot
+     * @param message status message to accompany the snapshot
+     */
     private void renderResultSnapshot(GameOperationResult result, String message) {
         if (result != null && result.snapshot() != null) {
             renderSnapshot(result.snapshot(), message);
         }
     }
 
+    /**
+     * Supplies returned all-time rankings to the finished-game board.
+     *
+     * @param result ranking response
+     */
     private void handleGloablLeaderboard(GameOperationResult result) {
         gameBoardView.updateGlobalLeaderboard(result.rankings());
     }
 
+    /**
+     * Disconnects asynchronously, clears session state, and returns to the connection screen.
+     */
     private void disconnectToConnectionScreen() {
         withBusy(
                 "Disconnecting...",
@@ -455,6 +620,9 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Clears connection-specific screens, selected colors, and event history.
+     */
     private void clearSessionState() {
         connectedType = null;
         connectedHost = null;
@@ -464,6 +632,11 @@ public final class MesosGuiFlowController {
         eventLog.clear();
     }
 
+    /**
+     * Recovers from a lost transport by resetting the UI to the connection screen.
+     *
+     * @param status failure status to display after the reset
+     */
     private void returnToConnectionScreen(String status) {
         // The transport is already gone, so release the dead client best-effort
         // (disconnect() closes quietly) and reset the UI to the connection screen,
@@ -474,6 +647,16 @@ public final class MesosGuiFlowController {
         host.updateStatus(status);
     }
 
+    /**
+     * Runs a future while showing busy state and routes completion to the JavaFX thread.
+     * Connection failures reset the UI; other failures show an alert.
+     *
+     * @param busyMessage busy-overlay text
+     * @param future asynchronous operation to observe
+     * @param onSuccess handler for a successful result
+     * @param errorTitle title for a failure alert
+     * @param <T> result type of the operation
+     */
     private <T> void withBusy(
             String busyMessage,
             CompletableFuture<T> future,
@@ -497,6 +680,9 @@ public final class MesosGuiFlowController {
         }));
     }
 
+    /**
+     * Clears and focuses the active nickname text field when it is available.
+     */
     private void clearNicknameField() {
         TextField field = nicknameField();
         if (field == null) {
@@ -506,6 +692,9 @@ public final class MesosGuiFlowController {
         field.requestFocus();
     }
 
+    /**
+     * Focuses and selects all text in the active nickname field when available.
+     */
     private void selectNicknameField() {
         TextField field = nicknameField();
         if (field == null) {
@@ -515,10 +704,22 @@ public final class MesosGuiFlowController {
         field.selectAll();
     }
 
+    /**
+     * Returns the nickname field of the currently displayed nickname screen.
+     *
+     * @return nickname field, or null when that screen is not active
+     */
     private TextField nicknameField() {
         return nicknameScreen == null ? null : nicknameScreen.nicknameField();
     }
 
+    /**
+     * Interprets game creation and continues with color reservation after success.
+     *
+     * @param gameName created game name
+     * @param selectedColor color selected by the creator
+     * @param result creation response, possibly null
+     */
     private void handleCreateGameResult(String gameName, Color selectedColor, GameOperationResult result) {
         String message = MesosUserMessageMapper.describeResult(result, "Game created.");
         host.updateStatus(message);
@@ -532,6 +733,12 @@ public final class MesosGuiFlowController {
         reserveColorThenJoin(gameName, selectedColor, true);
     }
 
+    /**
+     * Opens the totem selector using the pre-join snapshot's unavailable colors.
+     *
+     * @param gameName game about to be joined
+     * @param result snapshot response, possibly null
+     */
     private void handlePreJoinSnapshot(String gameName, GameOperationResult result) {
         String message = MesosUserMessageMapper.describeResult(result, "Board refreshed.");
         host.updateStatus(message);
@@ -553,6 +760,13 @@ public final class MesosGuiFlowController {
         reserveColorThenJoin(gameName, selectedColor, true);
     }
 
+    /**
+     * Reserves a selected color before sending the actual join request.
+     *
+     * @param gameName game to join
+     * @param selectedColor color to reserve
+     * @param allowRetry whether a taken-color response may reopen the selector
+     */
     private void reserveColorThenJoin(String gameName, Color selectedColor, boolean allowRetry) {
         withBusy(
                 "Reserving totem...",
@@ -562,6 +776,14 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Handles color reservation, retrying the selector for a concurrently taken color.
+     *
+     * @param gameName game to join
+     * @param selectedColor reserved color
+     * @param result reservation response, possibly null
+     * @param allowRetry whether a taken color can be retried
+     */
     private void handleReserveColorResult(
             String gameName,
             Color selectedColor,
@@ -601,6 +823,12 @@ public final class MesosGuiFlowController {
         );
     }
 
+    /**
+     * Collects reserved colors, falling back to colors already assigned to players.
+     *
+     * @param snapshot game snapshot, possibly null
+     * @return insertion-ordered set of unavailable colors
+     */
     private Set<Color> unavailableColors(GameSnapshot snapshot) {
         Set<Color> unavailableColors = new LinkedHashSet<>();
         if (snapshot == null) {
@@ -620,18 +848,61 @@ public final class MesosGuiFlowController {
     }
 
     public interface Host {
+        /**
+         * Replaces the application's primary content node.
+         *
+         * @param node content to display
+         */
         void setContent(Node node);
 
+        /**
+         * Updates the application's visible status message.
+         *
+         * @param message status text to display
+         */
         void updateStatus(String message);
 
+        /**
+         * Shows or hides the application's busy indicator.
+         *
+         * @param busy whether work is in progress
+         * @param message busy message, possibly null when hiding
+         */
         void setBusy(boolean busy, String message);
 
+        /**
+         * Shows an informational alert to the user.
+         *
+         * @param title alert heading
+         * @param message alert body
+         */
         void showAlert(String title, String message);
 
+        /**
+         * Shows a transient popup for a resolved game event.
+         *
+         * @param entry event to display
+         */
         void showEventPopup(EventLogEntry entry);
 
+        /**
+         * Shows a confirmation dialog and returns the user's decision.
+         *
+         * @param title dialog heading
+         * @param message dialog body
+         * @return true when the user confirms
+         */
         boolean showConfirmation(String title, String message);
 
+        /**
+         * Prompts the user to choose an available totem color.
+         *
+         * @param title dialog heading
+         * @param gameName game for which a color is chosen
+         * @param takenColors colors that cannot be selected
+         * @param selectedColor color to preselect, possibly null
+         * @return selected color, or null when the dialog is cancelled
+         */
         Color showTotemSelection(String title, String gameName, Set<Color> takenColors, Color selectedColor);
     }
 }

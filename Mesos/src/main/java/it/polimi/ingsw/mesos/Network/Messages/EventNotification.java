@@ -41,6 +41,11 @@ public record EventNotification(String gameName, EventLogEntry entry) implements
         visitor.visitEventNotification(this);
     }
 
+    /**
+     * Sends this event notification to the registered socket update listener.
+     *
+     * @param context socket client context that may hold an update listener
+     */
     @Override
     public void messageExecute(SocketGameClient.SocketClientContext context) {
         GameUpdateListener listener = context.updateListener();

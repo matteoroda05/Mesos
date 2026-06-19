@@ -41,10 +41,22 @@ import java.util.function.Consumer;
 public final class MesosGuiScreenFactory {
     private final ReadOnlyDoubleProperty availableWidth;
 
+    /**
+     * Creates a screen factory whose responsive layouts use the available width.
+     *
+     * @param availableWidth property that reports the current content width
+     * @throws NullPointerException if the property is null
+     */
     public MesosGuiScreenFactory(ReadOnlyDoubleProperty availableWidth) {
         this.availableWidth = Objects.requireNonNull(availableWidth, "availableWidth cannot be null");
     }
 
+    /**
+     * Builds the initial transport and host selection screen.
+     *
+     * @param onConnect callback receiving the selected transport and host
+     * @return configured connection screen
+     */
     public Node buildConnectionScreen(BiConsumer<ConnectionType, String> onConnect) {
         ComboBox<ConnectionType> connectionTypeBox = new ComboBox<>();
         connectionTypeBox.getItems().setAll(ConnectionType.values());
@@ -88,6 +100,16 @@ public final class MesosGuiScreenFactory {
         return container;
     }
 
+    /**
+     * Builds the nickname-registration screen after a transport connection succeeds.
+     *
+     * @param connectedType active transport type
+     * @param connectedHost connected server host
+     * @param suggestedNickname value prefilled in the nickname field, possibly null
+     * @param onSubmitNickname callback receiving the entered nickname
+     * @param onDisconnect callback to disconnect from the server
+     * @return screen root together with its nickname text field
+     */
     public NicknameScreen buildNicknameScreen(
             ConnectionType connectedType,
             String connectedHost,
@@ -137,6 +159,19 @@ public final class MesosGuiScreenFactory {
         return new NicknameScreen(centeredFixedContent(shell), nicknameField);
     }
 
+    /**
+     * Builds the lobby screen for browsing, joining, and creating games.
+     *
+     * @param lobbySnapshot games available to display
+     * @param currentNickname selected nickname
+     * @param connectedType active transport type
+     * @param connectedHost connected server host
+     * @param onRefresh callback to refresh the lobby
+     * @param onDisconnect callback to disconnect from the server
+     * @param onJoin callback receiving the chosen game name
+     * @param onCreate callback receiving a new game name and player count
+     * @return configured lobby screen
+     */
     public Node buildLobbyScreen(
             LobbySnapshot lobbySnapshot,
             String currentNickname,
@@ -252,6 +287,16 @@ public final class MesosGuiScreenFactory {
         return centeredContent(shell);
     }
 
+    /**
+     * Builds the pre-game waiting room with joined players and refresh controls.
+     *
+     * @param snapshot current pre-game snapshot
+     * @param currentNickname local player's nickname
+     * @param message current status message
+     * @param onRefresh callback to refresh the snapshot
+     * @param onDisconnect callback to disconnect from the server
+     * @return configured waiting-room screen
+     */
     public Node buildWaitingRoomScreen(
             GameSnapshot snapshot,
             String currentNickname,
@@ -320,6 +365,11 @@ public final class MesosGuiScreenFactory {
     public record NicknameScreen(Node root, TextField nicknameField) {
     }
 
+    /**
+     * Loads and crops the Mesos logo, using a text fallback when unavailable.
+     *
+     * @return responsive logo node
+     */
     private Node buildConnectionLogo() {
         var logoUrl = MesosGuiScreenFactory.class.getResource("/cards_png/Scritta_Mesos.png");
         if (logoUrl == null) {
@@ -343,6 +393,14 @@ public final class MesosGuiScreenFactory {
         return wrapper;
     }
 
+    /**
+     * Builds the lobby sidebar card containing fields and create/join buttons.
+     *
+     * @param fields form fields shown above the actions
+     * @param createButton button that creates a new game
+     * @param joinButton button that joins a selected game
+     * @return configured action card
+     */
     private VBox buildFormActionCard(Node fields, Button createButton, Button joinButton) {
         VBox actions = new VBox(
                 16,
@@ -355,6 +413,13 @@ public final class MesosGuiScreenFactory {
         return actions;
     }
 
+    /**
+     * Resolves a game name from typed text or the currently selected table row.
+     *
+     * @param gameNameField field that may contain a manually typed name
+     * @param gamesTable table containing selectable games
+     * @return typed or selected name, or an empty string when neither exists
+     */
     private String resolveSelectedGameName(TextField gameNameField, TableView<LobbyGameSummary> gamesTable) {
         if (gameNameField.getText() != null && !gameNameField.getText().isBlank()) {
             return gameNameField.getText();
@@ -363,6 +428,13 @@ public final class MesosGuiScreenFactory {
         return selected == null ? "" : selected.gameName();
     }
 
+    /**
+     * Builds one joined-player row and marks the local player as {@code You}.
+     *
+     * @param player player shown in the waiting room
+     * @param currentNickname local player's nickname, possibly null
+     * @return configured player row
+     */
     private Node buildWaitingPlayerRow(PlayerSummary player, String currentNickname) {
         HBox row = new HBox(12);
         row.setAlignment(Pos.CENTER_LEFT);
@@ -383,6 +455,14 @@ public final class MesosGuiScreenFactory {
         return row;
     }
 
+    /**
+     * Wraps an input control with a section label and preferred width.
+     *
+     * @param label field label
+     * @param input input control to configure
+     * @param preferredWidth preferred width for the field
+     * @return configured field container
+     */
     private Node buildField(String label, Region input, double preferredWidth) {
         Label title = new Label(label);
         title.getStyleClass().add("subsection-title");
@@ -396,6 +476,13 @@ public final class MesosGuiScreenFactory {
         return box;
     }
 
+    /**
+     * Creates the screen title and subtitle block.
+     *
+     * @param title main heading
+     * @param subtitle supporting text
+     * @return configured title block
+     */
     private VBox titleBlock(String title, String subtitle) {
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("view-title");
@@ -408,6 +495,13 @@ public final class MesosGuiScreenFactory {
         return new VBox(6, titleLabel, subtitleLabel);
     }
 
+    /**
+     * Creates a section heading with supporting descriptive text.
+     *
+     * @param title section heading
+     * @param text section description
+     * @return configured section header
+     */
     private VBox sectionHeader(String title, String text) {
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("section-title");
@@ -419,6 +513,12 @@ public final class MesosGuiScreenFactory {
         return new VBox(6, titleLabel, details);
     }
 
+    /**
+     * Creates a wrapping details label, treating null as empty text.
+     *
+     * @param text helper text, possibly null
+     * @return configured details label
+     */
     private Label helperText(String text) {
         Label details = new Label(text == null ? "" : text);
         details.getStyleClass().add("details-label");
@@ -426,6 +526,12 @@ public final class MesosGuiScreenFactory {
         return details;
     }
 
+    /**
+     * Places action buttons in a wrapping row with uniform preferred widths.
+     *
+     * @param buttons buttons to place in the row
+     * @return configured action row
+     */
     private FlowPane buildActionRow(Button... buttons) {
         FlowPane actions = new FlowPane(12, 12);
         actions.getStyleClass().add("actions-row");
@@ -436,6 +542,12 @@ public final class MesosGuiScreenFactory {
         return actions;
     }
 
+    /**
+     * Stacks action buttons vertically and expands them to the available width.
+     *
+     * @param buttons buttons to stack
+     * @return configured action stack
+     */
     private VBox buildButtonStack(Button... buttons) {
         VBox actions = new VBox(10);
         actions.getStyleClass().add("actions-stack");
@@ -446,6 +558,12 @@ public final class MesosGuiScreenFactory {
         return actions;
     }
 
+    /**
+     * Places metadata chips in a wrapping row.
+     *
+     * @param chips metadata nodes to place
+     * @return configured metadata wrapper
+     */
     private FlowPane buildMetaWrap(Node... chips) {
         FlowPane wrap = new FlowPane(10, 10);
         wrap.getStyleClass().add("meta-wrap");
@@ -453,12 +571,24 @@ public final class MesosGuiScreenFactory {
         return wrap;
     }
 
+    /**
+     * Creates a compact metadata badge label.
+     *
+     * @param text badge text
+     * @return styled badge label
+     */
     private Label metaBadge(String text) {
         Label badge = new Label(text);
         badge.getStyleClass().add("meta-badge");
         return badge;
     }
 
+    /**
+     * Centers content horizontally at the top of a padded responsive container.
+     *
+     * @param content node to position
+     * @return configured container
+     */
     private Node centeredContent(Node content) {
         StackPane container = new StackPane(content);
         container.setAlignment(Pos.TOP_CENTER);
@@ -466,6 +596,12 @@ public final class MesosGuiScreenFactory {
         return container;
     }
 
+    /**
+     * Centers fixed-width content horizontally at the top of a compact container.
+     *
+     * @param content node to position
+     * @return configured container
+     */
     private Node centeredFixedContent(Node content) {
         StackPane container = new StackPane(content);
         container.setAlignment(Pos.TOP_CENTER);
@@ -473,6 +609,12 @@ public final class MesosGuiScreenFactory {
         return container;
     }
 
+    /**
+     * Creates a circular CSS color chip for a player color.
+     *
+     * @param color game color, with null treated as white
+     * @return configured color chip
+     */
     private Node buildColorChip(it.polimi.ingsw.mesos.Model.Enums.Color color) {
         StackPane chip = new StackPane();
         chip.setMinSize(16, 16);
@@ -492,6 +634,12 @@ public final class MesosGuiScreenFactory {
         return chip;
     }
 
+    /**
+     * Converts a JavaFX color to an RGBA CSS value.
+     *
+     * @param color color to convert
+     * @return CSS {@code rgba(...)} value
+     */
     private String toRgb(Color color) {
         return "rgba("
                 + (int) Math.round(color.getRed() * 255)
@@ -504,6 +652,12 @@ public final class MesosGuiScreenFactory {
                 + ")";
     }
 
+    /**
+     * Converts a nullable value to text suitable for a metadata badge.
+     *
+     * @param value value to render, possibly null
+     * @return value text, or {@code -} when null
+     */
     private String safeText(Object value) {
         return value == null ? "-" : value.toString();
     }
