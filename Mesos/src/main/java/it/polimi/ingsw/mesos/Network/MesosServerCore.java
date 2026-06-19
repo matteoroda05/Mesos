@@ -1096,9 +1096,8 @@ public class MesosServerCore implements MesosServerService {
                 try {
                     subscriber.accept(update);
                 } catch (IOException exception) {
-                    System.err.println("Removing failed update subscriber after callback error: "
+                    System.err.println("Update subscriber unreachable, removing it: "
                             + exception.getClass().getSimpleName() + ": " + exception.getMessage());
-                    exception.printStackTrace(System.err);
                     failedSubscribers.add(subscriber);
                 }
             }

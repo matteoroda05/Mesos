@@ -24,29 +24,29 @@ or for the GUI:
 
 This creates the main project jar and three runnable jars:
 
-- `Mesos/target/Mesos-1.0.0-final.jar`
-- `Mesos/target/Mesos-1.0.0-final-server.jar`
-- `Mesos/target/Mesos-1.0.0-final-client.jar`
-- `Mesos/target/Mesos-1.0.0-final-cli.jar`
+- `Mesos/target/Mesos-1.0-final.jar`
+- `Mesos/target/Mesos-1.0-final-server.jar`
+- `Mesos/target/Mesos-1.0-final-gui.jar`
+- `Mesos/target/Mesos-1.0-final-cli.jar`
 
 You can double-click the runnable client and server jars to open a small game window, or run them from a terminal.
 
 Open the server jar first:
 
 ```bash
-java -jar target/Mesos-1.0.0-final-server.jar
+java -jar target/Mesos-1.0-final-server.jar
 ```
 
 Then open the client jar:
 
 ```bash
-java -jar target/Mesos-1.0.0-final-client.jar
+java -jar target/Mesos-1.0-final-gui.jar
 ```
 
 To launch the terminal CLI instead, run:
 
 ```bash
-java -jar target/Mesos-1.0.0-final-cli.jar
+java -jar target/Mesos-1.0-final-cli.jar
 ```
 
 By default the server listens on socket port `12345` and RMI port `1099`.
