@@ -2,6 +2,7 @@ package it.polimi.ingsw.mesos.Network;
 
 import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
 public interface MesosServerService {
     GameOperationResult getLobby();
@@ -27,4 +28,6 @@ public interface MesosServerService {
     GameOperationResult heartbeat(HeartbeatRequest request);
 
     GameOperationResult nickname(NicknameRequest request);
+
+    GameOperationResult getRankings(RankingsRequest request);
 }

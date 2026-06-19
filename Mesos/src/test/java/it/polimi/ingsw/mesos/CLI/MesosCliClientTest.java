@@ -604,6 +604,11 @@ class MesosCliClientTest {
         }
 
         @Override
+        public GameOperationResult getRankings(RankingsRequest request) throws IOException {
+            return GameOperationResult.successRankings("Successfully fetched rankings", null);
+        }
+
+        @Override
         public void close() {
         }
 

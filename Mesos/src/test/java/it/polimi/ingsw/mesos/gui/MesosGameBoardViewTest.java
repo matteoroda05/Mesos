@@ -54,7 +54,7 @@ class MesosGameBoardViewTest {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.updateSnapshot(snapshot());
 
             StackPane bottomBar = singleNode(view, ".bottom-hud-overlay", StackPane.class);
             assertEquals(0.0, view.getPadding().getLeft());
@@ -82,7 +82,7 @@ class MesosGameBoardViewTest {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.updateSnapshot(snapshot());
 
             HBox decksStrip = singleNode(view, ".owned-tribe-decks-strip", HBox.class);
             StackPane previewOverlay = singleNode(view, ".owned-card-preview-overlay", StackPane.class);
@@ -122,7 +122,7 @@ class MesosGameBoardViewTest {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshotWithOpponentTribe(), "Offer tile selected.");
+            view.updateSnapshot(snapshotWithOpponentTribe());
 
             HBox buttonsPane = singleNode(view, ".player-buttons-pane", HBox.class);
             assertEquals(Pos.TOP_LEFT, StackPane.getAlignment(buttonsPane));
@@ -160,7 +160,7 @@ class MesosGameBoardViewTest {
             new Scene(view, 1920, 1080);
             view.resize(1920, 1080);
 
-            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.updateSnapshot(snapshot());
             view.applyCss();
             view.layout();
 
@@ -201,7 +201,7 @@ class MesosGameBoardViewTest {
                 manyHunters.add(tribeCard(index, "Hunter", "hunter_era_1_a"));
             }
 
-            view.updateSnapshot(snapshotWithOwnedCharacterCards(manyHunters), "Card selected.");
+            view.updateSnapshot(snapshotWithOwnedCharacterCards(manyHunters));
 
             Node hunterDeck = singleNode(view, ".owned-tribe-decks-strip", HBox.class).getChildren().getFirst();
             hunterDeck.getOnMouseEntered().handle(null);
@@ -224,7 +224,7 @@ class MesosGameBoardViewTest {
                 manyHunters.add(tribeCard(index, "Hunter", "hunter_era_1_a"));
             }
 
-            view.updateSnapshot(snapshotWithOwnedCharacterCards(manyHunters), "Card selected.");
+            view.updateSnapshot(snapshotWithOwnedCharacterCards(manyHunters));
 
             Node hunterDeck = singleNode(view, ".owned-tribe-decks-strip", HBox.class).getChildren().getFirst();
 
@@ -241,7 +241,7 @@ class MesosGameBoardViewTest {
             new Scene(view, 1920, 1080);
             view.resize(1920, 1080);
 
-            view.updateSnapshot(snapshotWithRows(0, 1), "Card selected.");
+            view.updateSnapshot(snapshotWithRows(0, 1));
             view.applyCss();
             view.layout();
 
@@ -267,7 +267,7 @@ class MesosGameBoardViewTest {
             new Scene(view, 1920, 1080);
             view.resize(1920, 1080);
 
-            view.updateSnapshot(snapshotWithManyRows(10, 10), "Card selected.");
+            view.updateSnapshot(snapshotWithManyRows(10, 10));
             view.applyCss();
             view.layout();
 
@@ -297,7 +297,7 @@ class MesosGameBoardViewTest {
             new Scene(view, 1920, 1080);
             view.resize(1920, 1080);
 
-            view.updateSnapshot(finishedSnapshot(), "Game over.");
+            view.updateSnapshot(finishedSnapshot());
             view.applyCss();
             view.layout();
 
@@ -331,7 +331,7 @@ class MesosGameBoardViewTest {
             new Scene(view, 1920, 1080);
             view.resize(1920, 1080);
 
-            view.updateSnapshot(sharedWinnersSnapshot(), "Game over.");
+            view.updateSnapshot(sharedWinnersSnapshot());
             view.applyCss();
             view.layout();
 
@@ -347,7 +347,7 @@ class MesosGameBoardViewTest {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshot(), "Offer tile selected.");
+            view.updateSnapshot(snapshot());
 
             assertEquals(1, view.lookupAll(".turn-order-color-indicator").size());
             assertEquals(2, view.lookupAll(".turn-order-tile-entry").size());
@@ -360,7 +360,7 @@ class MesosGameBoardViewTest {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshotWithRows(1, 0), "Offer tile selected.");
+            view.updateSnapshot(snapshotWithRows(1, 0));
 
             HBox topRow = singleNode(view, ".table-row-top", HBox.class);
             StackPane marketCard = singleNode(topRow, ".market-card", StackPane.class);
@@ -375,13 +375,13 @@ class MesosGameBoardViewTest {
             AtomicInteger pickedCards = new AtomicInteger();
             MesosGameBoardView view = buildView((ignoredIndex, ignoredTopRow) -> pickedCards.incrementAndGet());
 
-            view.updateSnapshot(snapshotWithRows(0, 2), "Offer tile selected.");
+            view.updateSnapshot(snapshotWithRows(0, 2));
             StackPane previewOverlay = singleNode(view, ".owned-card-preview-overlay", StackPane.class);
             Node hunterDeck = singleNode(view, ".owned-tribe-decks-strip", HBox.class).getChildren().getFirst();
             hunterDeck.getOnMouseEntered().handle(null);
             assertTrue(previewOverlay.isVisible());
 
-            view.updateSnapshot(snapshotWithRows(0, 1), "Card selected.");
+            view.updateSnapshot(snapshotWithRows(0, 1));
 
             assertFalse(previewOverlay.isVisible());
             Node remainingBottomCard = view.lookupAll(".interactive-card").iterator().next();
@@ -398,14 +398,14 @@ class MesosGameBoardViewTest {
             AtomicInteger pickedCards = new AtomicInteger();
             MesosGameBoardView view = buildView((ignoredIndex, ignoredTopRow) -> pickedCards.incrementAndGet());
 
-            view.updateSnapshot(snapshotWithRows(2, 0), "Extra pick available.");
+            view.updateSnapshot(snapshotWithRows(2, 0));
             Node topCard = singleNode(singleNode(view, ".table-row-top", HBox.class), ".interactive-card", Node.class);
 
             topCard.getOnMouseClicked().handle(null);
             topCard.getOnMouseClicked().handle(null);
 
             assertEquals(1, pickedCards.get());
-            view.updateSnapshot(snapshotWithRows(1, 0), "Card selected.");
+            view.updateSnapshot(snapshotWithRows(1, 0));
             Node refreshedTopCard = singleNode(singleNode(view, ".table-row-top", HBox.class), ".interactive-card", Node.class);
             refreshedTopCard.getOnMouseClicked().handle(null);
 
@@ -419,7 +419,7 @@ class MesosGameBoardViewTest {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
 
-            view.updateSnapshot(snapshotWithPassAvailable(), "Extra pick available.");
+            view.updateSnapshot(snapshotWithPassAvailable());
 
             VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
             assertTrue(hasVisibleButtonText(leftColumn.getChildren().get(0), "Pass"));

@@ -34,7 +34,6 @@ public record EventNotification(String gameName, EventLogEntry entry) implements
      * Delivers this notification to the current socket update listener, if one
      * is registered.
      *
-     * @param context socket client context containing the optional listener
      * @throws NullPointerException if the context is null
      */
     @Override

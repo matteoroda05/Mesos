@@ -128,7 +128,13 @@ public final class MesosGuiFlowController {
                     )
             );
         }
-        gameBoardView.updateSnapshot(snapshot, message);
+        gameBoardView.updateSnapshot(snapshot);
+        if (snapshot.finished()) {
+            withBusy("Requesting global leaderboard, ",
+                    guiService.requestRankings(),
+                    this::handleGloablLeaderboard,
+                    "Cannot receive gloabl leaderboard");
+        }
         gameBoardView.setEventLog(eventLog);
         host.setContent(gameBoardView);
     }
@@ -430,6 +436,10 @@ public final class MesosGuiFlowController {
         if (result != null && result.snapshot() != null) {
             renderSnapshot(result.snapshot(), message);
         }
+    }
+
+    private void handleGloablLeaderboard(GameOperationResult result) {
+        gameBoardView.updateGlobalLeaderboard(result.rankings());
     }
 
     private void disconnectToConnectionScreen() {

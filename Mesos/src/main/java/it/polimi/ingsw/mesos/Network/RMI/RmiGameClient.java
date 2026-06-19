@@ -101,6 +101,11 @@ public class RmiGameClient implements GameClient {
         return result;
     }
 
+    @Override
+    public GameOperationResult getRankings(RankingsRequest request) throws IOException {
+        return remoteServer.getRankings(request);
+    }
+
     /**
      * Creates a game through RMI.
      *

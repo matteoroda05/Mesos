@@ -1,16 +1,11 @@
 package it.polimi.ingsw.mesos.gui;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Database.LeaderboardEntry;
 import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
@@ -19,6 +14,7 @@ import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.OfferTileSummary;
 import it.polimi.ingsw.mesos.Network.PlayerSummary;
 import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -89,8 +85,6 @@ public final class MesosGameBoardView extends BorderPane {
 
     private final String localNickname;
     private final MesosAssetResolver assetResolver;
-    private final Runnable onRefresh;
-    private final Runnable onDisconnect;
     private final Runnable onPass;
     private final Runnable onBackToLobby;
     private final IntConsumer onChooseOffer;
@@ -113,12 +107,12 @@ public final class MesosGameBoardView extends BorderPane {
     private final StackPane playerTribeOverlay;
     private final VBox eventLogPane;
     private final StackPane eventLogOverlay;
-    private final Button infoButton;
     private final StackPane infoPopupOverlay;
     private final HBox topRightBar;
     private final StackPane bottomHudOverlay;
     private final StackPane finalLeaderboardOverlay;
     private final VBox finalLeaderboardBox;
+    private final VBox globalLeaderboardBox;
     private final VBox minimalTurnBarPane;
     private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
@@ -141,8 +135,6 @@ public final class MesosGameBoardView extends BorderPane {
     ) {
         this.localNickname = localNickname;
         this.assetResolver = assetResolver;
-        this.onRefresh = onRefresh;
-        this.onDisconnect = onDisconnect;
         this.onChooseOffer = onChooseOffer;
         this.onChooseCard = onChooseCard;
         this.onPass = onPass;
@@ -163,7 +155,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.actionHintLabel.setWrapText(true);
 
         this.passButton = buildInfoActionButton("Pass", this.onPass);
-        this.passButton.setOnAction(event -> {
+        this.passButton.setOnAction(_ -> {
             if (lockActionUntilNextSnapshot()) {
                 this.onPass.run();
             }
@@ -245,10 +237,10 @@ public final class MesosGameBoardView extends BorderPane {
 
         // built identically to the Event Log button so the two match exactly
         // (same font, padding, and size); "info-popup-button" is only a marker class
-        this.infoButton = new Button("Instruction Cards");
-        this.infoButton.getStyleClass().addAll("event-log-button", "info-popup-button");
-        this.infoButton.setMaxWidth(Region.USE_PREF_SIZE);
-        this.infoButton.setOnAction(event -> showInfoPopup());
+        Button infoButton = new Button("Instruction Cards");
+        infoButton.getStyleClass().addAll("event-log-button", "info-popup-button");
+        infoButton.setMaxWidth(Region.USE_PREF_SIZE);
+        infoButton.setOnAction(_ -> showInfoPopup());
 
         this.infoPopupOverlay = new StackPane();
         this.infoPopupOverlay.getStyleClass().add("info-popup-overlay");
@@ -256,7 +248,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.infoPopupOverlay.setVisible(false);
         this.infoPopupOverlay.setMinSize(0, 0);
         this.infoPopupOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        this.infoPopupOverlay.setOnMouseClicked(event -> hideInfoPopup());
+        this.infoPopupOverlay.setOnMouseClicked(_ -> hideInfoPopup());
 
         this.topRightBar = new HBox(6, eventLogPane, infoButton);
         this.topRightBar.getStyleClass().add("top-right-bar");
@@ -271,10 +263,17 @@ public final class MesosGameBoardView extends BorderPane {
         this.infoPanelColorIndicator.setManaged(false);
         this.minimalTurnBarPane = buildMinimalTurnOrderBar();
         this.bottomHudOverlay = buildBottomHudOverlay();
+
         this.finalLeaderboardBox = new VBox(10);
         this.finalLeaderboardBox.getStyleClass().add("final-leaderboard-box");
         this.finalLeaderboardBox.setAlignment(Pos.CENTER);
         this.finalLeaderboardBox.setMaxHeight(Region.USE_PREF_SIZE);
+
+        this.globalLeaderboardBox = new VBox(10);
+        this.globalLeaderboardBox.getStyleClass().add("final-leaderboard-box");
+        this.globalLeaderboardBox.setAlignment(Pos.CENTER);
+        this.globalLeaderboardBox.setMaxHeight(Region.USE_PREF_SIZE);
+
         this.finalLeaderboardOverlay = buildFinalLeaderboardOverlay();
         this.tabletopCanvas = buildTabletopCanvas();
         this.boardScale = new Scale(1, 1, 0, 0);
@@ -284,7 +283,7 @@ public final class MesosGameBoardView extends BorderPane {
         buildLayout();
     }
 
-    public void updateSnapshot(GameSnapshot snapshot, String updateMessage) {
+    public void updateSnapshot(GameSnapshot snapshot) {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
         hideInfoPopup();
@@ -298,6 +297,7 @@ public final class MesosGameBoardView extends BorderPane {
 
         if (isFinalSnapshot()) {
             rebuildFinalLeaderboard();
+
             setFinalMode(true);
             return;
         }
@@ -363,7 +363,7 @@ public final class MesosGameBoardView extends BorderPane {
         } else {
             finalLeaderboardOverlay.getChildren().remove(eventLogPane);
             if (!topRightBar.getChildren().contains(eventLogPane)) {
-                topRightBar.getChildren().add(0, eventLogPane);
+                topRightBar.getChildren().addFirst(eventLogPane);
             }
         }
     }
@@ -388,7 +388,7 @@ public final class MesosGameBoardView extends BorderPane {
         Optional<it.polimi.ingsw.mesos.Model.Enums.Color> localPlayerColor = snapshot.players().stream()
                 .filter(player -> player.nickname().equals(localNickname))
                 .map(PlayerSummary::color)
-                .filter(color -> color != null)
+                .filter(Objects::nonNull)
                 .findFirst();
         return localPlayerColor.or(() -> Optional.ofNullable(snapshot.currentPlayerColor()));
     }
@@ -400,9 +400,8 @@ public final class MesosGameBoardView extends BorderPane {
         setMinSize(0, 0);
         setCenter(viewport);
         // Keep the tabletop slightly lower while the background stays fixed.
-        viewport.heightProperty().addListener((observable, oldValue, newValue) -> {
-            tabletopCanvas.setTranslateY(newValue.doubleValue() * TABLETOP_VERTICAL_OFFSET_RATIO);
-        });
+        viewport.heightProperty().addListener((_, _, newValue) ->
+                tabletopCanvas.setTranslateY(newValue.doubleValue() * TABLETOP_VERTICAL_OFFSET_RATIO));
     }
 
     private StackPane buildViewport() {
@@ -453,8 +452,8 @@ public final class MesosGameBoardView extends BorderPane {
         clip.heightProperty().bind(pane.heightProperty());
         pane.setClip(clip);
 
-        pane.widthProperty().addListener((observable, oldValue, newValue) -> updateBoardScale(pane));
-        pane.heightProperty().addListener((observable, oldValue, newValue) -> updateBoardScale(pane));
+        pane.widthProperty().addListener((_, _, _) -> updateBoardScale(pane));
+        pane.heightProperty().addListener((_, _, _) -> updateBoardScale(pane));
         return pane;
     }
 
@@ -577,7 +576,7 @@ public final class MesosGameBoardView extends BorderPane {
     private Button buildInfoActionButton(String text, Runnable action) {
         Button button = new Button(text);
         button.getStyleClass().addAll("secondary-button", "board-action-button");
-        button.setOnAction(event -> action.run());
+        button.setOnAction(_ -> action.run());
         return button;
     }
 
@@ -669,7 +668,7 @@ public final class MesosGameBoardView extends BorderPane {
 
         if (clickable) {
             tileNode.setCursor(Cursor.HAND);
-            tileNode.setOnMouseClicked(event -> {
+            tileNode.setOnMouseClicked(_ -> {
                 if (lockActionUntilNextSnapshot()) {
                     onChooseOffer.accept(tile.index());
                 }
@@ -781,7 +780,7 @@ public final class MesosGameBoardView extends BorderPane {
         rankingBox.getChildren().add(title);
 
         List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
-        ranking.sort(Comparator.<PlayerSummary, Boolean>comparing(
+        ranking.sort(Comparator.comparing(
                 PlayerSummary::winner, Comparator.reverseOrder())
                 .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
                 .thenComparing(Comparator.comparingInt(PlayerSummary::food).reversed())
@@ -810,17 +809,23 @@ public final class MesosGameBoardView extends BorderPane {
     private StackPane buildFinalLeaderboardOverlay() {
         Button lobbyButton = new Button("Back to Lobby");
         lobbyButton.getStyleClass().addAll("secondary-button", "final-leaderboard-lobby-button");
-        lobbyButton.setOnAction(event -> onBackToLobby.run());
+        lobbyButton.setOnAction(_ -> onBackToLobby.run());
         lobbyButton.setMaxWidth(Region.USE_PREF_SIZE);
 
-        StackPane overlay = new StackPane(finalLeaderboardBox, lobbyButton);
+        // box to have the two leaderboards next to each other (server's global and single game)
+        HBox tablesContainer = new HBox(40, finalLeaderboardBox, globalLeaderboardBox);
+        tablesContainer.setAlignment(Pos.CENTER);
+        tablesContainer.setMaxWidth(Region.USE_PREF_SIZE);
+        tablesContainer.setMaxHeight(Region.USE_PREF_SIZE);
+
+        StackPane overlay = new StackPane(tablesContainer, lobbyButton);
         overlay.getStyleClass().add("final-leaderboard-overlay");
         overlay.setAlignment(Pos.CENTER);
         overlay.setVisible(false);
         overlay.setManaged(false);
         overlay.setMinSize(0, 0);
         overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        StackPane.setAlignment(finalLeaderboardBox, Pos.CENTER);
+        StackPane.setAlignment(tablesContainer, Pos.CENTER);
         StackPane.setAlignment(lobbyButton, Pos.TOP_RIGHT);
         StackPane.setMargin(lobbyButton, new Insets(12, 12, 0, 0));
         return overlay;
@@ -834,7 +839,7 @@ public final class MesosGameBoardView extends BorderPane {
         finalLeaderboardBox.getChildren().add(title);
 
         List<PlayerSummary> ranking = new ArrayList<>(snapshot.players());
-        ranking.sort(Comparator.<PlayerSummary, Boolean>comparing(
+        ranking.sort(Comparator.comparing(
                 PlayerSummary::winner, Comparator.reverseOrder())
                 .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
                 .thenComparing(Comparator.comparingInt(PlayerSummary::food).reversed())
@@ -861,6 +866,68 @@ public final class MesosGameBoardView extends BorderPane {
             finalLeaderboardBox.getChildren().add(row);
             rank++;
         }
+    }
+
+    /**
+     * Update contents of the global leaderboard box with the database data.
+     * @param globalEntries list of database entries
+     */
+    public void updateGlobalLeaderboard(List<LeaderboardEntry> globalEntries) {
+        globalLeaderboardBox.getChildren().clear();
+
+        Label title = new Label("Global All-Time Rankings");
+        title.getStyleClass().add("final-leaderboard-title");
+        globalLeaderboardBox.getChildren().add(title);
+
+        if (globalEntries == null || globalEntries.isEmpty()) {
+            Label noData = new Label("No historical matches found.");
+            noData.getStyleClass().add("muted-label");
+            globalLeaderboardBox.getChildren().add(noData);
+            return;
+        }
+
+        VBox rowsContainer = new VBox(10);
+        rowsContainer.setAlignment(Pos.CENTER_LEFT);
+        rowsContainer.setPadding(new Insets(0, 10, 0, 0));
+
+        for (LeaderboardEntry entry : globalEntries) {
+            HBox row = new HBox(10);
+            row.getStyleClass().add("final-leaderboard-row");
+            row.setAlignment(Pos.CENTER_LEFT);
+
+            Label playerName = new Label(entry.nickname());
+            playerName.getStyleClass().add("final-leaderboard-player-name");
+
+            String dateStr = "-";
+            if (entry.matchDate() != null) {
+                dateStr = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(entry.matchDate());
+            }
+            Label dateLabel = new Label(dateStr);
+            dateLabel.getStyleClass().add("details-label");
+            dateLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 11px;");
+
+            row.getChildren().addAll(
+                    badgeLabel("#" + entry.rank()),
+                    playerName,
+                    spacer(),
+                    dateLabel,
+                    badgeLabel(entry.score() + " PP")
+            );
+            rowsContainer.getChildren().add(row);
+        }
+
+        ScrollPane scrollPane = new ScrollPane(rowsContainer);
+        scrollPane.getStyleClass().add("player-tribe-scroll");
+
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+        scrollPane.setMaxHeight(720);
+
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+
+        globalLeaderboardBox.getChildren().add(scrollPane);
     }
 
     private void rebuildOwnedCardsDebugBox() {
@@ -945,7 +1012,7 @@ public final class MesosGameBoardView extends BorderPane {
         if (localPlayer) {
             button.setDisable(true);
         } else {
-            button.setOnAction(event -> showPlayerTribePopup(player));
+            button.setOnAction(_ -> showPlayerTribePopup(player));
         }
         return button;
     }
@@ -981,7 +1048,7 @@ public final class MesosGameBoardView extends BorderPane {
         Button button = new Button("Event Log (" + eventLog.size() + ")");
         button.getStyleClass().add("event-log-button");
         button.setMaxWidth(Region.USE_PREF_SIZE);
-        button.setOnAction(event -> showEventLogPopup());
+        button.setOnAction(_ -> showEventLogPopup());
         eventLogPane.getChildren().add(button);
     }
 
@@ -1007,7 +1074,7 @@ public final class MesosGameBoardView extends BorderPane {
 
         Button close = new Button("Close");
         close.getStyleClass().addAll("secondary-button", "player-tribe-close-button");
-        close.setOnAction(event -> hideEventLogPopup());
+        close.setOnAction(_ -> hideEventLogPopup());
 
         titleRow.getChildren().addAll(title, spacer(), close);
 
@@ -1084,7 +1151,7 @@ public final class MesosGameBoardView extends BorderPane {
         popup.getStyleClass().addAll("player-tribe-popup", "info-popup-panel");
         popup.setAlignment(Pos.CENTER);
         popup.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        popup.setOnMouseClicked(event -> event.consume());
+        popup.setOnMouseClicked(Event::consume);
         return popup;
     }
 
@@ -1098,7 +1165,7 @@ public final class MesosGameBoardView extends BorderPane {
 
         Button close = new Button("Close");
         close.getStyleClass().addAll("secondary-button", "player-tribe-close-button");
-        close.setOnAction(event -> hidePlayerTribePopup());
+        close.setOnAction(_ -> hidePlayerTribePopup());
 
         titleRow.getChildren().addAll(
                 buildColorIndicator(player.color(), "player-tribe-color-indicator"),
@@ -1275,8 +1342,8 @@ public final class MesosGameBoardView extends BorderPane {
             deck.getChildren().add(count);
         }
 
-        deck.setOnMouseEntered(event -> showOwnedDeckPreview(cards));
-        deck.setOnMouseExited(event -> hideOwnedDeckPreview());
+        deck.setOnMouseEntered(_ -> showOwnedDeckPreview(cards));
+        deck.setOnMouseExited(_ -> hideOwnedDeckPreview());
         return deck;
     }
 
@@ -1394,7 +1461,7 @@ public final class MesosGameBoardView extends BorderPane {
 
         if (clickable) {
             surface.setCursor(Cursor.HAND);
-            surface.setOnMouseClicked(event -> {
+            surface.setOnMouseClicked(_ -> {
                 if (lockActionUntilNextSnapshot()) {
                     onChooseCard.accept(cardSummary.selectionIndex(), Boolean.TRUE.equals(topRow));
                 }
@@ -1409,13 +1476,13 @@ public final class MesosGameBoardView extends BorderPane {
             slot.getStyleClass().add("owned-card-slot");
             slot.setAlignment(Pos.BOTTOM_CENTER);
             setFixedSize(slot, width + 18, height + 44);
-            slot.setOnMouseEntered(event -> {
+            slot.setOnMouseEntered(_ -> {
                 slot.toFront();
                 surface.setScaleX(1.85);
                 surface.setScaleY(1.85);
                 surface.setTranslateY(-26);
             });
-            slot.setOnMouseExited(event -> {
+            slot.setOnMouseExited(_ -> {
                 surface.setScaleX(1.0);
                 surface.setScaleY(1.0);
                 surface.setTranslateY(0);

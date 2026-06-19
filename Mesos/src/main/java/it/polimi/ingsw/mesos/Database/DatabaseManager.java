@@ -111,6 +111,7 @@ public class DatabaseManager {
             try (ResultSet rs = pstmt.executeQuery()) {
                 int currRank = 0;
                 int lastScore = Integer.MAX_VALUE;
+                int counter = 1;
 
                 while (rs.next()) {
                     String nickname = rs.getString("nickname");
@@ -119,8 +120,11 @@ public class DatabaseManager {
                     Timestamp timestamp = Timestamp.valueOf(dateStr);
 
                     if (score < lastScore) {
-                        currRank++;
+                        currRank += counter;
                         lastScore = score;
+                        counter = 1;
+                    } else {
+                        counter++;
                     }
 
                     leaderboard.add(new LeaderboardEntry(currRank, nickname, score, timestamp, numPlayers));

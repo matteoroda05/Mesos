@@ -41,7 +41,6 @@ public record GameViewUpdate(
      * Delivers this update to the current socket update listener, if one is
      * registered.
      *
-     * @param context socket client context containing the optional listener
      * @throws NullPointerException if the context is null
      */
     @Override

@@ -35,17 +35,8 @@ import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
 /**
  * Thread-safe in-memory implementation of the network server service.
@@ -59,6 +50,7 @@ public class MesosServerCore implements MesosServerService {
     private final Set<String> takenNicknames;
     private final Map<String, String> disconnectedGameByNickname;
     private final Map<String, Long> lastHeartbeatByNickname;
+    private final DatabaseManager databaseManager;
 
     /**
      * Creates a server core using card data loaded from default resources.
@@ -86,6 +78,7 @@ public class MesosServerCore implements MesosServerService {
         this.disconnectedGameByNickname = new LinkedHashMap<>();
         this.takenNicknames = new LinkedHashSet<>();
         this.lastHeartbeatByNickname = new LinkedHashMap<>();
+        this.databaseManager = new DatabaseManager();
 
         ScheduledExecutorService resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
             Thread thread = new Thread(task, "mesos-server-resilience");
@@ -330,6 +323,19 @@ public class MesosServerCore implements MesosServerService {
             );
         }
         return session.pass(request.nickname());
+    }
+
+    @Override
+    public synchronized GameOperationResult getRankings(RankingsRequest request) {
+        GameSession session = sessions.get(request.gameName());
+        if (session == null) {
+            return GameOperationResult.failure(
+                    "Game '" + request.gameName() + "' does not exist",
+                    OperationErrorCode.GAME_NOT_FOUND,
+                    null
+            );
+        }
+        return session.getRankings();
     }
 
     /**
@@ -812,6 +818,21 @@ public class MesosServerCore implements MesosServerService {
                         "Turn passed, extra card not picked",
                         publishAndSnapshot("Turn passed, extra card not picked")
                 );
+            } catch (RuntimeException exception) {
+                return GameOperationResult.failure(exception.getMessage(), toSnapshot());
+            }
+        }
+
+        /**
+         * Get the score rankings of matches with the same number of players as this session from the database.
+         * @return operation result with the list of database entries
+         */
+        private GameOperationResult getRankings() {
+            try {
+                final var rankings = databaseManager.getLeaderboardByNumPlayers(this.joinedNicknames.size());
+                return GameOperationResult.successRankings(
+                        "Collected rankings by number of players",
+                        rankings);
             } catch (RuntimeException exception) {
                 return GameOperationResult.failure(exception.getMessage(), toSnapshot());
             }

@@ -273,6 +273,11 @@ public class RmiGameServer implements AutoCloseable {
             return serverService.heartbeat(request);
         }
 
+        @Override
+        public GameOperationResult getRankings(RankingsRequest request) throws RemoteException {
+            return serverService.getRankings(request);
+        }
+
         /**
          * Creates a sink that forwards updates through a remote listener.
          *
@@ -280,7 +285,7 @@ public class RmiGameServer implements AutoCloseable {
          * @return update sink backed by the listener
          */
         private GameUpdateSink createSink(RemoteGameUpdateListener listener) {
-            return update -> listener.onUpdate(update);
+            return listener::onUpdate;
         }
     }
 }

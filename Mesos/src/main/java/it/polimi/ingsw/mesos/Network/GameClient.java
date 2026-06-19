@@ -29,6 +29,8 @@ public interface GameClient extends Closeable {
 
     GameOperationResult nickname(NicknameRequest request) throws IOException;
 
+    GameOperationResult getRankings(RankingsRequest request) throws IOException;
+
     @Override
     void close() throws IOException;
 }

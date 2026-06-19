@@ -30,4 +30,6 @@ public interface RemoteMesosServer extends Remote {
     GameOperationResult unsubscribe(UnsubscribeGameRequest request, RemoteGameUpdateListener listener) throws RemoteException;
 
     GameOperationResult heartbeat(HeartbeatRequest request) throws RemoteException;
+
+    GameOperationResult getRankings(RankingsRequest request) throws RemoteException;
 }

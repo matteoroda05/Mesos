@@ -18,15 +18,7 @@ import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 
 public final class MesosCliClient {
     private enum GameLoopExit {
@@ -361,8 +353,8 @@ public final class MesosCliClient {
             try {
                 client.unsubscribe(new UnsubscribeGameRequest(name, nickname));
             } catch (IOException unsubscribeFailure) {
-                // best-effort cleanup: the connection may already be gone, so a
-                // failure here must not mask the real error or crash the client
+                // TODO: best-effort cleanup: the connection may already be gone, so a
+                //  failure here must not mask the real error or crash the client
             }
         }
     }
@@ -481,12 +473,12 @@ public final class MesosCliClient {
 
         while (true) {
             if (snapshot != null && snapshot.finished()) {
-                return promptFinishedGameExit();
+                return promptFinishedGameExit(client);
             }
 
             String command = promptRaw("mesos> ").trim();
             if (snapshot != null && snapshot.finished()) {
-                return promptFinishedGameExit();
+                return promptFinishedGameExit(client);
             }
             if (command.isEmpty()) {
                 printLine("Command cannot be empty.");
@@ -536,17 +528,40 @@ public final class MesosCliClient {
      * Prompts for the next action when the current game has finished.
      *
      * @return selected exit action
-     * @throws IOException if prompt input fails
+     * @throws IOException if input stream closes
      */
-    private GameLoopExit promptFinishedGameExit() throws IOException {
-        if (promptYesNo("The game is over. Do you want to return to the lobby for another game")) {
-            gameName = null;
-            snapshot = null;
-            return GameLoopExit.RETURN_TO_LOBBY;
+    private GameLoopExit promptFinishedGameExit(GameClient client) throws IOException {
+        while (true) {
+            final var answer = promptRaw(String.join(System.lineSeparator(),
+                    "",
+                    "The game is over. What do you want to do next?",
+                    "  rank | r              view rankings",
+                    "  lobby | l             prints the current snapshot again",
+                    "  quit | esci | exit    closes the client",
+                    ""));
+            switch (answer) {
+                case "rank":
+                case "r":
+                    final var output = client.getRankings(new RankingsRequest(gameName));
+                    if (output.success()) {
+                        printLine(printer.renderRankings(output.rankings()));
+                    } else {
+                        printLine("[error] " + output.message());
+                    }
+                    break;
+                case "lobby":
+                case "l":
+                    gameName = null;
+                    snapshot = null;
+                    return GameLoopExit.RETURN_TO_LOBBY;
+                case "quit":
+                case "esci":
+                case "exit":
+                    printLine("Closing the CLI client.");
+                    return GameLoopExit.QUIT_CLIENT;
+                default:
+            }
         }
-
-        printLine("Closing the CLI client.");
-        return GameLoopExit.QUIT_CLIENT;
     }
 
     /**

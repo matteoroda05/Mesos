@@ -6,16 +6,7 @@ import it.polimi.ingsw.mesos.Network.GameClientFactory;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
 import java.io.IOException;
@@ -40,11 +31,10 @@ public final class MesosGuiService implements AutoCloseable {
     public MesosGuiService() {
         this.stateLock = new Object();
         this.ioExecutor = Executors.newFixedThreadPool(4, new GuiThreadFactory());
-        this.updateHandler = update -> { };
     }
 
     public void setUpdateHandler(Consumer<GameServerMessage> updateHandler) {
-        this.updateHandler = updateHandler == null ? update -> { } : updateHandler;
+        this.updateHandler = updateHandler == null ? _ -> { } : updateHandler;
     }
 
     public String currentGameName() {
@@ -148,6 +138,11 @@ public final class MesosGuiService implements AutoCloseable {
     public CompletableFuture<GameOperationResult> pass() {
         return runAsync(() -> requireJoinedClient()
                 .pass(new PassRequest(currentGameName, currentNickname)));
+    }
+
+    public CompletableFuture<GameOperationResult> requestRankings() {
+        return runAsync(() -> requireClient()
+                .getRankings(new RankingsRequest(currentGameName)));
     }
 
     public CompletableFuture<GameOperationResult> reserveColorForGame(String gameName, Color color) {

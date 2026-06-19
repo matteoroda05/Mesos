@@ -193,6 +193,17 @@ public class SocketGameClient implements GameClient {
     }
 
     /**
+     * Requests the global game rankings.
+     *
+     * @return operation result from the server
+     * @throws IOException if request exchange fails
+     */
+    @Override
+    public GameOperationResult getRankings(RankingsRequest request) throws IOException {
+        return exchange(request);
+    }
+
+    /**
      * Subscribes to game updates by installing an update listener in the socket
      * client context. Any existing subscription is removed before the new one is
      * sent.

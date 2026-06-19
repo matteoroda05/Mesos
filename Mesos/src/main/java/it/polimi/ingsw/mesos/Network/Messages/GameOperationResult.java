@@ -1,11 +1,14 @@
 package it.polimi.ingsw.mesos.Network.Messages;
 
+import it.polimi.ingsw.mesos.Database.LeaderboardEntry;
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
 import it.polimi.ingsw.mesos.Network.LobbySnapshot;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
 import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+
+import java.util.List;
 
 /**
  * Serializable server response for operations that may complete successfully
@@ -19,6 +22,7 @@ import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
  * @param lobbySnapshot optional lobby snapshot returned with the result
  * @param rejoinAvailable whether the nickname operation found a rejoinable
  *                        disconnected session
+ * @param rankings optional list of ranking entries
  */
 public record GameOperationResult(
         boolean success,
@@ -26,7 +30,8 @@ public record GameOperationResult(
         OperationErrorCode errorCode,
         GameSnapshot snapshot,
         LobbySnapshot lobbySnapshot,
-        boolean rejoinAvailable
+        boolean rejoinAvailable,
+        List<LeaderboardEntry> rankings
 ) implements GameServerMessage {
 
     /**
@@ -49,7 +54,7 @@ public record GameOperationResult(
      * @return successful operation result
      */
     public static GameOperationResult success(String message, GameSnapshot snapshot) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, null, false);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, null, false, null);
     }
 
     /**
@@ -62,7 +67,7 @@ public record GameOperationResult(
      * @return successful operation result
      */
     public static GameOperationResult success(String message, GameSnapshot snapshot, LobbySnapshot lobbySnapshot) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, lobbySnapshot, false);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, snapshot, lobbySnapshot, false, null);
     }
 
     /**
@@ -73,7 +78,18 @@ public record GameOperationResult(
      * @return successful lobby result
      */
     public static GameOperationResult successLobby(String message, LobbySnapshot lobbySnapshot) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, lobbySnapshot, false);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, lobbySnapshot, false, null);
+    }
+
+    /**
+     * Creates a successful rankings result.
+     *
+     * @param message result message, normalized when blank
+     * @param rankings list of ranking entries
+     * @return successful rankings result
+     */
+    public static GameOperationResult successRankings(String message, List<LeaderboardEntry> rankings) {
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, null, false, rankings);
     }
 
     /**
@@ -84,7 +100,7 @@ public record GameOperationResult(
      * @return failed operation result
      */
     public static GameOperationResult failure(String message, GameSnapshot snapshot) {
-        return new GameOperationResult(false, message, OperationErrorCode.NONE, snapshot, null, false);
+        return new GameOperationResult(false, message, OperationErrorCode.NONE, snapshot, null, false, null);
     }
 
     /**
@@ -96,7 +112,7 @@ public record GameOperationResult(
      * @return failed operation result
      */
     public static GameOperationResult failure(String message, OperationErrorCode errorCode, GameSnapshot snapshot) {
-        return new GameOperationResult(false, message, errorCode, snapshot, null, false);
+        return new GameOperationResult(false, message, errorCode, snapshot, null, false, null);
     }
 
     /**
@@ -114,7 +130,7 @@ public record GameOperationResult(
             GameSnapshot snapshot,
             LobbySnapshot lobbySnapshot
     ) {
-        return new GameOperationResult(false, message, errorCode, snapshot, lobbySnapshot, false);
+        return new GameOperationResult(false, message, errorCode, snapshot, lobbySnapshot, false, null);
     }
 
     /**
@@ -125,7 +141,7 @@ public record GameOperationResult(
      * @return successful nickname result
      */
     public static GameOperationResult successNickname(String message, boolean rejoinAvailable) {
-        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, null, rejoinAvailable);
+        return new GameOperationResult(true, message, OperationErrorCode.NONE, null, null, rejoinAvailable, null);
     }
 
     /**

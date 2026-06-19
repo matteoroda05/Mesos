@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
+import it.polimi.ingsw.mesos.Database.LeaderboardEntry;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 import it.polimi.ingsw.mesos.Network.GameSnapshot;
@@ -138,9 +139,21 @@ final class CliPrinter {
                 "  show-cards <name>     shows another player's cards and tribe stats",
                 "  wait [seconds]        waits briefly and refreshes",
                 "  help | aiuto          shows this help",
-                "  quit | esci | exit    closes the client");
+                "  quit | esci | exit    closes the client",
+                "");
     }
 
+    public String renderRankings(List<LeaderboardEntry> rankings) {
+        StringBuilder builder = new StringBuilder();
+        rankings.forEach(entry -> builder.append(entry.toString()).append('\n'));
+        return builder.toString();
+    }
+
+    /**
+     * Renders the cards owned by the player.
+     *
+     * @return player's cards formatted
+     */
     String renderPlayerCards(PlayerSummary player) {
         StringBuilder sb = new StringBuilder();
         sb.append(playerLabel(player.nickname(), player.color()))
