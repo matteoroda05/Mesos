@@ -6,7 +6,7 @@
 
     <groupId>it.polimi.ingsw</groupId>
     <artifactId>Mesos</artifactId>
-    <version>1.0-final</version>
+    <version>1.0</version>
     <name>Mesos</name>
 
     <properties>
@@ -49,6 +49,9 @@
     </dependencies>
 
     <build>
+        <!-- Keeps built jar names version-free (e.g. Mesos-server.jar) while the
+             project version stays a valid JPMS module version. -->
+        <finalName>Mesos</finalName>
         <plugins>
             <!-- Fails the build early when Maven is run with a Java version older than the one required by the project. -->
             <plugin>
@@ -114,6 +117,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>Mesos-server</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>server</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -132,6 +136,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>Mesos-gui</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>gui</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -150,6 +155,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>Mesos-cli</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>cli</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
