@@ -12,6 +12,7 @@ import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessageVisitor;
 import it.polimi.ingsw.mesos.network.protocol.messages.EventNotification;
 import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
 import it.polimi.ingsw.mesos.network.protocol.messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.network.protocol.messages.ResultType;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;
@@ -267,7 +268,7 @@ public final class MesosGuiFlowController {
         }
 
         if (!result.success()) {
-            if (result.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN) {
+            if (GameOperationResult.errorCodeOf(result) == OperationErrorCode.PLAYER_NAME_TAKEN) {
                 handleTakenNickname();
                 return;
             }
@@ -276,7 +277,7 @@ public final class MesosGuiFlowController {
             return;
         }
 
-        if (!result.rejoinAvailable()) {
+        if (!((GameOperationResult.Nickname) result).rejoinAvailable()) {
             loadLobby("Lobby refreshed.");
             return;
         }
@@ -328,7 +329,8 @@ public final class MesosGuiFlowController {
      * @param result rejoin response, possibly null
      */
     private void handleRejoinResult(GameOperationResult result) {
-        String successMessage = result != null && result.lobbySnapshot() != null && result.snapshot() == null
+        String successMessage = GameOperationResult.lobbyOf(result) != null
+                && GameOperationResult.snapshotOf(result) == null
                 ? "Lobby refreshed."
                 : "Rejoined game.";
         String message = MesosUserMessageMapper.describeResult(result, successMessage);
@@ -338,16 +340,19 @@ public final class MesosGuiFlowController {
             return;
         }
 
-        if (result.snapshot() != null && guiService.hasJoinedGame()) {
-            renderSnapshot(result.snapshot(), message);
+        var snapshot = GameOperationResult.snapshotOf(result);
+        var lobby = GameOperationResult.lobbyOf(result);
+
+        if (snapshot != null && guiService.hasJoinedGame()) {
+            renderSnapshot(snapshot, message);
             if (!result.success()) {
                 host.showAlert("Live updates unavailable", message);
             }
             return;
         }
 
-        if (result.success() && result.lobbySnapshot() != null) {
-            showLobbyScreen(result.lobbySnapshot());
+        if (result.success() && lobby != null) {
+            showLobbyScreen(lobby);
             return;
         }
 
@@ -388,7 +393,7 @@ public final class MesosGuiFlowController {
             return;
         }
 
-        if (!result.success() || result.lobbySnapshot() == null) {
+        if (!result.success() || GameOperationResult.lobbyOf(result) == null) {
             String message = MesosUserMessageMapper.describeResult(result, successMessage);
             host.updateStatus(message);
             host.showAlert("Lobby unavailable", message);
@@ -396,7 +401,7 @@ public final class MesosGuiFlowController {
         }
 
         host.updateStatus(MesosUserMessageMapper.describeResult(result, successMessage));
-        showLobbyScreen(result.lobbySnapshot());
+        showLobbyScreen(GameOperationResult.lobbyOf(result));
     }
 
     /**
@@ -479,9 +484,10 @@ public final class MesosGuiFlowController {
             return;
         }
 
-        if (result.snapshot() != null && guiService.hasJoinedGame()) {
-            preJoinColorByGame.remove(result.snapshot().gameName());
-            renderSnapshot(result.snapshot(), message);
+        var snapshot = GameOperationResult.snapshotOf(result);
+        if (snapshot != null && guiService.hasJoinedGame()) {
+            preJoinColorByGame.remove(snapshot.gameName());
+            renderSnapshot(snapshot, message);
             if (!result.success()) {
                 host.showAlert("Live updates unavailable", message);
             }
@@ -600,8 +606,9 @@ public final class MesosGuiFlowController {
      * @param message status message to accompany the snapshot
      */
     private void renderResultSnapshot(GameOperationResult result, String message) {
-        if (result != null && result.snapshot() != null) {
-            renderSnapshot(result.snapshot(), message);
+        var snapshot = GameOperationResult.snapshotOf(result);
+        if (snapshot != null) {
+            renderSnapshot(snapshot, message);
         }
     }
 
@@ -611,7 +618,10 @@ public final class MesosGuiFlowController {
      * @param result ranking response
      */
     private void handleGloablLeaderboard(GameOperationResult result) {
-        gameBoardView.updateGlobalLeaderboard(result.rankings());
+        var rankings = result.type() == ResultType.RANKINGS
+                ? ((GameOperationResult.Rankings) result).rankings()
+                : null;
+        gameBoardView.updateGlobalLeaderboard(rankings);
     }
 
     /**
@@ -752,7 +762,8 @@ public final class MesosGuiFlowController {
     private void handlePreJoinSnapshot(String gameName, GameOperationResult result) {
         String message = MesosUserMessageMapper.describeResult(result, "Board refreshed.");
         host.updateStatus(message);
-        if (result == null || !result.success() || result.snapshot() == null) {
+        var snapshot = GameOperationResult.snapshotOf(result);
+        if (result == null || !result.success() || snapshot == null) {
             host.showAlert("Could not open the totem picker", message);
             return;
         }
@@ -760,7 +771,7 @@ public final class MesosGuiFlowController {
         Color selectedColor = host.showTotemSelection(
                 "Choose your totem",
                 gameName,
-                unavailableColors(result.snapshot()),
+                unavailableColors(snapshot),
                 preJoinColorByGame.get(gameName)
         );
         if (selectedColor == null) {
@@ -806,11 +817,13 @@ public final class MesosGuiFlowController {
             return;
         }
         if (!result.success()) {
-            if (allowRetry && result.errorCode() == OperationErrorCode.COLOR_ALREADY_TAKEN && result.snapshot() != null) {
+            var snapshot = GameOperationResult.snapshotOf(result);
+            if (allowRetry && GameOperationResult.errorCodeOf(result) == OperationErrorCode.COLOR_ALREADY_TAKEN
+                    && snapshot != null) {
                 Color retryColor = host.showTotemSelection(
                         "Choose your totem",
                         gameName,
-                        unavailableColors(result.snapshot()),
+                        unavailableColors(snapshot),
                         preJoinColorByGame.get(gameName)
                 );
                 if (retryColor != null) {

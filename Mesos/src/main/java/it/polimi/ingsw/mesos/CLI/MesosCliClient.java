@@ -126,7 +126,7 @@ public final class MesosCliClient {
                         client.nickname(new NicknameRequest(candidateNickname));
 
                 if (!nicknameResult.success()) {
-                    if (nicknameResult.errorCode() == OperationErrorCode.PLAYER_NAME_TAKEN) {
+                    if (GameOperationResult.errorCodeOf(nicknameResult) == OperationErrorCode.PLAYER_NAME_TAKEN) {
                         candidateNickname = handleTakenName(candidateNickname, "nickname");
                         continue;
                     }
@@ -137,7 +137,7 @@ public final class MesosCliClient {
 
                 nickname = candidateNickname;
 
-                boolean rejoinAvailable = nicknameResult.rejoinAvailable();
+                boolean rejoinAvailable = ((GameOperationResult.Nickname) nicknameResult).rejoinAvailable();
 
                 if (!rejoinAvailable) {
                     return false;
@@ -147,11 +147,12 @@ public final class MesosCliClient {
                     GameOperationResult rejoinResult =
                             client.joinGame(new JoinGameRequest(null, nickname, true));
 
-                    if (rejoinResult.success() && rejoinResult.snapshot() != null) {
+                    var rejoinSnapshot = GameOperationResult.snapshotOf(rejoinResult);
+                    if (rejoinResult.success() && rejoinSnapshot != null) {
                         handleResult(rejoinResult);
-                        gameName = rejoinResult.snapshot().gameName();
+                        gameName = rejoinSnapshot.gameName();
                         return enterGame(client) == GameLoopExit.QUIT_CLIENT;
-                    } else if (rejoinResult.success() && rejoinResult.lobbySnapshot() != null) {
+                    } else if (rejoinResult.success() && GameOperationResult.lobbyOf(rejoinResult) != null) {
                         return false; //Go to lobby with recovered nickname
                     }
 
@@ -283,7 +284,7 @@ public final class MesosCliClient {
             }
 
             printLine("[error] " + joinResult.message());
-            switch (joinResult.errorCode()) {
+            switch (GameOperationResult.errorCodeOf(joinResult)) {
                 case GAME_NOT_FOUND -> {
                     if (offerCreateFallback
                             && promptYesNo("The game does not exist. Do you want to create it with this name")) {
@@ -335,7 +336,7 @@ public final class MesosCliClient {
             }
 
             printLine("[error] " + createResult.message());
-            if (createResult.errorCode() != OperationErrorCode.GAME_NAME_TAKEN) {
+            if (GameOperationResult.errorCodeOf(createResult) != OperationErrorCode.GAME_NAME_TAKEN) {
                 return null;
             }
 
@@ -381,7 +382,7 @@ public final class MesosCliClient {
             return new LobbySnapshot(null);
         }
 
-        LobbySnapshot lobbySnapshot = lobbyResult.lobbySnapshot();
+        LobbySnapshot lobbySnapshot = GameOperationResult.lobbyOf(lobbyResult);
         if (lobbySnapshot == null) {
             return new LobbySnapshot(null);
         }
@@ -551,7 +552,7 @@ public final class MesosCliClient {
                 case "r":
                     final var output = client.getRankings(new RankingsRequest(gameName));
                     if (output.success()) {
-                        printLine(printer.renderRankings(output.rankings()));
+                        printLine(printer.renderRankings(((GameOperationResult.Rankings) output).rankings()));
                     } else {
                         printLine("[error] " + output.message());
                     }
@@ -705,7 +706,7 @@ public final class MesosCliClient {
      * @param result operation result produced by a local game action
      */
     private void handleActionResult(GameOperationResult result) {
-        GameSnapshot resultSnapshot = result == null ? null : result.snapshot();
+        GameSnapshot resultSnapshot = GameOperationResult.snapshotOf(result);
         boolean snapshotAlreadyRendered = isSnapshotAlreadyRendered(resultSnapshot);
         handleResult(result);
         if (result == null || !result.success()) {
@@ -741,8 +742,9 @@ public final class MesosCliClient {
         if (printMessage || !result.success()) {
             printLine((result.success() ? "[ok] " : "[error] ") + result.message());
         }
-        if (result.snapshot() != null) {
-            snapshot = result.snapshot();
+        GameSnapshot resultSnapshot = GameOperationResult.snapshotOf(result);
+        if (resultSnapshot != null) {
+            snapshot = resultSnapshot;
         }
     }
 

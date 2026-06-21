@@ -141,17 +141,19 @@ class NetworkValueObjectsTest {
 
     @Test
     void operationResultsAndViewUpdatesExecuteAgainstSocketContext() {
-        GameOperationResult success = new GameOperationResult(true, null, null, null, null, false, null);
+        GameOperationResult success = GameOperationResult.success("Operation completed", null);
         assertEquals("Operation completed", success.message());
-        assertEquals(OperationErrorCode.NONE, success.errorCode());
+        assertEquals(ResultType.SIMPLE_OK, success.type());
+        assertTrue(success.success());
 
-        GameOperationResult failure = new GameOperationResult(false, " ", null, null, null, false, null);
+        GameOperationResult failure = new GameOperationResult.Err(" ", null, null, null);
         assertEquals("Operation failed", failure.message());
-        assertEquals(OperationErrorCode.NONE, failure.errorCode());
+        assertEquals(OperationErrorCode.NONE, GameOperationResult.errorCodeOf(failure));
+        assertFalse(failure.success());
 
         GameOperationResult nickname = GameOperationResult.successNickname("ok", true);
-        assertTrue(nickname.rejoinAvailable());
-        assertEquals(OperationErrorCode.NONE, nickname.errorCode());
+        assertTrue(((GameOperationResult.Nickname) nickname).rejoinAvailable());
+        assertEquals(ResultType.NICKNAME, nickname.type());
 
         LinkedBlockingQueue<GameOperationResult> responses = new LinkedBlockingQueue<>();
         success.messageExecute(new SocketGameClient.SocketClientContext(responses, null));
@@ -246,7 +248,7 @@ class NetworkValueObjectsTest {
     }
 
     @Test
-    void gameOperationResultAcceptThrowsAndThreeArgSuccessKeepsLobbySnapshot() {
+    void gameOperationResultAcceptThrowsAndLobbySuccessKeepsLobbySnapshot() {
         GameOperationResult result = GameOperationResult.success("ok", null);
 
         assertThrows(UnsupportedOperationException.class, () -> result.accept(new GameServerMessageVisitor() {
@@ -255,10 +257,10 @@ class NetworkValueObjectsTest {
         }));
 
         LobbySnapshot lobby = new LobbySnapshot(List.of(new LobbyGameSummary("g", 2, 1, 1)));
-        GameOperationResult withLobby = GameOperationResult.success("joined", null, lobby);
+        GameOperationResult withLobby = GameOperationResult.successLobby("joined", lobby);
 
         assertTrue(withLobby.success());
-        assertEquals(lobby, withLobby.lobbySnapshot());
+        assertEquals(lobby, GameOperationResult.lobbyOf(withLobby));
     }
 
     @Test

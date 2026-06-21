@@ -125,7 +125,7 @@ class RmiGameIntegrationTest {
                     new SubscribeGameRequest("rmi-guard-room", "Alice"),
                     update -> { });
             assertFalse(failedSubscription.success());
-            assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, failedSubscription.errorCode());
+            assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, GameOperationResult.errorCodeOf(failedSubscription));
         }
     }
 
@@ -139,7 +139,7 @@ class RmiGameIntegrationTest {
             GameOperationResult result = client.pass(new PassRequest("missing-pass-room", "Alice"));
 
             assertFalse(result.success());
-            assertEquals(OperationErrorCode.GAME_NOT_FOUND, result.errorCode());
+            assertEquals(OperationErrorCode.GAME_NOT_FOUND, GameOperationResult.errorCodeOf(result));
         }
     }
 }

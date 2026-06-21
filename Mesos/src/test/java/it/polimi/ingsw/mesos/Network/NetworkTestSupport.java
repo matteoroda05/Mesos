@@ -40,19 +40,19 @@ final class NetworkTestSupport {
     static void assertBasicRemoteTurn(GameClient aliceClient, GameClient bobClient, String gameName) throws IOException {
         GameOperationResult createGame = aliceClient.createGame(new CreateGameRequest(gameName, 2));
         assertTrue(createGame.success());
-        assertEquals(0, createGame.snapshot().joinedPlayers());
+        assertEquals(0, GameOperationResult.snapshotOf(createGame).joinedPlayers());
 
         GameOperationResult aliceJoin = aliceClient.joinGame(new JoinGameRequest(gameName, "Alice"));
         assertTrue(aliceJoin.success());
-        assertEquals(GameStatus.LOGIN, aliceJoin.snapshot().status());
-        assertEquals(1, aliceJoin.snapshot().joinedPlayers());
+        assertEquals(GameStatus.LOGIN, GameOperationResult.snapshotOf(aliceJoin).status());
+        assertEquals(1, GameOperationResult.snapshotOf(aliceJoin).joinedPlayers());
 
         GameOperationResult bobJoin = bobClient.joinGame(new JoinGameRequest(gameName, "Bob"));
         assertTrue(bobJoin.success());
-        assertTrue(bobJoin.snapshot().started());
-        assertEquals(GameStatus.ROUND_OFFER, bobJoin.snapshot().status());
-        assertEquals(1, bobJoin.snapshot().currentRound());
-        assertNotNull(bobJoin.snapshot().players().stream()
+        assertTrue(GameOperationResult.snapshotOf(bobJoin).started());
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(bobJoin).status());
+        assertEquals(1, GameOperationResult.snapshotOf(bobJoin).currentRound());
+        assertNotNull(GameOperationResult.snapshotOf(bobJoin).players().stream()
                 .filter(player -> "Bob".equals(player.nickname()))
                 .findFirst()
                 .orElseThrow()
@@ -63,7 +63,7 @@ final class NetworkTestSupport {
                 "Bob", bobClient
         );
 
-        GameSnapshot firstOfferSnapshot = bobJoin.snapshot();
+        GameSnapshot firstOfferSnapshot = GameOperationResult.snapshotOf(bobJoin);
         String firstPlayer = firstOfferSnapshot.currentPlayerNickname();
         OfferTileSummary firstOffer = firstOfferSnapshot.offerTiles().stream()
                 .filter(OfferTileSummary::available)
@@ -74,9 +74,9 @@ final class NetworkTestSupport {
         GameOperationResult firstOfferResult = clientsByNickname.get(firstPlayer)
                 .chooseOffer(new ChooseOfferRequest(gameName, firstPlayer, firstOffer.index()));
         assertTrue(firstOfferResult.success());
-        assertEquals(GameStatus.ROUND_OFFER, firstOfferResult.snapshot().status());
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(firstOfferResult).status());
 
-        GameSnapshot secondOfferSnapshot = firstOfferResult.snapshot();
+        GameSnapshot secondOfferSnapshot = GameOperationResult.snapshotOf(firstOfferResult);
         String secondPlayer = secondOfferSnapshot.currentPlayerNickname();
         OfferTileSummary secondOffer = secondOfferSnapshot.offerTiles().stream()
                 .filter(OfferTileSummary::available)
@@ -87,9 +87,9 @@ final class NetworkTestSupport {
         GameOperationResult secondOfferResult = clientsByNickname.get(secondPlayer)
                 .chooseOffer(new ChooseOfferRequest(gameName, secondPlayer, secondOffer.index()));
         assertTrue(secondOfferResult.success());
-        assertEquals(GameStatus.ROUND_ACTIONS, secondOfferResult.snapshot().status());
+        assertEquals(GameStatus.ROUND_ACTIONS, GameOperationResult.snapshotOf(secondOfferResult).status());
 
-        GameSnapshot actionSnapshot = secondOfferResult.snapshot();
+        GameSnapshot actionSnapshot = GameOperationResult.snapshotOf(secondOfferResult);
         String actingPlayer = actionSnapshot.currentPlayerNickname();
         OfferTileSummary actingTile = actionSnapshot.offerTiles().stream()
                 .filter(tile -> actingPlayer.equals(tile.occupantNickname()))
@@ -108,13 +108,13 @@ final class NetworkTestSupport {
                 .chooseCard(new ChooseCardRequest(gameName, actingPlayer, chosenCard.selectionIndex(), topRow));
 
         assertTrue(chooseCardResult.success());
-        assertTrue(chooseCardResult.snapshot().started());
-        int rowSizeAfter = topRow ? chooseCardResult.snapshot().topRow().size() : chooseCardResult.snapshot().bottomRow().size();
+        assertTrue(GameOperationResult.snapshotOf(chooseCardResult).started());
+        int rowSizeAfter = topRow ? GameOperationResult.snapshotOf(chooseCardResult).topRow().size() : GameOperationResult.snapshotOf(chooseCardResult).bottomRow().size();
         assertEquals(rowSizeBefore - 1, rowSizeAfter);
 
         GameOperationResult snapshotResult = aliceClient.getSnapshot(new SnapshotRequest(gameName));
         assertTrue(snapshotResult.success());
-        assertEquals(gameName, snapshotResult.snapshot().gameName());
+        assertEquals(gameName, GameOperationResult.snapshotOf(snapshotResult).gameName());
     }
 
     static void assertPushUpdates(GameClient aliceClient, GameClient bobClient, String gameName) throws IOException {
@@ -151,7 +151,7 @@ final class NetworkTestSupport {
                 "Bob", bobClient
         );
 
-        GameSnapshot initialSnapshot = bobSubscription.snapshot();
+        GameSnapshot initialSnapshot = GameOperationResult.snapshotOf(bobSubscription);
         String firstPlayer = initialSnapshot.currentPlayerNickname();
         OfferTileSummary firstOffer = initialSnapshot.offerTiles().stream()
                 .filter(OfferTileSummary::available)
@@ -168,14 +168,14 @@ final class NetworkTestSupport {
         assertNotNull(aliceFirstUpdate);
         assertNotNull(bobFirstUpdate);
         assertEquals(gameName, aliceFirstUpdate.gameName());
-        assertEquals(firstOfferResult.snapshot().status(), aliceFirstUpdate.snapshot().status());
-        assertEquals(firstOfferResult.snapshot().status(), bobFirstUpdate.snapshot().status());
+        assertEquals(GameOperationResult.snapshotOf(firstOfferResult).status(), aliceFirstUpdate.snapshot().status());
+        assertEquals(GameOperationResult.snapshotOf(firstOfferResult).status(), bobFirstUpdate.snapshot().status());
 
         GameOperationResult unsubscribeAlice = aliceClient.unsubscribe(new UnsubscribeGameRequest(gameName, "Alice"));
         assertTrue(unsubscribeAlice.success());
 
-        String secondPlayer = firstOfferResult.snapshot().currentPlayerNickname();
-        OfferTileSummary secondOffer = firstOfferResult.snapshot().offerTiles().stream()
+        String secondPlayer = GameOperationResult.snapshotOf(firstOfferResult).currentPlayerNickname();
+        OfferTileSummary secondOffer = GameOperationResult.snapshotOf(firstOfferResult).offerTiles().stream()
                 .filter(OfferTileSummary::available)
                 .filter(tile -> tile.topPicks() + tile.bottomPicks() > 0)
                 .findFirst()
@@ -187,7 +187,7 @@ final class NetworkTestSupport {
 
         GameViewUpdate bobSecondUpdate = pollUpdate(bobUpdates);
         assertNotNull(bobSecondUpdate);
-        assertEquals(secondOfferResult.snapshot().status(), bobSecondUpdate.snapshot().status());
+        assertEquals(GameOperationResult.snapshotOf(secondOfferResult).status(), bobSecondUpdate.snapshot().status());
         assertNull(pollUpdate(aliceUpdates, 300));
     }
 
@@ -205,13 +205,13 @@ final class NetworkTestSupport {
 
         GameOperationResult lobby = observerClient.getLobby();
         assertTrue(lobby.success());
-        assertEquals(1, lobby.lobbySnapshot().openGames().size());
-        assertEquals(openGameName, lobby.lobbySnapshot().openGames().getFirst().gameName());
+        assertEquals(1, GameOperationResult.lobbyOf(lobby).openGames().size());
+        assertEquals(openGameName, GameOperationResult.lobbyOf(lobby).openGames().getFirst().gameName());
 
         GameOperationResult fullJoin = observerClient.joinGame(new JoinGameRequest(fullGameName, "Charlie"));
         assertFalse(fullJoin.success());
-        assertEquals(OperationErrorCode.GAME_FULL, fullJoin.errorCode());
-        assertNull(fullJoin.snapshot());
+        assertEquals(OperationErrorCode.GAME_FULL, GameOperationResult.errorCodeOf(fullJoin));
+        assertNull(GameOperationResult.snapshotOf(fullJoin));
     }
 
     static void assertWaitingRoomColorSelection(
@@ -227,7 +227,7 @@ final class NetworkTestSupport {
         assertTrue(aliceJoin.success());
         GameOperationResult bobJoin = bobClient.joinGame(new JoinGameRequest(gameName, "Bob"));
         assertTrue(bobJoin.success());
-        assertEquals(GameStatus.LOGIN, bobJoin.snapshot().status());
+        assertEquals(GameStatus.LOGIN, GameOperationResult.snapshotOf(bobJoin).status());
 
         LinkedBlockingQueue<GameViewUpdate> bobUpdates = new LinkedBlockingQueue<>();
         assertTrue(aliceClient.subscribe(new SubscribeGameRequest(gameName, "Alice"), update -> { }).success());
@@ -240,8 +240,8 @@ final class NetworkTestSupport {
         GameOperationResult aliceChooseBlue =
                 aliceClient.chooseColor(new ChooseColorRequest(gameName, "Alice", Color.BLUE));
         assertTrue(aliceChooseBlue.success());
-        assertEquals(Color.BLUE, playerColor(aliceChooseBlue.snapshot(), "Alice"));
-        assertEquals(java.util.List.of(Color.BLUE), aliceChooseBlue.snapshot().reservedColors());
+        assertEquals(Color.BLUE, playerColor(GameOperationResult.snapshotOf(aliceChooseBlue), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE), GameOperationResult.snapshotOf(aliceChooseBlue).reservedColors());
 
         GameViewUpdate aliceBlueUpdate = pollUpdateMatching(
                 bobUpdates,
@@ -254,10 +254,10 @@ final class NetworkTestSupport {
         GameOperationResult bobChooseBlue =
                 bobClient.chooseColor(new ChooseColorRequest(gameName, "Bob", Color.BLUE));
         assertFalse(bobChooseBlue.success());
-        assertEquals(OperationErrorCode.COLOR_ALREADY_TAKEN, bobChooseBlue.errorCode());
-        assertEquals(Color.BLUE, playerColor(bobChooseBlue.snapshot(), "Alice"));
-        assertEquals(java.util.List.of(Color.BLUE), bobChooseBlue.snapshot().reservedColors());
-        assertNull(playerColorOrNull(bobChooseBlue.snapshot(), "Bob"));
+        assertEquals(OperationErrorCode.COLOR_ALREADY_TAKEN, GameOperationResult.errorCodeOf(bobChooseBlue));
+        assertEquals(Color.BLUE, playerColor(GameOperationResult.snapshotOf(bobChooseBlue), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE), GameOperationResult.snapshotOf(bobChooseBlue).reservedColors());
+        assertNull(playerColorOrNull(GameOperationResult.snapshotOf(bobChooseBlue), "Bob"));
         assertNull(pollUpdate(bobUpdates, 300));
 
         GameOperationResult carolNickname = carolClient.nickname(new NicknameRequest("Carol"));
@@ -265,8 +265,8 @@ final class NetworkTestSupport {
         GameOperationResult carolChooseBlack =
                 carolClient.chooseColor(new ChooseColorRequest(gameName, "Carol", Color.BLACK));
         assertTrue(carolChooseBlack.success());
-        assertEquals(Color.BLUE, playerColor(carolChooseBlack.snapshot(), "Alice"));
-        assertEquals(java.util.List.of(Color.BLUE, Color.BLACK), carolChooseBlack.snapshot().reservedColors());
+        assertEquals(Color.BLUE, playerColor(GameOperationResult.snapshotOf(carolChooseBlack), "Alice"));
+        assertEquals(java.util.List.of(Color.BLUE, Color.BLACK), GameOperationResult.snapshotOf(carolChooseBlack).reservedColors());
 
         GameViewUpdate carolReservedUpdate = pollUpdateMatching(
                 bobUpdates,
@@ -283,9 +283,9 @@ final class NetworkTestSupport {
 
         GameOperationResult carolJoin = carolClient.joinGame(new JoinGameRequest(gameName, "Carol"));
         assertTrue(carolJoin.success());
-        assertTrue(carolJoin.snapshot().started());
-        assertEquals(GameStatus.ROUND_OFFER, carolJoin.snapshot().status());
-        assertEquals(Color.BLACK, playerColor(carolJoin.snapshot(), "Carol"));
+        assertTrue(GameOperationResult.snapshotOf(carolJoin).started());
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(carolJoin).status());
+        assertEquals(Color.BLACK, playerColor(GameOperationResult.snapshotOf(carolJoin), "Carol"));
     }
 
     private static GameViewUpdate pollUpdate(LinkedBlockingQueue<GameViewUpdate> queue) {

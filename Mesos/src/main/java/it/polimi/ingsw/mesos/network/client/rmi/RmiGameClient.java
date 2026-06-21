@@ -19,6 +19,7 @@ import it.polimi.ingsw.mesos.network.protocol.rmi.RemoteGameUpdateListener;
 import it.polimi.ingsw.mesos.network.client.GameClient;
 import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
 import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.ResultType;
 import it.polimi.ingsw.mesos.network.client.GameUpdateListener;
 import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
 
@@ -98,7 +99,8 @@ public class RmiGameClient implements GameClient {
     @Override
     public GameOperationResult nickname(NicknameRequest request) throws IOException {
         GameOperationResult result = remoteServer.nickname(request);
-        if (result.success() && !result.rejoinAvailable()) {
+        if (result.type() == ResultType.NICKNAME
+                && !((GameOperationResult.Nickname) result).rejoinAvailable()) {
             heartbeatNickname = request.nickname();
             heartbeatGameName = null;
             sendHeartbeat = true;
@@ -143,7 +145,8 @@ public class RmiGameClient implements GameClient {
         GameOperationResult result = remoteServer.joinGame(request);
         if (result.success()) {
             heartbeatNickname = request.nickname();
-            heartbeatGameName = result.snapshot() == null ? null : result.snapshot().gameName();
+            var snapshot = GameOperationResult.snapshotOf(result);
+            heartbeatGameName = snapshot == null ? null : snapshot.gameName();
             sendHeartbeat = true;
             startHeartbeat();
         }

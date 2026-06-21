@@ -117,7 +117,7 @@ class SocketGameIntegrationTest {
                     new SubscribeGameRequest("socket-guard-room", "Alice"),
                     update -> { });
             assertFalse(failedSubscription.success());
-            assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, failedSubscription.errorCode());
+            assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, GameOperationResult.errorCodeOf(failedSubscription));
         }
     }
 

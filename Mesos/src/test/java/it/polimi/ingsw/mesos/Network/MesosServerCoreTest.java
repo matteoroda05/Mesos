@@ -49,18 +49,18 @@ class MesosServerCoreTest {
 
         GameOperationResult createGame = serverCore.createGame(new CreateGameRequest("local-core", 2));
         assertTrue(createGame.success());
-        assertEquals(GameStatus.LOGIN, createGame.snapshot().status());
+        assertEquals(GameStatus.LOGIN, GameOperationResult.snapshotOf(createGame).status());
 
         GameOperationResult firstJoin = serverCore.joinGame(new JoinGameRequest("local-core", "Alice"));
         assertTrue(firstJoin.success());
-        assertEquals(1, firstJoin.snapshot().joinedPlayers());
+        assertEquals(1, GameOperationResult.snapshotOf(firstJoin).joinedPlayers());
 
         GameOperationResult secondJoin = serverCore.joinGame(new JoinGameRequest("local-core", "Bob"));
         assertTrue(secondJoin.success());
-        assertEquals(GameStatus.ROUND_OFFER, secondJoin.snapshot().status());
-        assertEquals(1, secondJoin.snapshot().currentRound());
-        assertNotNull(secondJoin.snapshot().currentPlayerNickname());
-        assertNotNull(secondJoin.snapshot().players().stream()
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(secondJoin).status());
+        assertEquals(1, GameOperationResult.snapshotOf(secondJoin).currentRound());
+        assertNotNull(GameOperationResult.snapshotOf(secondJoin).currentPlayerNickname());
+        assertNotNull(GameOperationResult.snapshotOf(secondJoin).players().stream()
                 .filter(player -> "Bob".equals(player.nickname()))
                 .findFirst()
                 .orElseThrow()
@@ -68,7 +68,7 @@ class MesosServerCoreTest {
 
         GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("local-core"));
         assertTrue(snapshot.success());
-        assertEquals(2, snapshot.snapshot().players().size());
+        assertEquals(2, GameOperationResult.snapshotOf(snapshot).players().size());
     }
 
     @Test
@@ -84,15 +84,15 @@ class MesosServerCoreTest {
         assertTrue(serverCore.joinGame(new JoinGameRequest("room-b", "Dana")).success());
 
         GameOperationResult roomAOffer =
-                serverCore.chooseOffer(new ChooseOfferRequest("room-a", roomAStarted.snapshot().currentPlayerNickname(), 0));
+                serverCore.chooseOffer(new ChooseOfferRequest("room-a", GameOperationResult.snapshotOf(roomAStarted).currentPlayerNickname(), 0));
         assertTrue(roomAOffer.success());
 
         GameOperationResult roomBSnapshot = serverCore.getSnapshot(new SnapshotRequest("room-b"));
 
         assertTrue(roomBSnapshot.success());
-        assertTrue(roomBSnapshot.snapshot().offerTiles().stream().allMatch(OfferTileSummary::available));
-        assertTrue(roomBSnapshot.snapshot().offerTiles().stream().allMatch(tile -> tile.occupantColor() == null));
-        assertTrue(roomBSnapshot.snapshot().offerTiles().stream().allMatch(tile -> tile.occupantNickname() == null));
+        assertTrue(GameOperationResult.snapshotOf(roomBSnapshot).offerTiles().stream().allMatch(OfferTileSummary::available));
+        assertTrue(GameOperationResult.snapshotOf(roomBSnapshot).offerTiles().stream().allMatch(tile -> tile.occupantColor() == null));
+        assertTrue(GameOperationResult.snapshotOf(roomBSnapshot).offerTiles().stream().allMatch(tile -> tile.occupantNickname() == null));
     }
 
     @Test
@@ -108,15 +108,15 @@ class MesosServerCoreTest {
                 serverCore.chooseColor(new ChooseColorRequest("color-start-room", "Bob", Color.BLACK));
 
         assertTrue(reserveColor.success());
-        assertEquals(GameStatus.LOGIN, reserveColor.snapshot().status());
-        assertEquals(1, reserveColor.snapshot().joinedPlayers());
-        assertEquals(java.util.List.of(Color.BLACK), reserveColor.snapshot().reservedColors());
+        assertEquals(GameStatus.LOGIN, GameOperationResult.snapshotOf(reserveColor).status());
+        assertEquals(1, GameOperationResult.snapshotOf(reserveColor).joinedPlayers());
+        assertEquals(java.util.List.of(Color.BLACK), GameOperationResult.snapshotOf(reserveColor).reservedColors());
 
         GameOperationResult finalJoin = serverCore.joinGame(new JoinGameRequest("color-start-room", "Bob"));
 
         assertTrue(finalJoin.success());
-        assertEquals(GameStatus.ROUND_OFFER, finalJoin.snapshot().status());
-        assertEquals(Color.BLACK, finalJoin.snapshot().players().stream()
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(finalJoin).status());
+        assertEquals(Color.BLACK, GameOperationResult.snapshotOf(finalJoin).players().stream()
                 .filter(player -> "Bob".equals(player.nickname()))
                 .findFirst()
                 .orElseThrow()
@@ -134,13 +134,13 @@ class MesosServerCoreTest {
 
         GameOperationResult lobby = serverCore.getLobby();
         assertTrue(lobby.success());
-        assertEquals(1, lobby.lobbySnapshot().openGames().size());
-        assertEquals("open-room", lobby.lobbySnapshot().openGames().getFirst().gameName());
+        assertEquals(1, GameOperationResult.lobbyOf(lobby).openGames().size());
+        assertEquals("open-room", GameOperationResult.lobbyOf(lobby).openGames().getFirst().gameName());
 
         GameOperationResult fullJoin = serverCore.joinGame(new JoinGameRequest("full-room", "Charlie"));
         assertFalse(fullJoin.success());
-        assertEquals(OperationErrorCode.GAME_FULL, fullJoin.errorCode());
-        assertNull(fullJoin.snapshot());
+        assertEquals(OperationErrorCode.GAME_FULL, GameOperationResult.errorCodeOf(fullJoin));
+        assertNull(GameOperationResult.snapshotOf(fullJoin));
     }
 
     @Test
@@ -151,19 +151,19 @@ class MesosServerCoreTest {
 
         GameOperationResult duplicateGame = serverCore.createGame(new CreateGameRequest("shared-name", 2));
         assertFalse(duplicateGame.success());
-        assertEquals(OperationErrorCode.GAME_NAME_TAKEN, duplicateGame.errorCode());
+        assertEquals(OperationErrorCode.GAME_NAME_TAKEN, GameOperationResult.errorCodeOf(duplicateGame));
 
         GameOperationResult aliceNickname = serverCore.nickname(new NicknameRequest("Alice"));
         assertTrue(aliceNickname.success());
-        assertFalse(aliceNickname.rejoinAvailable());
+        assertFalse(((GameOperationResult.Nickname) aliceNickname).rejoinAvailable());
 
         assertTrue(serverCore.joinGame(new JoinGameRequest("shared-name", "Alice")).success());
         assertTrue(serverCore.createGame(new CreateGameRequest("another-room", 2)).success());
 
         GameOperationResult duplicatePlayer = serverCore.nickname(new NicknameRequest("Alice"));
         assertFalse(duplicatePlayer.success());
-        assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, duplicatePlayer.errorCode());
-        assertNull(duplicatePlayer.snapshot());
+        assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, GameOperationResult.errorCodeOf(duplicatePlayer));
+        assertNull(GameOperationResult.snapshotOf(duplicatePlayer));
     }
 
     @Test
@@ -178,11 +178,11 @@ class MesosServerCoreTest {
 
         GameOperationResult repeatedJoin = serverCore.joinGame(new JoinGameRequest("rejoin-room", "Alice"));
         assertFalse(repeatedJoin.success());
-        assertEquals(OperationErrorCode.GAME_FULL, repeatedJoin.errorCode());
+        assertEquals(OperationErrorCode.GAME_FULL, GameOperationResult.errorCodeOf(repeatedJoin));
 
         GameOperationResult earlyRejoin = serverCore.joinGame(new JoinGameRequest(null, "Alice", true));
         assertFalse(earlyRejoin.success());
-        assertEquals(OperationErrorCode.NICKNAME_DISCONNECTED, earlyRejoin.errorCode());
+        assertEquals(OperationErrorCode.NICKNAME_DISCONNECTED, GameOperationResult.errorCodeOf(earlyRejoin));
 
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("rejoin-room", "Alice", true)).success());
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("rejoin-room", "Bob", true)).success());
@@ -191,13 +191,13 @@ class MesosServerCoreTest {
 
         GameOperationResult nickname = serverCore.nickname(new NicknameRequest("Alice"));
         assertTrue(nickname.success());
-        assertTrue(nickname.rejoinAvailable());
+        assertTrue(((GameOperationResult.Nickname) nickname).rejoinAvailable());
 
         GameOperationResult rejoin = serverCore.joinGame(new JoinGameRequest(null, "Alice", true));
 
         assertTrue(rejoin.success());
-        assertEquals(GameStatus.ROUND_OFFER, rejoin.snapshot().status());
-        assertEquals(2, rejoin.snapshot().joinedPlayers());
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(rejoin).status());
+        assertEquals(2, GameOperationResult.snapshotOf(rejoin).joinedPlayers());
     }
 
     @Test
@@ -206,7 +206,7 @@ class MesosServerCoreTest {
 
         GameOperationResult unknownLobbyHeartbeat = serverCore.heartbeat(new HeartbeatRequest("Alice"));
         assertFalse(unknownLobbyHeartbeat.success());
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, unknownLobbyHeartbeat.errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, GameOperationResult.errorCodeOf(unknownLobbyHeartbeat));
 
         assertTrue(serverCore.nickname(new NicknameRequest("Alice")).success());
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("Alice")).success());
@@ -216,15 +216,15 @@ class MesosServerCoreTest {
 
         GameOperationResult joinedAsLobbyHeartbeat = serverCore.heartbeat(new HeartbeatRequest("Alice"));
         assertFalse(joinedAsLobbyHeartbeat.success());
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, joinedAsLobbyHeartbeat.errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, GameOperationResult.errorCodeOf(joinedAsLobbyHeartbeat));
 
         GameOperationResult missingGameHeartbeat = serverCore.heartbeat(new HeartbeatRequest("missing-room", "Alice", true));
         assertFalse(missingGameHeartbeat.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, missingGameHeartbeat.errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND, GameOperationResult.errorCodeOf(missingGameHeartbeat));
 
         GameOperationResult wrongPlayerHeartbeat = serverCore.heartbeat(new HeartbeatRequest("heartbeat-room", "Bob", true));
         assertFalse(wrongPlayerHeartbeat.success());
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, wrongPlayerHeartbeat.errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, GameOperationResult.errorCodeOf(wrongPlayerHeartbeat));
     }
 
     @Test
@@ -234,8 +234,8 @@ class MesosServerCoreTest {
         GameOperationResult result = serverCore.pass(new PassRequest("missing-pass-room", "Alice"));
 
         assertFalse(result.success());
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, result.errorCode());
-        assertNull(result.snapshot());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND, GameOperationResult.errorCodeOf(result));
+        assertNull(GameOperationResult.snapshotOf(result));
     }
 
     @Test
@@ -249,8 +249,8 @@ class MesosServerCoreTest {
         GameOperationResult result = serverCore.pass(new PassRequest("pass-room", "Alice"));
 
         assertFalse(result.success());
-        assertNotNull(result.snapshot());
-        assertEquals(GameStatus.ROUND_OFFER, result.snapshot().status());
+        assertNotNull(GameOperationResult.snapshotOf(result));
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(result).status());
         assertTrue(result.message().toLowerCase().contains("pass"));
     }
 
@@ -263,7 +263,7 @@ class MesosServerCoreTest {
         GameOperationResult secondJoin = serverCore.joinGame(new JoinGameRequest("pass-extra-room", "Bob"));
         assertTrue(secondJoin.success());
 
-        String firstPlayer = secondJoin.snapshot().currentPlayerNickname();
+        String firstPlayer = GameOperationResult.snapshotOf(secondJoin).currentPlayerNickname();
         String secondPlayer = "Alice".equals(firstPlayer) ? "Bob" : "Alice";
         giveAfterEveryoneBuilding(serverCore, "pass-extra-room", firstPlayer);
         giveFood(serverCore, "pass-extra-room", 20);
@@ -275,35 +275,35 @@ class MesosServerCoreTest {
         GameOperationResult secondOffer =
                 serverCore.chooseOffer(new ChooseOfferRequest("pass-extra-room", secondPlayer, 1));
         assertTrue(secondOffer.success());
-        assertNotNull(secondOffer.snapshot());
-        assertEquals(GameStatus.ROUND_ACTIONS, secondOffer.snapshot().status());
-        assertEquals(1, secondOffer.snapshot().currentRound());
-        assertFalse(secondOffer.snapshot().passAvailable());
+        assertNotNull(GameOperationResult.snapshotOf(secondOffer));
+        assertEquals(GameStatus.ROUND_ACTIONS, GameOperationResult.snapshotOf(secondOffer).status());
+        assertEquals(1, GameOperationResult.snapshotOf(secondOffer).currentRound());
+        assertFalse(GameOperationResult.snapshotOf(secondOffer).passAvailable());
 
         GameOperationResult firstAction =
                 serverCore.chooseCard(new ChooseCardRequest(
                         "pass-extra-room",
                         firstPlayer,
-                        firstPickableTopCardIndex(secondOffer.snapshot()),
+                        firstPickableTopCardIndex(GameOperationResult.snapshotOf(secondOffer)),
                         true));
         assertTrue(firstAction.success());
-        assertNotNull(firstAction.snapshot());
-        assertEquals(secondPlayer, firstAction.snapshot().currentPlayerNickname());
-        assertFalse(firstAction.snapshot().passAvailable());
+        assertNotNull(GameOperationResult.snapshotOf(firstAction));
+        assertEquals(secondPlayer, GameOperationResult.snapshotOf(firstAction).currentPlayerNickname());
+        assertFalse(GameOperationResult.snapshotOf(firstAction).passAvailable());
 
         GameOperationResult secondAction =
                 serverCore.chooseCard(new ChooseCardRequest(
                         "pass-extra-room",
                         secondPlayer,
-                        firstPickableTopCardIndex(firstAction.snapshot()),
+                        firstPickableTopCardIndex(GameOperationResult.snapshotOf(firstAction)),
                         true));
         assertTrue(secondAction.success());
-        assertNotNull(secondAction.snapshot());
-        assertEquals(GameStatus.ROUND_ACTIONS, secondAction.snapshot().status());
-        assertEquals(firstPlayer, secondAction.snapshot().currentPlayerNickname());
-        assertEquals(1, secondAction.snapshot().currentRound());
-        assertTrue(secondAction.snapshot().passAvailable());
-        String extraPlayer = secondAction.snapshot().currentPlayerNickname();
+        assertNotNull(GameOperationResult.snapshotOf(secondAction));
+        assertEquals(GameStatus.ROUND_ACTIONS, GameOperationResult.snapshotOf(secondAction).status());
+        assertEquals(firstPlayer, GameOperationResult.snapshotOf(secondAction).currentPlayerNickname());
+        assertEquals(1, GameOperationResult.snapshotOf(secondAction).currentRound());
+        assertTrue(GameOperationResult.snapshotOf(secondAction).passAvailable());
+        String extraPlayer = GameOperationResult.snapshotOf(secondAction).currentPlayerNickname();
         String otherPlayer = "Alice".equals(extraPlayer) ? "Bob" : "Alice";
 
         GameOperationResult wrongPlayerPass =
@@ -314,10 +314,10 @@ class MesosServerCoreTest {
                 serverCore.pass(new PassRequest("pass-extra-room", extraPlayer));
 
         assertTrue(passResult.success());
-        assertNotNull(passResult.snapshot());
-        assertEquals(GameStatus.ROUND_OFFER, passResult.snapshot().status());
-        assertEquals(2, passResult.snapshot().currentRound());
-        assertFalse(passResult.snapshot().passAvailable());
+        assertNotNull(GameOperationResult.snapshotOf(passResult));
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(passResult).status());
+        assertEquals(2, GameOperationResult.snapshotOf(passResult).currentRound());
+        assertFalse(GameOperationResult.snapshotOf(passResult).passAvailable());
     }
 
     @Test
@@ -329,7 +329,7 @@ class MesosServerCoreTest {
         GameOperationResult secondJoin = serverCore.joinGame(new JoinGameRequest("one-extra-room", "Bob"));
         assertTrue(secondJoin.success());
 
-        String firstPlayer = secondJoin.snapshot().currentPlayerNickname();
+        String firstPlayer = GameOperationResult.snapshotOf(secondJoin).currentPlayerNickname();
         String secondPlayer = "Alice".equals(firstPlayer) ? "Bob" : "Alice";
         giveAfterEveryoneBuilding(serverCore, "one-extra-room", firstPlayer);
         giveFood(serverCore, "one-extra-room", 20);
@@ -341,7 +341,7 @@ class MesosServerCoreTest {
         assertTrue(serverCore.chooseCard(new ChooseCardRequest(
                 "one-extra-room",
                 firstPlayer,
-                firstPickableTopCardIndex(secondOffer.snapshot()),
+                firstPickableTopCardIndex(GameOperationResult.snapshotOf(secondOffer)),
                 true
         )).success());
 
@@ -349,25 +349,25 @@ class MesosServerCoreTest {
                 serverCore.chooseCard(new ChooseCardRequest(
                         "one-extra-room",
                         secondPlayer,
-                        firstPickableTopCardIndex(serverCore.getSnapshot(new SnapshotRequest("one-extra-room")).snapshot()),
+                        firstPickableTopCardIndex(GameOperationResult.snapshotOf(serverCore.getSnapshot(new SnapshotRequest("one-extra-room")))),
                         true
                 ));
         assertTrue(secondAction.success());
-        assertTrue(secondAction.snapshot().passAvailable());
-        assertEquals(firstPlayer, secondAction.snapshot().currentPlayerNickname());
+        assertTrue(GameOperationResult.snapshotOf(secondAction).passAvailable());
+        assertEquals(firstPlayer, GameOperationResult.snapshotOf(secondAction).currentPlayerNickname());
 
         GameOperationResult extraPick =
                 serverCore.chooseCard(new ChooseCardRequest(
                         "one-extra-room",
                         firstPlayer,
-                        firstPickableTopCardIndex(secondAction.snapshot()),
+                        firstPickableTopCardIndex(GameOperationResult.snapshotOf(secondAction)),
                         true
                 ));
         assertTrue(extraPick.success());
-        assertNotNull(extraPick.snapshot());
-        assertEquals(GameStatus.ROUND_OFFER, extraPick.snapshot().status());
-        assertEquals(2, extraPick.snapshot().currentRound());
-        assertFalse(extraPick.snapshot().passAvailable());
+        assertNotNull(GameOperationResult.snapshotOf(extraPick));
+        assertEquals(GameStatus.ROUND_OFFER, GameOperationResult.snapshotOf(extraPick).status());
+        assertEquals(2, GameOperationResult.snapshotOf(extraPick).currentRound());
+        assertFalse(GameOperationResult.snapshotOf(extraPick).passAvailable());
 
         GameOperationResult secondExtraPick =
                 serverCore.chooseCard(new ChooseCardRequest("one-extra-room", firstPlayer, 0, true));
@@ -385,7 +385,7 @@ class MesosServerCoreTest {
                 serverCore.joinGame(new JoinGameRequest("disconnect-actions-room", "Carol"));
         assertTrue(thirdJoin.success());
 
-        String firstPlayer = thirdJoin.snapshot().currentPlayerNickname();
+        String firstPlayer = GameOperationResult.snapshotOf(thirdJoin).currentPlayerNickname();
 
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("disconnect-actions-room", "Alice", true)).success());
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("disconnect-actions-room", "Bob", true)).success());
@@ -394,18 +394,18 @@ class MesosServerCoreTest {
         GameOperationResult firstOffer =
                 serverCore.chooseOffer(new ChooseOfferRequest("disconnect-actions-room", firstPlayer, 0));
         assertTrue(firstOffer.success());
-        String secondPlayer = firstOffer.snapshot().currentPlayerNickname();
+        String secondPlayer = GameOperationResult.snapshotOf(firstOffer).currentPlayerNickname();
 
         GameOperationResult secondOffer =
                 serverCore.chooseOffer(new ChooseOfferRequest("disconnect-actions-room", secondPlayer, 1));
         assertTrue(secondOffer.success());
-        String thirdPlayer = secondOffer.snapshot().currentPlayerNickname();
+        String thirdPlayer = GameOperationResult.snapshotOf(secondOffer).currentPlayerNickname();
 
         GameOperationResult thirdOffer =
                 serverCore.chooseOffer(new ChooseOfferRequest("disconnect-actions-room", thirdPlayer, 2));
         assertTrue(thirdOffer.success());
-        assertEquals(GameStatus.ROUND_ACTIONS, thirdOffer.snapshot().status());
-        assertEquals(firstPlayer, thirdOffer.snapshot().currentPlayerNickname());
+        assertEquals(GameStatus.ROUND_ACTIONS, GameOperationResult.snapshotOf(thirdOffer).status());
+        assertEquals(firstPlayer, GameOperationResult.snapshotOf(thirdOffer).currentPlayerNickname());
 
         expireHeartbeat(serverCore, firstPlayer);
         checkDisconnectedClients(serverCore);
@@ -413,10 +413,10 @@ class MesosServerCoreTest {
         GameOperationResult snapshot =
                 serverCore.getSnapshot(new SnapshotRequest("disconnect-actions-room"));
         assertTrue(snapshot.success());
-        assertNotNull(snapshot.snapshot());
-        assertEquals(GameStatus.ROUND_ACTIONS, snapshot.snapshot().status());
-        assertEquals(secondPlayer, snapshot.snapshot().currentPlayerNickname());
-        assertFalse(snapshot.snapshot().passAvailable());
+        assertNotNull(GameOperationResult.snapshotOf(snapshot));
+        assertEquals(GameStatus.ROUND_ACTIONS, GameOperationResult.snapshotOf(snapshot).status());
+        assertEquals(secondPlayer, GameOperationResult.snapshotOf(snapshot).currentPlayerNickname());
+        assertFalse(GameOperationResult.snapshotOf(snapshot).passAvailable());
     }
 
     @Test
@@ -430,18 +430,18 @@ class MesosServerCoreTest {
         GameOperationResult chooseColor = serverCore.chooseColor(new ChooseColorRequest("color-room", "Alice", Color.BLACK));
 
         assertTrue(chooseColor.success());
-        assertEquals(Color.BLACK, chooseColor.snapshot().players().stream()
+        assertEquals(Color.BLACK, GameOperationResult.snapshotOf(chooseColor).players().stream()
                 .filter(player -> "Alice".equals(player.nickname()))
                 .findFirst()
                 .orElseThrow()
                 .color());
-        assertEquals(java.util.List.of(Color.BLACK), chooseColor.snapshot().reservedColors());
+        assertEquals(java.util.List.of(Color.BLACK), GameOperationResult.snapshotOf(chooseColor).reservedColors());
 
         GameOperationResult duplicateColor = serverCore.chooseColor(new ChooseColorRequest("color-room", "Bob", Color.BLACK));
 
         assertFalse(duplicateColor.success());
-        assertEquals(OperationErrorCode.COLOR_ALREADY_TAKEN, duplicateColor.errorCode());
-        assertEquals(java.util.List.of(Color.BLACK), duplicateColor.snapshot().reservedColors());
+        assertEquals(OperationErrorCode.COLOR_ALREADY_TAKEN, GameOperationResult.errorCodeOf(duplicateColor));
+        assertEquals(java.util.List.of(Color.BLACK), GameOperationResult.snapshotOf(duplicateColor).reservedColors());
     }
 
     @Test
@@ -455,7 +455,7 @@ class MesosServerCoreTest {
         GameOperationResult lateChoice = serverCore.chooseColor(new ChooseColorRequest("started-color-room", "Alice", Color.YELLOW));
 
         assertFalse(lateChoice.success());
-        assertEquals(OperationErrorCode.COLOR_SELECTION_CLOSED, lateChoice.errorCode());
+        assertEquals(OperationErrorCode.COLOR_SELECTION_CLOSED, GameOperationResult.errorCodeOf(lateChoice));
     }
 
     @Test
@@ -472,7 +472,7 @@ class MesosServerCoreTest {
 
         GameOperationResult rejoinAvailable = serverCore.nickname(new NicknameRequest("Alice"));
         assertTrue(rejoinAvailable.success());
-        assertTrue(rejoinAvailable.rejoinAvailable());
+        assertTrue(((GameOperationResult.Nickname) rejoinAvailable).rejoinAvailable());
 
         GameOperationResult chooseColor =
                 serverCore.chooseColor(new ChooseColorRequest("liveness-room", "Alice", Color.YELLOW));
@@ -481,7 +481,7 @@ class MesosServerCoreTest {
 
         GameOperationResult takenAgain = serverCore.nickname(new NicknameRequest("Alice"));
         assertFalse(takenAgain.success());
-        assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, takenAgain.errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NAME_TAKEN, GameOperationResult.errorCodeOf(takenAgain));
     }
 
     @Test
@@ -489,17 +489,17 @@ class MesosServerCoreTest {
         MesosServerCore serverCore = new MesosServerCore();
 
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.getSnapshot(new SnapshotRequest("nope")).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.getSnapshot(new SnapshotRequest("nope"))));
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.chooseOffer(new ChooseOfferRequest("nope", "Alice", 0)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseOffer(new ChooseOfferRequest("nope", "Alice", 0))));
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.chooseCard(new ChooseCardRequest("nope", "Alice", 0, true)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseCard(new ChooseCardRequest("nope", "Alice", 0, true))));
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.chooseColor(new ChooseColorRequest("nope", "Alice", Color.BLUE)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseColor(new ChooseColorRequest("nope", "Alice", Color.BLUE))));
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.subscribe(new SubscribeGameRequest("nope", "Alice"), update -> { }).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.subscribe(new SubscribeGameRequest("nope", "Alice"), update -> { })));
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.unsubscribe(new UnsubscribeGameRequest("nope", "Alice"), update -> { }).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.unsubscribe(new UnsubscribeGameRequest("nope", "Alice"), update -> { })));
     }
 
     @Test
@@ -521,11 +521,11 @@ class MesosServerCoreTest {
         assertTrue(serverCore.joinGame(new JoinGameRequest("started-room", "Bob")).success());
 
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
-                serverCore.chooseOffer(new ChooseOfferRequest("started-room", "Mallory", 0)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseOffer(new ChooseOfferRequest("started-room", "Mallory", 0))));
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
-                serverCore.chooseCard(new ChooseCardRequest("started-room", "Mallory", 0, true)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseCard(new ChooseCardRequest("started-room", "Mallory", 0, true))));
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
-                serverCore.pass(new PassRequest("started-room", "Mallory")).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.pass(new PassRequest("started-room", "Mallory"))));
     }
 
     @Test
@@ -537,7 +537,7 @@ class MesosServerCoreTest {
         GameOperationResult result =
                 serverCore.chooseColor(new ChooseColorRequest("color-wait", "Stranger", Color.BLUE));
 
-        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, result.errorCode());
+        assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME, GameOperationResult.errorCodeOf(result));
     }
 
     @Test
@@ -547,9 +547,9 @@ class MesosServerCoreTest {
         assertTrue(serverCore.joinGame(new JoinGameRequest("subs-room", "Alice")).success());
 
         assertEquals(OperationErrorCode.INVALID_LISTENER,
-                serverCore.subscribe(new SubscribeGameRequest("subs-room", "Alice"), null).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.subscribe(new SubscribeGameRequest("subs-room", "Alice"), null)));
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
-                serverCore.subscribe(new SubscribeGameRequest("subs-room", "Ghost"), update -> { }).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.subscribe(new SubscribeGameRequest("subs-room", "Ghost"), update -> { })));
 
         GameUpdateSink sink = update -> { };
         assertTrue(serverCore.subscribe(new SubscribeGameRequest("subs-room", "Alice"), sink).success());
@@ -582,9 +582,9 @@ class MesosServerCoreTest {
 
         GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("resilience-room"));
         assertTrue(snapshot.success());
-        assertTrue(snapshot.snapshot().finished());
-        assertEquals(GameStatus.END_GAME, snapshot.snapshot().status());
-        List<String> forcedWinners = snapshot.snapshot().players().stream()
+        assertTrue(GameOperationResult.snapshotOf(snapshot).finished());
+        assertEquals(GameStatus.END_GAME, GameOperationResult.snapshotOf(snapshot).status());
+        List<String> forcedWinners = GameOperationResult.snapshotOf(snapshot).players().stream()
                 .filter(PlayerSummary::winner)
                 .map(PlayerSummary::nickname)
                 .toList();
@@ -600,7 +600,7 @@ class MesosServerCoreTest {
         MesosServerCore serverCore = new MesosServerCore();
 
         assertEquals(OperationErrorCode.GAME_NOT_FOUND,
-                serverCore.joinGame(new JoinGameRequest("ghost-room", "Alice")).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.joinGame(new JoinGameRequest("ghost-room", "Alice"))));
 
         assertTrue(serverCore.nickname(new NicknameRequest("Lobster")).success());
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("Lobster")).success());
@@ -615,7 +615,7 @@ class MesosServerCoreTest {
         checkDisconnectedClients(serverCore);
         assertTrue(serverCore.createGame(new CreateGameRequest("room-b", 2)).success());
         assertEquals(OperationErrorCode.NICKNAME_DISCONNECTED,
-                serverCore.joinGame(new JoinGameRequest("room-b", "Cara")).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.joinGame(new JoinGameRequest("room-b", "Cara"))));
     }
 
     @Test
@@ -667,14 +667,14 @@ class MesosServerCoreTest {
 
         GameOperationResult snapshot = serverCore.getSnapshot(new SnapshotRequest("finished-room"));
         assertTrue(snapshot.success());
-        assertTrue(snapshot.snapshot().finished());
-        assertEquals(GameStatus.END_GAME, snapshot.snapshot().status());
-        assertTrue(snapshot.snapshot().players().stream().anyMatch(PlayerSummary::winner));
+        assertTrue(GameOperationResult.snapshotOf(snapshot).finished());
+        assertEquals(GameStatus.END_GAME, GameOperationResult.snapshotOf(snapshot).status());
+        assertTrue(GameOperationResult.snapshotOf(snapshot).players().stream().anyMatch(PlayerSummary::winner));
 
         // disconnecting a player in a finished game must not touch model connection state
         expireHeartbeat(serverCore, "Alice");
         checkDisconnectedClients(serverCore);
-        assertTrue(serverCore.getSnapshot(new SnapshotRequest("finished-room")).snapshot().finished());
+        assertTrue(GameOperationResult.snapshotOf(serverCore.getSnapshot(new SnapshotRequest("finished-room"))).finished());
     }
 
     @Test
@@ -716,7 +716,7 @@ class MesosServerCoreTest {
         GameOperationResult started = serverCore.joinGame(new JoinGameRequest("skip-room", "Carol"));
         assertTrue(started.success());
 
-        String activePlayer = started.snapshot().currentPlayerNickname();
+        String activePlayer = GameOperationResult.snapshotOf(started).currentPlayerNickname();
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", "Alice", true)).success());
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", "Bob", true)).success());
         assertTrue(serverCore.heartbeat(new HeartbeatRequest("skip-room", "Carol", true)).success());
@@ -745,7 +745,7 @@ class MesosServerCoreTest {
         assertTrue(serverCore.nickname(new NicknameRequest("Dave")).success());
         assertTrue(serverCore.joinGame(new JoinGameRequest("wait-b", "Dave")).success());
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
-                serverCore.chooseColor(new ChooseColorRequest("wait-a", "Dave", Color.BLUE)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseColor(new ChooseColorRequest("wait-a", "Dave", Color.BLUE))));
 
         // a reserved nickname whose session is disconnected cannot reserve a color either
         assertTrue(serverCore.nickname(new NicknameRequest("Eve")).success());
@@ -753,7 +753,7 @@ class MesosServerCoreTest {
         expireHeartbeat(serverCore, "Eve");
         checkDisconnectedClients(serverCore);
         assertEquals(OperationErrorCode.PLAYER_NOT_IN_GAME,
-                serverCore.chooseColor(new ChooseColorRequest("wait-a", "Eve", Color.YELLOW)).errorCode());
+                GameOperationResult.errorCodeOf(serverCore.chooseColor(new ChooseColorRequest("wait-a", "Eve", Color.YELLOW))));
     }
 
     @Test
@@ -768,7 +768,7 @@ class MesosServerCoreTest {
         removeSession(serverCore, "ghost-game");
 
         GameOperationResult rejoin = serverCore.joinGame(new JoinGameRequest(null, "Frank", true));
-        assertEquals(OperationErrorCode.GAME_NOT_FOUND, rejoin.errorCode());
+        assertEquals(OperationErrorCode.GAME_NOT_FOUND, GameOperationResult.errorCodeOf(rejoin));
     }
 
     @SuppressWarnings("unchecked")
@@ -884,7 +884,7 @@ class MesosServerCoreTest {
     private static List<String> winnerNicknames(MesosServerCore serverCore, String gameName) {
         GameOperationResult result = serverCore.getSnapshot(new SnapshotRequest(gameName));
         assertTrue(result.success());
-        return result.snapshot().players().stream()
+        return GameOperationResult.snapshotOf(result).players().stream()
                 .filter(PlayerSummary::winner)
                 .map(PlayerSummary::nickname)
                 .toList();

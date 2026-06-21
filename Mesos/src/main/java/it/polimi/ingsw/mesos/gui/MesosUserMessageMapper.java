@@ -52,7 +52,7 @@ public final class MesosUserMessageMapper {
             return successFallback;
         }
 
-        String mappedError = describeErrorCode(result.errorCode());
+        String mappedError = describeErrorCode(GameOperationResult.errorCodeOf(result));
         if (mappedError != null) {
             return mappedError;
         }
