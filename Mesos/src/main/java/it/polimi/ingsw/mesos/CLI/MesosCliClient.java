@@ -20,7 +20,14 @@ import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 import it.polimi.ingsw.mesos.Network.OperationErrorCode;
 import it.polimi.ingsw.mesos.Network.Requests.*;
 
+/**
+ * Runs the interactive command-line client, coordinating connection, lobby,
+ * and in-game command flows for a single player.
+ */
 public final class MesosCliClient {
+    /**
+     * Identifies how an active game loop should return control to the client.
+     */
     private enum GameLoopExit {
         QUIT_CLIENT,
         RETURN_TO_LOBBY

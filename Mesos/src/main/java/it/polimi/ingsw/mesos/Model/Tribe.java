@@ -13,6 +13,10 @@ import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
 import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
+/**
+ * Holds a player's acquired character and building cards and derives the
+ * effects and end-game scoring they provide.
+ */
 public class Tribe {
     private final Map<Class<? extends CharacterCard>, List<CharacterCard>> characters;
     private final List<BuildingCard> buildings;

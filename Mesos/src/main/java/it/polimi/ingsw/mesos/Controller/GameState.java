@@ -3,6 +3,10 @@ package it.polimi.ingsw.mesos.Controller;
 import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
+/**
+ * Base state for the game-flow state machine, defining the commands and
+ * status information that concrete phases may support.
+ */
 abstract public class GameState {
     protected final ModelController controller;
 

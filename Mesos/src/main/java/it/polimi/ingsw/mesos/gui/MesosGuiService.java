@@ -19,6 +19,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+/**
+ * Owns the GUI's network client and executes its blocking game operations
+ * asynchronously while retaining connection identity and subscription state.
+ */
 public final class MesosGuiService implements AutoCloseable {
     private final Object stateLock;
     private final ExecutorService ioExecutor;
@@ -487,6 +491,11 @@ public final class MesosGuiService implements AutoCloseable {
         }, ioExecutor);
     }
 
+    /**
+     * Supplies a value from a GUI I/O task that may throw a checked exception.
+     *
+     * @param <T> supplied value type
+     */
     @FunctionalInterface
     private interface IoSupplier<T> {
         /**
@@ -498,6 +507,9 @@ public final class MesosGuiService implements AutoCloseable {
         T get() throws Exception;
     }
 
+    /**
+     * Creates named daemon threads for the GUI service's blocking I/O executor.
+     */
     private static final class GuiThreadFactory implements ThreadFactory {
         private final AtomicInteger sequence = new AtomicInteger(1);
 

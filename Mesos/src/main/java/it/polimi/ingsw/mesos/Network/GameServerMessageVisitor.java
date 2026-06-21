@@ -3,6 +3,10 @@ package it.polimi.ingsw.mesos.Network;
 import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
 import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
 
+/**
+ * Defines type-specific handling for messages sent asynchronously by the
+ * game server.
+ */
 public interface GameServerMessageVisitor {
     /**
      * Handles a notification describing an event or ancillary game effect.

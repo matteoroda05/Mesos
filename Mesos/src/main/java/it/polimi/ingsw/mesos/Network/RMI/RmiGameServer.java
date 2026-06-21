@@ -15,6 +15,10 @@ import it.polimi.ingsw.mesos.Network.GameUpdateSink;
 import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 
+/**
+ * Publishes a {@link MesosServerService} through an RMI registry and manages
+ * its remote binding lifecycle.
+ */
 public class RmiGameServer implements AutoCloseable {
     private final Registry registry;
     private final RemoteMesosServer remoteServer;
@@ -117,6 +121,10 @@ public class RmiGameServer implements AutoCloseable {
         }
     }
 
+    /**
+     * Adapts local server operations and update sinks to the RMI remote
+     * interfaces.
+     */
     private static final class RmiServerAdapter extends UnicastRemoteObject implements RemoteMesosServer {
         private final MesosServerService serverService;
         private final Map<RemoteGameUpdateListener, GameUpdateSink> sinksByListener;

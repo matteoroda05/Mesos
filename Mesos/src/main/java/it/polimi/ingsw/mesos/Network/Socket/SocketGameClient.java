@@ -20,6 +20,10 @@ import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 
+/**
+ * Implements the game-client contract over a socket connection, coordinating
+ * request responses, update delivery, and periodic heartbeats.
+ */
 public class SocketGameClient implements GameClient {
     private final Socket socket;
     private final ObjectOutputStream output;
@@ -391,6 +395,10 @@ public class SocketGameClient implements GameClient {
      * @param responses queue used to return operation results to request calls
      * @param updateListener listener for asynchronous updates, or null when not
      *                       subscribed
+     */
+    /**
+     * Holds the response queue and optional update listener used by the socket
+     * reader thread.
      */
     public record SocketClientContext (BlockingQueue<GameOperationResult> responses, GameUpdateListener updateListener) { }
 }

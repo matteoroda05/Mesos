@@ -14,6 +14,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Building card that modifies its owner's outcome for a supported event based
+ * on the number of owned characters of a configured type.
+ */
 public class BuildingBonusEvent extends BuildingCard {
     private final int food_bonus;
     private final int pp_bonus;

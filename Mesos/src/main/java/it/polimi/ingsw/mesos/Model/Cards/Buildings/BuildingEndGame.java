@@ -13,6 +13,9 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Building card that applies one configured bonus during final scoring.
+ */
 public class BuildingEndGame extends BuildingCard {
     private final boolean double_builders_pp;
     private final int character_set_bonus_prestige;

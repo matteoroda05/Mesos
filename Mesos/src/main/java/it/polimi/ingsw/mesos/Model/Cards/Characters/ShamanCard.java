@@ -6,6 +6,9 @@ import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Character card that contributes ritual stars during shamanic ritual events.
+ */
 public final class ShamanCard extends CharacterCard {
     private final int num_stars;
 

@@ -6,6 +6,10 @@ import java.rmi.RemoteException;
 import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 
+/**
+ * Defines the RMI-exposed counterpart of the game server's client-facing
+ * operations.
+ */
 public interface RemoteMesosServer extends Remote {
     /**
      * Retrieves the current lobby through RMI.

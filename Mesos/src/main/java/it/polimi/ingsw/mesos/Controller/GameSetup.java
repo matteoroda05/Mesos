@@ -30,6 +30,10 @@ import static it.polimi.ingsw.mesos.Globals.BUILDING_COUNT_BY_ERA;
 import static it.polimi.ingsw.mesos.Globals.PLAYER_STARTING_FOOD;
 import static java.util.Collections.shuffle;
 
+/**
+ * Builds the initial game model by selecting eligible cards and tiles, then
+ * creates and seats the players for a new match.
+ */
 public class GameSetup {
 
     private static final Map<Integer, List<Integer>> FOOD_BONUS_BY_PLAYER_COUNT = Map.of(

@@ -22,6 +22,10 @@ import it.polimi.ingsw.mesos.Network.MesosServerService;
 import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
 import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
 
+/**
+ * Hosts the game service over object streams, accepting socket clients and
+ * routing their requests while maintaining update subscriptions.
+ */
 public class SocketGameServer implements AutoCloseable {
     private final MesosServerService serverService;
     private final ServerSocket serverSocket;
@@ -152,6 +156,10 @@ public class SocketGameServer implements AutoCloseable {
         executorService.shutdownNow();
     }
 
+    /**
+     * Represents one connected socket client and manages its active game-update
+     * subscription.
+     */
     public final class ClientConnection implements GameUpdateSink {
         private final ObjectOutputStream output;
         private SubscribeGameRequest activeSubscription;

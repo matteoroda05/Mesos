@@ -1,5 +1,8 @@
 package it.polimi.ingsw.mesos.Model.Enums;
 
+/**
+ * Enumerates the game moments and events that can activate a building effect.
+ */
 public enum BuildingTrigger{
     ON_END_TURN,  // after each player
     ON_AFTER_EVERYONE,  // after all players

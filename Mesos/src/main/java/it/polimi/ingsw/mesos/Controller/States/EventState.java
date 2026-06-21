@@ -25,6 +25,10 @@ import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.PlayerEventLine;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Resolves the visible game events, applies their outcomes and triggered
+ * building effects, and records summaries for clients.
+ */
 public class EventState extends GameState {
     private final List<EventCard> events;
     private final boolean last_round;

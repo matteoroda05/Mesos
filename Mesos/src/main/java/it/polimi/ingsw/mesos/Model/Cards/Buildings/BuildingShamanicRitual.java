@@ -12,6 +12,10 @@ import it.polimi.ingsw.mesos.Result;
 
 import java.util.Map;
 
+/**
+ * Building card that modifies a shamanic ritual before or after its base
+ * outcome, according to its configured effect.
+ */
 public class BuildingShamanicRitual extends BuildingCard {
     private final int star_bonus;
     private final int win_multiplier;

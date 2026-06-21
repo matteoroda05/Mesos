@@ -5,6 +5,10 @@ import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
 import java.io.IOException;
 import java.io.Serializable;
 
+/**
+ * Represents a serializable message sent from the game server to a client.
+ * Implementations dispatch to a visitor and may handle socket delivery.
+ */
 public interface GameServerMessage extends Serializable {
     /**
      * Dispatches this server message to the matching visitor method.

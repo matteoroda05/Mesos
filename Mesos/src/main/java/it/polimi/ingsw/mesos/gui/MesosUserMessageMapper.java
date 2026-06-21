@@ -10,6 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Converts server results, updates, and transport failures into concise
+ * user-facing GUI messages.
+ */
 public final class MesosUserMessageMapper {
     private static final Map<String, String> TRANSLATIONS = new LinkedHashMap<>(Map.ofEntries(
             Map.entry("giocatore entrato: la partita inizia", "All players joined. The match is starting."),

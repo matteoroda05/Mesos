@@ -6,6 +6,10 @@ import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * Defines the transport-independent client operations exposed by the game
+ * server, including update subscription lifecycle management.
+ */
 public interface GameClient extends Closeable {
     /**
      * Retrieves the list of games visible in the lobby.

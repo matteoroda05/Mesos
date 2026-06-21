@@ -3,6 +3,9 @@ package it.polimi.ingsw.mesos.Model.Cards;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 
+/**
+ * Abstract base for tribe cards that add a character to a player's tribe.
+ */
 abstract public class CharacterCard extends TribeCard {
     /**
      * Creates a character card.

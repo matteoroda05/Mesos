@@ -10,6 +10,10 @@ import it.polimi.ingsw.mesos.Network.CardSummary;
 import it.polimi.ingsw.mesos.Result;
 
 
+/**
+ * Abstract tribe-deck card that calculates a per-player event outcome and
+ * identifies the building trigger associated with that event.
+ */
 abstract public class EventCard extends TribeCard {
     /**
      * Creates an event card, which is available regardless of player count.

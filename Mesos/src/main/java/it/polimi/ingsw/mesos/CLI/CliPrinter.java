@@ -23,6 +23,9 @@ import it.polimi.ingsw.mesos.Network.OfferTileSummary;
 import it.polimi.ingsw.mesos.Network.PlayerSummary;
 import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
 
+/**
+ * Formats lobby, game-board, ranking, and help data for terminal output.
+ */
 final class CliPrinter {
     private static final String NEW_LINE = System.lineSeparator();
     private static final int DEFAULT_BOARD_WIDTH = 180;

@@ -1,5 +1,8 @@
 package it.polimi.ingsw.mesos.Network;
 
+/**
+ * Receives server-pushed game messages on behalf of a client.
+ */
 @FunctionalInterface
 public interface GameUpdateListener {
     /**

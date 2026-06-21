@@ -16,6 +16,10 @@ import it.polimi.ingsw.mesos.AppliedDelta;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Resolves one player's offer-derived or bonus card-picking action and
+ * advances the flow when that action is complete.
+ */
 public class ActionState extends GameState {
     private int pick_top_row;
     private int pick_bottom_row;

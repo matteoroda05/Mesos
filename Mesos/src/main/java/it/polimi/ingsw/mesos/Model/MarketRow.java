@@ -5,6 +5,10 @@ import java.util.List;
 
 import it.polimi.ingsw.mesos.Model.Cards.*;
 
+/**
+ * Represents one market row of tribe and building cards and exposes the cards
+ * a player can currently acquire.
+ */
 public class MarketRow {
     private final List<TribeCard> tribe_market;
     private final List<BuildingCard> building_market;

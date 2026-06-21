@@ -7,6 +7,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Player;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 
+/**
+ * Abstract base for acquirable building cards, retaining their cost, prestige,
+ * owner, and activation trigger.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({

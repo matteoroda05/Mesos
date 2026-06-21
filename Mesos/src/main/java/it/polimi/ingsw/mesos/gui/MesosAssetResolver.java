@@ -12,6 +12,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+/**
+ * Resolves and caches JavaFX artwork for cards, offer tiles, totems, and
+ * informational board images.
+ */
 public final class MesosAssetResolver {
     private static final Pattern TRIBE_ID_PATTERN = Pattern.compile(
             "^(hunter|builder|gatherer|artist|inventor|shaman)_era_([123])_([a-z])$");

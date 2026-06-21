@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
+/**
+ * Models an offer-track space with its card-pick allowances, food reward, and
+ * optional occupying player totem.
+ */
 public class OfferTile {
 
     private final char id;

@@ -6,6 +6,10 @@ import java.util.List;
 import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
 
+/**
+ * Manages the remaining tribe cards for a match and draws the market rows in
+ * their required order.
+ */
 public class TribeDeck {
     private final List<TribeCard> deck;
     private final int n_players;

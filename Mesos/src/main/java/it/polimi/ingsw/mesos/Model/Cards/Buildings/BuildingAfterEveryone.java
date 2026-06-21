@@ -10,6 +10,10 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.GameTable;
 
+/**
+ * Building card that grants its owner one optional extra top-row pick after
+ * every player has completed a normal action.
+ */
 public class BuildingAfterEveryone extends BuildingCard {
     private boolean to_apply = true;
 

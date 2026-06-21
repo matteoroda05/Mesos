@@ -4,6 +4,10 @@ import it.polimi.ingsw.mesos.Network.Requests.*;
 import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
 
+/**
+ * Defines the server-side operations used by network transports to manage
+ * games, players, requests, and live updates.
+ */
 public interface MesosServerService {
     /**
      * Returns the games visible in the lobby.

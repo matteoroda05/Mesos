@@ -5,6 +5,10 @@ import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
+/**
+ * Handles the phase in which players choose offer tiles in turn-order
+ * sequence before card actions begin.
+ */
 public class ChooseOfferState extends GameState {
     private Color p;
 

@@ -14,6 +14,10 @@ import it.polimi.ingsw.mesos.Model.Tribe;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Performs automatic final scoring, including end-game building effects, and
+ * terminates the game state machine.
+ */
 public class EndGameState extends GameState {
     /**
      * Creates the end-game automatic state.

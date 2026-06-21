@@ -38,6 +38,10 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * Builds the JavaFX screens used for connection, lobby, waiting-room, and
+ * nickname flows with responsive layouts.
+ */
 public final class MesosGuiScreenFactory {
     private final ReadOnlyDoubleProperty availableWidth;
 
@@ -362,6 +366,10 @@ public final class MesosGuiScreenFactory {
         return centeredContent(shell);
     }
 
+    /**
+     * Groups the nickname screen root with its input field so callers can
+     * display and focus the same control.
+     */
     public record NicknameScreen(Node root, TextField nicknameField) {
     }
 

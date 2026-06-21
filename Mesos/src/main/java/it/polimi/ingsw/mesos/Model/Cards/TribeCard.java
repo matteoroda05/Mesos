@@ -9,6 +9,10 @@ import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
 import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
 
+/**
+ * Abstract base for cards drawn from the tribe deck, covering character and
+ * event card types deserialized from their JSON type identifiers.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = HunterCard.class,           name = "HUNTER"),

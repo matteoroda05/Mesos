@@ -11,6 +11,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
+/**
+ * Aggregates the mutable state of a single game, including its table,
+ * players, round and era progression, and pending event log.
+ */
 public class GameContext {
     private final String game_name;
     private final int game_size;

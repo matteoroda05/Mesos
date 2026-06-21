@@ -1,5 +1,8 @@
 package it.polimi.ingsw.mesos.Model.Enums;
 
+/**
+ * Enumerates the three chronological eras of a game.
+ */
 public enum Era { 
     FIRST,
     SECOND,

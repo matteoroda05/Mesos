@@ -21,6 +21,10 @@ import it.polimi.ingsw.mesos.EventLogEntry;
 import it.polimi.ingsw.mesos.EventMessageFormatter;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Provides state-machine operations over a {@link GameContext}, applying
+ * player actions, transitions, scoring, and event-related model updates.
+ */
 public class ModelController {
     private final GameContext game_context;
 

@@ -2,6 +2,9 @@ package it.polimi.ingsw.mesos.Network;
 
 import java.io.IOException;
 
+/**
+ * Delivers a server-pushed game message to a subscribed transport endpoint.
+ */
 @FunctionalInterface
 public interface GameUpdateSink {
     /**

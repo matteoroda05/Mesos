@@ -6,6 +6,10 @@ import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Character card representing a hunter, which contributes to hunt-event
+ * rewards and can be marked active.
+ */
 public final class HunterCard extends CharacterCard {
     private final boolean active_hunter;
 

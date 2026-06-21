@@ -7,6 +7,10 @@ import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
+/**
+ * Character card identified by an invention icon used in tribe scoring and
+ * invention-related building effects.
+ */
 public final class InventorCard extends CharacterCard {
     private final InventionIcon invention_icon;
 

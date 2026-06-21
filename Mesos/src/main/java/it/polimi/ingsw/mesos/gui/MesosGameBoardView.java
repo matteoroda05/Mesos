@@ -40,6 +40,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
 
+/**
+ * Renders the interactive JavaFX game board and maps visible choices to the
+ * callbacks supplied by the GUI flow controller.
+ */
 public final class MesosGameBoardView extends BorderPane {
     private static final double DESIGN_WIDTH = 920;
     private static final double DESIGN_HEIGHT = 370;
@@ -80,6 +84,10 @@ public final class MesosGameBoardView extends BorderPane {
             new OwnedCardDeckDefinition("buildings", "Buildings", true)
     );
 
+    /**
+     * Describes one owned-card stack rendered in the local player's tribe
+     * area.
+     */
     private record OwnedCardDeckDefinition(String key, String label, boolean buildingDeck) {
     }
 

@@ -20,6 +20,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+/**
+ * Coordinates GUI screen transitions, asynchronous game operations, and
+ * server-pushed updates for the JavaFX client.
+ */
 public final class MesosGuiFlowController {
     private final Host host;
     private final MesosGuiService guiService;
@@ -847,6 +851,10 @@ public final class MesosGuiFlowController {
         return unavailableColors;
     }
 
+    /**
+     * Defines the application-shell operations the GUI flow controller uses
+     * to display content, status, dialogs, and event popups.
+     */
     public interface Host {
         /**
          * Replaces the application's primary content node.

@@ -5,6 +5,10 @@ import it.polimi.ingsw.mesos.Controller.GameState;
 import it.polimi.ingsw.mesos.Controller.ModelController;
 
 
+/**
+ * Performs automatic round advancement and returns the flow to offer-tile
+ * selection.
+ */
 public class EndRoundState extends GameState {
     /**
      * Creates the end-round automatic state.

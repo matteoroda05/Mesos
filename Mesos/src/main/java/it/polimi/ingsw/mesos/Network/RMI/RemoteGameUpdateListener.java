@@ -5,6 +5,10 @@ import java.rmi.RemoteException;
 
 import it.polimi.ingsw.mesos.Network.GameServerMessage;
 
+/**
+ * Defines the remote callback contract used to push game messages to RMI
+ * clients.
+ */
 public interface RemoteGameUpdateListener extends Remote {
     /**
      * Receives a server-pushed update over RMI.

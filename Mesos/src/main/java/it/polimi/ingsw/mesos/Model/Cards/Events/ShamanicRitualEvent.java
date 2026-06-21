@@ -19,6 +19,10 @@ import it.polimi.ingsw.mesos.Model.Enums.EventPhase;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Event card that compares tribe shaman stars to award winners and penalize
+ * players tied for fewest stars.
+ */
 public class ShamanicRitualEvent extends EventCard {
     private final int winner_bonus;
     private final int loser_penalty;

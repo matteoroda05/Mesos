@@ -5,6 +5,10 @@ import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Network.CardSummary;
 
+/**
+ * Abstract base for all game cards, defining shared era, player-count, and
+ * presentation metadata along with client-summary behavior.
+ */
 abstract public class Card {
     private final Era era;
     private final int min_players;

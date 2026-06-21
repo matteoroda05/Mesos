@@ -4,6 +4,10 @@ import it.polimi.ingsw.mesos.Controller.States.ChooseOfferState;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.GameContext;
 
+/**
+ * Coordinates the game state machine, applying player commands and advancing
+ * automatic phases until new input is required.
+ */
 public class GameFlowController {
     private GameState current_state;
 

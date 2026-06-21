@@ -14,6 +14,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Event card that rewards tribes meeting an artist threshold and penalizes
+ * those that do not.
+ */
 public class CavePaintingEvent extends EventCard {
     private final int threshold;
     private final int points_per_artist;

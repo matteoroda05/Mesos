@@ -6,6 +6,10 @@ import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Character card representing an artist, whose quantity contributes to
+ * cave-painting and end-game scoring.
+ */
 public final class ArtistCard extends CharacterCard {
 
     /**

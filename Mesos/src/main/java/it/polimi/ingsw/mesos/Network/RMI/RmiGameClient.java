@@ -20,6 +20,10 @@ import it.polimi.ingsw.mesos.Network.GameServerMessage;
 import it.polimi.ingsw.mesos.Network.GameUpdateListener;
 import it.polimi.ingsw.mesos.Network.NetworkDefaults;
 
+/**
+ * Implements the game-client contract through an RMI server proxy, including
+ * remote update callbacks and periodic heartbeats.
+ */
 public class RmiGameClient implements GameClient {
     private final RemoteMesosServer remoteServer;
     private final ScheduledExecutorService heartbeatExecutor;
@@ -366,6 +370,9 @@ public class RmiGameClient implements GameClient {
         }
     }
 
+    /**
+     * Exports a local update listener as an RMI callback endpoint.
+     */
     private static final class RemoteGameUpdateListenerAdapter extends UnicastRemoteObject implements RemoteGameUpdateListener {
         private final GameUpdateListener delegate;
 

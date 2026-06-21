@@ -8,6 +8,10 @@ import it.polimi.ingsw.mesos.Globals;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 
+/**
+ * Maintains the offer tiles available in a round and their current player
+ * occupants.
+ */
 public class OfferTrack {
     private final List<OfferTile> tiles;
 

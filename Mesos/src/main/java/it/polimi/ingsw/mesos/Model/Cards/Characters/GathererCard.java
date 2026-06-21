@@ -6,6 +6,9 @@ import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Character card that reduces the food required during sustenance events.
+ */
 public final class GathererCard extends CharacterCard {
     /**
      * Creates a gatherer card from JSON data.

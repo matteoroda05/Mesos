@@ -17,6 +17,10 @@ import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
 
+/**
+ * Building card that rewards either a completed character set or acquiring an
+ * inventor with an already-owned invention icon.
+ */
 public class BuildingOnCard extends BuildingCard {
     private final int food_bonus;
     private final boolean inventors_pair;

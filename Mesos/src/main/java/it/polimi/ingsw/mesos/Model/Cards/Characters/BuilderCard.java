@@ -6,6 +6,10 @@ import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
 import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Character card that grants a building-cost discount and may provide
+ * end-game prestige.
+ */
 public final class BuilderCard extends CharacterCard {
     private final int prestige_points;
     private final int food_discount;

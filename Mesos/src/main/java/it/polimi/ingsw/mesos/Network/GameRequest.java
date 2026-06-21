@@ -6,6 +6,10 @@ import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer.ClientConnection;
 
 import java.io.Serializable;
 
+/**
+ * Sealed contract for serializable client commands that delegate their
+ * execution to a {@link MesosServerService}.
+ */
 public sealed interface GameRequest extends Serializable permits CreateGameRequest, JoinGameRequest, SnapshotRequest,
         ChooseOfferRequest, ChooseCardRequest, SubscribeGameRequest, UnsubscribeGameRequest, LobbyRequest,
         HeartbeatRequest, NicknameRequest, PassRequest, ChooseColorRequest, RankingsRequest {

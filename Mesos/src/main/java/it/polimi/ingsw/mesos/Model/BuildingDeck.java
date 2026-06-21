@@ -8,6 +8,10 @@ import java.util.Map;
 import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
 import it.polimi.ingsw.mesos.Model.Enums.Era;
 
+/**
+ * Stores building cards by era and supplies the next era's full building set
+ * when the market advances.
+ */
 public class BuildingDeck {
     private final Map<Era, List<BuildingCard>> deck;
 

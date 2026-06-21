@@ -14,6 +14,9 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Event card that awards food and prestige according to each tribe's hunters.
+ */
 public class HuntEvent extends EventCard {
     private final int prestige_per_hunter;
     private final int food_per_hunter;

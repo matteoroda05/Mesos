@@ -36,6 +36,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * JavaFX application entry point that creates the Mesos client window and
+ * supplies the host operations required by its GUI flow controller.
+ */
 public final class MesosClientApplication extends Application implements MesosGuiFlowController.Host {
     private static final String CONNECTION_SCREEN_MARKER = "connection-screen-root";
     private static final String CONNECTION_SCREEN_SHELL_CLASS = "app-shell-connection";

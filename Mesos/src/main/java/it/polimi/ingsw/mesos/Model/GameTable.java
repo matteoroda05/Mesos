@@ -11,6 +11,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
+/**
+ * Owns the shared table components and advances its market rows and building
+ * display across rounds and eras.
+ */
 public class GameTable {
     private final OfferTrack offer_track;
     private final TurnOrderTile turn_order_tile;

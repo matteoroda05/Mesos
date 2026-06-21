@@ -3,6 +3,10 @@ package it.polimi.ingsw.mesos.Model;
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
 
+/**
+ * Models a game participant's identity, resources, connection state, and
+ * owned tribe.
+ */
 public final class Player {
     private final String nickname;
     private final Color color;

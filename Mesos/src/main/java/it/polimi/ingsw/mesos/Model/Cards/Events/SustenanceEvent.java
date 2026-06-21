@@ -13,6 +13,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tribe;
 import it.polimi.ingsw.mesos.Result;
 
+/**
+ * Event card that charges food for tribe members and converts unpaid food
+ * into a prestige penalty.
+ */
 public final class SustenanceEvent extends EventCard {
     private final int food_per_character;
     private final int points_penalty;

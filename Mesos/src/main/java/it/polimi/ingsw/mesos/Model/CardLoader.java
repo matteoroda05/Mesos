@@ -14,6 +14,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Loads card and offer-tile definitions from the bundled JSON resource and
+ * validates their presentation identifiers.
+ */
 public class CardLoader {
 
     private static final String RESOURCE_PATH = "/Cards.json";

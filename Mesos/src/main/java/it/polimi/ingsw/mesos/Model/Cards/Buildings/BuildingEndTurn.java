@@ -13,6 +13,10 @@ import it.polimi.ingsw.mesos.Model.Enums.Era;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
 import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
 
+/**
+ * Building card that grants food when its owner ends a turn on a positive
+ * turn-order space.
+ */
 public class BuildingEndTurn extends BuildingCard {
     private final int food_bonus;
 

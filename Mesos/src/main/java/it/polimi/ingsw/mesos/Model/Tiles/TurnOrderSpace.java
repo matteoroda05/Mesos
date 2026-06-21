@@ -2,6 +2,10 @@ package it.polimi.ingsw.mesos.Model.Tiles;
 
 import it.polimi.ingsw.mesos.Model.Enums.Color;
 
+/**
+ * Models one position on the turn-order tile, including its food bonus or
+ * penalty and current occupant.
+ */
 public class TurnOrderSpace {
 
     private final int foodBonus;
