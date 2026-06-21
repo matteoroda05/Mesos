@@ -1,29 +1,29 @@
-package it.polimi.ingsw.mesos.Controller.States;
+package it.polimi.ingsw.mesos.controller.states;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import it.polimi.ingsw.mesos.AppliedDelta;
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Controller.GameState;
-import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.EventMessageFormatter;
-import it.polimi.ingsw.mesos.EventSummary;
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Tribe;
-import it.polimi.ingsw.mesos.PlayerEventLine;
-import it.polimi.ingsw.mesos.Result;
+import it.polimi.ingsw.mesos.dto.event.AppliedDelta;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.controller.GameState;
+import it.polimi.ingsw.mesos.controller.ModelController;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
+import it.polimi.ingsw.mesos.dto.event.EventSummary;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingBonusEvent;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingShamanicRitual;
+import it.polimi.ingsw.mesos.model.cards.EventCard;
+import it.polimi.ingsw.mesos.model.cards.events.SustenanceEvent;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.Tribe;
+import it.polimi.ingsw.mesos.dto.event.PlayerEventLine;
+import it.polimi.ingsw.mesos.model.Result;
 
 /**
  * Resolves the visible game events, applies their outcomes and triggered

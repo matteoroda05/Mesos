@@ -1,16 +1,16 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.cards.CharacterCard;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingBonusEvent;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingEndGame;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.cards.events.CavePaintingEvent;
+import it.polimi.ingsw.mesos.model.cards.events.HuntEvent;
+import it.polimi.ingsw.mesos.model.cards.events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.model.cards.events.SustenanceEvent;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Era;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -91,7 +91,7 @@ class ModelValidationEdgesTest {
         }
 
         @Override
-        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+        public String accept(it.polimi.ingsw.mesos.model.cards.CardDescriptionVisitor visitor) {
             throw new UnsupportedOperationException();
         }
 

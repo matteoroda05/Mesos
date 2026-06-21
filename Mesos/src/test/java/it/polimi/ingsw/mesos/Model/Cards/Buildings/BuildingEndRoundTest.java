@@ -1,11 +1,11 @@
-package it.polimi.ingsw.mesos.Model.Cards.Buildings;
+package it.polimi.ingsw.mesos.model.cards.buildings;
 
-import it.polimi.ingsw.mesos.Controller.States.ActionState;
-import it.polimi.ingsw.mesos.Controller.ModelController;
+import it.polimi.ingsw.mesos.controller.states.ActionState;
+import it.polimi.ingsw.mesos.controller.ModelController;
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Era;
 
 import static org.junit.jupiter.api.Assertions.*;
 

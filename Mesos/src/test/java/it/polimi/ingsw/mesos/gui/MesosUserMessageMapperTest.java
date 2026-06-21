@@ -1,11 +1,11 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.OperationErrorCode;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.network.protocol.OperationErrorCode;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

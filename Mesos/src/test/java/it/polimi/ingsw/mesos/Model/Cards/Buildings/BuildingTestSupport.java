@@ -1,30 +1,30 @@
-package it.polimi.ingsw.mesos.Model.Cards.Buildings;
+package it.polimi.ingsw.mesos.model.cards.buildings;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.Model.BuildingDeck;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.GameTable;
-import it.polimi.ingsw.mesos.Model.OfferTrack;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Tribe;
-import it.polimi.ingsw.mesos.Model.TribeDeck;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.controller.ModelController;
+import it.polimi.ingsw.mesos.model.BuildingDeck;
+import it.polimi.ingsw.mesos.model.cards.characters.ArtistCard;
+import it.polimi.ingsw.mesos.model.cards.characters.BuilderCard;
+import it.polimi.ingsw.mesos.model.cards.characters.GathererCard;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.cards.characters.InventorCard;
+import it.polimi.ingsw.mesos.model.cards.characters.ShamanCard;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.enums.InventionIcon;
+import it.polimi.ingsw.mesos.model.GameContext;
+import it.polimi.ingsw.mesos.model.GameTable;
+import it.polimi.ingsw.mesos.model.OfferTrack;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.Tribe;
+import it.polimi.ingsw.mesos.model.TribeDeck;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderSpace;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
 
 abstract class BuildingTestSupport {
 

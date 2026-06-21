@@ -1,9 +1,20 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network;
 
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameClient;
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameServer;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
+import it.polimi.ingsw.mesos.dto.game.*;
+import it.polimi.ingsw.mesos.dto.lobby.*;
+import it.polimi.ingsw.mesos.dto.event.*;
+import it.polimi.ingsw.mesos.network.config.*;
+import it.polimi.ingsw.mesos.network.protocol.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.*;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.rmi.*;
+import it.polimi.ingsw.mesos.network.client.*;
+import it.polimi.ingsw.mesos.network.server.*;
+
+import it.polimi.ingsw.mesos.network.client.rmi.RmiGameClient;
+import it.polimi.ingsw.mesos.network.server.rmi.RmiGameServer;
+import it.polimi.ingsw.mesos.network.client.socket.SocketGameClient;
+import it.polimi.ingsw.mesos.network.server.socket.SocketGameServer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;

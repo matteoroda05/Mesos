@@ -1,6 +1,6 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Network.ConnectionType;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletionException;

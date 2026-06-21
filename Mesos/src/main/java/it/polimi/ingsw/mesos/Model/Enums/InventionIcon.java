@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model.Enums;
+package it.polimi.ingsw.mesos.model.enums;
 
 /**
  * Enumerates the invention symbols that distinguish inventor cards for

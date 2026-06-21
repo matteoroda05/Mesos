@@ -1,13 +1,13 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Network.ConnectionType;
-import it.polimi.ingsw.mesos.Network.GameClient;
-import it.polimi.ingsw.mesos.Network.GameClientFactory;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
+import it.polimi.ingsw.mesos.network.client.GameClient;
+import it.polimi.ingsw.mesos.network.client.GameClientFactory;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 import java.io.IOException;
 import java.util.Objects;

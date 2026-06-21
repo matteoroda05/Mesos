@@ -1,17 +1,17 @@
-package it.polimi.ingsw.mesos.Controller.States;
+package it.polimi.ingsw.mesos.controller.states;
 
-import it.polimi.ingsw.mesos.Controller.GameState;
-import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
-import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
-import it.polimi.ingsw.mesos.AppliedDelta;
+import it.polimi.ingsw.mesos.controller.GameState;
+import it.polimi.ingsw.mesos.controller.ModelController;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingAfterEveryone;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingEndTurn;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingOnCard;
+import it.polimi.ingsw.mesos.model.cards.CharacterCard;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.dto.event.AppliedDelta;
 
 import java.util.List;
 import java.util.Optional;

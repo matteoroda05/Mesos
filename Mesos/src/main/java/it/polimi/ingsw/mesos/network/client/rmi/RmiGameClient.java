@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.network.client.rmi;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,12 +13,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Network.GameClient;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.NetworkDefaults;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.rmi.RemoteMesosServer;
+import it.polimi.ingsw.mesos.network.protocol.rmi.RemoteGameUpdateListener;
+import it.polimi.ingsw.mesos.network.client.GameClient;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.client.GameUpdateListener;
+import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
 
 /**
  * Implements the game-client contract through an RMI server proxy, including

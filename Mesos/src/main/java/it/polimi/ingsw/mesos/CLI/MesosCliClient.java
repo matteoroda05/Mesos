@@ -1,24 +1,24 @@
-package it.polimi.ingsw.mesos.CLI;
+package it.polimi.ingsw.mesos.cli;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-import it.polimi.ingsw.mesos.EventMessageFormatter;
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.ConnectionType;
-import it.polimi.ingsw.mesos.Network.GameClient;
-import it.polimi.ingsw.mesos.Network.GameClientFactory;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
-import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.OperationErrorCode;
-import it.polimi.ingsw.mesos.Network.Requests.*;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
+import it.polimi.ingsw.mesos.network.client.GameClient;
+import it.polimi.ingsw.mesos.network.client.GameClientFactory;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessageVisitor;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.lobby.LobbySnapshot;
+import it.polimi.ingsw.mesos.network.protocol.messages.EventNotification;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.network.protocol.OperationErrorCode;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
 
 /**
  * Runs the interactive command-line client, coordinating connection, lobby,

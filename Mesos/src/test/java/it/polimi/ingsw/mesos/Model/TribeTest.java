@@ -1,12 +1,12 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Enums.InventionIcon;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingEndGame;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingOnCard;
+import it.polimi.ingsw.mesos.model.cards.characters.*;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.enums.InventionIcon;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

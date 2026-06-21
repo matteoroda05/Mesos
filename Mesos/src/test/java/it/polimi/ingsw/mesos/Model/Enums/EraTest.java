@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model.Enums;
+package it.polimi.ingsw.mesos.model.enums;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

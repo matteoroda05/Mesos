@@ -1,12 +1,12 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.ConnectionType;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.LobbyGameSummary;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
-import it.polimi.ingsw.mesos.Network.NetworkDefaults;
-import it.polimi.ingsw.mesos.Network.PlayerSummary;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.lobby.LobbyGameSummary;
+import it.polimi.ingsw.mesos.dto.lobby.LobbySnapshot;
+import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
+import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -623,13 +623,13 @@ public final class MesosGuiScreenFactory {
      * @param color game color, with null treated as white
      * @return configured color chip
      */
-    private Node buildColorChip(it.polimi.ingsw.mesos.Model.Enums.Color color) {
+    private Node buildColorChip(it.polimi.ingsw.mesos.model.enums.Color color) {
         StackPane chip = new StackPane();
         chip.setMinSize(16, 16);
         chip.setPrefSize(16, 16);
         chip.setMaxSize(16, 16);
 
-        Color fill = switch (color == null ? it.polimi.ingsw.mesos.Model.Enums.Color.WHITE : color) {
+        Color fill = switch (color == null ? it.polimi.ingsw.mesos.model.enums.Color.WHITE : color) {
             case BLUE -> Color.web("#2f74ff");
             case YELLOW -> Color.web("#f1c40f");
             case ORANGE -> Color.web("#f39c12");

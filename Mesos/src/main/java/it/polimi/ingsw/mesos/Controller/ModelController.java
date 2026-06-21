@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,20 +6,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import it.polimi.ingsw.mesos.Model.*;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.CharacterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
-import it.polimi.ingsw.mesos.AppliedDelta;
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.EventMessageFormatter;
-import it.polimi.ingsw.mesos.Result;
+import it.polimi.ingsw.mesos.model.*;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.cards.CharacterCard;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.cards.EventCard;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.ConnectionStatus;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.dto.event.AppliedDelta;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
 
 /**
  * Provides state-machine operations over a {@link GameContext}, applying

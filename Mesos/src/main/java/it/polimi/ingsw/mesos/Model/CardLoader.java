@@ -1,12 +1,12 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.polimi.ingsw.mesos.Model.Cards.Card;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.cards.Card;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.cards.TribeCard;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
 
 import java.io.IOException;
 import java.io.InputStream;

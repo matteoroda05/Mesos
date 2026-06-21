@@ -1,8 +1,8 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
-import it.polimi.ingsw.mesos.Network.OperationErrorCode;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.network.protocol.OperationErrorCode;
 
 import java.io.IOException;
 import java.net.ConnectException;

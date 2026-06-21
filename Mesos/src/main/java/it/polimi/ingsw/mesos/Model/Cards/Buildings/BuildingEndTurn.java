@@ -1,17 +1,17 @@
-package it.polimi.ingsw.mesos.Model.Cards.Buildings;
+package it.polimi.ingsw.mesos.model.cards.buildings;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.controller.ModelController;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.cards.CardDescriptionVisitor;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderSpace;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
 
 /**
  * Building card that grants food when its owner ends a turn on a positive

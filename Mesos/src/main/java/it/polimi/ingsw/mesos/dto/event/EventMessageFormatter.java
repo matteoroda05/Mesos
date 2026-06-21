@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.dto.event;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 /**
  * Renders {@link EventLogEntry} payloads into the human-readable text shown to

@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.cards.TribeCard;
 
 /**
  * Manages the remaining tribe cards for a match and draws the market rows in

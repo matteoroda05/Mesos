@@ -1,12 +1,12 @@
-package it.polimi.ingsw.mesos.Model.Cards.Buildings;
+package it.polimi.ingsw.mesos.model.cards.buildings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
 
 class BuildingEndTurnTest extends BuildingTestSupport {
 

@@ -1,11 +1,11 @@
-package it.polimi.ingsw.mesos.Model.Tiles;
+package it.polimi.ingsw.mesos.model.tiles;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Result;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.Result;
 
 /**
  * Turn-order track made of ordered spaces.

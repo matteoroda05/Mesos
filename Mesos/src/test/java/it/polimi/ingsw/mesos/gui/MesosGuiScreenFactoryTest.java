@@ -1,6 +1,6 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.Network.ConnectionType;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.scene.Node;

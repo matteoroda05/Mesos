@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.model;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

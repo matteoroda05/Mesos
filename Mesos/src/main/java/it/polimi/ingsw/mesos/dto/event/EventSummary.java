@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.dto.event;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,13 +1,13 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.model.cards;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.*;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
+import it.polimi.ingsw.mesos.model.cards.characters.*;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.cards.events.CavePaintingEvent;
+import it.polimi.ingsw.mesos.model.cards.events.HuntEvent;
+import it.polimi.ingsw.mesos.model.cards.events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.model.cards.events.SustenanceEvent;
 
 /**
  * Abstract base for cards drawn from the tribe deck, covering character and

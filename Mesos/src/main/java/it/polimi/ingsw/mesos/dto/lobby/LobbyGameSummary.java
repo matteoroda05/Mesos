@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.dto.lobby;
 
 import java.io.Serializable;
 

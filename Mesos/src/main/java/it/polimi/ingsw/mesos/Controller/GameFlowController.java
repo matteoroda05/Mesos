@@ -1,8 +1,8 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.controller;
 
-import it.polimi.ingsw.mesos.Controller.States.ChooseOfferState;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.GameContext;
+import it.polimi.ingsw.mesos.controller.states.ChooseOfferState;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.GameContext;
 
 /**
  * Coordinates the game state machine, applying player commands and advancing

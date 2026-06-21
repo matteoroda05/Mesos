@@ -1,14 +1,14 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.cards.TribeCard;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingAfterEveryone;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderSpace;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

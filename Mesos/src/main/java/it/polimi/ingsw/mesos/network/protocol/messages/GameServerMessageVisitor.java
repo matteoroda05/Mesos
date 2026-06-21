@@ -1,7 +1,7 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.protocol.messages;
 
-import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.network.protocol.messages.EventNotification;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameViewUpdate;
 
 /**
  * Defines type-specific handling for messages sent asynchronously by the

@@ -1,8 +1,8 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.protocol.requests;
 
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer.ClientConnection;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.server.MesosServerService;
+import it.polimi.ingsw.mesos.network.server.socket.SocketGameServer.ClientConnection;
 
 import java.io.Serializable;
 

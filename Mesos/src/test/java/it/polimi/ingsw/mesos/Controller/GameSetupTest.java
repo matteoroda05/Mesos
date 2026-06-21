@@ -1,15 +1,15 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.controller;
 
-import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Network.CardSummary;
+import it.polimi.ingsw.mesos.model.CardLoader;
+import it.polimi.ingsw.mesos.model.cards.TribeCard;
+import it.polimi.ingsw.mesos.model.cards.events.HuntEvent;
+import it.polimi.ingsw.mesos.model.cards.events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.model.cards.events.SustenanceEvent;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.GameContext;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.dto.game.CardSummary;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -231,7 +231,7 @@ class GameSetupTest {
         assertTrue(input.containsAll(output));
     }
 
-    private static <T extends it.polimi.ingsw.mesos.Model.Cards.Card> void assertEraOrder(List<T> cards, boolean reverse) {
+    private static <T extends it.polimi.ingsw.mesos.model.cards.Card> void assertEraOrder(List<T> cards, boolean reverse) {
         int previous = reverse ? Integer.MAX_VALUE : Integer.MIN_VALUE;
         for (T card : cards) {
             int current = card.getEra().ordinal();
@@ -250,7 +250,7 @@ class GameSetupTest {
         }
 
         @Override
-        public String accept(it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor visitor) {
+        public String accept(it.polimi.ingsw.mesos.model.cards.CardDescriptionVisitor visitor) {
             throw new UnsupportedOperationException();
         }
 

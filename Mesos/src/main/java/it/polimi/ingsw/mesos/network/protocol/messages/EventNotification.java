@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Network.Messages;
+package it.polimi.ingsw.mesos.network.protocol.messages;
 
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
-import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessageVisitor;
+import it.polimi.ingsw.mesos.network.client.GameUpdateListener;
+import it.polimi.ingsw.mesos.network.client.socket.SocketGameClient;
 
 /**
  * Serializable asynchronous notification summarizing a resolved game event

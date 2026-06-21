@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.controller;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,23 +6,23 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.AppliedDelta;
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.EventMessageFormatter;
-import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.ConnectionStatus;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.MarketRow;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
-import it.polimi.ingsw.mesos.Result;
+import it.polimi.ingsw.mesos.dto.event.AppliedDelta;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
+import it.polimi.ingsw.mesos.model.CardLoader;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingAfterEveryone;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingOnCard;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.cards.events.SustenanceEvent;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.ConnectionStatus;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.GameContext;
+import it.polimi.ingsw.mesos.model.MarketRow;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.Result;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model.Cards.Buildings;
+package it.polimi.ingsw.mesos.model.cards.buildings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.EnumMap;
 import java.util.Map;
 
-import it.polimi.ingsw.mesos.Result;
+import it.polimi.ingsw.mesos.model.Result;
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.model.cards.characters.ArtistCard;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
 
 class BuildingBonusEventTest extends BuildingTestSupport {
 

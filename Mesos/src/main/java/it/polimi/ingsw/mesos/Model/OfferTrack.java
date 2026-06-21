@@ -1,12 +1,12 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
 
 /**
  * Maintains the offer tiles available in a round and their current player

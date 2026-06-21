@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Controller.Enums;
+package it.polimi.ingsw.mesos.controller.enums;
 
 /**
  * Enumerates the client-visible phases that a game can occupy from setup

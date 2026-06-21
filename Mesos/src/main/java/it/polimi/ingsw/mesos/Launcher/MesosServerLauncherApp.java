@@ -1,6 +1,6 @@
-package it.polimi.ingsw.mesos.Launcher;
+package it.polimi.ingsw.mesos.launcher;
 
-import it.polimi.ingsw.mesos.Network.MesosServerLauncher;
+import it.polimi.ingsw.mesos.network.server.MesosServerLauncher;
 
 /**
  * Launches the Mesos server in a terminal or Swing console.

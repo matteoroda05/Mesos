@@ -1,7 +1,7 @@
-package it.polimi.ingsw.mesos.Launcher;
+package it.polimi.ingsw.mesos.launcher;
 
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.model.enums.Color;
 import it.polimi.ingsw.mesos.gui.MesosAssetResolver;
 import it.polimi.ingsw.mesos.gui.MesosEventPopupOverlay;
 import it.polimi.ingsw.mesos.gui.MesosGuiFlowController;

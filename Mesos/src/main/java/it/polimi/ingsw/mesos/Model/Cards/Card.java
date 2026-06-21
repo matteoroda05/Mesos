@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.model.cards;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Network.CardSummary;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.dto.game.CardSummary;
 
 /**
  * Abstract base for all game cards, defining shared era, player-count, and

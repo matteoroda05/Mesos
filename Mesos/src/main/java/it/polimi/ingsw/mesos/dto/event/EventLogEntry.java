@@ -1,11 +1,11 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.dto.event;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 import java.io.Serializable;
 import java.util.List;
 
-import static it.polimi.ingsw.mesos.EventMessageFormatter.joinChanges;
+import static it.polimi.ingsw.mesos.dto.event.EventMessageFormatter.joinChanges;
 
 /**
  * A loggable game event to be broadcast to clients as a popup. Two shapes are

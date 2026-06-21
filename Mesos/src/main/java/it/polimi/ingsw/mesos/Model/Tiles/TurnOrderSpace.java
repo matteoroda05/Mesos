@@ -1,6 +1,6 @@
-package it.polimi.ingsw.mesos.Model.Tiles;
+package it.polimi.ingsw.mesos.model.tiles;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 /**
  * Models one position on the turn-order tile, including its food bonus or

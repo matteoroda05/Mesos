@@ -1,8 +1,8 @@
-package it.polimi.ingsw.mesos.Controller.States;
+package it.polimi.ingsw.mesos.controller.states;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Controller.GameState;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.controller.GameState;
+import it.polimi.ingsw.mesos.model.enums.Color;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

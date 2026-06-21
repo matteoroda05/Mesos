@@ -1,7 +1,7 @@
-package it.polimi.ingsw.mesos.Model.Tiles;
+package it.polimi.ingsw.mesos.model.tiles;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Player;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.Player;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

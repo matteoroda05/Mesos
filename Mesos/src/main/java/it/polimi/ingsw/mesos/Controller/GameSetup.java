@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Controller;
+package it.polimi.ingsw.mesos.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,27 +7,27 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.BuildingDeck;
-import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.Cards.BuildingCard;
-import it.polimi.ingsw.mesos.Model.Cards.Card;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Cards.TribeCard;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.GameTable;
-import it.polimi.ingsw.mesos.Model.OfferTrack;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderSpace;
-import it.polimi.ingsw.mesos.Model.Tiles.TurnOrderTile;
-import it.polimi.ingsw.mesos.Model.TribeDeck;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.BuildingDeck;
+import it.polimi.ingsw.mesos.model.CardLoader;
+import it.polimi.ingsw.mesos.model.cards.BuildingCard;
+import it.polimi.ingsw.mesos.model.cards.Card;
+import it.polimi.ingsw.mesos.model.cards.EventCard;
+import it.polimi.ingsw.mesos.model.cards.TribeCard;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.GameContext;
+import it.polimi.ingsw.mesos.model.GameTable;
+import it.polimi.ingsw.mesos.model.OfferTrack;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderSpace;
+import it.polimi.ingsw.mesos.model.tiles.TurnOrderTile;
+import it.polimi.ingsw.mesos.model.TribeDeck;
 
-import static it.polimi.ingsw.mesos.Globals.BUILDING_COUNT_BY_ERA;
-import static it.polimi.ingsw.mesos.Globals.PLAYER_STARTING_FOOD;
+import static it.polimi.ingsw.mesos.common.Globals.BUILDING_COUNT_BY_ERA;
+import static it.polimi.ingsw.mesos.common.Globals.PLAYER_STARTING_FOOD;
 import static java.util.Collections.shuffle;
 
 /**

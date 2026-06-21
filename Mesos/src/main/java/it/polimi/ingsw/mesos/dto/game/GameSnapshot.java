@@ -1,11 +1,11 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.dto.game;
 
 import java.io.Serializable;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
 
 /**
  * Serializable immutable view of the current game state.

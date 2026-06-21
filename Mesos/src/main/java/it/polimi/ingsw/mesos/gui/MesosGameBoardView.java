@@ -4,16 +4,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Database.LeaderboardEntry;
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.EventMessageFormatter;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Network.CardSummary;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.OfferTileSummary;
-import it.polimi.ingsw.mesos.Network.PlayerSummary;
-import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.database.LeaderboardEntry;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.dto.game.CardSummary;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.game.OfferTileSummary;
+import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
+import it.polimi.ingsw.mesos.dto.game.TurnOrderSpaceSummary;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -416,7 +416,7 @@ public final class MesosGameBoardView extends BorderPane {
      * Updates the information-panel color marker from the local or active player.
      */
     private void refreshInfoPanelColorIndicator() {
-        Optional<it.polimi.ingsw.mesos.Model.Enums.Color> indicatorColor = resolveInfoPanelColor();
+        Optional<it.polimi.ingsw.mesos.model.enums.Color> indicatorColor = resolveInfoPanelColor();
         boolean hasColor = indicatorColor.isPresent();
         infoPanelColorIndicator.setVisible(hasColor);
         infoPanelColorIndicator.setManaged(hasColor);
@@ -428,11 +428,11 @@ public final class MesosGameBoardView extends BorderPane {
      *
      * @return resolved indicator color, or an empty optional without a snapshot
      */
-    private Optional<it.polimi.ingsw.mesos.Model.Enums.Color> resolveInfoPanelColor() {
+    private Optional<it.polimi.ingsw.mesos.model.enums.Color> resolveInfoPanelColor() {
         if (snapshot == null) {
             return Optional.empty();
         }
-        Optional<it.polimi.ingsw.mesos.Model.Enums.Color> localPlayerColor = snapshot.players().stream()
+        Optional<it.polimi.ingsw.mesos.model.enums.Color> localPlayerColor = snapshot.players().stream()
                 .filter(player -> player.nickname().equals(localNickname))
                 .map(PlayerSummary::color)
                 .filter(Objects::nonNull)
@@ -1911,7 +1911,7 @@ public final class MesosGameBoardView extends BorderPane {
      * @return configured color-indicator node
      */
     private StackPane buildColorIndicator(
-            it.polimi.ingsw.mesos.Model.Enums.Color color,
+            it.polimi.ingsw.mesos.model.enums.Color color,
             String extraStyleClass
     ) {
         StackPane indicator = new StackPane();
@@ -1937,7 +1937,7 @@ public final class MesosGameBoardView extends BorderPane {
      * @param indicator color marker created by {@link #buildColorIndicator}
      * @param color game color to display, possibly null
      */
-    private void updateColorIndicator(StackPane indicator, it.polimi.ingsw.mesos.Model.Enums.Color color) {
+    private void updateColorIndicator(StackPane indicator, it.polimi.ingsw.mesos.model.enums.Color color) {
         Circle dot = (Circle) indicator.getUserData();
         if (dot != null) {
             dot.setFill(toIndicatorColor(color));
@@ -1952,8 +1952,8 @@ public final class MesosGameBoardView extends BorderPane {
      * @param color game color, with null treated as white
      * @return corresponding JavaFX color
      */
-    private Color toIndicatorColor(it.polimi.ingsw.mesos.Model.Enums.Color color) {
-        return switch (color == null ? it.polimi.ingsw.mesos.Model.Enums.Color.WHITE : color) {
+    private Color toIndicatorColor(it.polimi.ingsw.mesos.model.enums.Color color) {
+        return switch (color == null ? it.polimi.ingsw.mesos.model.enums.Color.WHITE : color) {
             case BLUE -> Color.rgb(57, 146, 218);
             case YELLOW -> Color.rgb(244, 196, 48);
             case ORANGE -> Color.rgb(230, 92, 36);
@@ -1969,7 +1969,7 @@ public final class MesosGameBoardView extends BorderPane {
      * @param size square size for the totem node
      * @return image view or fallback node
      */
-    private Node buildTotem(it.polimi.ingsw.mesos.Model.Enums.Color color, double size) {
+    private Node buildTotem(it.polimi.ingsw.mesos.model.enums.Color color, double size) {
         Optional<Image> totem = assetResolver.resolveTotem(color);
         if (totem.isPresent()) {
             ImageView view = new ImageView(totem.get());

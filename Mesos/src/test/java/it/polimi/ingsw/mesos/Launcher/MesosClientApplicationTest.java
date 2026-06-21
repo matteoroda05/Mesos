@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Launcher;
+package it.polimi.ingsw.mesos.launcher;
 
 import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;

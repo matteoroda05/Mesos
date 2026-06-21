@@ -1,6 +1,6 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.protocol.messages;
 
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+import it.polimi.ingsw.mesos.network.client.socket.SocketGameClient;
 
 import java.io.IOException;
 import java.io.Serializable;

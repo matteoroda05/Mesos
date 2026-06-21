@@ -1,6 +1,6 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.common;
 
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.model.enums.Era;
 
 import java.util.Collections;
 import java.util.EnumMap;

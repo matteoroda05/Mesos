@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Model.Tiles;
+package it.polimi.ingsw.mesos.model.tiles;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 /**
  * Models an offer-track space with its card-pick allowances, food reward, and

@@ -1,20 +1,17 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network;
 
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.LobbyRequest;
-import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
-import it.polimi.ingsw.mesos.Network.Requests.RankingsRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.dto.game.*;
+import it.polimi.ingsw.mesos.dto.lobby.*;
+import it.polimi.ingsw.mesos.dto.event.*;
+import it.polimi.ingsw.mesos.network.config.*;
+import it.polimi.ingsw.mesos.network.protocol.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.*;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.rmi.*;
+import it.polimi.ingsw.mesos.network.client.*;
+import it.polimi.ingsw.mesos.network.server.*;
+
+import it.polimi.ingsw.mesos.model.enums.Color;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

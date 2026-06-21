@@ -1,4 +1,15 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network;
+
+import it.polimi.ingsw.mesos.dto.game.*;
+import it.polimi.ingsw.mesos.dto.lobby.*;
+import it.polimi.ingsw.mesos.dto.event.*;
+import it.polimi.ingsw.mesos.network.config.*;
+import it.polimi.ingsw.mesos.network.protocol.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.*;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.rmi.*;
+import it.polimi.ingsw.mesos.network.client.*;
+import it.polimi.ingsw.mesos.network.server.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,28 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import it.polimi.ingsw.mesos.Network.Requests.ChooseCardRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseColorRequest;
-import it.polimi.ingsw.mesos.Network.Requests.ChooseOfferRequest;
-import it.polimi.ingsw.mesos.Network.Requests.CreateGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.HeartbeatRequest;
-import it.polimi.ingsw.mesos.Network.Requests.JoinGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.NicknameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.PassRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SnapshotRequest;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Tiles.OfferTile;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.model.CardLoader;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingAfterEveryone;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.GameContext;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.tiles.OfferTile;
 
 class MesosServerCoreTest {
     @Test

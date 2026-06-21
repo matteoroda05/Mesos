@@ -1,6 +1,8 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.server;
 
 import java.io.IOException;
+
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
 
 /**
  * Delivers a server-pushed game message to a subscribed transport endpoint.

@@ -1,9 +1,12 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.client;
 
 import java.io.IOException;
 
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameClient;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+import it.polimi.ingsw.mesos.network.client.rmi.RmiGameClient;
+import it.polimi.ingsw.mesos.network.client.socket.SocketGameClient;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
+import it.polimi.ingsw.mesos.network.config.ServerEndpoint;
+import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
 
 /**
  * Factory for concrete client implementations.

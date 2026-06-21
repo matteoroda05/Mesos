@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.network.protocol.rmi;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
 
 /**
  * Defines the RMI-exposed counterpart of the game server's client-facing

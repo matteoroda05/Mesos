@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.model.cards;
 
-import it.polimi.ingsw.mesos.Network.CardSummary;
+import it.polimi.ingsw.mesos.dto.game.CardSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.model.enums.Era;
 
 import static org.junit.jupiter.api.Assertions.*;
 

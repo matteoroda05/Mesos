@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos.Model;
+package it.polimi.ingsw.mesos.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Model.Cards.*;
+import it.polimi.ingsw.mesos.model.cards.*;
 
 /**
  * Represents one market row of tribe and building cards and exposes the cards

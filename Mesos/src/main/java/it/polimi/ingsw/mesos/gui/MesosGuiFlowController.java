@@ -1,11 +1,17 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Network.*;
-import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
+import it.polimi.ingsw.mesos.dto.lobby.LobbySnapshot;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
+import it.polimi.ingsw.mesos.network.protocol.OperationErrorCode;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessageVisitor;
+import it.polimi.ingsw.mesos.network.protocol.messages.EventNotification;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameViewUpdate;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TextField;

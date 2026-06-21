@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.dto.game;
 
 import java.io.Serializable;
 import java.util.List;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 /**
  * Serializable summary of a player exposed to clients.

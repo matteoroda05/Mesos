@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.dto.event;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

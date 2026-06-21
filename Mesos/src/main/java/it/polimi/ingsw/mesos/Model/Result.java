@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.model;
 
 /**
  * Result of a food/prestige calculation.

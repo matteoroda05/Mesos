@@ -1,7 +1,7 @@
 package it.polimi.ingsw.mesos.gui;
 
-import it.polimi.ingsw.mesos.EventLogEntry;
-import it.polimi.ingsw.mesos.EventMessageFormatter;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;

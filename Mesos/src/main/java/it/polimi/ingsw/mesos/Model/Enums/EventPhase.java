@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model.Enums;
+package it.polimi.ingsw.mesos.model.enums;
 
 /**
  * Distinguishes building effects applied before an event outcome from those

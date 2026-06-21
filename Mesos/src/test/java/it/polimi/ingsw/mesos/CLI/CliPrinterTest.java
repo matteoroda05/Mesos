@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.CLI;
+package it.polimi.ingsw.mesos.cli;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,14 +7,14 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Network.CardSummary;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.OfferTileSummary;
-import it.polimi.ingsw.mesos.Network.PlayerSummary;
-import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.dto.game.CardSummary;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.game.OfferTileSummary;
+import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
+import it.polimi.ingsw.mesos.dto.game.TurnOrderSpaceSummary;
 
 class CliPrinterTest {
     @Test

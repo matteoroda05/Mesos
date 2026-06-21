@@ -1,4 +1,15 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network;
+
+import it.polimi.ingsw.mesos.dto.game.*;
+import it.polimi.ingsw.mesos.dto.lobby.*;
+import it.polimi.ingsw.mesos.dto.event.*;
+import it.polimi.ingsw.mesos.network.config.*;
+import it.polimi.ingsw.mesos.network.protocol.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.*;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.rmi.*;
+import it.polimi.ingsw.mesos.network.client.*;
+import it.polimi.ingsw.mesos.network.server.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,12 +24,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Network.Messages.EventNotification;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.Messages.GameViewUpdate;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 final class NetworkTestSupport {
     private NetworkTestSupport() {

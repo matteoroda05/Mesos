@@ -1,12 +1,12 @@
-package it.polimi.ingsw.mesos.Network.Messages;
+package it.polimi.ingsw.mesos.network.protocol.messages;
 
-import it.polimi.ingsw.mesos.Database.LeaderboardEntry;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
-import it.polimi.ingsw.mesos.Network.OperationErrorCode;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+import it.polimi.ingsw.mesos.database.LeaderboardEntry;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessageVisitor;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.lobby.LobbySnapshot;
+import it.polimi.ingsw.mesos.network.protocol.OperationErrorCode;
+import it.polimi.ingsw.mesos.network.client.socket.SocketGameClient;
 
 import java.util.List;
 

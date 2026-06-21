@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Network.Messages;
+package it.polimi.ingsw.mesos.network.protocol.messages;
 
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.GameServerMessageVisitor;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.GameUpdateListener;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameClient;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessageVisitor;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.network.client.GameUpdateListener;
+import it.polimi.ingsw.mesos.network.client.socket.SocketGameClient;
 
 /**
  * Serializable asynchronous game-view update sent by the server.

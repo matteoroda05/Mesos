@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Database;
+package it.polimi.ingsw.mesos.database;
 
 import java.sql.*;
 import java.util.ArrayList;

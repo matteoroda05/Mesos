@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Model.Enums;
+package it.polimi.ingsw.mesos.model.enums;
 
 /**
  * Enumerates the game moments and events that can activate a building effect.

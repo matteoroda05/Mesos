@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.network.server.rmi;
 
 import java.io.IOException;
 import java.rmi.NoSuchObjectException;
@@ -9,11 +9,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.MesosServerService;
-import it.polimi.ingsw.mesos.Network.NetworkDefaults;
+import it.polimi.ingsw.mesos.network.protocol.rmi.RemoteGameUpdateListener;
+import it.polimi.ingsw.mesos.network.protocol.rmi.RemoteMesosServer;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.server.GameUpdateSink;
+import it.polimi.ingsw.mesos.network.server.MesosServerService;
+import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
 
 /**
  * Publishes a {@link MesosServerService} through an RMI registry and manages

@@ -1,18 +1,18 @@
-package it.polimi.ingsw.mesos.Model.Cards.Events;
+package it.polimi.ingsw.mesos.model.cards.events;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import it.polimi.ingsw.mesos.Model.Cards.CardDescriptionVisitor;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
-import it.polimi.ingsw.mesos.Model.Cards.EventCard;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Enums.Era;
-import it.polimi.ingsw.mesos.Model.Tribe;
-import it.polimi.ingsw.mesos.Result;
+import it.polimi.ingsw.mesos.model.cards.CardDescriptionVisitor;
+import it.polimi.ingsw.mesos.model.cards.characters.ArtistCard;
+import it.polimi.ingsw.mesos.model.cards.EventCard;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Era;
+import it.polimi.ingsw.mesos.model.Tribe;
+import it.polimi.ingsw.mesos.model.Result;
 
 /**
  * Event card that rewards tribes meeting an artist threshold and penalizes

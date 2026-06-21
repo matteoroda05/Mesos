@@ -1,11 +1,11 @@
-package it.polimi.ingsw.mesos.Controller.States;
+package it.polimi.ingsw.mesos.controller.states;
 
-import it.polimi.ingsw.mesos.Controller.GameSetup;
-import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.Model.CardLoader;
-import it.polimi.ingsw.mesos.Model.GameContext;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.controller.GameSetup;
+import it.polimi.ingsw.mesos.controller.ModelController;
+import it.polimi.ingsw.mesos.model.CardLoader;
+import it.polimi.ingsw.mesos.model.GameContext;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 import java.io.IOException;
 import java.util.List;

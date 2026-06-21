@@ -1,11 +1,11 @@
-package it.polimi.ingsw.mesos;
+package it.polimi.ingsw.mesos.dto.event;
 
-import it.polimi.ingsw.mesos.Model.Enums.Color;
+import it.polimi.ingsw.mesos.model.enums.Color;
 
 import java.io.Serializable;
 
-import static it.polimi.ingsw.mesos.EventMessageFormatter.joinChanges;
-import static it.polimi.ingsw.mesos.EventMessageFormatter.playerLabel;
+import static it.polimi.ingsw.mesos.dto.event.EventMessageFormatter.joinChanges;
+import static it.polimi.ingsw.mesos.dto.event.EventMessageFormatter.playerLabel;
 
 /**
  * A single per-player line within an event summary, describing how much food

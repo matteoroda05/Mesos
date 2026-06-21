@@ -1,15 +1,15 @@
-package it.polimi.ingsw.mesos.Controller.States;
+package it.polimi.ingsw.mesos.controller.states;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Controller.GameState;
-import it.polimi.ingsw.mesos.Controller.ModelController;
-import it.polimi.ingsw.mesos.AppliedDelta;
-import it.polimi.ingsw.mesos.EventMessageFormatter;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
-import it.polimi.ingsw.mesos.Model.Enums.BuildingTrigger;
-import it.polimi.ingsw.mesos.Model.Enums.Color;
-import it.polimi.ingsw.mesos.Model.Player;
-import it.polimi.ingsw.mesos.Model.Tribe;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.controller.GameState;
+import it.polimi.ingsw.mesos.controller.ModelController;
+import it.polimi.ingsw.mesos.dto.event.AppliedDelta;
+import it.polimi.ingsw.mesos.dto.event.EventMessageFormatter;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingEndGame;
+import it.polimi.ingsw.mesos.model.enums.BuildingTrigger;
+import it.polimi.ingsw.mesos.model.enums.Color;
+import it.polimi.ingsw.mesos.model.Player;
+import it.polimi.ingsw.mesos.model.Tribe;
 
 import java.util.Map;
 import java.util.stream.Collectors;

@@ -1,10 +1,10 @@
-package it.polimi.ingsw.mesos.Network.Requests;
+package it.polimi.ingsw.mesos.network.protocol.requests;
 
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameRequest;
-import it.polimi.ingsw.mesos.Network.MesosServerService;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.requests.GameRequest;
+import it.polimi.ingsw.mesos.network.server.MesosServerService;
+import it.polimi.ingsw.mesos.network.server.socket.SocketGameServer;
 
 /**
  * Request to create a new game.

@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.CLI;
+package it.polimi.ingsw.mesos.cli;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,16 +12,16 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import it.polimi.ingsw.mesos.Controller.Enums.GameStatus;
-import it.polimi.ingsw.mesos.Database.LeaderboardEntry;
-import it.polimi.ingsw.mesos.Globals;
-import it.polimi.ingsw.mesos.Network.CardSummary;
-import it.polimi.ingsw.mesos.Network.GameSnapshot;
-import it.polimi.ingsw.mesos.Network.LobbyGameSummary;
-import it.polimi.ingsw.mesos.Network.LobbySnapshot;
-import it.polimi.ingsw.mesos.Network.OfferTileSummary;
-import it.polimi.ingsw.mesos.Network.PlayerSummary;
-import it.polimi.ingsw.mesos.Network.TurnOrderSpaceSummary;
+import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.database.LeaderboardEntry;
+import it.polimi.ingsw.mesos.common.Globals;
+import it.polimi.ingsw.mesos.dto.game.CardSummary;
+import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.lobby.LobbyGameSummary;
+import it.polimi.ingsw.mesos.dto.lobby.LobbySnapshot;
+import it.polimi.ingsw.mesos.dto.game.OfferTileSummary;
+import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
+import it.polimi.ingsw.mesos.dto.game.TurnOrderSpaceSummary;
 
 /**
  * Formats lobby, game-board, ranking, and help data for terminal output.

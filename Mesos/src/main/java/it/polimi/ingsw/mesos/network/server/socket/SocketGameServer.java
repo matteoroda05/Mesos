@@ -1,4 +1,4 @@
-package it.polimi.ingsw.mesos.Network.Socket;
+package it.polimi.ingsw.mesos.network.server.socket;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -14,13 +14,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
-import it.polimi.ingsw.mesos.Network.GameRequest;
-import it.polimi.ingsw.mesos.Network.GameUpdateSink;
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
-import it.polimi.ingsw.mesos.Network.MesosServerService;
-import it.polimi.ingsw.mesos.Network.Requests.SubscribeGameRequest;
-import it.polimi.ingsw.mesos.Network.Requests.UnsubscribeGameRequest;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.requests.GameRequest;
+import it.polimi.ingsw.mesos.network.server.GameUpdateSink;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
+import it.polimi.ingsw.mesos.network.server.MesosServerService;
+import it.polimi.ingsw.mesos.network.protocol.requests.SubscribeGameRequest;
+import it.polimi.ingsw.mesos.network.protocol.requests.UnsubscribeGameRequest;
 
 /**
  * Hosts the game service over object streams, accepting socket clients and

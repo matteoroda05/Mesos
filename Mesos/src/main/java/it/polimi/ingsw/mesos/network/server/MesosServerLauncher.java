@@ -1,9 +1,10 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.server;
 
 import java.util.concurrent.CountDownLatch;
 
-import it.polimi.ingsw.mesos.Network.RMI.RmiGameServer;
-import it.polimi.ingsw.mesos.Network.Socket.SocketGameServer;
+import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
+import it.polimi.ingsw.mesos.network.server.rmi.RmiGameServer;
+import it.polimi.ingsw.mesos.network.server.socket.SocketGameServer;
 
 /**
  * Standalone launcher that starts both socket and RMI servers.

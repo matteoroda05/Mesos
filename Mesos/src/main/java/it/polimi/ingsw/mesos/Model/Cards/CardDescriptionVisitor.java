@@ -1,21 +1,21 @@
-package it.polimi.ingsw.mesos.Model.Cards;
+package it.polimi.ingsw.mesos.model.cards;
 
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingAfterEveryone;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingBonusEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndGame;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingEndTurn;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingOnCard;
-import it.polimi.ingsw.mesos.Model.Cards.Buildings.BuildingShamanicRitual;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ArtistCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.BuilderCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.GathererCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.HunterCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.InventorCard;
-import it.polimi.ingsw.mesos.Model.Cards.Characters.ShamanCard;
-import it.polimi.ingsw.mesos.Model.Cards.Events.CavePaintingEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.HuntEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.ShamanicRitualEvent;
-import it.polimi.ingsw.mesos.Model.Cards.Events.SustenanceEvent;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingAfterEveryone;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingBonusEvent;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingEndGame;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingEndTurn;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingOnCard;
+import it.polimi.ingsw.mesos.model.cards.buildings.BuildingShamanicRitual;
+import it.polimi.ingsw.mesos.model.cards.characters.ArtistCard;
+import it.polimi.ingsw.mesos.model.cards.characters.BuilderCard;
+import it.polimi.ingsw.mesos.model.cards.characters.GathererCard;
+import it.polimi.ingsw.mesos.model.cards.characters.HunterCard;
+import it.polimi.ingsw.mesos.model.cards.characters.InventorCard;
+import it.polimi.ingsw.mesos.model.cards.characters.ShamanCard;
+import it.polimi.ingsw.mesos.model.cards.events.CavePaintingEvent;
+import it.polimi.ingsw.mesos.model.cards.events.HuntEvent;
+import it.polimi.ingsw.mesos.model.cards.events.ShamanicRitualEvent;
+import it.polimi.ingsw.mesos.model.cards.events.SustenanceEvent;
 
 /**
  * Visitor that produces a human-readable description for a concrete card.

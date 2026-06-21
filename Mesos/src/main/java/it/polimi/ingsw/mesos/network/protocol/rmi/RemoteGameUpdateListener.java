@@ -1,9 +1,9 @@
-package it.polimi.ingsw.mesos.Network.RMI;
+package it.polimi.ingsw.mesos.network.protocol.rmi;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import it.polimi.ingsw.mesos.Network.GameServerMessage;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
 
 /**
  * Defines the remote callback contract used to push game messages to RMI

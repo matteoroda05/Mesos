@@ -1,7 +1,7 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.client;
 
-import it.polimi.ingsw.mesos.Network.Requests.*;
-import it.polimi.ingsw.mesos.Network.Messages.GameOperationResult;
+import it.polimi.ingsw.mesos.network.protocol.requests.*;
+import it.polimi.ingsw.mesos.network.protocol.messages.GameOperationResult;
 
 import java.io.Closeable;
 import java.io.IOException;

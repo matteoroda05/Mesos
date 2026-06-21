@@ -1,4 +1,6 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.network.client;
+
+import it.polimi.ingsw.mesos.network.protocol.messages.GameServerMessage;
 
 /**
  * Receives server-pushed game messages on behalf of a client.

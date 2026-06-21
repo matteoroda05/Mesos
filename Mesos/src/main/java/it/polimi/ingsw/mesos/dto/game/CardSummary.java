@@ -1,8 +1,8 @@
-package it.polimi.ingsw.mesos.Network;
+package it.polimi.ingsw.mesos.dto.game;
 
 import java.io.Serializable;
 
-import it.polimi.ingsw.mesos.Model.Enums.Era;
+import it.polimi.ingsw.mesos.model.enums.Era;
 
 /**
  * Serializable summary of a card exposed to network clients.
