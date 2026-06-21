@@ -130,7 +130,7 @@ public final class MesosGuiScreenFactory {
         confirmButton.setMaxWidth(Double.MAX_VALUE);
         confirmButton.setOnAction(event -> onSubmitNickname.accept(nicknameField.getText()));
 
-        Button disconnectButton = new Button("Disconnect");
+        Button disconnectButton = new Button("Exit Session");
         disconnectButton.getStyleClass().add("secondary-button");
         disconnectButton.setMaxWidth(Double.MAX_VALUE);
         disconnectButton.setOnAction(event -> onDisconnect.run());
@@ -231,7 +231,7 @@ public final class MesosGuiScreenFactory {
         refreshButton.getStyleClass().add("secondary-button");
         refreshButton.setOnAction(event -> onRefresh.run());
 
-        Button disconnectButton = new Button("Disconnect");
+        Button disconnectButton = new Button("Exit Session");
         disconnectButton.getStyleClass().add("secondary-button");
         disconnectButton.setOnAction(event -> onDisconnect.run());
 
@@ -321,7 +321,7 @@ public final class MesosGuiScreenFactory {
         refreshButton.getStyleClass().add("secondary-button");
         refreshButton.setOnAction(event -> onRefresh.run());
 
-        Button disconnectButton = new Button("Disconnect");
+        Button disconnectButton = new Button("Exit Session");
         disconnectButton.getStyleClass().add("secondary-button");
         disconnectButton.setOnAction(event -> onDisconnect.run());
 
