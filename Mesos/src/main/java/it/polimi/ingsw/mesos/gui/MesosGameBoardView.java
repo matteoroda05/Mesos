@@ -179,7 +179,7 @@ public final class MesosGameBoardView extends BorderPane {
                 8,
                 buildInfoActionButton("Refresh", onRefresh),
                 passButton,
-                buildInfoActionButton("Disconnect", onDisconnect)
+                buildInfoActionButton("Exit Session", onDisconnect)
         );
         this.actionRow.getStyleClass().add("board-action-row");
         this.actionRow.setAlignment(Pos.CENTER_LEFT);
