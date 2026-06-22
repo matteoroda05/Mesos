@@ -71,11 +71,11 @@ java -version
 ## 3. Running the application (deliverable jars)
 
 All commands below are run from the **repository root**, using the jars in
-`deliverables/`:
+`deliverables/jar/`:
 
-- `deliverables/Mesos-server.jar` — the server
-- `deliverables/Mesos-gui.jar` — the graphical (GUI) client
-- `deliverables/Mesos-cli.jar` — the textual (TUI/CLI) client
+- `deliverables/jar/Mesos-server.jar` — the server
+- `deliverables/jar/Mesos-gui.jar` — the graphical (GUI) client
+- `deliverables/jar/Mesos-cli.jar` — the textual (TUI/CLI) client
 
 > **Choosing the interface** is simply a matter of which client jar you launch
 > (`Mesos-gui.jar` vs `Mesos-cli.jar`).
