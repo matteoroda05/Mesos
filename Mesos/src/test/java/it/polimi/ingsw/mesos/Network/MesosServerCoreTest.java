@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.network;
 
+import it.polimi.ingsw.mesos.database.DatabaseManager;
 import it.polimi.ingsw.mesos.dto.game.*;
 import it.polimi.ingsw.mesos.dto.lobby.*;
 import it.polimi.ingsw.mesos.dto.event.*;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.controller.enums.GameStatus;
@@ -38,6 +40,11 @@ import it.polimi.ingsw.mesos.model.Player;
 import it.polimi.ingsw.mesos.model.tiles.OfferTile;
 
 class MesosServerCoreTest {
+    @BeforeAll
+    static void setDBTestMode() {
+        DatabaseManager.useTestMode();
+    }
+
     @Test
     void constructorRejectsNullCardData() {
         assertThrows(IllegalArgumentException.class, () -> new MesosServerCore(null));

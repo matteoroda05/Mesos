@@ -1,5 +1,6 @@
 package it.polimi.ingsw.mesos.database;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,18 +8,52 @@ import java.util.List;
 /**
  * Implement a local database with the scores of matches played.
  * Has function utilities to interact with the database.
+ * Implements the singleton pattern.
  */
 public class DatabaseManager {
     /**
      * Name of local instance of the database.
      */
-    private static final String DB_URL = "jdbc:sqlite:game_leaderboard.db";
+    private static String dbUrl = "jdbc:sqlite:game_leaderboard.db";
+
+    /**
+     * Singleton instance. \verb{volatile} is needed for thread safety during construction.
+     */
+    private static volatile DatabaseManager instance;
+
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); // lock for write operations
 
     /**
      * Initializes the local leaderboard database and creates its table if needed.
      */
-    public DatabaseManager() {
+    private DatabaseManager() {
         initializeDatabase();
+    }
+
+    /**
+     * Creates the instance if not already created. Ensures thread safety during creation.
+     * @return instance of database manager.
+     */
+    public static DatabaseManager getInstance() {
+        if (instance == null) {
+            synchronized (DatabaseManager.class) {
+                if (instance == null) {
+                    instance = new DatabaseManager();
+                }
+            }
+        }
+        return instance;
+    }
+
+    /**
+     * Call during testing: results will be saved in a RAM-hosted database,
+     * without modifying the real database.
+     */
+    public static void useTestMode() {
+        synchronized (DatabaseManager.class) {
+            dbUrl = "jdbc:sqlite::memory:";
+            instance = null; // Forza il Singleton a rigenerarsi con il nuovo URL in RAM
+        }
     }
 
     /**
@@ -28,7 +63,7 @@ public class DatabaseManager {
      * @throws SQLException if the connection cannot be established
      */
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL);
+        return DriverManager.getConnection(dbUrl);
     }
 
     /**
@@ -63,6 +98,7 @@ public class DatabaseManager {
     public boolean saveMatchResult(String nickname, int finalScore, Timestamp timestamp, int numPlayers) {
         String insertSQL = "INSERT INTO match_history (nickname, final_score, match_date, num_players) VALUES (?, ?, ?, ?)";
 
+        rwLock.writeLock().lock();
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
 
@@ -75,6 +111,8 @@ public class DatabaseManager {
         } catch (SQLException e) {
             System.err.println("[DB] Error during results save: " + e.getMessage());
             return false;
+        } finally {
+            rwLock.writeLock().unlock();
         }
 
         return true;
@@ -88,6 +126,8 @@ public class DatabaseManager {
      */
     public int getPlayerRank(int finalScore, int numPlayers) {
         String rankSQL = "SELECT COUNT(*) + 1 AS rank FROM match_history WHERE num_players = ? AND final_score > ?";
+
+        rwLock.readLock().lock();
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(rankSQL)) {
 
@@ -99,6 +139,8 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             System.err.println("[DB] Errore calcolo rank: " + e.getMessage());
+        } finally {
+            rwLock.readLock().unlock();
         }
         return -1;
     }
@@ -112,6 +154,7 @@ public class DatabaseManager {
         List<LeaderboardEntry> leaderboard = new ArrayList<>();
         String querySQL = "SELECT nickname, final_score, match_date FROM match_history WHERE num_players = ? ORDER BY final_score DESC LIMIT 50";
 
+        rwLock.readLock().lock();
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(querySQL)) {
 
@@ -141,7 +184,10 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             System.err.println("[DB] Errore recupero classifica: " + e.getMessage());
+        } finally {
+            rwLock.readLock().unlock();
         }
+
         return leaderboard;
     }
 
