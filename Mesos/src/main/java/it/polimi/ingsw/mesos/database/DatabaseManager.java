@@ -47,12 +47,35 @@ public class DatabaseManager {
 
     /**
      * Call during testing: results will be saved in a RAM-hosted database,
-     * without modifying the real database.
+     * without modifying the real database. Use a different database in each test
+     * to avoid conflicts.
      */
     public static void useTestMode() {
         synchronized (DatabaseManager.class) {
-            dbUrl = "jdbc:sqlite::memory:";
-            instance = null; // Forza il Singleton a rigenerarsi con il nuovo URL in RAM
+            // shared cache for in memory to ensure database last until end of test
+            dbUrl = "jdbc:sqlite::memory:?cache=shared";
+            instance = null;
+
+            try {
+
+                // clear database to avoid state leakage in between tests
+                try (Connection conn = DriverManager.getConnection(dbUrl);
+                     Statement stmt = conn.createStatement()) {
+
+                    stmt.execute("CREATE TABLE IF NOT EXISTS match_history ("
+                            + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                            + "nickname TEXT NOT NULL, "
+                            + "final_score INTEGER NOT NULL, "
+                            + "match_date TEXT NOT NULL, "
+                            + "num_players INTEGER NOT NULL"
+                            + ");");
+
+                    stmt.execute("DELETE FROM match_history;");
+                }
+
+            } catch (SQLException e) {
+                System.err.println("[DB] Failed to establish test keep-alive connection: " + e.getMessage());
+            }
         }
     }
 

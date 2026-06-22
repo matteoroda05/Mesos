@@ -9,11 +9,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +36,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.sql.Timestamp;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class MesosGameBoardViewTest {
     @BeforeAll
@@ -523,7 +520,7 @@ class MesosGameBoardViewTest {
 
             HBox topRow = singleNode(view, ".table-row-top", HBox.class);
             StackPane marketCard = singleNode(topRow, ".market-card", StackPane.class);
-            assertEquals(null, marketCard.getClip());
+            assertNull(marketCard.getClip());
             return null;
         });
     }
