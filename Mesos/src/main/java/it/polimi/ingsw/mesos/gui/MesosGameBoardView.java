@@ -48,7 +48,7 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double DESIGN_WIDTH = 920;
     private static final double DESIGN_HEIGHT = 370;
     private static final double TABLETOP_VERTICAL_OFFSET_RATIO = 0.07;
-    private static final double LEFT_HUD_WIDTH = 340;
+    private static final double LEFT_HUD_WIDTH = 300;
     private static final double MARKET_CARD_WIDTH = 85;
     private static final double MARKET_CARD_HEIGHT = 130;
     private static final double MARKET_CARD_SLOT_HEIGHT = MARKET_CARD_HEIGHT + 8;
@@ -207,7 +207,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.rankingBox.setVisible(false);
         this.rankingBox.setManaged(false);
 
-        this.tribeStatsBox = new VBox(6);
+        this.tribeStatsBox = new VBox(3);
         this.tribeStatsBox.getStyleClass().add("tribe-stats-box");
         this.tribeStatsBox.setVisible(false);
         this.tribeStatsBox.setManaged(false);
@@ -233,6 +233,8 @@ public final class MesosGameBoardView extends BorderPane {
         this.playerButtonsPane.setVisible(false);
         this.playerButtonsPane.setManaged(false);
         this.playerButtonsPane.setMaxWidth(Region.USE_PREF_SIZE);
+        this.playerButtonsPane.setMaxHeight(Region.USE_PREF_SIZE);
+        this.playerButtonsPane.setPickOnBounds(false);
 
         this.playerTribeOverlay = new StackPane();
         this.playerTribeOverlay.getStyleClass().add("player-tribe-overlay");
@@ -587,11 +589,12 @@ public final class MesosGameBoardView extends BorderPane {
 
         VBox statusPanel = buildCompactInfoPanel();
         statusPanel.setMaxHeight(Region.USE_PREF_SIZE);
-        statusPanel.setMaxWidth(Double.MAX_VALUE);
+        statusPanel.setMaxWidth(LEFT_HUD_WIDTH);
+        tribeStatsBox.setPrefWidth(LEFT_HUD_WIDTH);
         tribeStatsBox.setMaxHeight(Region.USE_PREF_SIZE);
-        tribeStatsBox.setMaxWidth(Double.MAX_VALUE);
+        tribeStatsBox.setMaxWidth(LEFT_HUD_WIDTH);
 
-        VBox leftHudColumn = new VBox(8, statusPanel, tribeStatsBox);
+        VBox leftHudColumn = new VBox(3, statusPanel, tribeStatsBox);
         leftHudColumn.getStyleClass().add("left-hud-column");
         leftHudColumn.setAlignment(Pos.BOTTOM_LEFT);
         leftHudColumn.setPrefWidth(LEFT_HUD_WIDTH);
@@ -659,14 +662,14 @@ public final class MesosGameBoardView extends BorderPane {
         VBox titleSection = new VBox(2, titleRow, subtitleLabel);
         titleSection.setMaxWidth(650);
 
-        VBox statusLines = new VBox(3, turnLabel, actionHintLabel);
+        VBox statusLines = new VBox(1, turnLabel, actionHintLabel);
         statusLines.setMaxWidth(380);
 
-        VBox infoPanel = new VBox(10, titleSection, statusLines, actionRow);
+        VBox infoPanel = new VBox(7, titleSection, statusLines, actionRow);
         infoPanel.getStyleClass().add("info-panel");
         infoPanel.setAlignment(Pos.TOP_LEFT);
-        infoPanel.setPrefWidth(390);
-        infoPanel.setMaxWidth(430);
+        infoPanel.setPrefWidth(LEFT_HUD_WIDTH);
+        infoPanel.setMaxWidth(LEFT_HUD_WIDTH);
         return infoPanel;
     }
 
@@ -1115,14 +1118,14 @@ public final class MesosGameBoardView extends BorderPane {
         title.getStyleClass().add("tribe-stats-title");
         tribeStatsBox.getChildren().add(title);
 
-        VBox leftCol = new VBox(6,
+        VBox leftCol = new VBox(3,
                 tribeStatsRow("Food " + player.food()),
                 tribeStatsRow("Prestige " + player.prestigePoints()),
                 tribeStatsRow("Characters " + player.characterCount()),
                 tribeStatsRow("Buildings " + player.buildingCount())
         );
 
-        VBox rightCol = new VBox(6,
+        VBox rightCol = new VBox(3,
                 tribeStatsRow("Shamanic stars " + player.shamanStars()),
                 tribeStatsRow("Gatherers discount " + player.gatherersDiscount()),
                 tribeStatsRow("Builders discount " + player.buildersDiscount()),

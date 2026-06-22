@@ -159,6 +159,32 @@ class MesosGameBoardViewTest {
     }
 
     @Test
+    void playerButtonsDoNotBlockTopLeftMarketCards() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshotWithManyRows(10, 0));
+            view.applyCss();
+            view.layout();
+
+            HBox buttonsPane = singleNode(view, ".player-buttons-pane", HBox.class);
+            HBox topCards = singleNode(singleNode(view, ".table-row-top", HBox.class),
+                    ".table-row-cards", HBox.class);
+            Node firstTopCard = topCards.getChildren().getFirst();
+            Bounds buttonsBounds = buttonsPane.localToScene(buttonsPane.getBoundsInLocal());
+            Bounds cardBounds = firstTopCard.localToScene(firstTopCard.getBoundsInLocal());
+
+            assertEquals(Region.USE_PREF_SIZE, buttonsPane.getMaxHeight());
+            assertFalse(buttonsPane.isPickOnBounds());
+            assertFalse(buttonsBounds.intersects(cardBounds),
+                    "player buttons " + buttonsBounds + " overlap top-left card " + cardBounds);
+            return null;
+        });
+    }
+
+    @Test
     void infoButtonOpensTopRightPopupWithTwoCardsAndClosesOnOutsideClick() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
@@ -328,6 +354,59 @@ class MesosGameBoardViewTest {
                     "left HUD " + leftHudBounds + " overlaps bottom card " + bottomCardBounds);
             assertFalse(deckStripBounds.intersects(bottomCardBounds),
                     "deck strip " + deckStripBounds + " overlaps bottom card " + bottomCardBounds);
+            return null;
+        });
+    }
+
+    @Test
+    void leftHudPanelsStayWithinTheirColumnAndClearOfTurnOrder() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshot());
+            view.applyCss();
+            view.layout();
+
+            VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
+            Region statusPanel = (Region) leftColumn.getChildren().get(0);
+            Region tribePanel = (Region) leftColumn.getChildren().get(1);
+            VBox turnOrder = singleNode(view, ".minimal-turn-bar", VBox.class);
+            Bounds statusBounds = statusPanel.localToScene(statusPanel.getBoundsInLocal());
+            Bounds tribeBounds = tribePanel.localToScene(tribePanel.getBoundsInLocal());
+            Bounds turnOrderBounds = turnOrder.localToScene(turnOrder.getBoundsInLocal());
+
+            assertTrue(statusPanel.getMaxWidth() <= leftColumn.getPrefWidth());
+            assertTrue(tribePanel.getMaxWidth() <= leftColumn.getPrefWidth());
+            assertFalse(statusBounds.intersects(turnOrderBounds),
+                    "status panel " + statusBounds + " overlaps turn order " + turnOrderBounds);
+            assertFalse(tribeBounds.intersects(turnOrderBounds),
+                    "tribe panel " + tribeBounds + " overlaps turn order " + turnOrderBounds);
+            return null;
+        });
+    }
+
+    @Test
+    void leftHudClearsTurnOrderAtScreenshotViewport() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1470, 850);
+            view.resize(1470, 850);
+
+            view.updateSnapshot(snapshot());
+            view.applyCss();
+            view.layout();
+
+            VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
+            VBox turnOrder = singleNode(view, ".minimal-turn-bar", VBox.class);
+            Bounds leftHudBounds = leftColumn.localToScene(leftColumn.getBoundsInLocal());
+            Bounds turnOrderBounds = turnOrder.localToScene(turnOrder.getBoundsInLocal());
+
+            assertTrue(leftHudBounds.getHeight() <= 250,
+                    "left HUD should stay compact but was " + leftHudBounds.getHeight() + " px tall");
+            assertFalse(leftHudBounds.intersects(turnOrderBounds),
+                    "left HUD " + leftHudBounds + " overlaps turn order " + turnOrderBounds);
             return null;
         });
     }

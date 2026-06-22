@@ -779,9 +779,9 @@
     -fx-border-color: rgba(255, 176, 92, 0.16);
     -fx-border-radius: 14;
     -fx-background-radius: 14;
-    -fx-padding: 14 18 14 18;
-    -fx-pref-width: 340;
-    -fx-max-width: 340;
+    -fx-padding: 10 14 10 14;
+    -fx-pref-width: 300;
+    -fx-max-width: 300;
 }
 
 .info-panel {
@@ -789,12 +789,12 @@
     -fx-border-color: rgba(255, 176, 92, 0.16);
     -fx-border-radius: 14;
     -fx-background-radius: 14;
-    -fx-padding: 10;
+    -fx-padding: 8;
 }
 
 .left-hud-column {
-    -fx-pref-width: 340;
-    -fx-max-width: 340;
+    -fx-pref-width: 300;
+    -fx-max-width: 300;
 }
 
 .player-buttons-pane {
@@ -1018,7 +1018,7 @@
 }
 
 .tribe-stats-row {
-    -fx-font-size: 15px;
+    -fx-font-size: 13px;
     -fx-text-fill: -mesos-text;
 }
 
