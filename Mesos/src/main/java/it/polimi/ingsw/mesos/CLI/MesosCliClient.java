@@ -479,13 +479,29 @@ public final class MesosCliClient {
         printSnapshotIfAvailable();
 
         while (true) {
-            if (snapshot != null && snapshot.finished()) {
-                return promptFinishedGameExit(client);
-            }
-
             String command = promptRaw("mesos> ").trim();
+
+            if (command.equalsIgnoreCase("quit") || command.equalsIgnoreCase("exit") || command.equalsIgnoreCase("esci")) {
+                printLine("Closing the CLI client.");
+                return GameLoopExit.QUIT_CLIENT;
+            }
             if (snapshot != null && snapshot.finished()) {
-                return promptFinishedGameExit(client);
+                if (command.equalsIgnoreCase("lobby") || command.equalsIgnoreCase("l")) {
+                    gameName = null;
+                    snapshot = null;
+                    return GameLoopExit.RETURN_TO_LOBBY;
+                }
+                if (command.equalsIgnoreCase("rank") || command.equalsIgnoreCase("r")) {
+                    var output = client.getRankings(new RankingsRequest(gameName));
+                    printLine(output.success() ? printer.renderRankings(output.rankings()) : "[error] " + output.message());
+                } else {
+                    printLine(String.join(System.lineSeparator(),
+                            "The game is over. What do you want to do next?",
+                            "  rank | r              view rankings",
+                            "  lobby | l             go back to lobby",
+                            "  quit | esci | exit    closes the client"));
+                }
+                continue;
             }
             if (command.isEmpty()) {
                 printLine("Command cannot be empty.");
@@ -495,10 +511,6 @@ public final class MesosCliClient {
                 refreshSnapshot(client);
                 printSnapshotIfAvailable();
                 continue;
-            }
-            if (command.equalsIgnoreCase("quit") || command.equalsIgnoreCase("exit") || command.equalsIgnoreCase("esci")) {
-                printLine("Closing the CLI client.");
-                return GameLoopExit.QUIT_CLIENT;
             }
             if (command.equalsIgnoreCase("help") || command.equalsIgnoreCase("aiuto")) {
                 printLine(printer.renderHelp());
@@ -527,46 +539,6 @@ public final class MesosCliClient {
             } catch (IllegalArgumentException exception) {
                 printLine("Invalid command: " + exception.getMessage());
                 printLine(printer.renderHelp());
-            }
-        }
-    }
-
-    /**
-     * Prompts for the next action when the current game has finished.
-     *
-     * @return selected exit action
-     * @throws IOException if input stream closes
-     */
-    private GameLoopExit promptFinishedGameExit(GameClient client) throws IOException {
-        while (true) {
-            final var answer = promptRaw(String.join(System.lineSeparator(),
-                    "",
-                    "The game is over. What do you want to do next?",
-                    "  rank | r              view rankings",
-                    "  lobby | l             prints the current snapshot again",
-                    "  quit | esci | exit    closes the client",
-                    ""));
-            switch (answer) {
-                case "rank":
-                case "r":
-                    final var output = client.getRankings(new RankingsRequest(gameName));
-                    if (output.success()) {
-                        printLine(printer.renderRankings(output.rankings()));
-                    } else {
-                        printLine("[error] " + output.message());
-                    }
-                    break;
-                case "lobby":
-                case "l":
-                    gameName = null;
-                    snapshot = null;
-                    return GameLoopExit.RETURN_TO_LOBBY;
-                case "quit":
-                case "esci":
-                case "exit":
-                    printLine("Closing the CLI client.");
-                    return GameLoopExit.QUIT_CLIENT;
-                default:
             }
         }
     }
@@ -619,18 +591,41 @@ public final class MesosCliClient {
                                 () -> printLine("Your player data is not yet available."));
             }
             case "show-cards" -> {
-                if (tokens.length != 2) {
-                    throw new IllegalArgumentException("use: show-cards <nickname>");
-                }
+                String targetNickname = parseShowCardsNickname(command);
                 snapshot.players().stream()
-                        .filter(p -> p.nickname().equalsIgnoreCase(tokens[1]))
+                        .filter(p -> p.nickname().equalsIgnoreCase(targetNickname))
                         .findFirst()
                         .ifPresentOrElse(
                                 p -> printLine(printer.renderPlayerCards(p)),
-                                () -> printLine("Player '" + tokens[1] + "' not found."));
+                                () -> printLine("Player '" + targetNickname + "' not found."));
             }
             default -> throw new IllegalArgumentException("unknown command '" + tokens[0] + "'");
         }
+    }
+
+    /**
+     * Extracts the nickname argument for show-cards, accepting optional quotes
+     * around names that contain spaces.
+     *
+     * @param command raw show-cards command
+     * @return nickname to search in the current snapshot
+     * @throws IllegalArgumentException if the nickname is missing
+     */
+    private String parseShowCardsNickname(String command) {
+        String[] parts = command.trim().split("\\s+", 2);
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("use: show-cards <nickname>");
+        }
+        String targetNickname = parts[1].trim();
+        if (targetNickname.length() >= 2
+                && targetNickname.charAt(0) == '"'
+                && targetNickname.charAt(targetNickname.length() - 1) == '"') {
+            targetNickname = targetNickname.substring(1, targetNickname.length() - 1);
+        }
+        if (targetNickname.isBlank()) {
+            throw new IllegalArgumentException("use: show-cards <nickname>");
+        }
+        return targetNickname;
     }
 
     /**

@@ -415,6 +415,26 @@ class MesosCliClientTest {
     }
 
     @Test
+    void showCardsAcceptsNicknamesWithSpacesAndOptionalQuotes() throws Exception {
+        MesosCliClient cli = newCli("");
+        FakeClient client = new FakeClient();
+        setField(cli, "snapshot", snapshot(GameStatus.ROUND_OFFER, List.of(
+                new PlayerSummary("Alice", Color.BLUE, 3, 4, 2, 1),
+                new PlayerSummary("the best", Color.YELLOW, 5, 6, 1, 0))));
+        ByteArrayOutputStream output = captureOutput();
+
+        invoke(cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class},
+                client, "show-cards \"the best\"");
+        invoke(cli, "handleGameCommand", new Class<?>[] {GameClient.class, String.class},
+                client, "show-cards the best");
+
+        String text = output.toString(StandardCharsets.UTF_8);
+        assertTrue(text.contains("the best"));
+        assertTrue(text.contains("food 5"));
+        assertFalse(text.contains("Player 'the best' not found."));
+    }
+
+    @Test
     void waitRejectsNegativeValuesAndHonorsInterrupts() throws Exception {
         MesosCliClient cli = newCli("");
 
@@ -449,7 +469,15 @@ class MesosCliClientTest {
         return snapshot(status, false);
     }
 
+    private static GameSnapshot snapshot(GameStatus status, List<PlayerSummary> players) {
+        return snapshot(status, false, players);
+    }
+
     private static GameSnapshot snapshot(GameStatus status, boolean finished) {
+        return snapshot(status, finished, List.of(new PlayerSummary("Alice", Color.BLUE, 3, 4, 2, 1)));
+    }
+
+    private static GameSnapshot snapshot(GameStatus status, boolean finished, List<PlayerSummary> players) {
         return new GameSnapshot(
                 "Room",
                 2,
@@ -464,7 +492,7 @@ class MesosCliClientTest {
                 1,
                 1,
                 List.of(Color.BLUE),
-                List.of(new PlayerSummary("Alice", Color.BLUE, 3, 4, 2, 1)),
+                players,
                 List.of(new OfferTileSummary(0, 'A', 1, 0, 0, true, null, null)),
                 List.of(new TurnOrderSpaceSummary(0, 0, Color.BLUE, "Alice")),
                 List.of(new CardSummary(0, "Hunter", Era.FIRST, false, "hunter", null, null)),
