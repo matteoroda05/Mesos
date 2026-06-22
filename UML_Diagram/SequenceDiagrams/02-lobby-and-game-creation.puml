@@ -6,7 +6,7 @@ participant Client
 participant Server
 
 Client->Server: LobbyRequest
-Server-->Client: GameOperationResult(lobby snapshot)
+Server-->Client: GameOperationResult.Lobby(lobby snapshot)
 
 loop while the player remains in the lobby
 Client->Server: LobbyRequest
@@ -17,9 +17,9 @@ group create a game
 Client->Server: CreateGameRequest(gameName, playerCount)
 
 alt game name is available
-Server-->Client: GameOperationResult(Game created, snapshot)
+Server-->Client: GameOperationResult.Snapshot(Game created, snapshot)
 else game name already exists
-Server-->Client: GameOperationResult(GAME_NAME_TAKEN, lobby snapshot)
+Server-->Client: GameOperationResult.Err(GAME_NAME_TAKEN, lobby snapshot)
 end
 end
 

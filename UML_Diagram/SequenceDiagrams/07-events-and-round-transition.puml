@@ -27,7 +27,7 @@ Server-->Client1: EventNotification
 Server-->Client2: EventNotification
 end
 
-Server-->Client1: GameOperationResult(Card chosen, same snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Card chosen, same snapshot)
 
 note over Client1, Client2
 The board snapshot is sent before EventNotification,

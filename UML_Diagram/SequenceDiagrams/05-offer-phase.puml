@@ -17,9 +17,9 @@ Server->Server: enter ROUND_ACTIONS
 end
 Server-->Client1: GameViewUpdate(updated snapshot and status)
 Server-->Client2: GameViewUpdate(updated snapshot and status)
-Server-->Client1: GameOperationResult(Offer tile chosen, same snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Offer tile chosen, same snapshot)
 else invalid offer, wrong phase, or wrong player
-Server-->Client1: GameOperationResult(failure, current snapshot)
+Server-->Client1: GameOperationResult.Err(failure, current snapshot)
 end
 end
 

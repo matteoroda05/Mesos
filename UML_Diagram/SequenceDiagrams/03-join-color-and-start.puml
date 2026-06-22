@@ -10,34 +10,34 @@ group first player reserves a color and joins
 Client1->Server: ChooseColorRequest(BLUE)
 
 alt color is available
-Server-->Client1: GameOperationResult(color reserved, snapshot)
+Server-->Client1: GameOperationResult.Snapshot(color reserved, snapshot)
 
 Client1->Server: JoinGameRequest
 alt game still has space
-Server-->Client1: GameOperationResult(Player joined, snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Player joined, snapshot)
 else game became full before the join
-Server-->Client1: GameOperationResult(GAME_FULL)
+Server-->Client1: GameOperationResult.Err(GAME_FULL)
 end
 else game does not exist
-Server-->Client1: GameOperationResult(GAME_NOT_FOUND)
+Server-->Client1: GameOperationResult.Err(GAME_NOT_FOUND)
 else game already started
-Server-->Client1: GameOperationResult(COLOR_SELECTION_CLOSED)
+Server-->Client1: GameOperationResult.Err(COLOR_SELECTION_CLOSED)
 end
 end
 
 group second player selects a color
 Client2->Server: ChooseColorRequest(BLUE)
-Server-->Client2: GameOperationResult(COLOR_ALREADY_TAKEN)
+Server-->Client2: GameOperationResult.Err(COLOR_ALREADY_TAKEN)
 
 Client2->Server: ChooseColorRequest(RED)
-Server-->Client2: GameOperationResult(color reserved, snapshot)
+Server-->Client2: GameOperationResult.Snapshot(color reserved, snapshot)
 end
 
 group last player joins
 Client2->Server: JoinGameRequest
 Server->Server: create players and start game
 Server-->Client1: GameViewUpdate(game starts)
-Server-->Client2: GameOperationResult(game starts, snapshot)
+Server-->Client2: GameOperationResult.Snapshot(game starts, snapshot)
 end
 
 note over Client1, Client2

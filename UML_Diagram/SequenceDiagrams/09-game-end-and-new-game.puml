@@ -27,7 +27,7 @@ end
 
 Server-->Client1: GameViewUpdate(finished snapshot)
 Server-->Client2: GameViewUpdate(finished snapshot)
-Server-->Client1: GameOperationResult(final snapshot)
+Server-->Client1: GameOperationResult.Snapshot(final snapshot)
 
 group show leaderboard on game end
 note over Client1, Client2
@@ -39,36 +39,36 @@ end note
 Client1->Server: RankingsRequest(gameName)
 Server->DB: getLeaderboardByNumPlayers(numPlayers)
 DB-->Server: top scores for that player count
-Server-->Client1: GameOperationResult(rankings)
+Server-->Client1: GameOperationResult.Rankings(rankings)
 Client1->Client1: render leaderboard
 
 Client2->Server: RankingsRequest(gameName)
 Server->DB: getLeaderboardByNumPlayers(numPlayers)
 DB-->Server: top scores for that player count
-Server-->Client2: GameOperationResult(rankings)
+Server-->Client2: GameOperationResult.Rankings(rankings)
 Client2->Client2: render leaderboard
 end
 
 group leave the finished game
 Client1->Server: UnsubscribeGameRequest
 Server->Server: remove update sink and finished-game membership
-Server-->Client1: GameOperationResult(subscription disabled)
+Server-->Client1: GameOperationResult.Snapshot(subscription disabled)
 
 Client2->Server: UnsubscribeGameRequest
 Server->Server: remove update sink and finished-game membership
-Server-->Client2: GameOperationResult(subscription disabled)
+Server-->Client2: GameOperationResult.Snapshot(subscription disabled)
 end
 
 group return to lobby and start again
 Client1->Server: LobbyRequest
-Server-->Client1: GameOperationResult(joinable games)
+Server-->Client1: GameOperationResult.Lobby(joinable games)
 
 alt create another game
 Client1->Server: CreateGameRequest
-Server-->Client1: GameOperationResult(Game created)
+Server-->Client1: GameOperationResult.Snapshot(Game created)
 else join another game
 Client1->Server: JoinGameRequest
-Server-->Client1: GameOperationResult(Player joined)
+Server-->Client1: GameOperationResult.Snapshot(Player joined)
 end
 end
 

@@ -18,15 +18,15 @@ end
 Client->Server: NicknameRequest
 
 alt nickname is available
-Server-->Client: GameOperationResult(success)
+Server-->Client: GameOperationResult.Nickname(success)
 loop every 2 seconds
 Client->Server: HeartbeatRequest(lobby)
-Server-->Client: GameOperationResult(success)
+Server-->Client: GameOperationResult.SimpleOk(success)
 end
 else nickname belongs to a disconnected player
-Server-->Client: GameOperationResult(rejoinAvailable = true)
+Server-->Client: GameOperationResult.Nickname(rejoinAvailable = true)
 else nickname is already active
-Server-->Client: GameOperationResult(PLAYER_NAME_TAKEN)
+Server-->Client: GameOperationResult.Err(PLAYER_NAME_TAKEN)
 end
 
 note over Client, Server

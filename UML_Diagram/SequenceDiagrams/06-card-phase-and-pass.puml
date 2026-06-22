@@ -14,24 +14,24 @@ alt valid card choice
 Server->Server: apply card and advance state
 Server-->Client1: GameViewUpdate(updated snapshot)
 Server-->Client2: GameViewUpdate(updated snapshot)
-Server-->Client1: GameOperationResult(Card chosen, same snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Card chosen, same snapshot)
 
 opt after-everyone building grants an extra top-row choice
 alt player takes the extra card
 Client1->Server: ChooseCardRequest(cardIndex, topRow = true)
 Server-->Client1: GameViewUpdate(updated snapshot)
 Server-->Client2: GameViewUpdate(updated snapshot)
-Server-->Client1: GameOperationResult(Card chosen, snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Card chosen, snapshot)
 else player declines the extra card
 Client1->Server: PassRequest
 Server-->Client1: GameViewUpdate(updated snapshot)
 Server-->Client2: GameViewUpdate(updated snapshot)
-Server-->Client1: GameOperationResult(Turn passed, snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Turn passed, snapshot)
 end
 end
 
 else invalid card, wrong turn, or wrong phase
-Server-->Client1: GameOperationResult(failure, current snapshot)
+Server-->Client1: GameOperationResult.Err(failure, current snapshot)
 end
 end
 

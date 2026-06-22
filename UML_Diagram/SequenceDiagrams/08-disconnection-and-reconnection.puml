@@ -8,7 +8,7 @@ participant Client2
 
 loop every 2 seconds while connected
 Client1->Server: HeartbeatRequest(game, nickname)
-Server-->Client1: GameOperationResult(I am active)
+Server-->Client1: GameOperationResult.SimpleOk(I am active)
 end
 
 Client1 -x Server: connection or heartbeat stops
@@ -25,12 +25,12 @@ else only one player remains connected
 Server-->Client2: GameViewUpdate(game suspended)
 alt player reconnects within 60 seconds
 Client1->Server: NicknameRequest
-Server-->Client1: GameOperationResult(rejoinAvailable = true)
+Server-->Client1: GameOperationResult.Nickname(rejoinAvailable = true)
 Client1->Server: JoinGameRequest(rejoin = true)
 Server-->Client2: GameViewUpdate(player reconnected)
-Server-->Client1: GameOperationResult(Player reconnected, snapshot)
+Server-->Client1: GameOperationResult.Snapshot(Player reconnected, snapshot)
 Client1->Server: SubscribeGameRequest
-Server-->Client1: GameOperationResult(current snapshot)
+Server-->Client1: GameOperationResult.Snapshot(current snapshot)
 else 60-second timeout expires
 Server->Server: declare the only connected player winner
 Server-->Client2: GameViewUpdate(finished snapshot)

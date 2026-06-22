@@ -10,7 +10,7 @@ participant Client4
 
 group Game A
 Client1->Server: CreateGameRequest(Game A)
-Server-->Client1: GameOperationResult(Game created)
+Server-->Client1: GameOperationResult.Snapshot(Game created)
 Client1->Server: JoinGameRequest(Game A)
 Client2->Server: JoinGameRequest(Game A)
 Client1->Server: SubscribeGameRequest(Game A)
@@ -19,7 +19,7 @@ end
 
 group Game B
 Client3->Server: CreateGameRequest(Game B)
-Server-->Client3: GameOperationResult(Game created)
+Server-->Client3: GameOperationResult.Snapshot(Game created)
 Client3->Server: JoinGameRequest(Game B)
 Client4->Server: JoinGameRequest(Game B)
 Client3->Server: SubscribeGameRequest(Game B)
