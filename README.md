@@ -10,6 +10,17 @@ each player runs their own client (textual or graphical), connecting over Socket
 
 ---
 
+## What's under `deliverables/`
+
+| Path | Contents                                                                                                                                                                     |
+|------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `deliverables/jars/` | The three self-contained executable jars: `Mesos-server.jar`, `Mesos-gui.jar` (GUI client), `Mesos-cli.jar` (TUI client). These are what you run — see §3.                   |
+| `deliverables/javadoc/` | Generated API documentation. Open `deliverables/javadoc/index.html` in a browser.                                                                                            |
+| `deliverables/UML-Diagrams/Sequence-Diagrams/` | Sequence diagrams (SVG) for the main networking/multiplayer scenarios — connection, lobby, offer/card phases, disconnection & reconnection, multiple simultaneous games, etc. |
+| `deliverables/UML-Diagrams/Structural-Diagrams/` | Structural (class) diagrams (SVG) of the system, broken down by package (`model`, `controller`, `network`, `view`, `dto`).                                                    |
+
+---
+
 ## 1. What we implemented
 
 This section maps the project onto the official grading table (*Tabella 1*,
@@ -71,11 +82,11 @@ java -version
 ## 3. Running the application (deliverable jars)
 
 All commands below are run from the **repository root**, using the jars in
-`deliverables/jar/`:
+`deliverables/jars/`:
 
-- `deliverables/jar/Mesos-server.jar` — the server
-- `deliverables/jar/Mesos-gui.jar` — the graphical (GUI) client
-- `deliverables/jar/Mesos-cli.jar` — the textual (TUI/CLI) client
+- `deliverables/jars/Mesos-server.jar` — the server
+- `deliverables/jars/Mesos-gui.jar` — the graphical (GUI) client
+- `deliverables/jars/Mesos-cli.jar` — the textual (TUI/CLI) client
 
 > **Choosing the interface** is simply a matter of which client jar you launch
 > (`Mesos-gui.jar` vs `Mesos-cli.jar`).
@@ -84,7 +95,7 @@ All commands below are run from the **repository root**, using the jars in
 ### 3.1 Start the server
 
 ```bash
-java -jar deliverables/Mesos-server.jar
+java -jar deliverables/jars/Mesos-server.jar
 ```
 
 The server starts **both** transports at once and prints the host and ports it is
@@ -104,7 +115,7 @@ the directory where you launch it.
 need):
 
 ```bash
-java -jar deliverables/Mesos-server.jar [socketPort] [rmiPort] [rmiServiceName] [rmiHost]
+java -jar deliverables/jars/Mesos-server.jar [socketPort] [rmiPort] [rmiServiceName] [rmiHost]
 ```
 
 | Position | Argument | Default |
@@ -120,7 +131,7 @@ java -jar deliverables/Mesos-server.jar [socketPort] [rmiPort] [rmiServiceName] 
 ### 3.2 Start a GUI client
 
 ```bash
-java -jar deliverables/Mesos-gui.jar
+java -jar deliverables/jars/Mesos-gui.jar
 ```
 
 On the start screen, pick the **transport** (Socket or RMI) and the **server
@@ -129,7 +140,7 @@ host** (defaults to `127.0.0.1`), then connect and choose your nickname.
 ### 3.3 Start a CLI client
 
 ```bash
-java -jar deliverables/Mesos-cli.jar
+java -jar deliverables/jars/Mesos-cli.jar
 ```
 
 The client prompts, in order, for:
@@ -146,69 +157,12 @@ others the CLI, and some may connect over Socket while others use RMI.
 
 ## 4. Testing tips
 
-> ⚠️ **LAN only — turn off firewalls and VPNs.** The game is meant to be played
-> over a **local network (LAN)**. Public Wi-Fi networks are **not tested** and are
-> not required. Before connecting, **disable any firewall and disconnect any VPN**
-> on every machine involved (server and clients) — they can silently block the
-> connection, especially RMI, which uses dynamically assigned callback ports.
+> ⚠️ **LAN only.** The game is meant to be played over a **local network (LAN)**;
+> public Wi-Fi networks are not tested and not required. **Turn off any firewall
+> and disconnect any VPN** on every machine before connecting, as they can
+> silently block the connection (especially RMI).
 
-### 4.1 Disabling firewalls and VPNs
-
-Run the firewall commands as **administrator / root**. These turn the firewall
-**fully off**; the matching *restore* command puts your machine back to its
-protected state — **run it once you finish playing**.
-
-**Windows** (Administrator *Command Prompt* or *PowerShell*):
-
-```bat
-:: turn OFF (all profiles)
-netsh advfirewall set allprofiles state off
-
-:: restore afterwards
-netsh advfirewall set allprofiles state on
-```
-
-**macOS:**
-
-```bash
-# turn OFF
-sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
-
-# restore afterwards
-sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
-```
-
-**Linux** (depends on the firewall in use — save your rules first so you can
-restore them):
-
-```bash
-# back up current iptables rules before touching anything
-sudo iptables-save > ~/iptables.backup
-
-# turn OFF (use whichever applies to your system)
-sudo ufw disable                     # ufw (Debian/Ubuntu)
-sudo systemctl stop firewalld        # firewalld (Fedora/RHEL)
-sudo iptables -P INPUT ACCEPT; sudo iptables -P FORWARD ACCEPT; sudo iptables -P OUTPUT ACCEPT; sudo iptables -F   # raw iptables: accept everything and flush
-
-# restore afterwards (match what you disabled)
-sudo ufw enable                      # ufw
-sudo systemctl start firewalld       # firewalld
-sudo iptables-restore < ~/iptables.backup   # raw iptables (from the backup above)
-```
-
-**VPNs (any OS):** the harshest, most reliable way is to **fully quit the VPN
-client app** (not just toggle it off). On Linux you can also bring it down via
-NetworkManager:
-
-```bash
-nmcli connection show --active       # find the VPN connection name
-nmcli connection down "<vpn-name>"   # disconnect it
-```
-
-Make sure no VPN/tunnel interface is still active before testing. **Reconnect your
-VPN once you are done.**
-
-### 4.2 Running games
+### 4.1 Running games
 
 - **All on one machine:** start the server, then launch several clients
   (any mix of `Mesos-gui.jar` and `Mesos-cli.jar`), all connecting to
@@ -230,15 +184,10 @@ VPN once you are done.**
 - **Rankings:** completed games are recorded in a leaderboard, grouped by number
   of players; it can be consulted from the lobby and is shown at the end of a game.
 
-### 4.3 Network scenarios (sequence diagrams)
+### 4.2 Network scenarios (sequence diagrams)
 
-The main networking and multiplayer scenarios (connection, lobby, live updates,
-offer/card phases, disconnection & reconnection, multiple simultaneous games,
-etc.) are documented as sequence diagrams under:
-
-```
-deliverables/Sequence-Diagrams/
-```
+The main networking and multiplayer scenarios are documented as sequence diagrams
+under `deliverables/UML-Diagrams/Sequence-Diagrams/`.
 
 ---
 
@@ -249,7 +198,7 @@ yourself:
 
 ```bash
 cd Mesos
-./mvnw -DskipTests package
+./mvnw clean package
 ```
 
 This produces, under `Mesos/target/`:
@@ -258,7 +207,7 @@ This produces, under `Mesos/target/`:
 - `Mesos-gui.jar` — GUI client
 - `Mesos-cli.jar` — CLI client
 
-These are the same artifacts published under `deliverables/`. To generate the
+To generate the
 Javadoc:
 
 ```bash
@@ -267,3 +216,5 @@ cd Mesos
 ```
 
 The documentation entry point is `Mesos/target/reports/apidocs/index.html`.
+
+These are the same artifacts published under `deliverables/`. 
