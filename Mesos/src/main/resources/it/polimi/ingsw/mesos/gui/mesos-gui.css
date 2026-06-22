@@ -698,6 +698,11 @@
     -fx-font-weight: bold;
 }
 
+.leaderboard-date-label {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 11px;
+}
+
 .final-leaderboard-lobby-button {
     -fx-padding: 7 13 7 13;
 }
@@ -769,7 +774,7 @@
     -fx-opacity: 0.42;
 }
 
-.owned-cards-debug-box {
+.tribe-stats-box {
     -fx-background-color: rgba(17, 11, 28, 0.88);
     -fx-border-color: rgba(255, 176, 92, 0.16);
     -fx-border-radius: 14;
@@ -1006,15 +1011,28 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.34), 3, 0.2, 0, 1);
 }
 
-.owned-cards-debug-title {
+.tribe-stats-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-text-fill: -mesos-primary;
 }
 
-.owned-cards-debug-row {
+.tribe-stats-row {
     -fx-font-size: 15px;
     -fx-text-fill: -mesos-text;
+}
+
+.player-color-chip {
+    -fx-background-radius: 999;
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-border-radius: 999;
+    -fx-border-color: rgba(58,34,16,0.20);
+    -fx-border-width: 1;
+    -fx-padding: 1;
+}
+
+.player-color-chip-dot {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 3, 0.2, 0, 1);
 }
 
 .mesos-alert-pane {

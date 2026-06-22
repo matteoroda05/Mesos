@@ -11,12 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.database.LeaderboardEntry;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
 import it.polimi.ingsw.mesos.model.enums.Color;
 import it.polimi.ingsw.mesos.model.enums.Era;
 import it.polimi.ingsw.mesos.dto.game.CardSummary;
@@ -36,6 +39,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
+import java.sql.Timestamp;
 
 class MesosGameBoardViewTest {
     @BeforeAll
@@ -63,7 +68,7 @@ class MesosGameBoardViewTest {
             VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
             assertTrue(leftColumn.getStyleClass().contains("left-hud-column"));
             assertTrue(leftColumn.getChildren().get(0).getStyleClass().contains("info-panel"));
-            assertTrue(leftColumn.getChildren().get(1).getStyleClass().contains("owned-cards-debug-box"));
+            assertTrue(leftColumn.getChildren().get(1).getStyleClass().contains("tribe-stats-box"));
             assertEquals(Pos.BOTTOM_LEFT, StackPane.getAlignment(leftColumn));
             assertEquals(Pos.BOTTOM_RIGHT, StackPane.getAlignment(singleNode(view, ".owned-tribe-decks-strip", HBox.class)));
             assertEquals(Region.USE_PREF_SIZE, bottomBar.getMaxHeight());
@@ -190,6 +195,73 @@ class MesosGameBoardViewTest {
             assertTrue(overlay.getChildren().isEmpty());
             return null;
         }, 15);
+    }
+
+    @Test
+    void eventLogPopupIsExclusiveAndClosesOnOutsideClick() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshotWithOpponentTribe());
+            view.setEventLog(List.of(sampleEventEntry()));
+            view.applyCss();
+            view.layout();
+
+            Button eventLogButton = (Button) singleNode(view, ".event-log-pane", VBox.class).getChildren().getFirst();
+            eventLogButton.fire();
+
+            StackPane eventLogOverlay = singleNode(view, ".event-log-overlay", StackPane.class);
+            assertTrue(eventLogOverlay.isVisible());
+
+            Button infoButton = singleNode(view, ".info-popup-button", Button.class);
+            infoButton.fire();
+
+            StackPane infoOverlay = singleNode(view, ".info-popup-overlay", StackPane.class);
+            assertFalse(eventLogOverlay.isVisible());
+            assertTrue(infoOverlay.isVisible());
+
+            infoOverlay.getOnMouseClicked().handle(null);
+            eventLogButton.fire();
+
+            assertTrue(eventLogOverlay.isVisible());
+            assertNotNull(eventLogOverlay.getOnMouseClicked());
+            eventLogOverlay.getOnMouseClicked().handle(null);
+            assertFalse(eventLogOverlay.isVisible());
+            assertTrue(eventLogOverlay.getChildren().isEmpty());
+            return null;
+        });
+    }
+
+    @Test
+    void globalLeaderboardUsesCssClassesInsteadOfInlineStyles() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(finishedSnapshot());
+            view.updateGlobalLeaderboard(List.of(
+                    new LeaderboardEntry(
+                            1,
+                            "dio",
+                            12,
+                            Timestamp.valueOf("2026-01-02 03:04:05"),
+                            2
+                    )
+            ));
+            view.applyCss();
+            view.layout();
+
+            ScrollPane scrollPane = singleNode(view, ".transparent-scroll", ScrollPane.class);
+            assertTrue(scrollPane.getStyle().isBlank());
+
+            Label dateLabel = singleNode(view, ".leaderboard-date-label", Label.class);
+            assertEquals("02/01/2026 03:04", dateLabel.getText());
+            assertTrue(dateLabel.getStyle().isBlank());
+            return null;
+        });
     }
 
     @Test
@@ -711,6 +783,10 @@ class MesosGameBoardViewTest {
 
     private static CardSummary tribeCard(int selectionIndex, String type, String presentationId) {
         return new CardSummary(selectionIndex, type, Era.FIRST, false, type, null, null, presentationId);
+    }
+
+    private static EventLogEntry sampleEventEntry() {
+        return new EventLogEntry.Notice("Hunt", "A hunt resolved.");
     }
 
     private static List<CardSummary> tribeCards(int count, int startIndex, String type, String presentationId) {

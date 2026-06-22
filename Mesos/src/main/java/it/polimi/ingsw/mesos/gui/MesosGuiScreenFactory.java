@@ -33,6 +33,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -618,13 +619,14 @@ public final class MesosGuiScreenFactory {
     }
 
     /**
-     * Creates a circular CSS color chip for a player color.
+     * Creates a circular color chip for a player color without relying on inline CSS.
      *
      * @param color game color, with null treated as white
      * @return configured color chip
      */
     private Node buildColorChip(it.polimi.ingsw.mesos.model.enums.Color color) {
         StackPane chip = new StackPane();
+        chip.getStyleClass().add("player-color-chip");
         chip.setMinSize(16, 16);
         chip.setPrefSize(16, 16);
         chip.setMaxSize(16, 16);
@@ -637,27 +639,13 @@ public final class MesosGuiScreenFactory {
             case BLACK -> Color.web("#8e44ad");
         };
 
-        chip.setStyle("-fx-background-radius: 999px; -fx-background-color: " + toRgb(fill)
-                + "; -fx-border-radius: 999px; -fx-border-color: rgba(58,34,16,0.20); -fx-border-width: 1;");
+        Circle dot = new Circle(6);
+        dot.getStyleClass().add("player-color-chip-dot");
+        dot.setFill(fill);
+        dot.setStroke(Color.web("rgba(58,34,16,0.20)"));
+        dot.setStrokeWidth(1);
+        chip.getChildren().add(dot);
         return chip;
-    }
-
-    /**
-     * Converts a JavaFX color to an RGBA CSS value.
-     *
-     * @param color color to convert
-     * @return CSS {@code rgba(...)} value
-     */
-    private String toRgb(Color color) {
-        return "rgba("
-                + (int) Math.round(color.getRed() * 255)
-                + ","
-                + (int) Math.round(color.getGreen() * 255)
-                + ","
-                + (int) Math.round(color.getBlue() * 255)
-                + ","
-                + color.getOpacity()
-                + ")";
     }
 
     /**
