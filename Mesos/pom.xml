@@ -126,6 +126,15 @@
                                     <mainClass>it.polimi.ingsw.mesos.launcher.MesosServerLauncherApp</mainClass>
                                 </transformer>
                             </transformers>
+                            <!-- The headless server never renders artwork; drop the image assets to keep the jar small. -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>cards_png/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                     <!-- Creates the runnable client GUI jar with the client launcher as its entry point. -->
@@ -164,6 +173,15 @@
                                     <mainClass>it.polimi.ingsw.mesos.cli.MesosCliClient</mainClass>
                                 </transformer>
                             </transformers>
+                            <!-- The text CLI never renders artwork; drop the image assets to keep the jar small. -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>cards_png/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
