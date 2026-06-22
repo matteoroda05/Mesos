@@ -139,7 +139,7 @@ final class CliPrinter {
                 "  card bottom <index>   takes a card from the bottom row",
                 "  pass | passa          skips the turn when you have extra cards to take",
                 "  show-mine             shows your own cards and tribe stats",
-                "  show-cards <name>     shows another player's cards and tribe stats",
+                "  show-cards <name>     shows another player's cards; use quotes for spaces",
                 "  wait [seconds]        waits briefly and refreshes",
                 "  help | aiuto          shows this help",
                 "  quit | esci | exit    closes the client",
@@ -224,7 +224,7 @@ final class CliPrinter {
             return "Open lobby: press Enter to refresh while the other players join.";
         }
         if (snapshot.finished()) {
-            return "Game finished: use 'quit' to exit or press Enter to review the result.";
+            return "Game finished: type 'rank' to view rankings, 'lobby' to return to the lobby, or 'quit' to exit.";
         }
         if (!Objects.equals(snapshot.currentPlayerNickname(), localNickname)) {
             return "It is not your turn: press Enter to refresh or use 'wait 2'.";

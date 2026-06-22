@@ -5,13 +5,49 @@ title Game end and new game
 participant Client1
 participant Server
 participant Client2
+database "Leaderboard DB\n(SQLite)" as DB
 
-Client1->Server: final game command
-Server->Server: resolve final events and end-game effects
+Client1->Server: last action of the final round\n(ChooseCardRequest / PassRequest)
+Server->Server: resolve final events and end-game building effects
 Server->Server: calculate winner(s) by prestige, then food
-Server-->Client1: GameViewUpdate(END_GAME, winners)
-Server-->Client2: GameViewUpdate(END_GAME, winners)
+
+note right of Server
+The END_GAME status and the winners are carried
+inside the game snapshot (PlayerSummary.isWinner),
+not as a dedicated message.
+end note
+
+group persist match results (once per finished game)
+Server->Server: build finished snapshot (first time finished() is true)
+loop each player in the game
+Server->DB: saveMatchResult(nickname, prestige, timestamp, numPlayers)
+end
+DB-->Server: rows inserted
+end
+
+Server-->Client1: GameViewUpdate(finished snapshot)
+Server-->Client2: GameViewUpdate(finished snapshot)
 Server-->Client1: GameOperationResult(final snapshot)
+
+group show leaderboard on game end
+note over Client1, Client2
+On a finished snapshot the GUI fetches the leaderboard
+automatically; the CLI fetches it on the "rank" command.
+Each client does this independently.
+end note
+
+Client1->Server: RankingsRequest(gameName)
+Server->DB: getLeaderboardByNumPlayers(numPlayers)
+DB-->Server: top scores for that player count
+Server-->Client1: GameOperationResult(rankings)
+Client1->Client1: render leaderboard
+
+Client2->Server: RankingsRequest(gameName)
+Server->DB: getLeaderboardByNumPlayers(numPlayers)
+DB-->Server: top scores for that player count
+Server-->Client2: GameOperationResult(rankings)
+Client2->Client2: render leaderboard
+end
 
 group leave the finished game
 Client1->Server: UnsubscribeGameRequest
@@ -39,6 +75,8 @@ end
 note over Client1, Client2
 Natural victories may be shared when prestige and food are tied.
 A forced disconnection victory has one winner.
+Rankings can be read only while the finished session still exists;
+once every player has left, the session and its rankings are gone.
 end note
 
 @enduml

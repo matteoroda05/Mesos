@@ -6,7 +6,7 @@
 
     <groupId>it.polimi.ingsw</groupId>
     <artifactId>Mesos</artifactId>
-    <version>1.0-final</version>
+    <version>1.0</version>
     <name>Mesos</name>
 
     <properties>
@@ -49,6 +49,9 @@
     </dependencies>
 
     <build>
+        <!-- Keeps built jar names version-free (e.g. Mesos-server.jar) while the
+             project version stays a valid JPMS module version. -->
+        <finalName>Mesos</finalName>
         <plugins>
             <!-- Fails the build early when Maven is run with a Java version older than the one required by the project. -->
             <plugin>
@@ -114,6 +117,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>Mesos-server</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>server</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -122,6 +126,15 @@
                                     <mainClass>it.polimi.ingsw.mesos.launcher.MesosServerLauncherApp</mainClass>
                                 </transformer>
                             </transformers>
+                            <!-- The headless server never renders artwork; drop the image assets to keep the jar small. -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>cards_png/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                     <!-- Creates the runnable client GUI jar with the client launcher as its entry point. -->
@@ -132,6 +145,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>Mesos-gui</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>gui</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -150,6 +164,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>Mesos-cli</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>cli</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -158,6 +173,15 @@
                                     <mainClass>it.polimi.ingsw.mesos.cli.MesosCliClient</mainClass>
                                 </transformer>
                             </transformers>
+                            <!-- The text CLI never renders artwork; drop the image assets to keep the jar small. -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>cards_png/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>

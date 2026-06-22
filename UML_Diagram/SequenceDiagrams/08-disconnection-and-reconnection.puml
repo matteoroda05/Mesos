@@ -33,7 +33,7 @@ Client1->Server: SubscribeGameRequest
 Server-->Client1: GameOperationResult(current snapshot)
 else 60-second timeout expires
 Server->Server: declare the only connected player winner
-Server-->Client2: GameViewUpdate(END_GAME)
+Server-->Client2: GameViewUpdate(finished snapshot)
 end
 end
 
