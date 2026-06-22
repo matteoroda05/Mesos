@@ -9,14 +9,12 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import it.polimi.ingsw.mesos.controller.enums.GameStatus;
+import it.polimi.ingsw.mesos.database.LeaderboardEntry;
+import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
 import it.polimi.ingsw.mesos.model.enums.Color;
 import it.polimi.ingsw.mesos.model.enums.Era;
 import it.polimi.ingsw.mesos.dto.game.CardSummary;
@@ -36,6 +34,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
+import java.sql.Timestamp;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class MesosGameBoardViewTest {
     @BeforeAll
@@ -63,7 +65,7 @@ class MesosGameBoardViewTest {
             VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
             assertTrue(leftColumn.getStyleClass().contains("left-hud-column"));
             assertTrue(leftColumn.getChildren().get(0).getStyleClass().contains("info-panel"));
-            assertTrue(leftColumn.getChildren().get(1).getStyleClass().contains("owned-cards-debug-box"));
+            assertTrue(leftColumn.getChildren().get(1).getStyleClass().contains("tribe-stats-box"));
             assertEquals(Pos.BOTTOM_LEFT, StackPane.getAlignment(leftColumn));
             assertEquals(Pos.BOTTOM_RIGHT, StackPane.getAlignment(singleNode(view, ".owned-tribe-decks-strip", HBox.class)));
             assertEquals(Region.USE_PREF_SIZE, bottomBar.getMaxHeight());
@@ -154,6 +156,32 @@ class MesosGameBoardViewTest {
     }
 
     @Test
+    void playerButtonsDoNotBlockTopLeftMarketCards() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshotWithManyRows(10, 0));
+            view.applyCss();
+            view.layout();
+
+            HBox buttonsPane = singleNode(view, ".player-buttons-pane", HBox.class);
+            HBox topCards = singleNode(singleNode(view, ".table-row-top", HBox.class),
+                    ".table-row-cards", HBox.class);
+            Node firstTopCard = topCards.getChildren().getFirst();
+            Bounds buttonsBounds = buttonsPane.localToScene(buttonsPane.getBoundsInLocal());
+            Bounds cardBounds = firstTopCard.localToScene(firstTopCard.getBoundsInLocal());
+
+            assertEquals(Region.USE_PREF_SIZE, buttonsPane.getMaxHeight());
+            assertFalse(buttonsPane.isPickOnBounds());
+            assertFalse(buttonsBounds.intersects(cardBounds),
+                    "player buttons " + buttonsBounds + " overlap top-left card " + cardBounds);
+            return null;
+        });
+    }
+
+    @Test
     void infoButtonOpensTopRightPopupWithTwoCardsAndClosesOnOutsideClick() throws Exception {
         runOnFxThread(() -> {
             MesosGameBoardView view = buildView();
@@ -190,6 +218,73 @@ class MesosGameBoardViewTest {
             assertTrue(overlay.getChildren().isEmpty());
             return null;
         }, 15);
+    }
+
+    @Test
+    void eventLogPopupIsExclusiveAndClosesOnOutsideClick() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshotWithOpponentTribe());
+            view.setEventLog(List.of(sampleEventEntry()));
+            view.applyCss();
+            view.layout();
+
+            Button eventLogButton = (Button) singleNode(view, ".event-log-pane", VBox.class).getChildren().getFirst();
+            eventLogButton.fire();
+
+            StackPane eventLogOverlay = singleNode(view, ".event-log-overlay", StackPane.class);
+            assertTrue(eventLogOverlay.isVisible());
+
+            Button infoButton = singleNode(view, ".info-popup-button", Button.class);
+            infoButton.fire();
+
+            StackPane infoOverlay = singleNode(view, ".info-popup-overlay", StackPane.class);
+            assertFalse(eventLogOverlay.isVisible());
+            assertTrue(infoOverlay.isVisible());
+
+            infoOverlay.getOnMouseClicked().handle(null);
+            eventLogButton.fire();
+
+            assertTrue(eventLogOverlay.isVisible());
+            assertNotNull(eventLogOverlay.getOnMouseClicked());
+            eventLogOverlay.getOnMouseClicked().handle(null);
+            assertFalse(eventLogOverlay.isVisible());
+            assertTrue(eventLogOverlay.getChildren().isEmpty());
+            return null;
+        });
+    }
+
+    @Test
+    void globalLeaderboardUsesCssClassesInsteadOfInlineStyles() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(finishedSnapshot());
+            view.updateGlobalLeaderboard(List.of(
+                    new LeaderboardEntry(
+                            1,
+                            "dio",
+                            12,
+                            Timestamp.valueOf("2026-01-02 03:04:05"),
+                            2
+                    )
+            ));
+            view.applyCss();
+            view.layout();
+
+            ScrollPane scrollPane = singleNode(view, ".transparent-scroll", ScrollPane.class);
+            assertTrue(scrollPane.getStyle().isBlank());
+
+            Label dateLabel = singleNode(view, ".leaderboard-date-label", Label.class);
+            assertEquals("02/01/2026 03:04", dateLabel.getText());
+            assertTrue(dateLabel.getStyle().isBlank());
+            return null;
+        });
     }
 
     @Test
@@ -256,6 +351,59 @@ class MesosGameBoardViewTest {
                     "left HUD " + leftHudBounds + " overlaps bottom card " + bottomCardBounds);
             assertFalse(deckStripBounds.intersects(bottomCardBounds),
                     "deck strip " + deckStripBounds + " overlaps bottom card " + bottomCardBounds);
+            return null;
+        });
+    }
+
+    @Test
+    void leftHudPanelsStayWithinTheirColumnAndClearOfTurnOrder() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1920, 1080);
+            view.resize(1920, 1080);
+
+            view.updateSnapshot(snapshot());
+            view.applyCss();
+            view.layout();
+
+            VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
+            Region statusPanel = (Region) leftColumn.getChildren().get(0);
+            Region tribePanel = (Region) leftColumn.getChildren().get(1);
+            VBox turnOrder = singleNode(view, ".minimal-turn-bar", VBox.class);
+            Bounds statusBounds = statusPanel.localToScene(statusPanel.getBoundsInLocal());
+            Bounds tribeBounds = tribePanel.localToScene(tribePanel.getBoundsInLocal());
+            Bounds turnOrderBounds = turnOrder.localToScene(turnOrder.getBoundsInLocal());
+
+            assertTrue(statusPanel.getMaxWidth() <= leftColumn.getPrefWidth());
+            assertTrue(tribePanel.getMaxWidth() <= leftColumn.getPrefWidth());
+            assertFalse(statusBounds.intersects(turnOrderBounds),
+                    "status panel " + statusBounds + " overlaps turn order " + turnOrderBounds);
+            assertFalse(tribeBounds.intersects(turnOrderBounds),
+                    "tribe panel " + tribeBounds + " overlaps turn order " + turnOrderBounds);
+            return null;
+        });
+    }
+
+    @Test
+    void leftHudClearsTurnOrderAtScreenshotViewport() throws Exception {
+        runOnFxThread(() -> {
+            MesosGameBoardView view = buildView();
+            new Scene(view, 1470, 850);
+            view.resize(1470, 850);
+
+            view.updateSnapshot(snapshot());
+            view.applyCss();
+            view.layout();
+
+            VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
+            VBox turnOrder = singleNode(view, ".minimal-turn-bar", VBox.class);
+            Bounds leftHudBounds = leftColumn.localToScene(leftColumn.getBoundsInLocal());
+            Bounds turnOrderBounds = turnOrder.localToScene(turnOrder.getBoundsInLocal());
+
+            assertTrue(leftHudBounds.getHeight() <= 250,
+                    "left HUD should stay compact but was " + leftHudBounds.getHeight() + " px tall");
+            assertFalse(leftHudBounds.intersects(turnOrderBounds),
+                    "left HUD " + leftHudBounds + " overlaps turn order " + turnOrderBounds);
             return null;
         });
     }
@@ -372,7 +520,7 @@ class MesosGameBoardViewTest {
 
             HBox topRow = singleNode(view, ".table-row-top", HBox.class);
             StackPane marketCard = singleNode(topRow, ".market-card", StackPane.class);
-            assertEquals(null, marketCard.getClip());
+            assertNull(marketCard.getClip());
             return null;
         });
     }
@@ -711,6 +859,10 @@ class MesosGameBoardViewTest {
 
     private static CardSummary tribeCard(int selectionIndex, String type, String presentationId) {
         return new CardSummary(selectionIndex, type, Era.FIRST, false, type, null, null, presentationId);
+    }
+
+    private static EventLogEntry sampleEventEntry() {
+        return new EventLogEntry.Notice("Hunt", "A hunt resolved.");
     }
 
     private static List<CardSummary> tribeCards(int count, int startIndex, String type, String presentationId) {

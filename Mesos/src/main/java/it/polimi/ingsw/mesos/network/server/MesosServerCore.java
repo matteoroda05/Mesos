@@ -88,7 +88,7 @@ public class MesosServerCore implements MesosServerService {
         this.disconnectedGameByNickname = new LinkedHashMap<>();
         this.takenNicknames = new LinkedHashSet<>();
         this.lastHeartbeatByNickname = new LinkedHashMap<>();
-        this.databaseManager = new DatabaseManager();
+        this.databaseManager = DatabaseManager.getInstance();
 
         ScheduledExecutorService resilienceTimer = Executors.newSingleThreadScheduledExecutor(task -> {
             Thread thread = new Thread(task, "mesos-server-resilience");
@@ -570,7 +570,7 @@ public class MesosServerCore implements MesosServerService {
             this.colorsByNickname = new LinkedHashMap<>();
             this.subscribersByNickname = new LinkedHashMap<>();
             this.singleConnectedSince = -1;
-            this.databaseManager = new DatabaseManager();
+            this.databaseManager = DatabaseManager.getInstance();
             this.gameTimestamp = new Timestamp(System.currentTimeMillis());
         }
 

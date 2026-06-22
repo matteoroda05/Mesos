@@ -121,6 +121,11 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>server</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.openjfx:*</exclude>
+                                </excludes>
+                            </artifactSet>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>it.polimi.ingsw.mesos.launcher.MesosServerLauncherApp</mainClass>
@@ -154,6 +159,11 @@
                                     <mainClass>it.polimi.ingsw.mesos.launcher.MesosClientLauncher</mainClass>
                                 </transformer>
                             </transformers>
+                            <extraArtifacts>
+                                <extraArtifact>org.openjfx:javafx-graphics:jar:win:${javafx.version}</extraArtifact>
+                                <extraArtifact>org.openjfx:javafx-graphics:jar:linux:${javafx.version}</extraArtifact>
+                                <extraArtifact>org.openjfx:javafx-graphics:jar:mac-aarch64:${javafx.version}</extraArtifact>
+                            </extraArtifacts>
                         </configuration>
                     </execution>
                     <!-- Creates the runnable CLI jar with the interactive terminal client as its entry point. -->
@@ -168,6 +178,11 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>cli</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.openjfx:*</exclude>
+                                </excludes>
+                            </artifactSet>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>it.polimi.ingsw.mesos.cli.MesosCliClient</mainClass>

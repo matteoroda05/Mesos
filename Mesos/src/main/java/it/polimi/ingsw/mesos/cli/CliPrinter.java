@@ -310,7 +310,7 @@ final class CliPrinter {
         List<PlayerSummary> orderedPlayers = !anyWinner
                 ? players
                 : players.stream()
-                .sorted(Comparator.<PlayerSummary, Boolean>comparing(
+                .sorted(Comparator.comparing(
                         PlayerSummary::winner, Comparator.reverseOrder())
                         .thenComparing(Comparator.comparingInt(PlayerSummary::prestigePoints).reversed())
                         .thenComparing(Comparator.comparingInt(PlayerSummary::food).reversed()))

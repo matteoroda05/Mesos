@@ -48,7 +48,7 @@ public final class MesosGameBoardView extends BorderPane {
     private static final double DESIGN_WIDTH = 920;
     private static final double DESIGN_HEIGHT = 370;
     private static final double TABLETOP_VERTICAL_OFFSET_RATIO = 0.07;
-    private static final double LEFT_HUD_WIDTH = 340;
+    private static final double LEFT_HUD_WIDTH = 300;
     private static final double MARKET_CARD_WIDTH = 85;
     private static final double MARKET_CARD_HEIGHT = 130;
     private static final double MARKET_CARD_SLOT_HEIGHT = MARKET_CARD_HEIGHT + 8;
@@ -108,7 +108,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final HBox bottomRowPane;
     private final HBox offerTilesPane;
     private final VBox rankingBox;
-    private final VBox ownedCardsDebugBox;
+    private final VBox tribeStatsBox;
     private final HBox ownedTribeDecksPane;
     private final StackPane ownedDeckPreviewOverlay;
     private final HBox playerButtonsPane;
@@ -207,10 +207,10 @@ public final class MesosGameBoardView extends BorderPane {
         this.rankingBox.setVisible(false);
         this.rankingBox.setManaged(false);
 
-        this.ownedCardsDebugBox = new VBox(6);
-        this.ownedCardsDebugBox.getStyleClass().add("owned-cards-debug-box");
-        this.ownedCardsDebugBox.setVisible(false);
-        this.ownedCardsDebugBox.setManaged(false);
+        this.tribeStatsBox = new VBox(3);
+        this.tribeStatsBox.getStyleClass().add("tribe-stats-box");
+        this.tribeStatsBox.setVisible(false);
+        this.tribeStatsBox.setManaged(false);
 
         this.ownedTribeDecksPane = new HBox(0);
         this.ownedTribeDecksPane.getStyleClass().add("owned-tribe-decks-strip");
@@ -233,14 +233,17 @@ public final class MesosGameBoardView extends BorderPane {
         this.playerButtonsPane.setVisible(false);
         this.playerButtonsPane.setManaged(false);
         this.playerButtonsPane.setMaxWidth(Region.USE_PREF_SIZE);
+        this.playerButtonsPane.setMaxHeight(Region.USE_PREF_SIZE);
+        this.playerButtonsPane.setPickOnBounds(false);
 
         this.playerTribeOverlay = new StackPane();
         this.playerTribeOverlay.getStyleClass().add("player-tribe-overlay");
         this.playerTribeOverlay.setAlignment(Pos.CENTER);
         this.playerTribeOverlay.setVisible(false);
-        this.playerTribeOverlay.setPickOnBounds(false);
+        this.playerTribeOverlay.setPickOnBounds(true);
         this.playerTribeOverlay.setMinSize(0, 0);
         this.playerTribeOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        this.playerTribeOverlay.setOnMouseClicked(_ -> hidePlayerTribePopup());
 
         this.eventLogPane = new VBox(6);
         this.eventLogPane.getStyleClass().add("event-log-pane");
@@ -251,9 +254,10 @@ public final class MesosGameBoardView extends BorderPane {
         this.eventLogOverlay.getStyleClass().add("event-log-overlay");
         this.eventLogOverlay.setAlignment(Pos.CENTER);
         this.eventLogOverlay.setVisible(false);
-        this.eventLogOverlay.setPickOnBounds(false);
+        this.eventLogOverlay.setPickOnBounds(true);
         this.eventLogOverlay.setMinSize(0, 0);
         this.eventLogOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        this.eventLogOverlay.setOnMouseClicked(_ -> hideEventLogPopup());
 
         // built identically to the Event Log button so the two match exactly
         // (same font, padding, and size); "info-popup-button" is only a marker class
@@ -345,7 +349,7 @@ public final class MesosGameBoardView extends BorderPane {
         rebuildRanking();
         rebuildMinimalTurnBar();
         refreshInfoPanelColorIndicator();
-        rebuildOwnedCardsDebugBox();
+        rebuildTribeStatsBox();
         rebuildOwnedTribeDecksPane();
         rebuildPlayerButtonsPane();
     }
@@ -585,11 +589,12 @@ public final class MesosGameBoardView extends BorderPane {
 
         VBox statusPanel = buildCompactInfoPanel();
         statusPanel.setMaxHeight(Region.USE_PREF_SIZE);
-        statusPanel.setMaxWidth(Double.MAX_VALUE);
-        ownedCardsDebugBox.setMaxHeight(Region.USE_PREF_SIZE);
-        ownedCardsDebugBox.setMaxWidth(Double.MAX_VALUE);
+        statusPanel.setMaxWidth(LEFT_HUD_WIDTH);
+        tribeStatsBox.setPrefWidth(LEFT_HUD_WIDTH);
+        tribeStatsBox.setMaxHeight(Region.USE_PREF_SIZE);
+        tribeStatsBox.setMaxWidth(LEFT_HUD_WIDTH);
 
-        VBox leftHudColumn = new VBox(8, statusPanel, ownedCardsDebugBox);
+        VBox leftHudColumn = new VBox(3, statusPanel, tribeStatsBox);
         leftHudColumn.getStyleClass().add("left-hud-column");
         leftHudColumn.setAlignment(Pos.BOTTOM_LEFT);
         leftHudColumn.setPrefWidth(LEFT_HUD_WIDTH);
@@ -657,14 +662,14 @@ public final class MesosGameBoardView extends BorderPane {
         VBox titleSection = new VBox(2, titleRow, subtitleLabel);
         titleSection.setMaxWidth(650);
 
-        VBox statusLines = new VBox(3, turnLabel, actionHintLabel);
+        VBox statusLines = new VBox(1, turnLabel, actionHintLabel);
         statusLines.setMaxWidth(380);
 
-        VBox infoPanel = new VBox(10, titleSection, statusLines, actionRow);
+        VBox infoPanel = new VBox(7, titleSection, statusLines, actionRow);
         infoPanel.getStyleClass().add("info-panel");
         infoPanel.setAlignment(Pos.TOP_LEFT);
-        infoPanel.setPrefWidth(390);
-        infoPanel.setMaxWidth(430);
+        infoPanel.setPrefWidth(LEFT_HUD_WIDTH);
+        infoPanel.setMaxWidth(LEFT_HUD_WIDTH);
         return infoPanel;
     }
 
@@ -1064,8 +1069,7 @@ public final class MesosGameBoardView extends BorderPane {
                 dateStr = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(entry.matchDate());
             }
             Label dateLabel = new Label(dateStr);
-            dateLabel.getStyleClass().add("details-label");
-            dateLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 11px;");
+            dateLabel.getStyleClass().addAll("details-label", "leaderboard-date-label");
 
             row.getChildren().addAll(
                     badgeLabel("#" + entry.rank()),
@@ -1078,7 +1082,7 @@ public final class MesosGameBoardView extends BorderPane {
         }
 
         ScrollPane scrollPane = new ScrollPane(rowsContainer);
-        scrollPane.getStyleClass().add("player-tribe-scroll");
+        scrollPane.getStyleClass().addAll("player-tribe-scroll", "transparent-scroll");
 
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -1086,19 +1090,17 @@ public final class MesosGameBoardView extends BorderPane {
 
         scrollPane.setMaxHeight(720);
 
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-
         globalLeaderboardBox.getChildren().add(scrollPane);
     }
 
     /**
      * Rebuilds the local player's tribe statistics panel or hides it when unavailable.
      */
-    private void rebuildOwnedCardsDebugBox() {
-        ownedCardsDebugBox.getChildren().clear();
+    private void rebuildTribeStatsBox() {
+        tribeStatsBox.getChildren().clear();
         if (snapshot == null) {
-            ownedCardsDebugBox.setVisible(false);
-            ownedCardsDebugBox.setManaged(false);
+            tribeStatsBox.setVisible(false);
+            tribeStatsBox.setManaged(false);
             return;
         }
 
@@ -1106,37 +1108,37 @@ public final class MesosGameBoardView extends BorderPane {
                 .filter(player -> player.nickname().equals(localNickname))
                 .findFirst();
         if (localPlayer.isEmpty()) {
-            ownedCardsDebugBox.setVisible(false);
-            ownedCardsDebugBox.setManaged(false);
+            tribeStatsBox.setVisible(false);
+            tribeStatsBox.setManaged(false);
             return;
         }
 
         PlayerSummary player = localPlayer.get();
-        Label title = new Label("Tribe stats:");
-        title.getStyleClass().add("subsection-title");
-        ownedCardsDebugBox.getChildren().add(title);
+        Label title = new Label("Tribe Stats");
+        title.getStyleClass().add("tribe-stats-title");
+        tribeStatsBox.getChildren().add(title);
 
-        VBox leftCol = new VBox(6,
-                ownedCardsStatRow("Food " + player.food()),
-                ownedCardsStatRow("Prestige " + player.prestigePoints()),
-                ownedCardsStatRow("Characters " + player.characterCount()),
-                ownedCardsStatRow("Buildings " + player.buildingCount())
+        VBox leftCol = new VBox(3,
+                tribeStatsRow("Food " + player.food()),
+                tribeStatsRow("Prestige " + player.prestigePoints()),
+                tribeStatsRow("Characters " + player.characterCount()),
+                tribeStatsRow("Buildings " + player.buildingCount())
         );
 
-        VBox rightCol = new VBox(6,
-                ownedCardsStatRow("Shamanic stars " + player.shamanStars()),
-                ownedCardsStatRow("Gatherers discount " + player.gatherersDiscount()),
-                ownedCardsStatRow("Builders discount " + player.buildersDiscount()),
-                ownedCardsStatRow("Builders prestige " + player.buildersPrestige()),
-                ownedCardsStatRow("Buildings prestige " + player.buildingsPrestige()),
-                ownedCardsStatRow("Unique inventors " + player.inventorTypeCount())
+        VBox rightCol = new VBox(3,
+                tribeStatsRow("Shamanic stars " + player.shamanStars()),
+                tribeStatsRow("Gatherers discount " + player.gatherersDiscount()),
+                tribeStatsRow("Builders discount " + player.buildersDiscount()),
+                tribeStatsRow("Builders prestige " + player.buildersPrestige()),
+                tribeStatsRow("Buildings prestige " + player.buildingsPrestige()),
+                tribeStatsRow("Unique inventors " + player.inventorTypeCount())
         );
 
         HBox columns = new HBox(16, leftCol, rightCol);
-        ownedCardsDebugBox.getChildren().add(columns);
+        tribeStatsBox.getChildren().add(columns);
 
-        ownedCardsDebugBox.setVisible(true);
-        ownedCardsDebugBox.setManaged(true);
+        tribeStatsBox.setVisible(true);
+        tribeStatsBox.setManaged(true);
     }
 
     /**
@@ -1145,9 +1147,9 @@ public final class MesosGameBoardView extends BorderPane {
      * @param text statistic text to show
      * @return styled statistic label
      */
-    private Label ownedCardsStatRow(String text) {
+    private Label tribeStatsRow(String text) {
         Label row = new Label(text);
-        row.getStyleClass().add("owned-cards-debug-row");
+        row.getStyleClass().add("tribe-stats-row");
         return row;
     }
 
@@ -1203,6 +1205,7 @@ public final class MesosGameBoardView extends BorderPane {
      */
     private void showPlayerTribePopup(PlayerSummary player) {
         hideOwnedDeckPreview();
+        hideEventLogPopup();
         hideInfoPopup();
         playerTribeOverlay.getChildren().setAll(buildPlayerTribePopup(player));
         playerTribeOverlay.setVisible(true);
@@ -1248,6 +1251,7 @@ public final class MesosGameBoardView extends BorderPane {
     private void showEventLogPopup() {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
+        hideInfoPopup();
         eventLogOverlay.getChildren().setAll(buildEventLogPopup());
         eventLogOverlay.setVisible(true);
     }
@@ -1301,6 +1305,7 @@ public final class MesosGameBoardView extends BorderPane {
         popup.setAlignment(Pos.TOP_LEFT);
         popup.setMaxWidth(520);
         popup.setMaxHeight(540);
+        popup.setOnMouseClicked(Event::consume);
         return popup;
     }
 
@@ -1329,6 +1334,7 @@ public final class MesosGameBoardView extends BorderPane {
     private void showInfoPopup() {
         hideOwnedDeckPreview();
         hidePlayerTribePopup();
+        hideEventLogPopup();
         infoPopupOverlay.getChildren().setAll(buildInfoPopup());
         infoPopupOverlay.setVisible(true);
     }
@@ -1417,6 +1423,7 @@ public final class MesosGameBoardView extends BorderPane {
         popup.setAlignment(Pos.TOP_LEFT);
         popup.setMaxWidth(760);
         popup.setMaxHeight(540);
+        popup.setOnMouseClicked(Event::consume);
         return popup;
     }
 
