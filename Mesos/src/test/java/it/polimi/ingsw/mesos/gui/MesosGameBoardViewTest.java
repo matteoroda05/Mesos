@@ -31,6 +31,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -369,7 +370,7 @@ class MesosGameBoardViewTest {
             VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
             Region statusPanel = (Region) leftColumn.getChildren().get(0);
             Region tribePanel = (Region) leftColumn.getChildren().get(1);
-            VBox turnOrder = singleNode(view, ".minimal-turn-bar", VBox.class);
+            Pane turnOrder = singleNode(view, ".graphic-turn-bar", Pane.class);
             Bounds statusBounds = statusPanel.localToScene(statusPanel.getBoundsInLocal());
             Bounds tribeBounds = tribePanel.localToScene(tribePanel.getBoundsInLocal());
             Bounds turnOrderBounds = turnOrder.localToScene(turnOrder.getBoundsInLocal());
@@ -396,7 +397,7 @@ class MesosGameBoardViewTest {
             view.layout();
 
             VBox leftColumn = singleNode(view, ".left-hud-column", VBox.class);
-            VBox turnOrder = singleNode(view, ".minimal-turn-bar", VBox.class);
+            Pane turnOrder = singleNode(view, ".graphic-turn-bar", Pane.class);
             Bounds leftHudBounds = leftColumn.localToScene(leftColumn.getBoundsInLocal());
             Bounds turnOrderBounds = turnOrder.localToScene(turnOrder.getBoundsInLocal());
 
@@ -505,8 +506,11 @@ class MesosGameBoardViewTest {
 
             view.updateSnapshot(snapshot());
 
-            assertEquals(1, view.lookupAll(".turn-order-color-indicator").size());
-            assertEquals(2, view.lookupAll(".turn-order-tile-entry").size());
+            Pane turnBar = singleNode(view, ".graphic-turn-bar", Pane.class);
+            long occupiedRowWrappers = turnBar.getChildren().stream()
+                    .filter(StackPane.class::isInstance)
+                    .count();
+            assertEquals(1, occupiedRowWrappers);
             return null;
         });
     }
