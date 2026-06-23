@@ -84,7 +84,7 @@ class MesosGuiScreenFactoryTest {
 
             Node root = factory.buildWaitingRoomScreen(
                     waitingSnapshot(),
-                    "dio",
+                    "placeholder",
                     "Waiting for players.",
                     () -> { },
                     () -> { }
@@ -114,7 +114,7 @@ class MesosGuiScreenFactoryTest {
                 0,
                 0,
                 List.of(Color.ORANGE),
-                List.of(new PlayerSummary("dio", Color.ORANGE, 3, 0, 0, 0)),
+                List.of(new PlayerSummary("placeholder", Color.ORANGE, 3, 0, 0, 0)),
                 List.of(),
                 List.of(),
                 List.of(),

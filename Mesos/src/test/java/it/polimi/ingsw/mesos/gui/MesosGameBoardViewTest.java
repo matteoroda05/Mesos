@@ -269,7 +269,7 @@ class MesosGameBoardViewTest {
             view.updateGlobalLeaderboard(List.of(
                     new LeaderboardEntry(
                             1,
-                            "dio",
+                            "placeholder",
                             12,
                             Timestamp.valueOf("2026-01-02 03:04:05"),
                             2
@@ -600,7 +600,7 @@ class MesosGameBoardViewTest {
             Runnable onBackToLobby
     ) {
         return new MesosGameBoardView(
-                "dio",
+                "placeholder",
                 new MesosAssetResolver(),
                 () -> { },
                 () -> { },
@@ -787,14 +787,14 @@ class MesosGameBoardViewTest {
 
     private static GameSnapshot sharedWinnersSnapshot() {
         List<PlayerSummary> players = List.of(
-                new PlayerSummary("dio", Color.ORANGE, 5, 10, 0, 0,
+                new PlayerSummary("placeholder", Color.ORANGE, 5, 10, 0, 0,
                         List.of(), List.of(), 0, 0, 0, 0, 0, 0, true),
                 new PlayerSummary("Carlo2", Color.BLUE, 5, 10, 0, 0,
                         List.of(), List.of(), 0, 0, 0, 0, 0, 0, true)
         );
         return new GameSnapshot(
-                "dio", 2, 2, true, true, GameStatus.END_GAME, 1, Era.FIRST,
-                "dio", Color.ORANGE, 0, 0, List.of(Color.ORANGE, Color.BLUE),
+                "placeholder", 2, 2, true, true, GameStatus.END_GAME, 1, Era.FIRST,
+                "placeholder", Color.ORANGE, 0, 0, List.of(Color.ORANGE, Color.BLUE),
                 players, List.of(), List.of(), List.of(), List.of(), false
         );
     }
@@ -814,7 +814,7 @@ class MesosGameBoardViewTest {
     ) {
         List<PlayerSummary> players = List.of(
                 new PlayerSummary(
-                        "dio",
+                        "placeholder",
                         Color.ORANGE,
                         3,
                         0,
@@ -835,11 +835,11 @@ class MesosGameBoardViewTest {
                 )
         );
         List<TurnOrderSpaceSummary> turnOrder = List.of(
-                new TurnOrderSpaceSummary(0, 0, Color.ORANGE, "dio"),
+                new TurnOrderSpaceSummary(0, 0, Color.ORANGE, "placeholder"),
                 new TurnOrderSpaceSummary(1, 0, null, null)
         );
         return new GameSnapshot(
-                "dio",
+                "placeholder",
                 2,
                 2,
                 true,
@@ -847,7 +847,7 @@ class MesosGameBoardViewTest {
                 status,
                 1,
                 Era.FIRST,
-                "dio",
+                "placeholder",
                 Color.ORANGE,
                 remainingTopChoices,
                 remainingBottomChoices,
