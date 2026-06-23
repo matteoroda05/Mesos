@@ -320,9 +320,9 @@
 }
 
 .interactive-card:hover {
-    -fx-background-color: rgba(255, 255, 255, 1.00);
+    /*-fx-background-color: rgba(0, 0, 0, 0.45);*/
     -fx-translate-y: -2;
-    -fx-effect: dropshadow(gaussian, rgba(44, 111, 99, 0.18), 18, 0.16, 0, 7);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 8, 0.24, 0, 2);
 }
 
 .art-surface {
@@ -563,7 +563,7 @@
     -fx-border-color: transparent;
     -fx-background-radius: 0;
     -fx-border-radius: 0;
-    -fx-effect: dropshadow(gaussian, rgba(60, 36, 17, 0.12), 8, 0.12, 0, 3);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 8, 0.24, 0, 2);
 }
 
 .minimal-turn-bar {
