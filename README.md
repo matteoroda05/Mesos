@@ -18,6 +18,7 @@ each player runs their own client (textual or graphical), connecting over Socket
 | `deliverables/javadoc/` | Generated API documentation. Open `deliverables/javadoc/index.html` in a browser.                                                                                            |
 | `deliverables/UML-Diagrams/Sequence-Diagrams/` | Sequence diagrams (SVG) for the main networking/multiplayer scenarios — connection, lobby, offer/card phases, disconnection & reconnection, multiple simultaneous games, etc. |
 | `deliverables/UML-Diagrams/Structural-Diagrams/` | Structural (class) diagrams (SVG) of the system, broken down by package (`model`, `controller`, `network`, `view`, `dto`).                                                    |
+| `deliverables/Testing/` | Test-coverage results: the full HTML report (`Coverage-Report/index.html`) and a summary screenshot — see §5.                                                               |
 
 ---
 
@@ -191,7 +192,20 @@ under `deliverables/UML-Diagrams/Sequence-Diagrams/`.
 
 ---
 
-## 5. Building from source (optional)
+## 5. Test coverage
+
+The test suite thoroughly covers the application's core logic — `model`,
+`controller`, `network`, and `database`; the thin `gui` and `launcher` layers are
+tested manually, hence their lower automated coverage.
+
+<img src="deliverables/Testing/Test-Coverage-Screenshot.png" alt="Test coverage by package" width="900">
+
+The full interactive report is available at
+`deliverables/Testing/Coverage-Report/index.html`.
+
+---
+
+## 6. Building from source (optional)
 
 The Maven project lives in the `Mesos/` directory. To rebuild the executable jars
 yourself:
