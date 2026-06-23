@@ -67,7 +67,7 @@ public final class MesosAssetResolver {
             case YELLOW -> "/cards_png/totems/totem_yellow.png";
             case ORANGE -> "/cards_png/totems/totem_orange.png";
             case WHITE -> "/cards_png/totems/totem_white.png";
-            case BLACK -> "/cards_png/totems/totem_purple.png";
+            case BLACK -> "/cards_png/totems/totem_black.png";
         };
         return load(resourcePath);
     }

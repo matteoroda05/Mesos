@@ -373,7 +373,7 @@ public final class MesosClientApplication extends Application implements MesosGu
         return switch (color) {
             case BLUE -> "Blue";
             case ORANGE -> "Orange";
-            case BLACK -> "Purple";
+            case BLACK -> "Black";
             case WHITE -> "White";
             case YELLOW -> "Yellow";
         };

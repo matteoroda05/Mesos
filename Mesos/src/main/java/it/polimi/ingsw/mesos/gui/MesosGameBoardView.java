@@ -2000,7 +2000,7 @@ public final class MesosGameBoardView extends BorderPane {
             case YELLOW -> Color.rgb(244, 196, 48);
             case ORANGE -> Color.rgb(230, 92, 36);
             case WHITE -> Color.rgb(239, 232, 214);
-            case BLACK -> Color.rgb(94, 53, 137);
+            case BLACK -> Color.rgb(30, 30, 30);
         };
     }
 

@@ -1,12 +1,16 @@
 package it.polimi.ingsw.mesos.gui;
 
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import it.polimi.ingsw.mesos.common.Globals;
-import it.polimi.ingsw.mesos.network.config.ConnectionType;
 import it.polimi.ingsw.mesos.dto.game.GameSnapshot;
+import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
 import it.polimi.ingsw.mesos.dto.lobby.LobbyGameSummary;
 import it.polimi.ingsw.mesos.dto.lobby.LobbySnapshot;
+import it.polimi.ingsw.mesos.network.config.ConnectionType;
 import it.polimi.ingsw.mesos.network.config.NetworkDefaults;
-import it.polimi.ingsw.mesos.dto.game.PlayerSummary;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -34,10 +38,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Builds the JavaFX screens used for connection, lobby, waiting-room, and
@@ -636,7 +636,7 @@ public final class MesosGuiScreenFactory {
             case YELLOW -> Color.web("#f1c40f");
             case ORANGE -> Color.web("#f39c12");
             case WHITE -> Color.web("#f6f7fb");
-            case BLACK -> Color.web("#8e44ad");
+            case BLACK -> Color.web("#1e1e1e");
         };
 
         Circle dot = new Circle(6);
