@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 
+import it.polimi.ingsw.mesos.common.Globals;
 import it.polimi.ingsw.mesos.controller.enums.GameStatus;
 import it.polimi.ingsw.mesos.database.LeaderboardEntry;
 import it.polimi.ingsw.mesos.dto.event.EventLogEntry;
@@ -39,6 +40,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
+import javafx.scene.layout.Pane;
 
 /**
  * Renders the interactive JavaFX game board and maps visible choices to the
@@ -121,7 +123,7 @@ public final class MesosGameBoardView extends BorderPane {
     private final StackPane finalLeaderboardOverlay;
     private final VBox finalLeaderboardBox;
     private final VBox globalLeaderboardBox;
-    private final VBox minimalTurnBarPane;
+    private final Pane minimalTurnBarPane;
     private final StackPane infoPanelColorIndicator;
     private final StackPane viewport;
     private final VBox tabletopCanvas;
@@ -285,7 +287,7 @@ public final class MesosGameBoardView extends BorderPane {
         this.infoPanelColorIndicator = buildColorIndicator(null, "info-panel-color-indicator");
         this.infoPanelColorIndicator.setVisible(false);
         this.infoPanelColorIndicator.setManaged(false);
-        this.minimalTurnBarPane = buildMinimalTurnOrderBar();
+        this.minimalTurnBarPane = buildTurnOrderTile();
         this.bottomHudOverlay = buildBottomHudOverlay();
 
         this.finalLeaderboardBox = new VBox(10);
@@ -412,7 +414,7 @@ public final class MesosGameBoardView extends BorderPane {
      * Replaces the compact turn-order bar with entries from the current snapshot.
      */
     private void rebuildMinimalTurnBar() {
-        VBox refreshedBar = buildMinimalTurnOrderBar();
+        Pane refreshedBar = buildTurnOrderTile();
         minimalTurnBarPane.getChildren().setAll(refreshedBar.getChildren());
     }
 
@@ -800,7 +802,7 @@ public final class MesosGameBoardView extends BorderPane {
 
         if (tile.occupantColor() != null) {
             Node totem = buildTotem(tile.occupantColor(), 30);
-            StackPane.setAlignment(totem, Pos.BOTTOM_RIGHT);
+            StackPane.setAlignment(totem, Pos.TOP_CENTER);
             StackPane.setMargin(totem, new Insets(6));
             tileNode.getChildren().add(totem);
         }
@@ -823,30 +825,63 @@ public final class MesosGameBoardView extends BorderPane {
     }
 
     /**
-     * Creates the compact turn-order panel shown beside the offer tiles.
+     * Creates the turn order tile with the totems positioned correctly.
      *
-     * @return configured turn-order panel
+     * @return turn order tile pane
      */
-    private VBox buildMinimalTurnOrderBar() {
-        VBox bar = new VBox(4);
-        bar.getStyleClass().addAll("minimal-turn-bar", "turn-order-mini-box");
-        bar.setAlignment(Pos.TOP_LEFT);
+    private Pane buildTurnOrderTile() {
+        int numPlayers = Math.clamp(currentTurnOrderSpaces().size(), Globals.MIN_NUM_PLAYERS, Globals.MAX_NUM_PLAYERS);
+        Pane bar = new Pane();
+        bar.getStyleClass().add("graphic-turn-bar");
+
         bar.setMinWidth(MARKET_CARD_WIDTH);
         bar.setPrefWidth(MARKET_CARD_WIDTH);
         bar.setMaxWidth(MARKET_CARD_WIDTH);
         bar.setMinHeight(MARKET_CARD_HEIGHT);
         bar.setPrefHeight(MARKET_CARD_HEIGHT);
         bar.setMaxHeight(MARKET_CARD_HEIGHT);
+
+        String imagePath = "/cards_png/carte_front/turn_order_tile/turn_order_tile_" + numPlayers + ".png";
+        ImageView background = new ImageView(new Image(getClass().getResourceAsStream(imagePath)));
+        background.setFitWidth(MARKET_CARD_WIDTH);
+        background.setFitHeight(MARKET_CARD_HEIGHT);
+        background.setPreserveRatio(false);
+        bar.getChildren().add(background);
+
         List<TurnOrderSpaceSummary> spaces = currentTurnOrderSpaces();
+
         if (spaces.isEmpty()) {
-            Label placeholder = new Label("Waiting...");
-            placeholder.getStyleClass().add("turn-order-tile-waiting");
-            bar.getChildren().add(placeholder);
-        } else {
-            for (TurnOrderSpaceSummary space : spaces) {
-                bar.getChildren().add(buildMinimalTurnOrderEntry(space));
+            return bar;
+        }
+
+        for (int i = 0; i < spaces.size(); i++) {
+            TurnOrderSpaceSummary space = spaces.get(i);
+
+            if (space.occupantColor() != null) {
+                Node totem = buildTotem(space.occupantColor(), 30);
+
+                // intermidiate box to force totems to the center
+                StackPane rowWrapper = new StackPane();
+                rowWrapper.setPrefWidth(MARKET_CARD_WIDTH);
+
+                rowWrapper.setAlignment(Pos.CENTER);
+                rowWrapper.setLayoutX(0);
+
+                // totem position
+                final double base_padding = 17;
+                final double increment = 7;
+                final double separator = 22;
+
+                final double first_spot = base_padding + (Globals.MAX_NUM_PLAYERS - numPlayers) * increment;
+                final double curr_spot = first_spot + (i - 1) * separator;
+
+                rowWrapper.setLayoutY(curr_spot);
+
+                rowWrapper.getChildren().add(totem);
+                bar.getChildren().add(rowWrapper);
             }
         }
+
         return bar;
     }
 
