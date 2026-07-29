@@ -7,6 +7,7 @@ each player runs their own client (textual or graphical), connecting over Socket
 (TCP/IP) or RMI.
 
 **Team:** Roda · Rota · Sandrini · Tagako
+**Final grade:** 30/30 CUM LAUDE
 
 ---
 
