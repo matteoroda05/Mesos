@@ -238,4 +238,6 @@ These are the same artifacts published under `deliverables/`.
 
 ## Legal
 
-This repository contains copyrighted visual assets used with permission exclusively for educational purposes. See `LEGAL_NOTICE.md` for details.
+The board game Mesos and all related graphic material are the exclusive property of Cranio Creations.
+This repository contains copyrighted visual assets used with permission exclusively for educational purposes. 
+See `LEGAL_NOTICE.md` for details.
