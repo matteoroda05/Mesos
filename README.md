@@ -16,10 +16,21 @@ each player runs their own client (textual or graphical), connecting over Socket
 | Path | Contents                                                                                                                                                                     |
 |------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `deliverables/jars/` | The three self-contained executable jars: `Mesos-server.jar`, `Mesos-gui.jar` (GUI client), `Mesos-cli.jar` (TUI client). These are what you run — see §3.                   |
-| `deliverables/javadoc/` | Generated API documentation. Open `deliverables/javadoc/index.html` in a browser.                                                                                            |
-| `deliverables/UML-Diagrams/Sequence-Diagrams/` | Sequence diagrams (SVG) for the main networking/multiplayer scenarios — connection, lobby, offer/card phases, disconnection & reconnection, multiple simultaneous games, etc. |
-| `deliverables/UML-Diagrams/Structural-Diagrams/` | Structural (class) diagrams (SVG) of the system, broken down by package (`model`, `controller`, `network`, `view`, `dto`).                                                    |
-| `deliverables/Testing/` | Test-coverage results: the full HTML report (`Coverage-Report/index.html`) and a summary screenshot — see §5.                                                               |
+| `deliverables/javadoc.zip` | Generated API documentation. |
+| `deliverables/UML-Diagrams.zip` | Sequence and structural diagrams in SVG format. |
+| `deliverables/Testing.zip` | The HTML test-coverage report and a summary screenshot — see §5. |
+
+To use an archived deliverable, extract it in `deliverables/`. For example,
+from the repository root:
+
+```bash
+unzip deliverables/javadoc.zip -d deliverables/
+unzip deliverables/UML-Diagrams.zip -d deliverables/
+unzip deliverables/Testing.zip -d deliverables/
+```
+
+After extraction, open `deliverables/javadoc/index.html` in a browser. The
+extracted folders are ignored by Git.
 
 ---
 
@@ -189,7 +200,8 @@ others the CLI, and some may connect over Socket while others use RMI.
 ### 4.2 Network scenarios (sequence diagrams)
 
 The main networking and multiplayer scenarios are documented as sequence diagrams
-under `deliverables/UML-Diagrams/Sequence-Diagrams/`.
+in `deliverables/UML-Diagrams.zip`. After extraction, they are under
+`deliverables/UML-Diagrams/Sequence-Diagrams/`.
 
 ---
 
@@ -199,10 +211,9 @@ The test suite thoroughly covers the application's core logic — `model`,
 `controller`, `network`, and `database`; the thin `gui` and `launcher` layers are
 tested manually, hence their lower automated coverage.
 
-<img src="deliverables/Testing/Test-Coverage-Screenshot.png" alt="Test coverage by package" width="900">
-
-The full interactive report is available at
-`deliverables/Testing/Coverage-Report/index.html`.
+The report and coverage screenshot are in `deliverables/Testing.zip`. After
+extracting it, open `deliverables/Testing/Coverage-Report/index.html` for the
+full interactive report.
 
 ---
 

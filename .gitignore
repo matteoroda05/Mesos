@@ -4,3 +4,8 @@ docs/sp/
 .idea
 
 *.db
+
+# Extracted deliverable archives
+/deliverables/Testing/
+/deliverables/UML-Diagrams/
+/deliverables/javadoc/

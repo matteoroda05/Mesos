@@ -1,7 +1,2 @@
 # Deliverables are generated artifacts, not source code.
 deliverables/** linguist-generated -diff
-
-# Store the generated text-heavy deliverables in Git LFS.
-deliverables/javadoc/** filter=lfs merge=lfs -text
-deliverables/Testing/Coverage-Report/** filter=lfs merge=lfs -text
-deliverables/UML-Diagrams/** filter=lfs merge=lfs -text
