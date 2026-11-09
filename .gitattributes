@@ -4,6 +4,10 @@ deliverables/Testing/Coverage-Report/** linguist-generated
 
 # Exported UML diagrams
 deliverables/UML-Diagrams/**/*.svg linguist-generated
+# Treat generated deliverables as binary in Git diffs
+deliverables/javadoc/** -diff
+deliverables/Testing/Coverage-Report/** -diff
+deliverables/UML-Diagrams/**/*.svg -diff
 deliverables/javadoc/** filter=lfs diff=lfs merge=lfs -text
 deliverables/Testing/Coverage-Report/** filter=lfs diff=lfs merge=lfs -text
 deliverables/UML-Diagrams/** filter=lfs diff=lfs merge=lfs -text
